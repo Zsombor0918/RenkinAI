@@ -595,6 +595,14 @@ internal fun categorizeGlobalIcons(
 @Composable
 fun GlobalOptionsScreen(onClose: (editedKeys: Set<String>, applied: Boolean) -> Unit) {
     val viewModel: GlobalOptionsViewModel = hiltViewModel()
+    val aiBatch: dev.renkinProject.renkin.ai.AiBatchViewModel = hiltViewModel()
+    var showAiBatch by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(viewModel.screenProfileId) { viewModel.screenProfileId?.let { aiBatch.open(it) } }
+    LaunchedEffect(aiBatch.appliedKeys) {
+        viewModel.editedKeys.addAll(aiBatch.appliedKeys)
+        if (aiBatch.appliedKeys.isNotEmpty()) viewModel.recordAiBatchSaved()
+    }
+    if (showAiBatch) AiBatchDialog(aiBatch) { showAiBatch = false }
     val prefs = getPreferences()
     val prefsValue = prefs.getPreferencesValue()
     val context = LocalContext.current
@@ -619,7 +627,7 @@ fun GlobalOptionsScreen(onClose: (editedKeys: Set<String>, applied: Boolean) -> 
         }
     }
 
-    val applying = viewModel.globalApplyProgress != null
+    val applying = viewModel.globalApplyProgress != null || aiBatch.busy
     val previewJobs by viewModel.previewJobs.collectAsState()
     val dirty by remember(state) {
         derivedStateOf { baseline != null && baseline != state.snapshot() }
@@ -787,6 +795,11 @@ fun GlobalOptionsScreen(onClose: (editedKeys: Set<String>, applied: Boolean) -> 
                             else stringResource(R.string.globalApplyCount, targetCount)
                         )
                     }
+                }
+                TextButton(onClick = { showAiBatch = true }, enabled = !viewModel.initialLoadRunning && viewModel.globalApplyProgress == null,
+                    modifier = Modifier.fillMaxWidth()) {
+                    Text(if (aiBatch.session == null) "✨ Generate missing with AI (${aiBatch.candidates.size})"
+                        else "✨ AI batch: ${aiBatch.session!!.done} / ${aiBatch.session!!.items.size}")
                 }
                 val progress = viewModel.globalApplyProgress
                 Box(
@@ -1354,6 +1367,14 @@ private fun PreviewTileFrame(
 @Composable
 private fun GlobalIconEditDialog(app: PackageInfoStruct, onDismiss: () -> Unit) {
     val viewModel: GlobalOptionsViewModel = hiltViewModel()
+    val aiBatch: dev.renkinProject.renkin.ai.AiBatchViewModel = hiltViewModel()
+    var showAiBatch by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(viewModel.screenProfileId) { viewModel.screenProfileId?.let { aiBatch.open(it) } }
+    LaunchedEffect(aiBatch.appliedKeys) {
+        viewModel.editedKeys.addAll(aiBatch.appliedKeys)
+        if (aiBatch.appliedKeys.isNotEmpty()) viewModel.recordAiBatchSaved()
+    }
+    if (showAiBatch) AiBatchDialog(aiBatch) { showAiBatch = false }
     val view = LocalView.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()

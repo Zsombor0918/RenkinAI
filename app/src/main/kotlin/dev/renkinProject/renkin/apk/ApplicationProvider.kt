@@ -410,6 +410,30 @@ class ApplicationProvider internal constructor(
         }
     }
 
+    /** AI fills missing slots only, with profile-safe render/edit/save under the same gate.
+     * Saving the profile after each success makes the result survive process death. */
+    suspend fun applyAiMissingIconAndSave(
+        expectedProfileId: Long, key: String, icon: IconPackDrawable
+    ): dev.renkinProject.renkin.ai.AiBatchTarget = withContext(Dispatchers.Default) {
+        profileOperations.run {
+            if (activeProfileId != expectedProfileId || isProfileSwitching)
+                return@run dev.renkinProject.renkin.ai.AiBatchTarget.PROFILE_CHANGED
+            val index = applicationList.indexOfFirst { it.key == key }
+            if (index < 0 || key in lockedIconKeys)
+                return@run dev.renkinProject.renkin.ai.AiBatchTarget.UNAVAILABLE
+            val original = applicationList[index]
+            if (original.createdIcon != null) return@run dev.renkinProject.renkin.ai.AiBatchTarget.FILLED
+            val preferences = context.dataStore.getPreferencesAfterPendingWrites()
+            val rendered = renderCustomIcon(icon, preferences)
+            editApplication(index, original.changeExport(rendered, sourcePackName = null,
+                isRefreshMade = false, isCustom = true, isLegacy = false, baseIcon = icon)
+                .changeCalendar(false, null, null))
+            try { persistActiveProfileIcons(unbuiltAfter = true) }
+            catch (e: Exception) { editApplication(index, original); throw e }
+            dev.renkinProject.renkin.ai.AiBatchTarget.MISSING // applied successfully
+        }
+    }
+
     suspend fun getIcon(application: PackageInfoStruct, options: GenerationOptions, customIcon: ResourceDrawable? = null): IconPackDrawable? =
         iconGenService.getIcon(application, options, customIcon)
 

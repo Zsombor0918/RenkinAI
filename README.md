@@ -1,3 +1,8 @@
+# Renkin AI – personal fork
+
+AI icon generation, persistent missing-icon batches and per-app prompt instructions. [Hungarian setup, architecture and limitations](docs/AI_FORK_HU.md).
+Based on the upstream Renkin project below; GPLv3 and upstream attribution retained.
+
 <p align="center">
   <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="96" alt="Renkin">
 </p>

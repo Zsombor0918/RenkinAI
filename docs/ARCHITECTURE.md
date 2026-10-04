@@ -1,5 +1,11 @@
 # Architecture
 
+> Personal AI fork: see [AI_FORK_HU.md](AI_FORK_HU.md). The Kotlin namespace stays upstream;
+> the installed app ID is `hu.zsombor.renkinai` (`.dev` for debug), generated packs use
+> `${BuildConfig.APPLICATION_ID}.pack` plus per-profile suffixes. Single-icon AI accepts through the upload
+> draft. AI batches fill missing slots through ApplicationProvider’s profile-gated custom-render/edit/save
+> operation and save each successful step; neither path replaces IconGenerator, Room serialization or the APK builder.
+
 A guide for developers (and AI assistants) working on this codebase. The app builds
 installable Android icon packs on-device.
 

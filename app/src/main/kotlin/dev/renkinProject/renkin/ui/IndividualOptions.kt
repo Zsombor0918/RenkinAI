@@ -318,6 +318,8 @@ fun OptionsDialog(
 ) {
     val viewModel: MainViewModel = hiltViewModel()
 
+    val editProfileId = remember { viewModel.activeProfileId }
+    var showAi by remember { mutableStateOf(false) }
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var source by rememberSaveable { mutableStateOf(Source.ICON_PACK) }
     var imageEdit by rememberSaveable { mutableStateOf(ImageEdit.NONE) }
@@ -449,7 +451,7 @@ fun OptionsDialog(
     }
 
     val heroBitmap = remember(app.icon) {
-        runCatching { app.icon.toSafeBitmapOrNull() }.getOrNull()
+        runCatching { app.icon.toSafeBitmapOrNull(512, 512) }.getOrNull()
     }
 
     // Whether the app ships an official Material You <monochrome> layer. Apps without one use
@@ -632,7 +634,11 @@ fun OptionsDialog(
         }
     }
 
-    val confirmIcon: () -> Unit = {
+    val confirmIcon: () -> Unit = confirm@{
+        if (viewModel.activeProfileId != editProfileId) {
+            toaster.show("Profile changed. Reopen the icon editor before applying.")
+            return@confirm
+        }
         // Credit the icon to a pack only when it actually came from one: the Create
         // tab's Icon Pack source. A fresh pick uses the picked pack; keeping the
         // existing icon keeps its stored source. Upload/vector/text/app-icon = none.
@@ -900,6 +906,9 @@ fun OptionsDialog(
                 }
 
                 val bottomSection: @Composable () -> Unit = {
+                    androidx.compose.material3.TextButton(onClick = { showAi = true }) {
+                        Text("✨ Generate with AI")
+                    }
                     AnimatedVisibility(visible = selectedTab == 0) {
                         SourcePills(source = source) { newSource ->
                             source = newSource
@@ -982,6 +991,28 @@ fun OptionsDialog(
             }
         }
         }
+    }
+
+    if (showAi) {
+        AiIconDialog(
+            target = "$editProfileId:${app.key}",
+            appName = app.appName,
+            original = heroBitmap,
+            onDismiss = { showAi = false },
+            onUse = { result ->
+                if (viewModel.activeProfileId != editProfileId) {
+                    toaster.show("Profile changed. The generated image is saved in Upload.")
+                } else {
+                    clearCreateSelection()
+                    onlineImageUrl = null
+                    onlineImagePath = result.file.absolutePath
+                    uploadSelectionVersion++
+                    activateUpload(BitmapIconDrawable(result.bitmap))
+                    selectedTab = 1
+                }
+                showAi = false
+            }
+        )
     }
 
     if (showConfirmClear) {

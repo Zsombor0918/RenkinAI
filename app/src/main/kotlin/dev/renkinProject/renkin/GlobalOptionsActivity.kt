@@ -324,6 +324,8 @@ class GlobalOptionsViewModel @Inject constructor(
     var appliedGlobal = false
         private set
 
+    fun recordAiBatchSaved() { appliedGlobal = true }
+
     /** (done, total) while the global layer is re-rendered from icon bases; null when idle. */
     var globalApplyProgress by mutableStateOf<Pair<Int, Int>?>(null)
         private set

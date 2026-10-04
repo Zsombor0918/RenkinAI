@@ -20,15 +20,14 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        // Renamed from the fork's com.kaanelloed.iconeration (2026-07): a brand-new app
-        // identity — existing installs of the old id do not update into this one.
-        applicationId = "dev.renkinProject.renkin"
+        // Personal fork identity; upstream Renkin can remain installed alongside it.
+        applicationId = "hu.zsombor.renkinai"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         // Renkin's own year.month.patch scheme, started for the first release under the new
         // app id (the 2025.02.00 / 44 values were inherited from the Alembicons fork).
-        versionCode = 55
-        versionName = "2026.09.02"
+        versionCode = 56
+        versionName = "2026.10.04-ai2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,7 +37,7 @@ android {
         variant.outputs
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
-                val outputFileName = "Renkin-v${variant.versionName}.apk"
+                val outputFileName = "RenkinAI-v${variant.versionName}-${variant.buildType.name}.apk"
                 output.outputFileName = outputFileName
             }
     }
@@ -128,6 +127,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     //Dependency injection (Hilt)
     implementation(libs.hilt.android)
@@ -143,6 +143,7 @@ dependencies {
     //Test
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     // Compose UI tests run locally on Robolectric (no device): the BOM pins the versions,
     // ui-test-manifest provides the host activity createComposeRule needs.
     testImplementation(composeBom)

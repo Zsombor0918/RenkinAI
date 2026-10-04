@@ -106,6 +106,9 @@ fun SettingsScreen(prefs: DataStore<Preferences>, onDismiss: () -> Unit) {
     val view = LocalView.current
     val context = getCurrentContext()
 
+    var showAiSettings by rememberSaveable { mutableStateOf(false) }
+    if (showAiSettings) AiSettingsScreen(onDismiss = { showAiSettings = false })
+
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showCrashLogs by rememberSaveable { mutableStateOf(false) }
     var showWhatsNew by rememberSaveable { mutableStateOf(false) }
@@ -179,6 +182,7 @@ fun SettingsScreen(prefs: DataStore<Preferences>, onDismiss: () -> Unit) {
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 16.dp)
                     ) {
+                    SettingsRow(Icons.Filled.Apps, "AI icon generation") { showAiSettings = true }
                     SettingsSectionHeader(stringResource(R.string.settingsAppearance))
                     ThemeRow(prefs, viewModel::setDarkMode)
 

@@ -65,4 +65,16 @@ class GlobalOptionsCategoriesTest {
         assertEquals(listOf(existing), result.existing)
         assertEquals(listOf(iconless), result.iconless)
     }
+    @Test
+    fun aiBatchCandidatesMatchMissingFilterAndGlobalIconlessExactly() {
+        val icons = listOf(app("generated", true, isRefreshMade = true), app("custom", true, isCustom = true),
+            app("existing", true), app("missing", false), app("locked", false))
+        val locked = setOf(icons.last().key)
+        val batch = dev.renkinProject.renkin.ai.missingAiApps(icons, locked)
+        val filtered = icons.sortedFilteredApps("", true, false,
+            dev.renkinProject.renkin.data.AppSortOrder.NAME, emptyMap(), lockedKeys = locked) { it }
+        assertEquals(filtered.map { it.key }.toSet(), batch.map { it.key }.toSet())
+        assertEquals(categorizeGlobalIcons(icons, locked).iconless, batch)
+        assertEquals(emptyList<PackageInfoStruct>(), dev.renkinProject.renkin.ai.missingAiApps(emptyList(), emptySet()))
+    }
 }

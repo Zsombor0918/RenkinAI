@@ -915,21 +915,26 @@ class MainViewModel @Inject constructor(
         sourcePackName: String?,
         edit: (live: PackageInfoStruct, origin: String?, rendered: IconPackDrawable?) -> PackageInfoStruct
     ) {
+        val expectedProfileId = activeProfileId
         viewModelScope.launch {
-            val (origin, locked) = appProvider.resolvePickedSource(app, if (icon == null) null else sourcePackName)
-            if (icon != null && locked) {
-                _toastEvents.trySend(R.string.iconOriginLocked)
-                return@launch
+            profileSessionOperations.withLock {
+                if (activeProfileId != expectedProfileId) return@withLock
+                val (origin, locked) = appProvider.resolvePickedSource(app, if (icon == null) null else sourcePackName)
+                if (icon != null && locked) {
+                    _toastEvents.trySend(R.string.iconOriginLocked)
+                    return@withLock
+                }
+                val rendered = icon?.let {
+                    val preferences = getApplication<Application>().dataStore
+                        .getPreferencesAfterPendingWrites()
+                    appProvider.renderCustomIcon(it, preferences)
+                }
+                if (activeProfileId != expectedProfileId) return@withLock
+                val index = appProvider.applicationList.indexOfFirst { it.key == app.key }
+                if (index < 0) return@withLock
+                appProvider.editApplication(index, edit(appProvider.applicationList[index], origin, rendered))
+                markUpdated(app, icon)
             }
-            val rendered = icon?.let {
-                val preferences = getApplication<Application>().dataStore
-                    .getPreferencesAfterPendingWrites()
-                appProvider.renderCustomIcon(it, preferences)
-            }
-            val index = appProvider.applicationList.indexOfFirst { it.key == app.key }
-            if (index < 0) return@launch
-            appProvider.editApplication(index, edit(appProvider.applicationList[index], origin, rendered))
-            markUpdated(app, icon)
         }
     }
 

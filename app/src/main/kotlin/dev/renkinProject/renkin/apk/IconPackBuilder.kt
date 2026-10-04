@@ -82,7 +82,7 @@ class IconPackBuilder(
 
     companion object {
         /** Base package id of the generated Renkin icon pack (profiles append ".p<id>"). */
-        const val PACKAGE_NAME = "dev.renkinProject.renkinpack"
+        const val PACKAGE_NAME = dev.renkinProject.renkin.BuildConfig.APPLICATION_ID + ".pack"
 
         /**
          * The pack-signing keystore in filesDir. Backups carry it (with its password file,
@@ -91,16 +91,13 @@ class IconPackBuilder(
          */
         const val KEYSTORE_FILE_NAME = PackKeystore.FILE_NAME
 
-        // Packs built before the 2026-07 app-id rename; they may still be installed on devices.
-        private const val LEGACY_PACKAGE_NAME = "dev.alembiconsProject.renkinpack"
-
         /**
-         * True for icon packs Renkin itself built — the current package (any profile suffix)
-         * or the pre-rename one. Used to keep our own output out of places where it would only
+         * True only for packs this fork/build variant produced, including profile suffixes.
+         * Upstream Renkin packs remain ordinary source packs. Keeps our output from places that
          * feed back on itself (icon watch, new-pack prompts).
          */
         fun isOwnPack(packageName: String): Boolean =
-            packageName.startsWith(PACKAGE_NAME) || packageName.startsWith(LEGACY_PACKAGE_NAME)
+            packageName == PACKAGE_NAME || packageName.startsWith("$PACKAGE_NAME.p")
 
         /**
          * A compiled `<string-array>` resource. Bag children are named by 1-based array index

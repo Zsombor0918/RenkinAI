@@ -87,7 +87,7 @@ class PackVerdictManagerTest {
     fun lockedPacksAmong_neverLocksRenkinsOwnPacks() = runBlocking {
         val manager = PackVerdictManager(context, repo) { StoreLookupResult(StoreVerdict.UNKNOWN) }
 
-        val locked = manager.lockedPacksAmong(setOf("dev.renkinProject.renkinpack.p3", ""))
+        val locked = manager.lockedPacksAmong(setOf("${dev.renkinProject.renkin.apk.IconPackBuilder.PACKAGE_NAME}.p3", ""))
 
         assertTrue(locked.isEmpty())
     }
