@@ -21,6 +21,9 @@ each isolation case's XML, HTML and bounded snapshot/idler probe output. A faile
 case makes the runner and job fail; collecting all cases does not suppress failure.
 The original Android CI and governance remain required and unchanged. Remove the
 temporary instrumentation after capturing the cause, keeping useful regressions.
+The next controls compare a single actual native Canvas draw of the already laid-out
+dialog and SDK 35. These are measured hypotheses, not idling bypasses or substitutions
+for the existing SDK 33 real-form tests. Steady-state write samples accompany flags.
 
 ## Automatic documentation minimum
 

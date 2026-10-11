@@ -21,6 +21,7 @@ implementation; #1 merged and its P1 fix/tests/thread verified.
 | Feature [CI 38143220425](https://github.com/Zsombor0918/RenkinAI/actions/runs/38143220425), head `277d463e2cbb95e256d75a068b2dcc28375dee96` | App/test compile SUCCESS; 628 executed, **2 FAILED** | Explicit clock also did not resolve the same form-idle failures; APK skipped |
 | Feature [CI 38143988918](https://github.com/Zsombor0918/RenkinAI/actions/runs/38143988918), head `8bd57953ec54c7056dac4acf850f5a8863b8bd64` | App/test compile SUCCESS; 628 executed, **2 FAILED** | Phone viewport also ineffective; APK skipped; artifact has HTML only, no XML |
 | Diagnostic [CI 38148847598](https://github.com/Zsombor0918/RenkinAI/actions/runs/38148847598), head `e8c2ee56d0481d50ba5cd4deb47566ecd2f78038` | App compile SUCCESS; test compile FAILED | Public rule exposed internal probe type; visibility corrected next; no executed tests/APK |
+| [Isolation 38149176046](https://github.com/Zsombor0918/RenkinAI/actions/runs/38149176046), head `f67c3a6a020be922274fdb02ffc02b26130da2c6` | Nine independent cases: 3 passed, 6 failed | Plain/empty dialog/outside field pass. Every field-in-dialog variant failed only pending measure/layout; resolved UI/runtime/UI-test 1.9.3, Material3 1.5.0-alpha14, Robolectric 4.14.1; full XML retained |
 
 Recreation follow-up adds a persisted editor-entry counter and an intro-visibility
 helper that distinguishes pending prefs from explicit re-show, plus regressions.

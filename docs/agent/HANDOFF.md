@@ -97,6 +97,14 @@ Initial diagnostic head `e8c2ee56d0481d50ba5cd4deb47566ecd2f78038` failed
 test compilation because a public JUnit property exposed an internal probe class.
 A test-only visibility correction precedes remeasurement; it does not establish
 the original idle cause. All 45 local guards freshly passed again.
+At `f67c3a6a020be922274fdb02ffc02b26130da2c6`,
+[isolation 38149176046](https://github.com/Zsombor0918/RenkinAI/actions/runs/38149176046)
+ran nine cases individually: plain/empty dialog/field outside passed; six
+field-in-dialog cases failed with only hadPendingMeasureLayout true. The dialog
+root was attached, unfocused, pending measurement and requesting layout; no clock,
+setContent, snapshot or recomposer pending flag. This establishes the narrow boundary,
+not yet a missing-draw/component root cause. Draw and SDK controls are next; see
+[experiment note](../changes/2026-10-11-dialog-layout-experiments.md).
 
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions

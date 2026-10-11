@@ -1,6 +1,9 @@
 package dev.renkinProject.renkin.ui.project
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.ComponentActivity
@@ -8,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -37,6 +41,7 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import org.robolectric.shadows.ShadowDialog
@@ -114,6 +119,31 @@ class ProfileDialogDiagnosticsTest {
         compose.onNodeWithTag("project-create").performClick()
         compose.onNodeWithTag("profile-name").performTextInput("Night")
     }
+
+    @Test fun realProfileDialogAfterPlatformDraw() {
+        content {
+            var show by remember { mutableStateOf(false) }
+            TextButton(onClick = { show = true }, modifier = Modifier.testTag("show-dialog")) { Text("Create") }
+            if (show) ProfileDetailsDialog("Create new icon pack", "Create", { _, _, _ -> }, {})
+        }
+        compose.onNodeWithTag("show-dialog").performClick()
+        compose.mainClock.advanceTimeByFrame()
+        compose.runOnUiThread {
+            shadowOf(Looper.getMainLooper()).idle()
+            val view = requireNotNull(ShadowDialog.getLatestDialog()?.window?.decorView)
+            check(view.width > 0 && view.height > 0) { "Dialog has not completed Android layout" }
+            println("PLATFORM_DRAW before ${view.width}x${view.height} layoutRequested=${view.isLayoutRequested}")
+            val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+            try { view.draw(Canvas(bitmap)) } finally { bitmap.recycle() }
+            println("PLATFORM_DRAW after layoutRequested=${view.isLayoutRequested}")
+        }
+        compose.onNodeWithTag("profile-name").performTextInput("Night")
+    }
+
+    @Test @Config(sdk = [35]) fun realProfileDialogSdk35() {
+        content { ProfileDetailsDialog("Create new icon pack", "Create", { _, _, _ -> }, {}) }
+        compose.onNodeWithTag("profile-name").performTextInput("Night")
+    }
 }
 
 /** Reports the existing test rule's idler/root state before its teardown, without pumping it. */
@@ -128,11 +158,16 @@ class ComposeIdleProbe(private val compose: ComposeContentTestRule) : TestWatche
     override fun starting(description: Description) {
         writeHandle = Snapshot.registerGlobalWriteObserver { state ->
             val number = writes.incrementAndGet()
-            if (number <= 120) {
+            if (number <= 120 || number % 10000 == 0) {
                 val stack = Thread.currentThread().stackTrace
                     .filter { it.className.startsWith("androidx.compose") && !it.className.contains("snapshots") }
                     .take(9).joinToString(" <- ")
-                if (samples.size < 12 && samples.none { it.endsWith(stack) }) samples += "${state.javaClass.simpleName}: $stack"
+                synchronized(samples) {
+                    if (number > 120 || samples.none { it.endsWith(stack) }) {
+                        if (samples.size >= 12) samples.removeAt(0)
+                        samples += "write=$number ${state.toString().take(180)}: $stack"
+                    }
+                }
             }
         }
         applyHandle = Snapshot.registerApplyObserver { _, _ -> applies.incrementAndGet() }
