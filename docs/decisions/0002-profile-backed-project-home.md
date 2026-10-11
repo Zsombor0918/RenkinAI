@@ -1,6 +1,8 @@
 # ADR 0002 — profiles as projects and one editor session
 
-Date: October 11, 2026. Status: proposed for owner acceptance with Codex 01.
+Date: October 11, 2026. Status: accepted by owner merge of PR #2 at 16:32:02 UTC on October 11, 2026
+(`73a15e2210cb55cf003e60ebc2033130ee7a9e58`). No independent APPROVED review
+was present. M2 route additions are described in [ADR 0003](0003-read-only-source-coverage.md).
 
 ## Context
 

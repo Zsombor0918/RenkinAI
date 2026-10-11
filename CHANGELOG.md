@@ -5,9 +5,13 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 ## Unreleased
 
+- Prepare a new pack from all launcher entries without an external source.
+- Inspect an installed source pack with actual static drawable coverage, separate project/lock status and searchable target selection; open the full classic editor.
+- Selections prepare work only; no automatic AI generation or durable project plan is added.
+
 - Start from Projects, continue any real Renkin profile or create a separate icon pack.
 - Open the classic editor from either Create or Complete an existing icon pack;
-  automatic style recognition and source coverage are still planned.
+  automatic style recognition remains planned.
 - Return from the editor to Projects without switching or saving implicitly;
   save/cancel protects changes before entering a different project.
 

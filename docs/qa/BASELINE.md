@@ -1,6 +1,42 @@
 # Verification baseline
 
-## Codex 01 ProjectHome — current checkpoint
+## Codex 02 — verified implementation checkpoint
+
+Base/main `73a15e2210cb55cf003e60ebc2033130ee7a9e58`; branch
+`feat/create-extend-coverage-m2`; [PR #3](https://github.com/Zsombor0918/RenkinAI/pull/3).
+Owner merge of #2 at 16:32:02 UTC was verified before starting; no independent
+APPROVED review existed. The tested M2 source head is
+`a8b3e4b22e6611042aa8de1d1ce03f3175989976`. This evidence commit changes
+only documentation; its own final-head runs must be checked in PR #3.
+
+| Fresh observed evidence | Actual result | Source / artifact |
+| --- | --- | --- |
+| Original Android compile/unit/debug APK | SUCCESS | [38160285188](https://github.com/Zsombor0918/RenkinAI/actions/runs/38160285188); RenkinAI-debug artifact 11710600148, 34,311,571 bytes |
+| Original creation alone / ingress alone / combined | 1/1, 1/1, 2/2 PASS | [38160285156](https://github.com/Zsombor0918/RenkinAI/actions/runs/38160285156); original case IDs occurred, zero failures/errors/skips |
+| Actual shared profile form | 3/3 PASS | Same run; native SDK 33/320dp harness retained |
+| Create/Extend UI, restore, Save/Cancel, Back, ingress, broadcast/disposal | 10/10 PASS | Same run, CreateExtendFlowComposeTest |
+| Domain + existing-parser + bitmap/vector/adaptive render | 28/28 PASS | Same run, three actual test classes |
+| Unfiltered full compile/unit/debug APK after all groups | 669/669 PASS | Same run, independent tally of 120 XML reports; zero failures/errors/skips; artifact 11709179629 |
+| Source-head governance guards/conventions | 45 offline PASS, 6.420 s; commit-conventions SUCCESS | Governance 38160285196; documentation-audit failed **only** because PR audit was still BLOCKED |
+| Local complete guards and range audits | 45 PASS, 7.556 s; docs/commit range PASS | Linux/Python 3.12.14/Git 2.51.1; no validator changes |
+| Local full Android command | FAILED before configuration | Gradle download Network is unreachable; no local Android success claimed |
+
+The downloaded evidence summary HEAD exactly matched the tested source commit;
+all requested selectors occurred, all Gradle exits were zero and full XML totals
+matched summary counts. Failed checkpoints below remain failed historical records.
+Protected source comparisons show unchanged manifest/SDK/IDs, old MainActivity/
+MainColumn/source picker/profile manager, AI/batch, storage/backup, renderer and
+APK build/sign/install, plus original CI and governance/hook/validator files.
+
+**NOT RUN**, no device available: actual external pack mapping/missing sanity,
+full Create inventory, Save/Cancel/Back, work user, uninstall/reinstall/update,
+GlobalOptions/manual AI, pack build/sign/install/update, Samsung One UI/Theme Park/
+Flip cover/fold, rotation/process death and real TalkBack. **0 live/paid AI requests**.
+PASS WITH RISKS requires a separate owner/reviewer decision; green CI is not release
+or device approval. Main rule is active but review count/conversations/strict remain
+0/false/false, without bypasses. The Play release gate is unchanged.
+
+## Codex 01 ProjectHome — historical accepted checkpoint
 
 Date: October 11, 2026. Branch `feat/project-home-m1`; accepted main/base
 `005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`. Source/special routes reread before
@@ -139,3 +175,66 @@ No physical device/emulator, live OpenAI/Stability call, actual key decryption,
 backup restore/upgrade, pack installation/update, Theme Park, One UI or Flip cover
 screen was tested. No Play submission or administration write was made.
 Use [TEST_MATRIX](TEST_MATRIX.md) for the remaining scenarios.
+
+## Codex 02 fresh baseline and implementation checkpoint
+
+Started on fresh main `73a15e2210cb55cf003e60ebc2033130ee7a9e58`, owner-merged
+PR #2 with identical tree to final feature head. The historical M1 631 count is not
+fresh M2 evidence. Python 3.12.14, Git 2.51.1, Linux/JDK 17 workspace.
+
+| Actual command / observation | Result | Boundary |
+| --- | --- | --- |
+| `python3 -m unittest discover -s scripts/tests -v` baseline | 45 PASS, 7.025 s | Offline governance only |
+| Same guards after M2 implementation | 45 PASS, 6.912 s | Existing validators unchanged |
+| `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug` | FAILED, exit 1 | Gradle 8.11.1 download: `java.net.SocketException: Network is unreachable`; stopped before configuration; no Android tests/APK locally |
+| Fresh M2 Actions | Not yet observed at this checkpoint | Final head must pass original Android, expanded regression evidence and governance |
+| Paid/live API and device trials | NOT RUN | No API request authorized; no device/SDK available locally |
+
+The expanded evidence runner preserves all old selectors and adds CreateExtendFlowComposeTest,
+IconCoverageAnalyzerTest, CoverageAppFilterTest and CoveragePreviewTest. New fixtures
+include actual vector/adaptive/bitmap draw and parser last-winner/error behavior;
+existing profile, AI, batch, backup, package/build regressions remain in the full suite.
+
+### M2 first hosted checkpoint — not successful
+
+Feature head `28ed77265fbc392f88f07f905cccb046968e75de`,
+[Android 38159074131](https://github.com/Zsombor0918/RenkinAI/actions/runs/38159074131):
+production `compileDebugKotlin` PASSED; unit-test Kotlin compilation FAILED at new
+CreateExtendFlowComposeTest line 208. This Compose version returns DpRect with
+bottom/top, not a height property; the receiver mismatch is compile-time evidence.
+No unit test executed and APK was skipped. Correct only that measurement expression,
+preserving the 48dp assertion. Governance commit-conventions and offline guard job
+passed; documentation-audit correctly failed the single BLOCKED declaration.
+
+### M2 executable checkpoint — fixtures corrected next
+
+At `4a447d88dea9506aecf3b6c42bb45429dd5d2b78`,
+[Android 38159397296](https://github.com/Zsombor0918/RenkinAI/actions/runs/38159397296)
+compiled app/tests, then ran **667 tests, 3 failures**, APK skipped.
+Artifact 11708809083 HTML stack traces were downloaded and inspected:
+CoveragePreviewTest passed raw XmlPullAttributes to the platform vector inflater,
+which requires compiled XmlBlock.Parser; use the existing compiled ic_github vector.
+The coverage node already contained all correct counts, but assertTextContains
+requested exact matching to a fragment; assert the full observed count string.
+ProfileDetailsDialog uses the dismiss resource, not literal Cancel; use that actual
+resource label to test the unchanged dismissal interaction. These are fixture/API
+errors, not evidence that source draw or dialog UX should be changed.
+
+A scope-completeness inspection additionally adds screen-scoped package invalidation,
+so a source removed/updated while foreground cannot retain its old result until
+resume. Displayed theme is an explicit read key; rapid pack rescans retain the newest
+loading flag. New actual broadcast/disposal and Back tests are awaiting execution.
+
+### M2 broadcast-test ordering checkpoint
+
+At `a2d1d9def75fe427984ec9135beb45b75e4da2c5`,
+[Android 38159888019](https://github.com/Zsombor0918/RenkinAI/actions/runs/38159888019)
+compiled app/tests and executed **669 tests, 1 failure**; APK skipped. All corrected
+vector/count/dismiss fixtures and legacy tests passed. Artifact 11709674763 shows
+the new observer test captured its plain counter before the source-change composition
+committed: expected 3, actual 4 at line 255. Installing the new lifecycle observer
+legitimately emits current ON_RESUME. Await Compose idle/commit before capturing that
+baseline and before the post-disposal broadcast; retain all exact count assertions.
+This is deterministic lifecycle synchronization, no sleep/timeout/idling bypass.
+Local 45 guards passed again in 7.556 s; range guards PASS. New QA-path workflow trigger
+keeps final evidence commits covered by the full retained regression runner.

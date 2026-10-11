@@ -1,3 +1,71 @@
+# Agent handoff — Codex 02 Create/Extend coverage
+
+Base/main: `73a15e2210cb55cf003e60ebc2033130ee7a9e58`. Branch:
+`feat/create-extend-coverage-m2`. Started from a clean, freshly fetched main after
+owner merge of PR #2 at 16:32:02 UTC; merged head `05dc320fd6dbdb1a16d4a5390d32c5617413e6a0`
+is an ancestor with identical tree. PR #2 has no reviews/threads; this is actual
+owner acceptance, not an independently approved review. Android 38153469680,
+regressions 38153469669 and Governance 38154063977 passed on that prior head.
+Final M2 SHA, PR and fresh checks must be recorded in the new PR audit.
+
+## Implemented scope and safe continuation
+
+Create confirms the existing form exactly once, awaits the existing profile session
+completion, then exposes the complete launcher target inventory. Extend chooses a
+read-only external package, explicitly chooses/creates a target profile (unchanged
+Save/Cancel), then separates mapped-and-drawn source coverage from local/locked
+state. Search, select all/recommended missing, clear, manual override and classic
+editor entry are functional. Saved UI keys retain per-profile/source setup state;
+there is no new durable project plan and Home is not an implicit Save.
+
+The existing repository/parser/catalog receive narrow read APIs and uncertainty
+metadata. One 96 px static draw at a time validates exact item mappings on Default;
+invalid XML, changed/removed source, dynamic declarations and work-user collision
+are not fake missing targets. Rapid selection/leaving setup cancels prior analysis;
+resume revalidates identity. No primary source write, refresh, generation or build
+is triggered by inspection. The one Activity VM/provider/controller remains owner;
+watch/share attention, editor launcher registrations, nested Back and all legacy
+AI1/AI2/manual/backup/build/sign/install paths are preserved.
+
+See [change note](../changes/2026-10-11-create-extend-coverage.md),
+[ADR 0003](../decisions/0003-read-only-source-coverage.md),
+[architecture](../ARCHITECTURE.md) and [QA](../qa/BASELINE.md).
+
+## Verification, protection and limitations
+
+Local guards passed 45 tests (7.025 s baseline, 6.912 s after implementation, 7.556 s after corrections).
+Local `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug` failed before
+configuration while downloading Gradle 8.11.1: Network is unreachable. No local
+Android test/build success is claimed; hosted final-head verification is required.
+The runner retains every M1 original separately/together/shared form, adds M2 UI and
+domain/parser/render groups, then runs unfiltered compile/unit/debug APK again.
+Initial M2 Android 38159074131 compiled production but failed test compilation on the DpRect height expression; no Android test or APK success. A narrow bottom-minus-top correction retains the 48dp assertion. The next head 4a447d88 ran 667 tests with three fixture/API failures (compiled vector XML, full count matching, actual dismiss label); the next a2d1d9de checkpoint passed 668 of 669 with one new broadcast-test baseline ordering failure. Awaiting composition before capturing its counter preserves exact lifecycle assertions; At a8b3e4b2 both Android 38160285188 and regressions 38160285156 passed: original cases 1/1, 1/1 and 2/2, shared form 3/3, new UI 10/10, coverage fixtures 28/28 and unfiltered 669/669 with debug APK. Downloaded artifact 11709179629 proved zero failures/errors/skips in 120 XML reports; original CI uploaded real APK artifact 11710600148. Governance 38160285196 passed 45 guards and commit conventions, with documentation failure only for the then-BLOCKED audit. This docs-only evidence commit still needs its own fresh checks in PR #3.
+
+Main rule 24877351 is active, main is protected, bypasses empty; PR/build/
+commit-conventions/documentation-audit required, force push/delete forbidden.
+Approvals=0, last-push approval=false, conversation resolution=false, strict=false:
+owner can separately strengthen these; they were not changed or claimed enabled.
+No physical device/One UI/Theme Park/Flip/pack install or live AI trial ran. Unknown
+user identity remains a separate migration boundary. Static draw cannot certify
+animation or full theme behavior and a pathological drawable can delay cooperative
+cancellation within its synchronous draw.
+
+## Next safe task
+
+Verify final-head evidence in PR #3 and obtain explicit owner/reviewer acceptance;
+do not merge automatically. Then Codex 03 may define project-specific style/assets,
+selection lifecycle and a small API gateway with explicit billing/cancellation
+contracts. No style analysis/demos/gallery/billing in this PR. Preserve profile ID,
+backups and signing; a user-handle identity migration requires its own design.
+Rollback by reverting M2 commits (no schema migration); the M1 classic editor and
+unchanged profile data remain available. Unsaved VM icons still require explicit
+save/build before process death.
+
+## Historical Codex 01 handoff
+
+The following is retained historical evidence; the current baseline and continuation
+above supersede its former open-PR/main-state statements.
+
 # Agent handoff — Codex 01 ProjectHome
 
 Work date: October 11, 2026. Branch: `feat/project-home-m1`, based exclusively on

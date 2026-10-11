@@ -17,6 +17,10 @@ CASES = {
     "ingress": [INGRESS],
     "both": [CREATION, INGRESS],
     "shared-form": [PACKAGE + "ProfileDetailsDialogComposeTest"],
+    "create-extend": [PACKAGE + "CreateExtendFlowComposeTest"],
+    "coverage-domain": ["dev.renkinProject.renkin.apk.IconCoverageAnalyzerTest",
+                        "dev.renkinProject.renkin.apk.CoveragePreviewTest",
+                        "dev.renkinProject.renkin.packages.CoverageAppFilterTest"],
     "full-suite": [],
 }
 

@@ -9,6 +9,7 @@ import dev.renkinProject.renkin.data.IconPack
 import dev.renkinProject.renkin.data.IconPackFallback
 import dev.renkinProject.renkin.data.InstalledApplication
 import dev.renkinProject.renkin.data.RawCalendar
+import dev.renkinProject.renkin.data.RawDynamicClock
 import dev.renkinProject.renkin.data.RawElement
 import dev.renkinProject.renkin.data.RawItem
 import dev.renkinProject.renkin.data.toComponentInfo
@@ -23,6 +24,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
+import dev.renkinProject.renkin.packages.CoverageAppFilterRead
 
 internal suspend fun loadIsolatedAppFilters(
     packs: List<IconPack>,
@@ -76,6 +80,9 @@ class IconPackRepository(
     private var appDrawableNamesByPackage: Map<String, Map<String, String>> = emptyMap()
     private var installedApplications: List<InstalledApplication> = listOf()
     private val fallbackCache = mutableMapOf<String, IconPackFallback>()
+    private var coverageReads: Map<String, CoverageAppFilterRead> = emptyMap()
+    private var loadedUpdateTimes: Map<String, Long?> = emptyMap()
+    private val coverageRevision = AtomicLong(0)
 
     private val resourceResolver by lazy { PackageResourceResolver(context) }
     private val appManager: ApplicationManager by lazy { ApplicationManager(context, resourceResolver) }
@@ -86,21 +93,26 @@ class IconPackRepository(
      */
     suspend fun load(installedApps: List<InstalledApplication>) = withContext(Dispatchers.Default) {
         iconPackLoaded = false
+        coverageRevision.incrementAndGet()
         synchronized(fallbackCache) { fallbackCache.clear() }
         // Drop our own generated pack — it only ever holds icons we just built, so offering
         // it as an icon source (or a watch target) is pointless and just clutters the lists.
         // startsWith: profile packs share the base package with a ".p<id>" suffix.
         iconPacks = iconPackCatalog.installedIconPacks()
             .filter { !it.packageName.startsWith(IconPackBuilder.PACKAGE_NAME) }
+        loadedUpdateTimes = iconPacks.associate { it.packageName to iconPackCatalog.packageInfo(it.packageName)?.lastUpdateTime }
         loadAppFilterElements(installedApps)
     }
 
     private suspend fun loadAppFilterElements(installedApps: List<InstalledApplication>) {
         installedApplications = installedApps
+        val reads = ConcurrentHashMap<String, CoverageAppFilterRead>()
         appFilterElements = loadIsolatedAppFilters(
             iconPacks,
             loader = { pack ->
-                appManager.getAppFilterRawElements(pack.packageName, installedApplications)
+                val read = appManager.readAppFilterForCoverage(pack.packageName, installedApplications)
+                if (read != null) reads[pack.packageName] = read
+                read?.elements.orEmpty()
             },
             onFailure = { pack, error ->
                 Log.error("IconPackRepository", "Skipping malformed appfilter: ${pack.packageName}", error)
@@ -112,7 +124,57 @@ class IconPackRepository(
         appDrawableNamesByPackage = appFilterElementsByPackage.mapValues { (_, elements) ->
             indexAppDrawableNames(elements)
         }
+        coverageReads = reads.toMap()
+        coverageRevision.incrementAndGet()
         iconPackLoaded = true
+    }
+
+    /** Explicit metadata rescan uses the existing catalog, without touching profile icons. */
+    internal suspend fun coverageSources(): List<IconPack> = withContext(Dispatchers.Default) {
+        iconPackCatalog.installedIconPacks().filter { !it.packageName.startsWith(IconPackBuilder.PACKAGE_NAME) }
+    }
+
+    internal suspend fun coverageReader(packageName: String, rescan: Boolean): CoverageSourceReader = withContext(Dispatchers.Default) {
+        val revision = coverageRevision.get()
+        val info = iconPackCatalog.packageInfo(packageName)
+        val version = info?.let(iconPackCatalog::versionCode)
+        val stamp = CoverageStamp(packageName, version, info?.lastUpdateTime, revision,
+            PackageResourceResolver.displayedNightMode)
+        val installed = info != null && !packageName.startsWith(IconPackBuilder.PACKAGE_NAME)
+        val loaded = iconPacks.find { it.packageName == packageName }
+        val sameLoaded = loaded?.versionCode == version && loadedUpdateTimes[packageName] == info?.lastUpdateTime
+        val read = if (installed && rescan) {
+            try { appManager.readAppFilterForCoverage(packageName, installedApplications.toList()) }
+            catch (error: CancellationException) { throw error }
+            catch (_: Exception) { null }
+        } else if (sameLoaded && iconPackLoaded) coverageReads[packageName] else null
+        val state = when {
+            !installed -> CoverageIndexState.UNAVAILABLE
+            !iconPackLoaded -> CoverageIndexState.LOADING
+            !rescan && !sameLoaded -> CoverageIndexState.UNAVAILABLE
+            read?.proven != true -> CoverageIndexState.UNKNOWN
+            else -> CoverageIndexState.READY
+        }
+        fun key(component: String) = component.removePrefix("ComponentInfo{").removeSuffix("}")
+        val mappings = if (state == CoverageIndexState.READY) read!!.mappings.mapKeys { key(it.key) } else emptyMap()
+        val clocks = read?.clockDrawables.orEmpty()
+        val dynamic = read?.calendarComponents.orEmpty().mapTo(mutableSetOf(), ::key)
+        dynamic.addAll(mappings.filterValues { it in clocks }.keys)
+        val capturedIndex = CoverageIndex(stamp, state, mappings, dynamic)
+        object : CoverageSourceReader {
+            override val index = capturedIndex
+            override fun isCurrent(): Boolean {
+                val current = iconPackCatalog.packageInfo(packageName) ?: return false
+                return installed && coverageRevision.get() == revision &&
+                    iconPackCatalog.versionCode(current) == version && current.lastUpdateTime == stamp.lastUpdateTime &&
+                    PackageResourceResolver.displayedNightMode == stamp.theme
+            }
+            override suspend fun canRender(drawableName: String): Boolean = withContext(Dispatchers.Default) {
+                try {
+                    appManager.getResourceDrawableByName(packageName, drawableName)?.drawable?.let(::drawCoveragePreview) == true
+                } catch (_: OutOfMemoryError) { false }
+            }
+        }
     }
 
     /** The pack's classic fallback styling (iconback/mask/upon/scale) for unthemed apps. */

@@ -225,12 +225,16 @@ class ProjectShellComposeTest {
         compose.onNodeWithTag("profile-create-confirm").performClick()
         compose.onNodeWithTag("project-create").assertIsNotEnabled()
         compose.onNodeWithTag("test-editor").assertDoesNotExist()
+        compose.onNodeWithTag("project-targets").assertDoesNotExist()
         restoration.emulateSavedInstanceStateRestore()
         assertEquals(1, creates)
         compose.runOnIdle {
             home = home.copy(activeProfileId = 3, busy = false, profiles = home.profiles + Profile(3, "Night"))
             operation = ProjectSessionState.Opened(3)
         }
+        compose.onNodeWithTag("project-targets").assertIsDisplayed()
+        compose.onNodeWithTag("test-editor").assertDoesNotExist()
+        compose.onNodeWithTag("setup-editor").performClick()
         compose.onNodeWithTag("test-editor").assertIsDisplayed()
         assertEquals(1, creates)
     }
