@@ -115,6 +115,20 @@ class ApplicationProvider internal constructor(
     // old copy-per-edit made it O(n²). Exposed read-only as List; the UI still observes it.
     private val _applicationList = mutableStateListOf<PackageInfoStruct>()
     val applicationList: List<PackageInfoStruct> get() = _applicationList
+
+    internal fun coverageTargets(): List<CoverageTarget> = applicationList.map { app ->
+        CoverageTarget(app.key, app.appName, when {
+            app.isLegacy -> LocalIconState.UNKNOWN
+            app.createdIcon == null -> LocalIconState.NO_LOCAL_ICON
+            app.isCustom -> LocalIconState.CUSTOM_OR_MANUAL
+            app.isFallback -> LocalIconState.FALLBACK
+            else -> LocalIconState.OTHER_APPLIED
+        }, app.key in lockedIconKeys, app.key in installedAppCatalog.uncertainUserKeys)
+    }
+
+    internal suspend fun coverageSources(): List<IconPack> = iconPackRepo.coverageSources()
+    internal suspend fun coverageReader(packageName: String, rescan: Boolean): CoverageSourceReader =
+        iconPackRepo.coverageReader(packageName, rescan)
     // Icon-pack data (packs, app-filter elements, calendar icons) lives in
     // IconPackRepository; iconPacks / iconPackLoaded delegate to it so existing UI reads
     // stay reactive (the repo backs them with Compose state).

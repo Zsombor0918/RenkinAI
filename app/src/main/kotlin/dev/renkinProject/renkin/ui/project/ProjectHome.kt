@@ -61,7 +61,8 @@ internal fun ProjectHome(
     onCreate: () -> Unit,
     onExtend: () -> Unit,
     onClassicEditor: () -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onSetup: (Long) -> Unit = {}
 ) {
     CenteredFullscreenContent(maximumContentWidth = 960.dp) {
         LazyVerticalGrid(
@@ -162,7 +163,8 @@ internal fun ProjectHome(
                     active = state.availability == ProjectHomeAvailability.READY && profile.id == state.activeProfileId,
                     unsaved = profile.id == state.activeProfileId && state.hasUnsavedChanges,
                     enabled = state.actionsEnabled,
-                    onOpen = { onOpen(profile.id) }
+                    onOpen = { onOpen(profile.id) },
+                    onSetup = { onSetup(profile.id) }
                 )
             }
         }
@@ -192,7 +194,7 @@ private fun ProjectActionCard(
 }
 
 @Composable
-private fun ProjectCard(profile: Profile, active: Boolean, unsaved: Boolean, enabled: Boolean, onOpen: () -> Unit) {
+private fun ProjectCard(profile: Profile, active: Boolean, unsaved: Boolean, enabled: Boolean, onOpen: () -> Unit, onSetup: () -> Unit) {
     val openDescription = stringResource(R.string.projectOpenDescription, profile.name, profile.id)
     Card(shape = CardShape, modifier = Modifier.fillMaxWidth().testTag("project-${profile.id}")) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -209,6 +211,10 @@ private fun ProjectCard(profile: Profile, active: Boolean, unsaved: Boolean, ena
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("project-open-${profile.id}")
                     .semantics { contentDescription = openDescription }
             ) { Text(stringResource(R.string.projectContinue)) }
+            OutlinedButton(onClick = onSetup, enabled = enabled,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("project-setup-${profile.id}")) {
+                Text(stringResource(R.string.setupReturn))
+            }
         }
     }
 }

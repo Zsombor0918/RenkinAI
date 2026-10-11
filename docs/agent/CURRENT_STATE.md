@@ -1,9 +1,11 @@
 # Current implementation
 
-Codex 01 source baseline: merged main `005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`,
-inspected October 11, 2026. PR #1 merged at 12:15:29 UTC with the P1 audit-result
-fix and resolved review thread. Codex 01 adds the Projects entry point on
-`feat/project-home-m1`; final source/check SHAs belong in its PR audit.
+Codex 02 baseline: fresh merged main `73a15e2210cb55cf003e60ebc2033130ee7a9e58`,
+inspected October 11, 2026. Owner Zsombor0918 merged PR #2 at 16:32:02 UTC;
+its head `05dc320fd6dbdb1a16d4a5390d32c5617413e6a0` is an ancestor and the
+merge tree is identical. Reviews/threads were empty; owner merge is acceptance,
+not evidence of an independent APPROVED review. Codex 02 works separately on
+`feat/create-extend-coverage-m2`; fresh feature CI is pending until recorded in QA.
 Manifest, dependencies, Room v18, provider/storage contracts, APK/signing/install
 and Android CI are unchanged. Existence in source and runtime validation are
 different; see [QA baseline](../qa/BASELINE.md).
@@ -25,7 +27,7 @@ together and all three form regressions. At evidence head
 reports proving 631/631 full-suite tests passed with zero failures/errors/skips,
 after the same separate/together/form tests; unfiltered compile/test/debug build
 also passed. Original Android CI 38152705787 independently built/uploaded the APK.
-Final documentation-head SHA/check results belong in PR #2. Devices remain NOT RUN.
+PR #2 final head passed Android 38153469680, regressions 38153469669 and Governance 38154063977 before owner merge. These are historical M1 results, not M2 validation. Devices remain NOT RUN.
 See [measured correction](../changes/2026-10-11-compose-dialog-regression-fix.md).
 
 ## Product and implemented paths
@@ -38,8 +40,8 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 | --- | --- |
 | Existing app list/editor | [MainActivity](../../app/src/main/kotlin/dev/renkinProject/renkin/MainActivity.kt), MainViewModel and UI; launcher components from InstalledAppCatalog, including user profiles; keys are package/activity, not labels |
 | Projects entry point | [ProjectHome](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/ProjectHome.kt) reads the real profile flow; ID-keyed cards show name, description, saved unbuilt flag and active-session unsaved edits; default/empty/loading/unavailable/busy states are explicit |
-| Create / complete / classic entry | Create confirms the existing profile fields before allocation. Complete opens instructions with working active-editor and separate-profile actions, then the classic source card/picker. Both visibly defer automatic AI/style/coverage workflows; AI1/AI2 stay in the classic editor |
-| Home/editor navigation | [RenkinAiRoot](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt) uses the Activity's existing VM; editor Back returns Home after search/dialog handlers, Home clean Back exits, dirty Back offers return to editor or explicit exit without saving; no implicit save/switch/build/request on navigation |
+| Create / extend / classic entry | Create confirms the real profile form and waits for completion, then opens all known launcher targets without a source requirement. Extend chooses an external source by package, then explicitly chooses/creates a target profile through the existing Save/Cancel controller, then inspects actual source coverage. Project setup actions return to session selections; the complete classic editor and AI1/AI2 remain available |
+| Home/setup/editor navigation | [RenkinAiRoot](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt) uses the Activity's existing VM; editor Back returns Home after search/dialog handlers, Home clean Back exits, dirty Back offers return to editor or explicit exit without saving; no implicit save/switch/build/request on navigation |
 | Pack sources, modifications, import | ApplicationProvider, IconGenerationService, IconGenerator, UploadedImageStore; custom/base/rendered separation and existing SVG/vector/adaptive paths |
 | Named profiles | ProfileManager, DbApplication, DataPreferences; Room `renkinPack` v18, default id 1; settings snapshots switch with the profile, source/provenance locks remain |
 | Export and installation | IconPackBuildService, IconPackBuilder, PackKeystore, ApkInstaller; calendar/clock/adaptive/themed outputs, appfilter/appmap/theme_resources; build snapshot persists to its owning profile |
@@ -85,7 +87,7 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 - Wide/dark/light/hinge and interaction tests use Robolectric/fake state; real
   TalkBack, Samsung/fold lifecycle, notification delivery and installer round trips
   still need the recorded device checks in QA.
-- Missing means `createdIcon == null` and not locked. Fallbacks/custom icons make
+- The existing **AI2 quick batch** definition of missing remains `createdIcon == null` and not locked. Fallbacks/custom icons make
   an app non-missing; it is not an audit of a source pack's appfilter coverage.
 - Batch is a ViewModel coroutine plus AtomicFile journal, not an AI WorkManager
   or foreground service. Android can kill it. REQUESTING recovery without a saved
@@ -104,11 +106,47 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 - Source supports backup/migrations; this UI PR does not test an
   actual device upgrade or guarantee a reproducible CI debug signing identity.
 
+## Codex 02 read-only preparation and limitations
+
+[ProjectSetup](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/ProjectSetup.kt)
+and [TargetSelection](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/TargetSelection.kt)
+provide real search, stable component checkboxes, select all/recommended missing,
+clear and counts. CREATE keeps manual/applied/fallback rows in the full launcher
+inventory. EXTEND keeps source facts separate from local icons and locks. Selection
+is UI preparation only, never input to quick batch or automatic generation. Primitive
+selection/search/source context survives setup/editor/Home saved UI round trips;
+there is no new project metadata store or durable selection guarantee.
+
+[IconCoverageAnalyzer](../../app/src/main/kotlin/dev/renkinProject/renkin/apk/IconCoverageAnalyzer.kt)
+uses the existing repository/parser. RESOLVABLE requires exact item mapping and a
+successful nontransparent 96 px draw; declared missing/failed draw is BROKEN; a proven
+index without an item is UNMAPPED. Invalid/missing XML is UNKNOWN, package change or
+uninstall is UNAVAILABLE. Calendar/clock uncertainty and user identity remain UNKNOWN.
+Fallback styling does not count as an exact mapped icon. The existing parser and
+legacy last-valid duplicate winner remain unchanged, including ignoring null
+attributes after a valid item; a sole missing drawable is still declared broken.
+
+Local custom/manual and other-applied icons suppress recommendations; fallback can
+still need replacement. Locks disable selection. Source-covered icons permit explicit
+manual override. AI origin is never inferred from the existing DB. Room has no user
+handle in its key: duplicate or non-current-user components are one unsupported,
+disabled row with warning, not fictitious separate targets. A future user-key migration
+requires its own decision and compatibility work.
+
+Reads run off the main thread, sequentially, with cancellation between targets,
+Boolean-only per-scan draw caching and one small preview at a time. Results carry
+package/version/update/revision/theme plus profile/component/local snapshot. Reloads,
+rapid source changes and leaving setup cancel prior jobs; resume revalidates package
+identity. Explicit rescan rereads only the selected source or the existing pack catalog.
+It does not change primary preferences, refresh icons, build, install or call AI.
+A slow pathological drawable can delay cancellation during its own synchronous draw;
+96 px validation cannot certify animation, monochrome or OEM behavior.
+
 ## Planned, not implemented
 
-Separated CreateProjectFlow/ExtendProjectFlow and real source coverage are Codex 02.
-Projects-specific style/asset persistence precedes automatic style recognition,
+Codex 02 separate routes and read-only coverage exist in this branch; their fresh
+Android/device acceptance is recorded separately in QA. Projects-specific style/asset persistence precedes automatic style recognition,
 trial icons, batch staging and AI edits. Hosted backend authentication, credits,
 automatic paid scheduling and Play publication remain future work. This Home
-adds no new AI endpoint, source coverage estimate, schema or pack builder.
+adds no new AI endpoint, schema or pack builder. Coverage is a bounded static draw, not dynamic launcher certification.
 Follow [ROADMAP](../ROADMAP.md) and the next task in [HANDOFF](HANDOFF.md).

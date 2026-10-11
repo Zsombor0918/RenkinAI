@@ -43,3 +43,19 @@ Never add a live paid API request to routine CI. Mocked HTTP proves client handl
 not provider/model availability or icon recognizability. Record any user-authorized
 device/provider trial with its date, app build and precise scenario before updating
 the matrix status.
+
+## Codex 02 preparation and read-only coverage
+
+| Area | Automated evidence to execute | Physical/device status |
+| --- | --- | --- |
+| Full Create inventory | IconCoverageAnalyzerTest: 0/1/N, edited rows, multiple activities/search; CreateExtendFlowComposeTest: no-source select/clear and saved round trip | NOT RUN: actual launcher inventory sanity check |
+| Source facts / local actionability | Fake reader: two packages, mapped-drawn vs broken/unmapped/unknown/unavailable, independent manual/fallback/applied/lock counts and overrides | NOT RUN: installed-pack coverage and lock sanity check |
+| Repository parser / actual draw | CoverageAppFilterTest: empty/invalid/missing XML, exact alias/last winner/dynamic declarations; CoveragePreviewTest: real bitmap/vector/adaptive/transparent/fault/large draw | NOT RUN: real external APK resource edge cases |
+| Work-user / stale reads | Pure uncertainty fixtures, one disabled collision row, package/index invalidation and rescan, cancellation; UI source-version selection reset | NOT RUN: work profile and uninstall/reinstall/update |
+| Profile/navigation/lifecycle | CreateExtendFlowComposeTest and all retained M1 session/shell/form tests: explicit once, Save/Cancel, same editor draft, setup restore, ingress and nested Back | NOT RUN: rotation/process death/dirty profile checks on phone |
+| Accessibility/layout | New tags, checkbox semantics, 48dp, narrow and wide dark/light; existing hinge/Home tests retained | NOT RUN: real TalkBack, fonts, fold/Flip cover screen |
+| Legacy functionality | Full unchanged AI1/AI2/batch/profile/backup/render/build suite, full Android compile/unit/APK and retained targeted M1 workflow | NOT RUN: GlobalOptions/manual AI/pack build-sign-install/update, Samsung One UI/Theme Park |
+
+Fresh M2 executed counts/SHA must be added to BASELINE after hosted results; new
+source test classes are not themselves a passing run. No physical scenario or live
+provider test ran, and the main review/conversation/strict gaps remain owner work.

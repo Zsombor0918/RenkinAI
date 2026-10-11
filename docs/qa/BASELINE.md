@@ -139,3 +139,22 @@ No physical device/emulator, live OpenAI/Stability call, actual key decryption,
 backup restore/upgrade, pack installation/update, Theme Park, One UI or Flip cover
 screen was tested. No Play submission or administration write was made.
 Use [TEST_MATRIX](TEST_MATRIX.md) for the remaining scenarios.
+
+## Codex 02 fresh baseline and implementation checkpoint
+
+Started on fresh main `73a15e2210cb55cf003e60ebc2033130ee7a9e58`, owner-merged
+PR #2 with identical tree to final feature head. The historical M1 631 count is not
+fresh M2 evidence. Python 3.12.14, Git 2.51.1, Linux/JDK 17 workspace.
+
+| Actual command / observation | Result | Boundary |
+| --- | --- | --- |
+| `python3 -m unittest discover -s scripts/tests -v` baseline | 45 PASS, 7.025 s | Offline governance only |
+| Same guards after M2 implementation | 45 PASS, 6.912 s | Existing validators unchanged |
+| `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug` | FAILED, exit 1 | Gradle 8.11.1 download: `java.net.SocketException: Network is unreachable`; stopped before configuration; no Android tests/APK locally |
+| Fresh M2 Actions | Not yet observed at this checkpoint | Final head must pass original Android, expanded regression evidence and governance |
+| Paid/live API and device trials | NOT RUN | No API request authorized; no device/SDK available locally |
+
+The expanded evidence runner preserves all old selectors and adds CreateExtendFlowComposeTest,
+IconCoverageAnalyzerTest, CoverageAppFilterTest and CoveragePreviewTest. New fixtures
+include actual vector/adaptive/bitmap draw and parser last-winner/error behavior;
+existing profile, AI, batch, backup, package/build regressions remain in the full suite.

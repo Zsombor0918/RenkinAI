@@ -142,7 +142,7 @@ Switcher = the top-bar title dropdown.
 
 [RenkinAiRoot](../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt)
 observes the existing profile flow and VM readiness; ProjectHome is stateless.
-ProjectShell saves only Home/Editor route, UI forms and consumed ingress version.
+ProjectShell saves Home/Setup/Editor route, primitive setup/form state and consumed ingress version.
 A SaveableStateHolder keeps classic primitives under one stable editor key;
 drawables and icon data remain owned by the provider. On Editor, profile loads
 conceal content behind an opaque loading/input barrier and remove its screen
@@ -408,3 +408,60 @@ Renkin cannot reproduce that launcher-only selection through the standard resour
   replace them with opaque images.
 - Composition locals (`LocalToaster`, `LocalMainActivity`) are provided per-activity — a new
   activity hosting shared composables must provide its own (see WallpaperPreviewActivity).
+
+## Create/Extend preparation (Codex 02)
+
+The existing root now has HOME / SETUP / EDITOR routes. SETUP owns mode, source,
+profile choice and transient search/selection primitives under profile/source/mode
+saveable keys; the existing Activity VM and ProjectSessionController still own all
+profile operations. No new session, database, Navigation dependency or builder.
+
+```mermaid
+stateDiagram-v2
+    HOME --> Form: Create
+    HOME --> Source: Extend
+    Source --> Profile: Choose package
+    Profile --> Form: Create separate
+    Profile --> Loading: Explicit profile / approved Save
+    Form --> Loading: Confirm once / approved Save
+    Loading --> Targets: Opened + loaded baseline
+    Loading --> HOME: Create failed or interrupted (no replay)
+    Loading --> Profile: Extend failed or interrupted (no replay)
+    Targets --> EDITOR: Explicit classic action
+    EDITOR --> HOME: Home (no save)
+    HOME --> Targets: Project setup / completed open
+```
+
+Back from Source returns Home; Profile returns Source; Create targets return Home,
+Extend targets return Profile. No Back allocates, refreshes or saves. Save/Cancel
+is unchanged. External editor-entry/pending legacy prompts preempt any setup/form;
+read effects cancel and the original editor owns its dialogs/results. Loading while
+on Editor still retains result-launcher composition exactly as in M1.
+
+MainViewModel delegates three internal read-only methods to its existing provider:
+primitive live target snapshot, existing-catalog source rescan, and selected-pack
+reader. IconPackRepository retains coverage quality metadata during its existing
+single XML load. ApplicationManager adds callbacks to its one parser, preserving
+legacy RawElements; a valid empty root is proven, missing/invalid XML is not. Exact
+legacy duplicate selection remains last valid item. Explicit rescan reads selected
+pack XML once, never once per app. Dynamic calendar/clock declarations are captured
+separately even when incomplete.
+
+The reader freezes package/version/update/index-revision/theme and declares READY,
+LOADING, UNKNOWN or UNAVAILABLE. IconCoverageAnalyzer probes only exact mapped item
+names. CoveragePreview renders sequential 96×96 software previews on Default,
+discards each bitmap, and caches only draw success within that scan. Resource-ID
+existence or non-null drawables are insufficient; transparent/failed previews are
+broken. Adaptive/vector/bitmap rendering is fixture-tested, not proof of complete
+animated/themed/OEM behavior. Cancellation propagates; package/index/theme changes
+invalidate the whole scan. UI effects key on profile/source/component/local snapshot
+and resume, preventing stale cross-profile publication and retaining explicit Retry.
+
+Counters partition known unique component entries into covered/broken/unmapped/
+unknown/unavailable. Declared means exact item declaration, independent of drawing.
+Local handled and locked counts may overlap source counts. Recommended action is
+unmapped or broken AND no local icon/fallback AND unlocked/nonambiguous/known local.
+Manual override is explicit and does not send requests. InstalledAppCatalog records
+user uncertainty during its existing scan before deduplication; Room identity remains
+package/activity, so ambiguous/non-current-user entries are disabled. See
+[ADR 0003](decisions/0003-read-only-source-coverage.md) for alternatives and limits.

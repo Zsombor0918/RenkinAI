@@ -17,7 +17,7 @@ base and final head SHA. Leave reviewer acceptance and merge to the authorized o
 The read-only PR workflow `compose-regressions.yml` runs
 `python3 scripts/run_compose_regressions.py` on the exact PR head: both formerly
 blocked real-form shell tests individually, together, then the shared-form class.
-It retains per-case XML/HTML/logs and `build/compose-regressions/summary.json` with
+It additionally runs CreateExtendFlowComposeTest and the coverage domain/parser/render fixtures separately, without narrowing any original selector. It retains per-case XML/HTML/logs and `build/compose-regressions/summary.json` with
 HEAD, exit codes and counts. Nonzero Gradle exit, missing results, failure/error or
 skipped tests fail the runner/job. The full Android CI still runs the entire suite
 and debug build; filtered regressions do not replace it or the three required checks.

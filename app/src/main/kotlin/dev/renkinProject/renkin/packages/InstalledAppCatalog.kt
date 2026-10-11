@@ -9,6 +9,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.UserManager
+import android.os.Process
 import dev.renkinProject.renkin.data.InstalledApplication
 import dev.renkinProject.renkin.drawable.hasValidDimensions
 import dev.renkinProject.renkin.extension.toDrawable
@@ -26,12 +27,20 @@ internal fun launcherIconOrFallback(
 internal fun launcherIconIdOrFallback(activityIconId: Int?, applicationIconId: Int): Int =
     activityIconId?.takeIf { it != 0 } ?: applicationIconId
 
+internal fun <U> uncertainLauncherKeys(entries: List<Pair<U, String>>, currentUser: U): Set<String> =
+    entries.groupBy { it.second }.filterValues { rows ->
+        rows.map { it.first }.distinct().size > 1 || rows.any { it.first != currentUser }
+    }.keys
+
 /**
  * Reads launcher applications independently of icon-pack discovery and resource parsing.
  * Callers that only need the device app inventory do not need to construct ApplicationManager.
  */
 internal class InstalledAppCatalog(private val context: Context) {
     private val packageManager: PackageManager = context.packageManager
+    /** Read-only safety metadata from the same scan; Room identity still has no user handle. */
+    var uncertainUserKeys: Set<String> = emptySet()
+        private set
 
     /**
      * Lightweight component references for every launcher entry. Labels and drawables are left
@@ -69,8 +78,13 @@ internal class InstalledAppCatalog(private val context: Context) {
 
         // Labels, localized resources and icons each require binder/resource calls. Resolve
         // launcher entries in parallel, while awaitAll preserves their original order.
-        val structs = userManager.userProfiles
-            .flatMap { user -> launcherApps.getActivityList(null, user) }
+        val entries = userManager.userProfiles.flatMap { user ->
+            launcherApps.getActivityList(null, user).map { user to it }
+        }
+        uncertainUserKeys = uncertainLauncherKeys(entries.map { (user, app) ->
+            user to "${app.componentName.packageName}/${app.componentName.className}"
+        }, Process.myUserHandle())
+        val structs = entries.map { it.second }
             .map { app ->
                 async(Dispatchers.Default) {
                     val appName = app.applicationInfo.loadLabel(packageManager).toString()

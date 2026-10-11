@@ -177,6 +177,11 @@ class MainViewModel @Inject constructor(
 
     val applicationList: List<PackageInfoStruct> get() = appProvider.applicationList
 
+    /** Read-only preparation: no profile persistence, primary source or refresh mutation. */
+    internal fun coverageTargets() = appProvider.coverageTargets()
+    internal suspend fun coverageSources() = appProvider.coverageSources()
+    internal suspend fun coverageReader(packageName: String, rescan: Boolean) = appProvider.coverageReader(packageName, rescan)
+
     val colorPresets: kotlinx.coroutines.flow.StateFlow<List<dev.renkinProject.renkin.data.ColorPreset>> =
         appProvider.colorPresets().stateIn(
             viewModelScope,

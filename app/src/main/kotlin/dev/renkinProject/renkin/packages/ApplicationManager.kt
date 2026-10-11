@@ -35,6 +35,14 @@ internal fun lastAppFilterItem(
 
 internal data class NamedResourceDrawable(val name: String, val resource: ResourceDrawable)
 
+internal data class CoverageAppFilterRead(
+    val elements: List<RawElement>,
+    val mappings: Map<String, String>,
+    val proven: Boolean,
+    val calendarComponents: Set<String> = emptySet(),
+    val clockDrawables: Set<String> = emptySet()
+)
+
 internal interface PackBrowserDataSource {
     fun getIconPackDrawableNames(iconPackName: String): List<String>
     fun getIconPackDrawableEntries(iconPackName: String, drawableNames: List<String>): List<NamedResourceDrawable>
@@ -78,16 +86,28 @@ internal class ApplicationManager(
             }
     }
     override fun getAppFilterRawElements(iconPackName: String, applications: List<InstalledApplication>): List<RawElement> {
-        val res = resourceResolver.getResources(iconPackName) ?: return emptyList()
-        val xmlParser = getAppfilter(res, iconPackName)
+        return readAppFilterForCoverage(iconPackName, applications)?.elements.orEmpty()
+    }
 
-        val components = applications.map { it.toComponentInfo() }
+    /** One pass through the existing parser; missing XML is not a proven empty index. */
+    internal fun readAppFilterForCoverage(iconPackName: String, applications: List<InstalledApplication>): CoverageAppFilterRead? {
+        val res = resourceResolver.getResources(iconPackName) ?: return null
+        val parser = getAppfilter(res, iconPackName) ?: return null
+        return readAppFilterForCoverage(parser, applications.map { it.toComponentInfo() })
+    }
 
-        if (xmlParser != null) {
-            return getAppFilterRawElements(xmlParser, components)
-        }
-
-        return emptyList()
+    internal fun readAppFilterForCoverage(parser: XmlPullParser, components: List<String>): CoverageAppFilterRead {
+        val mappings = linkedMapOf<String, String>()
+        val calendars = mutableSetOf<String>()
+        val clocks = mutableSetOf<String>()
+        var root: String? = null
+        val elements = getAppFilterRawElements(parser, components,
+            onItem = { component, drawable ->
+                // Legacy parsing ignores missing drawable attributes; valid duplicates keep
+                // its last-item winner, while a sole malformed declaration remains broken.
+                if (drawable != null || component !in mappings) mappings[component] = drawable.orEmpty()
+            }, onRoot = { root = it }, onCalendar = { calendars.add(it) }, onClock = { clocks.add(it) })
+        return CoverageAppFilterRead(elements, mappings, root == "resources" || root == "appfilter", calendars, clocks)
     }
 
     /** The drawable name [iconPackName]'s appfilter maps to [application]'s component, if any. */
@@ -240,17 +260,27 @@ internal class ApplicationManager(
         return map
     }
 
-    private fun getAppFilterRawElements(xmlParser: XmlPullParser, components: List<String>): List<RawElement> {
+    private fun getAppFilterRawElements(
+        xmlParser: XmlPullParser, components: List<String>,
+        onItem: (String, String?) -> Unit = { _, _ -> },
+        onRoot: (String) -> Unit = {},
+        onCalendar: (String) -> Unit = {},
+        onClock: (String) -> Unit = {}
+    ): List<RawElement> {
         val list = mutableListOf<RawElement>()
         val componentSet = components.toHashSet()
 
         var type = xmlParser.eventType
+        var firstTag = true
 
         while (type != XmlPullParser.END_DOCUMENT) {
             if (type == XmlPullParser.START_TAG) {
+                if (firstTag) { onRoot(xmlParser.name); firstTag = false }
                 if (xmlParser.name == "item") {
                     val xmlDrawable = xmlParser.getAttributeValue(null, "drawable")
                     val xmlComponent = xmlParser.getAttributeValue(null, "component")
+
+                    if (xmlComponent != null && xmlComponent in componentSet) onItem(xmlComponent, xmlDrawable)
 
                     if (xmlComponent in componentSet && xmlDrawable != null) {
                         list.add(RawItem(xmlComponent, xmlDrawable))
@@ -260,6 +290,7 @@ internal class ApplicationManager(
                 if (xmlParser.name == "calendar") {
                     val xmlPrefix = xmlParser.getAttributeValue(null, "prefix")
                     val xmlComponent = xmlParser.getAttributeValue(null, "component")
+                    if (xmlComponent != null && xmlComponent in componentSet) onCalendar(xmlComponent)
 
                     if (xmlComponent in componentSet && xmlPrefix != null) {
                         list.add(RawCalendar(xmlComponent, xmlPrefix))
@@ -268,6 +299,7 @@ internal class ApplicationManager(
 
                 if (xmlParser.name == "dynamic-clock") {
                     val xmlDrawable = xmlParser.getAttributeValue(null, "drawable")
+                    if (xmlDrawable != null) onClock(xmlDrawable)
                     val xmlDefaultHour = xmlParser.getAttributeValue(null, "defaultHour")
                     val xmlDefaultMinute = xmlParser.getAttributeValue(null, "defaultMinute")
                     val xmlHourLayerIndex = xmlParser.getAttributeValue(null, "hourLayerIndex")

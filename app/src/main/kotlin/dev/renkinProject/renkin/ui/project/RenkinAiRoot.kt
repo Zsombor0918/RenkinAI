@@ -110,6 +110,7 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
         },
         onExit = activity::finish,
         homeDialogs = { if (viewModel.whatsNewVisible) WhatsNewDialog(viewModel::dismissWhatsNew) },
+        setupData = { mode, page, id, source -> rememberProjectSetupData(viewModel, mode, page, id, source) },
         editor = { navigateHome ->
             MainColumn(viewModel.iconPacks, onNavigateHome = navigateHome,
                 viewModel = viewModel, collectToastEvents = false)
@@ -117,7 +118,7 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
     )
 }
 
-private enum class ProjectRoute { HOME, EDITOR }
+private enum class ProjectRoute { HOME, SETUP, EDITOR }
 
 /** UI-only routes/forms; profile operations are user callbacks, never restoration effects. */
 @Composable
@@ -134,41 +135,65 @@ internal fun ProjectShell(
     onRetry: () -> Unit,
     onExit: () -> Unit,
     homeDialogs: @Composable () -> Unit = {},
+    setupData: @Composable (ProjectSetupMode, ProjectSetupPage, Long?, String?) -> ProjectSetupData = { _, _, _, _ -> ProjectSetupData() },
     editor: @Composable (onNavigateHome: () -> Unit) -> Unit
 ) {
     var route by rememberSaveable { mutableStateOf(ProjectRoute.HOME) }
     var consumedEntry by rememberSaveable { mutableLongStateOf(0) }
     var createOpen by rememberSaveable { mutableStateOf(false) }
-    var extendOpen by rememberSaveable { mutableStateOf(false) }
+    var setupMode by rememberSaveable { mutableStateOf(ProjectSetupMode.CREATE) }
+    var setupPage by rememberSaveable { mutableStateOf(ProjectSetupPage.SOURCE) }
+    var setupProfileId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var sourcePackage by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingSetup by rememberSaveable { mutableStateOf(false) }
+    var setupContexts by rememberSaveable { mutableStateOf(hashMapOf<String, String>()) }
     var exitOpen by rememberSaveable { mutableStateOf(false) }
     val editorState = rememberSaveableStateHolder()
 
     LaunchedEffect(operation, state.availability, state.activeProfileId, state.busy) {
         if (operation is ProjectSessionState.Opened) {
             if (state.activeProfileId == operation.profileId && state.actionsEnabled) {
-                route = ProjectRoute.EDITOR
+                if (pendingSetup) {
+                    setupProfileId = operation.profileId
+                    setupContexts = HashMap(setupContexts).apply { put(operation.profileId.toString(), sourcePackage.orEmpty()) }
+                    setupPage = ProjectSetupPage.TARGETS
+                    route = ProjectRoute.SETUP
+                } else route = ProjectRoute.EDITOR
+                pendingSetup = false
                 onAcknowledge()
             } else if (!state.busy && state.activeProfileId != operation.profileId) onAcknowledge()
         }
+        if (operation is ProjectSessionState.Failed || operation is ProjectSessionState.Interrupted) pendingSetup = false
     }
     LaunchedEffect(editorEntryVersion, editorAttention) {
         if ((editorEntryVersion > 0 && editorEntryVersion != consumedEntry) || editorAttention) {
             consumedEntry = editorEntryVersion
             onCancel()
             createOpen = false
-            extendOpen = false
+            pendingSetup = false
             exitOpen = false
             route = ProjectRoute.EDITOR
         }
     }
 
     val navigateHome = { route = ProjectRoute.HOME }
+    val cancelOperation = { pendingSetup = false; onCancel() }
+    val setupBack = {
+        if (!state.busy) {
+            when (setupPage) {
+                ProjectSetupPage.SOURCE -> route = ProjectRoute.HOME
+                ProjectSetupPage.PROFILE -> setupPage = ProjectSetupPage.SOURCE
+                ProjectSetupPage.TARGETS -> if (setupMode == ProjectSetupMode.EXTEND) setupPage = ProjectSetupPage.PROFILE
+                    else route = ProjectRoute.HOME
+            }
+        }
+    }
     // A loading session cannot be mistaken for the previous editor. Dialog/search handlers
     // within MainColumn own Editor Back; no later root handler overrides them.
     BackHandler(enabled = route == ProjectRoute.HOME) {
         when {
             state.busy -> Unit
-            operation is ProjectSessionState.ConfirmSave -> onCancel()
+            operation is ProjectSessionState.ConfirmSave -> cancelOperation()
             state.hasUnsavedChanges -> exitOpen = true
             else -> onExit()
         }
@@ -198,14 +223,37 @@ internal fun ProjectShell(
             }
         }
         BackHandler(enabled = !ready) { if (!state.busy) navigateHome() }
+    } else if (route == ProjectRoute.SETUP) {
+        BackHandler { if (operation is ProjectSessionState.ConfirmSave) cancelOperation() else setupBack() }
+        val data = setupData(setupMode, setupPage, setupProfileId, sourcePackage)
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            editorState.SaveableStateProvider("setup-$setupProfileId-$setupMode-$sourcePackage") {
+                ProjectSetup(setupMode, setupPage, setupProfileId, sourcePackage, state, data,
+                    onSource = { sourcePackage = it; setupPage = ProjectSetupPage.PROFILE },
+                    onProfile = { pendingSetup = true; onOpen(it) },
+                    onNewProfile = { createOpen = true },
+                    onBack = setupBack,
+                    onChangeSource = { setupPage = ProjectSetupPage.SOURCE },
+                    onEditor = {
+                        pendingSetup = false
+                        onOpen(if (setupPage == ProjectSetupPage.TARGETS) setupProfileId ?: state.activeProfileId else state.activeProfileId)
+                    })
+            }
+        }
     } else {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             ProjectHome(state,
-                onOpen = onOpen,
-                onCreate = { createOpen = true },
-                onExtend = { extendOpen = true },
-                onClassicEditor = { onOpen(state.activeProfileId) },
-                onRetry = onRetry)
+                onOpen = { pendingSetup = false; onOpen(it) },
+                onCreate = { setupMode = ProjectSetupMode.CREATE; sourcePackage = null; createOpen = true },
+                onExtend = { setupMode = ProjectSetupMode.EXTEND; setupPage = ProjectSetupPage.SOURCE; sourcePackage = null; route = ProjectRoute.SETUP },
+                onClassicEditor = { pendingSetup = false; onOpen(state.activeProfileId) },
+                onRetry = onRetry,
+                onSetup = { id ->
+                    sourcePackage = setupContexts[id.toString()]?.takeIf { it.isNotEmpty() }
+                    setupMode = if (sourcePackage == null) ProjectSetupMode.CREATE else ProjectSetupMode.EXTEND
+                    pendingSetup = true
+                    onOpen(id)
+                })
         }
         homeDialogs()
     }
@@ -215,33 +263,14 @@ internal fun ProjectShell(
             title = stringResource(R.string.projectCreate),
             confirmLabel = stringResource(R.string.createProfileAction),
             onConfirm = { name, description, label ->
-                if (onCreate(name, description, label)) createOpen = false
+                if (onCreate(name, description, label)) { createOpen = false; pendingSetup = true }
             },
             onDismiss = { createOpen = false }
         )
     }
-    if (extendOpen) {
-        RenkinAlertDialog(
-            onDismissRequest = { extendOpen = false },
-            title = { Text(stringResource(R.string.projectExtend)) },
-            text = { Text(stringResource(R.string.projectExtendInstructions)) },
-            confirmButton = {
-                TextButton(onClick = { extendOpen = false; onOpen(state.activeProfileId) },
-                    enabled = state.actionsEnabled, modifier = Modifier.testTag("project-extend-editor")) {
-                    Text(stringResource(R.string.projectClassicEditor))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { extendOpen = false; createOpen = true },
-                    enabled = state.actionsEnabled, modifier = Modifier.testTag("project-extend-create")) {
-                    Text(stringResource(R.string.projectExtensionCreate))
-                }
-            }
-        )
-    }
     if (operation is ProjectSessionState.ConfirmSave) {
         RenkinAlertDialog(
-            onDismissRequest = onCancel,
+            onDismissRequest = cancelOperation,
             title = { Text(stringResource(R.string.saveBeforeSwitchTitle)) },
             text = { Text(stringResource(R.string.projectSaveBeforeSwitch)) },
             confirmButton = {
@@ -250,7 +279,7 @@ internal fun ProjectShell(
                 }
             },
             dismissButton = {
-                TextButton(onClick = onCancel, modifier = Modifier.testTag("project-save-cancel")) {
+                TextButton(onClick = cancelOperation, modifier = Modifier.testTag("project-save-cancel")) {
                     Text(stringResource(R.string.colorizeCancel))
                 }
             }
