@@ -188,3 +188,17 @@ A scope-completeness inspection additionally adds screen-scoped package invalida
 so a source removed/updated while foreground cannot retain its old result until
 resume. Displayed theme is an explicit read key; rapid pack rescans retain the newest
 loading flag. New actual broadcast/disposal and Back tests are awaiting execution.
+
+### M2 broadcast-test ordering checkpoint
+
+At `a2d1d9def75fe427984ec9135beb45b75e4da2c5`,
+[Android 38159888019](https://github.com/Zsombor0918/RenkinAI/actions/runs/38159888019)
+compiled app/tests and executed **669 tests, 1 failure**; APK skipped. All corrected
+vector/count/dismiss fixtures and legacy tests passed. Artifact 11709674763 shows
+the new observer test captured its plain counter before the source-change composition
+committed: expected 3, actual 4 at line 255. Installing the new lifecycle observer
+legitimately emits current ON_RESUME. Await Compose idle/commit before capturing that
+baseline and before the post-disposal broadcast; retain all exact count assertions.
+This is deterministic lifecycle synchronization, no sleep/timeout/idling bypass.
+Local 45 guards passed again in 7.556 s; range guards PASS. New QA-path workflow trigger
+keeps final evidence commits covered by the full retained regression runner.

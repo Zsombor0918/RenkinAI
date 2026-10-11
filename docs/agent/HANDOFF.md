@@ -39,7 +39,7 @@ configuration while downloading Gradle 8.11.1: Network is unreachable. No local
 Android test/build success is claimed; hosted final-head verification is required.
 The runner retains every M1 original separately/together/shared form, adds M2 UI and
 domain/parser/render groups, then runs unfiltered compile/unit/debug APK again.
-Initial M2 Android 38159074131 compiled production but failed test compilation on the DpRect height expression; no Android test or APK success. A narrow bottom-minus-top correction retains the 48dp assertion. The next head 4a447d88 ran 667 tests with three fixture/API failures (compiled vector XML, full count matching, actual dismiss label); corrections and screen-scoped source invalidation tests require fresh follow-up results.
+Initial M2 Android 38159074131 compiled production but failed test compilation on the DpRect height expression; no Android test or APK success. A narrow bottom-minus-top correction retains the 48dp assertion. The next head 4a447d88 ran 667 tests with three fixture/API failures (compiled vector XML, full count matching, actual dismiss label); the next a2d1d9de checkpoint passed 668 of 669 with one new broadcast-test baseline ordering failure. Awaiting composition before capturing its counter preserves exact lifecycle assertions; fresh follow-up automation is required.
 
 Main rule 24877351 is active, main is protected, bypasses empty; PR/build/
 commit-conventions/documentation-audit required, force push/delete forbidden.

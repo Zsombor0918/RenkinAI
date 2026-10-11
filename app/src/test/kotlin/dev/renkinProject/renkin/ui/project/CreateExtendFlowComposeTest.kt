@@ -245,16 +245,19 @@ class CreateExtendFlowComposeTest {
             compose.runOnIdle { context.sendBroadcast(Intent(action, Uri.parse("package:$pack"))) }
             compose.waitForIdle()
         }
+        compose.waitForIdle()
         val baseline = invalidations
         broadcast("other.pack"); assertEquals(baseline, invalidations)
         broadcast("pack.two", Intent.ACTION_PACKAGE_REMOVED)
         broadcast("pack.two", Intent.ACTION_PACKAGE_REPLACED)
         assertEquals(baseline + 2, invalidations)
         compose.runOnIdle { source = "pack.one" }
+        compose.waitForIdle() // Commit the new effect and its lifecycle resume callback.
         val changed = invalidations
         broadcast("pack.two"); assertEquals(changed, invalidations)
         broadcast("pack.one"); assertEquals(changed + 1, invalidations)
         compose.runOnIdle { visible = false }
+        compose.waitForIdle() // Disposal must finish before the post-screen broadcast.
         broadcast("pack.one"); assertEquals(changed + 1, invalidations)
     }
 

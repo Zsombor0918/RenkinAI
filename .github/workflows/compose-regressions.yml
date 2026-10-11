@@ -8,6 +8,8 @@ on:
       - 'app/src/test/kotlin/dev/renkinProject/renkin/ui/**'
       - 'scripts/run_compose_regressions.py'
       - '.github/workflows/compose-regressions.yml'
+      # Final QA evidence commits must retain regression checks on their own SHA.
+      - 'docs/qa/**'
 
 permissions:
   contents: read
