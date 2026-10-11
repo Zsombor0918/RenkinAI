@@ -83,6 +83,17 @@ phone viewport for those real-dialog tests while keeping native graphics, normal
 idling, real input and all assertions. This is isolation pending verification,
 not a claimed production/dialog fix. Wide/foldable Home coverage is unchanged.
 
+Phone checkpoint `8bd57953ec54c7056dac4acf850f5a8863b8bd64`,
+[CI 38143988918](https://github.com/Zsombor0918/RenkinAI/actions/runs/38143988918),
+also compiled and ran 628 tests with the same **2 FAILED**; APK skipped. Its
+downloaded artifact has 135 HTML/support entries and zero XML. Full stack inspection
+shows idle waiting before first form input or ingress update, without identifying
+the busy flag. No new production fix is justified yet. The diagnostic follow-up
+isolates plain content, empty dialog, individual labelled/unlabelled/supporting
+fields, three fields, the real form and real shell. It captures installed idler
+flags, snapshot write stacks and complete XML independently, with nonzero failure.
+See [diagnosis note](../changes/2026-10-11-compose-idling-diagnosis.md).
+
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions
 are not a full Activity/device test. Manual Apply/Cancel, source picker, GlobalOptions

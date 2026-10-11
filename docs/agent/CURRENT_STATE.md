@@ -8,6 +8,12 @@ Manifest, dependencies, Room v18, provider/storage contracts, APK/signing/instal
 and Android CI are unchanged. Existence in source and runtime validation are
 different; see [QA baseline](../qa/BASELINE.md).
 
+At head `8bd57953ec54c7056dac4acf850f5a8863b8bd64`, CI 38143988918 compiled
+app/tests but failed the same two form-idle cases out of 628. Phone viewport,
+bounded widths and earlier explicit clock did not fix them. The exact idle blocker
+is not established by the HTML stack. Temporary measured isolation preserves the
+real form, test assertions and original product scope; PR #2 remains BLOCKED.
+
 ## Product and implemented paths
 
 RenkinAI is a personal Renkin fork that turns app/pack/uploaded icons into a real

@@ -12,6 +12,16 @@ topic branch. Implement, update canonical docs, add a dated change note, run tes
 update handoff, commit with a validated subject, and open an audited PR. Report the
 base and final head SHA. Leave reviewer acceptance and merge to the authorized owner.
 
+## Temporary Codex 01 diagnostics
+
+The PR-only `compose-diagnostics.yml` workflow independently runs
+`python3 scripts/run_compose_diagnostics.py` with normal SDK 33/native Compose
+idling and real dialog components. It records resolved dependencies and preserves
+each isolation case's XML, HTML and bounded snapshot/idler probe output. A failed
+case makes the runner and job fail; collecting all cases does not suppress failure.
+The original Android CI and governance remain required and unchanged. Remove the
+temporary instrumentation after capturing the cause, keeping useful regressions.
+
 ## Automatic documentation minimum
 
 `check_docs.py --staged` reads Git blobs from the index and compares with HEAD.

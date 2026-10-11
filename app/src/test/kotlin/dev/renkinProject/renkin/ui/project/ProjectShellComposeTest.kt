@@ -52,7 +52,8 @@ import org.robolectric.shadows.ShadowDialog
 @Config(application = Application::class, sdk = [33], qualifiers = "w450dp-h1400dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ProjectShellComposeTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 0) val compose = createComposeRule()
+    @get:Rule(order = 1) val idleProbe = ComposeIdleProbe(compose)
     private lateinit var activity: ComponentActivity
     private var home by mutableStateOf(ProjectHomeState(
         profiles = listOf(Profile(1, "Default"), Profile(2, "Night")),

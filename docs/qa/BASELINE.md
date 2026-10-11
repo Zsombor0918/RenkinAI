@@ -19,6 +19,7 @@ implementation; #1 merged and its P1 fix/tests/thread verified.
 | Feature [CI 38141510224](https://github.com/Zsombor0918/RenkinAI/actions/runs/38141510224), head `4c218c0e8e3862dfe9ddcd033bb27a7853ba6587` | App/test compile SUCCESS; 627 executed, **2 FAILED** | Both ProjectShellComposeTest form-opening cases hit AppNotIdleException; other tests passed; APK skipped. Failure-report artifact inspected |
 | Feature [CI 38142645850](https://github.com/Zsombor0918/RenkinAI/actions/runs/38142645850), head `6435d8486463ea3709c0ca2aa63fe80da7d5f311` | App/test compile SUCCESS; 628 executed, **2 FAILED** | Same two form-idle failures remained after bounding widths. New ActivityResultRegistry loading/ID-change regression passed; APK skipped |
 | Feature [CI 38143220425](https://github.com/Zsombor0918/RenkinAI/actions/runs/38143220425), head `277d463e2cbb95e256d75a068b2dcc28375dee96` | App/test compile SUCCESS; 628 executed, **2 FAILED** | Explicit clock also did not resolve the same form-idle failures; APK skipped |
+| Feature [CI 38143988918](https://github.com/Zsombor0918/RenkinAI/actions/runs/38143988918), head `8bd57953ec54c7056dac4acf850f5a8863b8bd64` | App/test compile SUCCESS; 628 executed, **2 FAILED** | Phone viewport also ineffective; APK skipped; artifact has HTML only, no XML |
 
 Recreation follow-up adds a persisted editor-entry counter and an intro-visibility
 helper that distinguishes pending prefs from explicit re-show, plus regressions.
@@ -30,8 +31,13 @@ That run confirms external-result delivery but not successful form interaction.
 Explicit clock control also failed and has been removed. The next test-only
 follow-up isolates both real-dialog tests at a 450 × 800 dp phone viewport, retaining
 native graphics, automatic idling and every input/action/restoration assertion.
-Fresh execution is pending. Wide/hinge Home tests retain their existing viewport;
+Fresh execution failed as recorded above. Wide/hinge Home tests retain their existing viewport;
 large real-device forms still require the device matrix.
+
+The latest HTML full stacks show 123016/124285 idle attempts over 60 seconds at
+the first text-input lookup / first runOnIdle after Create. They do not expose
+the busy condition or prove a Material 3, animation, focus or production defect.
+Measured SDK 33/native isolation and XML capture are pending the diagnostic run.
 
 Staged/range/PR audits and final feature-head Actions are recorded after execution
 in this ledger or the PR audit. No pending tests or historical count is reported
