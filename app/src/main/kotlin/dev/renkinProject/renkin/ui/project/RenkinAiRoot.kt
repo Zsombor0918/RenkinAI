@@ -1,6 +1,7 @@
 package dev.renkinProject.renkin.ui.project
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,9 +27,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import dev.renkinProject.renkin.MainViewModel
 import dev.renkinProject.renkin.R
@@ -49,6 +54,7 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
     var listFailed by remember { mutableStateOf(false) }
     val profiles by produceState<List<Profile>?>(null, viewModel, listRetry) {
         listFailed = false
+        value = null
         try {
             viewModel.profiles.collect { value = it }
         } catch (error: CancellationException) {
@@ -167,23 +173,31 @@ internal fun ProjectShell(
             else -> onExit()
         }
     }
-    if (route == ProjectRoute.EDITOR && state.availability == ProjectHomeAvailability.READY &&
-        operation !is ProjectSessionState.Loading) {
-        editorState.SaveableStateProvider("classic-editor-${state.activeProfileId}") {
-            Box(Modifier.fillMaxSize().testTag("project-editor")) { editor(navigateHome) }
-        }
-    } else if (route == ProjectRoute.EDITOR) {
-        BackHandler { if (!state.busy) navigateHome() }
-        CenteredFullscreenContent(Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
-            Column(Modifier.fillMaxSize().padding(24.dp).testTag("project-editor-loading"),
-                verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(stringResource(if (state.availability == ProjectHomeAvailability.UNAVAILABLE)
-                    R.string.projectUnavailable else R.string.projectOpening))
-                if (state.availability != ProjectHomeAvailability.UNAVAILABLE) WavyLoadingBar(Modifier.fillMaxWidth())
-                else OutlinedButton(onClick = onRetry, enabled = !state.busy) { Text(stringResource(R.string.projectReload)) }
-                OutlinedButton(onClick = navigateHome, enabled = !state.busy) { Text(stringResource(R.string.projectBackHome)) }
+    if (route == ProjectRoute.EDITOR) {
+        val ready = state.availability == ProjectHomeAvailability.READY && operation !is ProjectSessionState.Loading
+        Box(Modifier.fillMaxSize()) {
+            // Keep launcher registrations and the one classic session alive during a legacy
+            // switch/watch load. Do not key this composition by an early-changing profile ID.
+            editorState.SaveableStateProvider("classic-editor") {
+                val concealed = if (ready) Modifier else Modifier.clearAndSetSemantics {}.graphicsLayer { alpha = 0f }
+                Box(Modifier.fillMaxSize().then(concealed).testTag("project-editor")) { editor(navigateHome) }
+            }
+            if (!ready) {
+                Surface(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onTap = {}) }) {
+                    CenteredFullscreenContent(Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
+                        Column(Modifier.fillMaxSize().padding(24.dp).testTag("project-editor-loading"),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Text(stringResource(if (state.availability == ProjectHomeAvailability.UNAVAILABLE)
+                                R.string.projectUnavailable else R.string.projectOpening))
+                            if (state.availability != ProjectHomeAvailability.UNAVAILABLE) WavyLoadingBar(Modifier.fillMaxWidth())
+                            else OutlinedButton(onClick = onRetry, enabled = !state.busy) { Text(stringResource(R.string.projectReload)) }
+                            OutlinedButton(onClick = navigateHome, enabled = !state.busy) { Text(stringResource(R.string.projectBackHome)) }
+                        }
+                    }
+                }
             }
         }
+        BackHandler(enabled = !ready) { if (!state.busy) navigateHome() }
     } else {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             ProjectHome(state,

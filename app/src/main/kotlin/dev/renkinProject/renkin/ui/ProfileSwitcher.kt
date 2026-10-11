@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
@@ -457,7 +458,7 @@ internal fun ProfileDetailsDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column {
+            Column(Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it.take(MAX_PROFILE_NAME) },
@@ -466,14 +467,14 @@ internal fun ProfileDetailsDialog(
                         { Text(stringResource(R.string.requiredField)) }
                     } else null,
                     singleLine = true,
-                    modifier = Modifier.padding(bottom = 8.dp).testTag("profile-name")
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).testTag("profile-name")
                 )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it.take(MAX_PROFILE_DESCRIPTION) },
                     label = { Text(stringResource(R.string.profileDescription)) },
                     singleLine = true,
-                    modifier = Modifier.padding(bottom = 8.dp).testTag("profile-description")
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).testTag("profile-description")
                 )
                 OutlinedTextField(
                     value = packLabel,
@@ -483,7 +484,7 @@ internal fun ProfileDetailsDialog(
                         { Text(stringResource(R.string.requiredField)) }
                     } else null,
                     singleLine = true,
-                    modifier = Modifier.testTag("profile-pack-label")
+                    modifier = Modifier.fillMaxWidth().testTag("profile-pack-label")
                 )
             }
         },

@@ -143,10 +143,15 @@ Switcher = the top-bar title dropdown.
 [RenkinAiRoot](../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt)
 observes the existing profile flow and VM readiness; ProjectHome is stateless.
 ProjectShell saves only Home/Editor route, UI forms and consumed ingress version.
-A SaveableStateHolder keeps editor primitives under the **active profile ID**;
-drawables and icon data remain owned by the existing provider. Classic refresh does
-not dispose the editor. A profile load/baseline mismatch does not show old icons
-under a new project name. No navigation library, database or second provider/VM
+A SaveableStateHolder keeps classic primitives under one stable editor key;
+drawables and icon data remain owned by the provider. On Editor, profile loads
+conceal content behind an opaque loading/input barrier and remove its screen
+content from accessibility, without disposing Activity-result launchers. The early
+profile ID is not a composition key: preview/global results may return during a
+watch/profile switch. A real ActivityResultRegistry regression tests delivery then.
+Home does not compose a hidden editor; classic refresh keeps Editor mounted.
+A baseline mismatch does not paint old icons under a new project title.
+No navigation library, database or second provider/VM
 is introduced. [ADR 0002](decisions/0002-profile-backed-project-home.md) explains alternatives.
 
 MainViewModel owns ProjectSessionController and a SavedStateHandle. Legacy

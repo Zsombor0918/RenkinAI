@@ -16,10 +16,15 @@ implementation; #1 merged and its P1 fix/tests/thread verified.
 | Ruleset/branch at 12:16 UTC | Active/protected, PR and three checks; no bypass, deletion/force push blocked | Review count 0, last-push false, conversation false, strict false; owner must enable missing review/conversation requirements |
 | Feature [CI 38140946784](https://github.com/Zsombor0918/RenkinAI/actions/runs/38140946784), head `b60b477864fd50a9776f1f1b2c85d5226e9ccfc1` | App compile SUCCESS; unit-test compile FAILED on DpRect width/height | Unit tests/APK did not execute; follow-up uses edge differences; no false suite success |
 | Feature [Governance 38140946802](https://github.com/Zsombor0918/RenkinAI/actions/runs/38140946802), same head | Commit conventions PASS; 45 guard tests PASS; audit intentionally FAILED on BLOCKED draft | Log proves BLOCKED exit propagation; source/link/shape checks had no other errors |
+| Feature [CI 38141510224](https://github.com/Zsombor0918/RenkinAI/actions/runs/38141510224), head `4c218c0e8e3862dfe9ddcd033bb27a7853ba6587` | App/test compile SUCCESS; 627 executed, **2 FAILED** | Both ProjectShellComposeTest form-opening cases hit AppNotIdleException; other tests passed; APK skipped. Failure-report artifact inspected |
 
 Recreation follow-up adds a persisted editor-entry counter and an intro-visibility
 helper that distinguishes pending prefs from explicit re-show, plus regressions.
 Fresh full feature-head execution remains required after these changes.
+The editor-session follow-up bounds profile form fields and tests a real registered
+external-result callback across profile loading and ID changes. The retained
+composition is concealed while loading; profile identity remains VM-owned.
+Its complete Android execution is pending, not inferred from the preceding run.
 
 Staged/range/PR audits and final feature-head Actions are recorded after execution
 in this ledger or the PR audit. No pending tests or historical count is reported

@@ -48,9 +48,13 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
   second insert. Process restoration reports interruption without replaying the
   request. Any committed profile stays visible by ID; a failed load can be reloaded.
   Profile creation and preference/ icon loading are not a cross-store transaction.
-- Editor UI state is saved per active profile ID for Home round trips; icons remain
+- Classic editor UI state is saved for Home round trips; icons remain
   in MainViewModel/ApplicationProvider. Session-only unsaved icons still do not
   survive process death without explicit save/build, as in the existing editor.
+- On Editor, loading conceals classic content and blocks its taps while retaining
+  Activity-result registrations across early profile-ID changes. Home does not
+  keep a hidden editor. Profile form measurement is bounded to the dialog width;
+  retry explicitly resets list loading rather than briefly reusing stale rows.
 - Editor-entry versions use the VM SavedStateHandle, so a restored image/watch
   request is not lost before the shell consumes it. Intro dismissal distinguishes
   pending preference reads from an explicit Settings request to show the tour again.

@@ -1,13 +1,23 @@
 package dev.renkinProject.renkin.ui.project
 
 import android.app.Application
+import android.app.Activity
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.ActivityResultRegistryOwner
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityOptionsCompat
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +70,17 @@ class ProjectShellComposeTest {
     private var cancelled = 0
     private var exits = 0
     private var legacyExits = 0
+    private var testExternalResult = false
+    private var externalResults = 0
+    private var launchedCode = -1
+    private val resultRegistry = object : ActivityResultRegistry() {
+        override fun <I, O> onLaunch(requestCode: Int, contract: ActivityResultContract<I, O>, input: I, options: ActivityOptionsCompat?) {
+            launchedCode = requestCode
+        }
+    }
+    private val resultOwner = object : ActivityResultRegistryOwner {
+        override val activityResultRegistry: ActivityResultRegistry get() = resultRegistry
+    }
 
     private fun open(id: Long) {
         opens += id
@@ -75,42 +96,51 @@ class ProjectShellComposeTest {
     private fun Content() {
         activity = LocalContext.current as ComponentActivity
         RenkinTheme(false) {
-            ProjectShell(home, operation, ingress, attention,
-                onOpen = ::open,
-                onCreate = { _, _, _ ->
-                    creates++
-                    operation = ProjectSessionState.Loading
-                    home = home.copy(busy = true)
-                    true
-                },
-                onSave = {
-                    saves++
-                    val target = (operation as ProjectSessionState.ConfirmSave).request as ProjectRequest.Open
-                    home = home.copy(activeProfileId = target.profileId, hasUnsavedChanges = false)
-                    operation = ProjectSessionState.Opened(target.profileId)
-                },
-                onCancel = { cancelled++; if (operation is ProjectSessionState.ConfirmSave) operation = ProjectSessionState.Idle },
-                onAcknowledge = { operation = ProjectSessionState.Idle },
-                onRetry = {}, onExit = { exits++ }
-            ) { goHome ->
-                // Use the same handler as MainColumn, before search/dialog children.
-                ProjectEditorBackHandler(goHome) { legacyExits++ }
-                var draft by rememberSaveable { mutableStateOf("") }
-                val intro = rememberIntroVisibility(onboardingSeen)
-                Column(Modifier.testTag("test-editor")) {
-                    Text("Editor profile ${home.activeProfileId}")
-                    OutlinedTextField(draft, { draft = it }, modifier = Modifier.testTag("editor-draft"))
-                    TextButton(onClick = goHome, modifier = Modifier.testTag("editor-home")) { Text("Projects") }
-                    if (intro.visible) {
-                        TextButton(onClick = intro.dismiss, modifier = Modifier.testTag("test-intro")) { Text("Skip intro") }
+            CompositionLocalProvider(LocalActivityResultRegistryOwner provides resultOwner) {
+                ProjectShell(home, operation, ingress, attention,
+                    onOpen = ::open,
+                    onCreate = { _, _, _ ->
+                        creates++
+                        operation = ProjectSessionState.Loading
+                        home = home.copy(busy = true)
+                        true
+                    },
+                    onSave = {
+                        saves++
+                        val target = (operation as ProjectSessionState.ConfirmSave).request as ProjectRequest.Open
+                        home = home.copy(activeProfileId = target.profileId, hasUnsavedChanges = false)
+                        operation = ProjectSessionState.Opened(target.profileId)
+                    },
+                    onCancel = { cancelled++; if (operation is ProjectSessionState.ConfirmSave) operation = ProjectSessionState.Idle },
+                    onAcknowledge = { operation = ProjectSessionState.Idle },
+                    onRetry = {}, onExit = { exits++ }
+                ) { goHome ->
+                    // Use the same handler as MainColumn, before search/dialog children.
+                    ProjectEditorBackHandler(goHome) { legacyExits++ }
+                    var draft by rememberSaveable { mutableStateOf("") }
+                    val intro = rememberIntroVisibility(onboardingSeen)
+                    val externalLauncher = if (testExternalResult) rememberLauncherForActivityResult(
+                        ActivityResultContracts.StartActivityForResult()
+                    ) { externalResults++ } else null
+                    Column(Modifier.testTag("test-editor")) {
+                        Text("Editor profile ${home.activeProfileId}")
+                        OutlinedTextField(draft, { draft = it }, modifier = Modifier.testTag("editor-draft"))
+                        TextButton(onClick = goHome, modifier = Modifier.testTag("editor-home")) { Text("Projects") }
+                        if (intro.visible) {
+                            TextButton(onClick = intro.dismiss, modifier = Modifier.testTag("test-intro")) { Text("Skip intro") }
+                        }
+                        if (externalLauncher != null) {
+                            TextButton(onClick = { externalLauncher.launch(Intent("test.PREVIEW")) },
+                                modifier = Modifier.testTag("external-launch")) { Text("Preview") }
+                        }
                     }
-                }
-                BackHandler(enabled = searchOpen) { searchOpen = false }
-                if (childOpen || attention) {
-                    RenkinAlertDialog(
-                        onDismissRequest = { childOpen = false; attention = false },
-                        text = { Text("Pending watch/editor dialog", Modifier.testTag("child-dialog")) }
-                    )
+                    BackHandler(enabled = searchOpen) { searchOpen = false }
+                    if (childOpen || attention) {
+                        RenkinAlertDialog(
+                            onDismissRequest = { childOpen = false; attention = false },
+                            text = { Text("Pending watch/editor dialog", Modifier.testTag("child-dialog")) }
+                        )
+                    }
                 }
             }
         }
@@ -260,6 +290,24 @@ class ProjectShellComposeTest {
         compose.runOnIdle { home = home.copy(busy = true) }
         compose.onNodeWithTag("test-editor").assertIsDisplayed()
         compose.onNodeWithTag("project-editor-loading").assertDoesNotExist()
+    }
+
+    @Test
+    fun externalActivityResultRegistrationSurvivesProfileLoadingAndIdentityChange() {
+        testExternalResult = true
+        start()
+        compose.onNodeWithTag("project-classic").performClick()
+        compose.onNodeWithTag("external-launch").performClick()
+        assertTrue(launchedCode >= 0)
+        compose.runOnIdle {
+            home = home.copy(activeProfileId = 2, availability = ProjectHomeAvailability.INITIALIZING, busy = true)
+        }
+        compose.onNodeWithTag("project-editor-loading").assertIsDisplayed()
+        compose.runOnIdle { resultRegistry.dispatchResult(launchedCode, Activity.RESULT_OK, Intent()) }
+        assertEquals(1, externalResults)
+        compose.runOnIdle { home = home.copy(availability = ProjectHomeAvailability.READY, busy = false) }
+        compose.onNodeWithTag("test-editor").assertIsDisplayed()
+        assertEquals(1, externalResults)
     }
 
     @Test

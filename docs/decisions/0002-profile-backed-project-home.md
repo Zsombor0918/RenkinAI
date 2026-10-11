@@ -13,7 +13,10 @@ and reset the VM baseline. Calling a Unit-returning method is not load completio
 
 Use a small saved Home/Editor shell around the existing MainColumn, preserving one
 Activity/VM/provider session. Display real profiles keyed by ID, not labels. Keep
-editor UI primitives per ID and keep drawable/domain state outside saved UI state.
+classic primitives under one stable editor key, with domain/drawable state outside
+saved UI state. On Editor, conceal loading content without disposing its Activity
+result launchers or keying them by an early-changing profile ID. Home does not
+keep a hidden editor. This preserves external preview/global results during a switch.
 Home requests delegate through a transient controller owned by MainViewModel;
 successful provider load plus baseline reset explicitly precede Editor navigation.
 

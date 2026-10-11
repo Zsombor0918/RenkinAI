@@ -20,10 +20,12 @@ committing. Owner acceptance/merge of Codex 01 is still pending.
 - Repeated acceptance is synchronously guarded. Recreation retains the VM job;
   process restoration never replays Create. Any committed profile remains a real,
   discoverable project after load failure/interruption. Cancel allocates nothing.
-- MainColumn remains the full editor. Per-profile saved UI state and current VM
+- MainColumn remains the full editor. Saved classic UI state and current VM
   icons survive Home returns. Child/search Back precedes Home navigation; standalone
   MainColumn retains double-Back exit. Intro progress/dismissal is retained. Classic
-  refresh does not unmount the editor. Home alone saves/switches/builds/requests nothing.
+  refresh does not unmount the editor. Editor loading conceals content but retains
+  its Activity-result registrations under a stable composition key. Home alone
+  saves/switches/builds/requests nothing.
 - Watch/image ingress opens Editor; pending watch and other VM-owned legacy prompts
   take priority. The original URI state key suppresses recreation imports; the toast
   explains the Upload tab. External Activity results and installer onResume remain
@@ -54,6 +56,16 @@ ingress in SavedStateHandle. Details: [recreation note](../changes/2026-10-11-pr
 Draft PR [#2](https://github.com/Zsombor0918/RenkinAI/pull/2) stays BLOCKED while
 its own fresh full build results are pending; the guard correctly rejected that
 declaration even though its 45 offline tests and commit conventions passed in CI.
+
+At follow-up head `4c218c0e8e3862dfe9ddcd033bb27a7853ba6587`,
+[CI 38141510224](https://github.com/Zsombor0918/RenkinAI/actions/runs/38141510224)
+passed app/test compilation and executed 627 tests: **2 FAILED**, both shell tests
+waiting for Compose idle after opening the profile form. No debug APK was built.
+The next follow-up bounds the shared form fields, retains Editor Activity-result
+registration during profile loading/early ID changes, clears stale profile data on
+list retry, and adds an actual ActivityResultRegistry regression. These changes
+require a new complete CI run; they are not a claimed successful build.
+Details: [editor-session note](../changes/2026-10-11-editor-session-lifetime.md).
 
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions
