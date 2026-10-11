@@ -23,6 +23,13 @@ Validate all new commit subjects and the PR title, without rewriting old history
 Require owner/reviewer acceptance separately from a declared PASS and green CI.
 Main enforcement belongs to GitHub Rulesets/Branch Protection, never a local hook.
 
+The October 11 P1 follow-up enforces the existing single audit-result contract:
+count every raw line beginning with `Audit result:` (also detecting indentation),
+then validate the one remaining line against the exact uppercase status syntax.
+Reject duplicates even when their statuses agree; reject malformed extra lines
+and BLOCKED. LF/CRLF and trailing horizontal whitespace remain supported.
+This is a governance correction, with no application architecture change.
+
 ## Alternatives considered
 
 - Documentation-only convention: low effort, but drift and undocumented code cannot
@@ -34,6 +41,10 @@ Main enforcement belongs to GitHub Rulesets/Branch Protection, never a local hoo
   path mapping plus explicit impacts and bounded docs/small-test exceptions.
 - Infer meaning from paths alone: insufficient for milestone/business decisions;
   declarations plus human review are retained.
+- Accept the first audit result: rejected because a later BLOCKED declaration
+  would be ignored. Counting only well-formed matches is also insufficient because
+  an invalid second declaration could hide an ambiguous audit. Count candidates
+  before validating syntax instead.
 
 ## Consequences and acceptance
 

@@ -200,11 +200,16 @@ def audit(snapshot, previous, changed):
 def pr_audit_errors(event_file):
     body = json.loads(event_file.read_text(encoding="utf-8"))["pull_request"].get("body") or ""
     errors = []
-    status = re.search(r"(?m)^Audit result: (PASS WITH RISKS|PASS|BLOCKED)\s*$", body)
-    if not status:
-        errors.append("PR body requires Audit result: PASS / PASS WITH RISKS / BLOCKED")
-    elif status.group(1) == "BLOCKED":
-        errors.append("PR audit is BLOCKED; resolve blockers before merge")
+    # Count all declaration candidates, including malformed/indented duplicates.
+    declarations = [line for line in body.splitlines() if line.lstrip(" \t").startswith("Audit result:")]
+    if len(declarations) != 1:
+        errors.append("PR body requires exactly one Audit result: PASS / PASS WITH RISKS / BLOCKED declaration")
+    else:
+        status = re.fullmatch(r"Audit result: (PASS WITH RISKS|PASS|BLOCKED)[ \t]*", declarations[0])
+        if not status:
+            errors.append("PR body requires Audit result: PASS / PASS WITH RISKS / BLOCKED on its own unindented line")
+        elif status.group(1) == "BLOCKED":
+            errors.append("PR audit is BLOCKED; resolve blockers before merge")
     sections = section_bodies(body)
     for section in PR_SECTIONS:
         if not substantive(sections.get(section, "")):

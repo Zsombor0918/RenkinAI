@@ -321,6 +321,65 @@ class RepoGuardsTest(unittest.TestCase):
         self.assertNotEqual(self.cli("check_docs.py", "--staged", "--event-file", str(event)).returncode, 0)
         self.assertEqual(self.cli("check_docs.py", "--staged", "--event-file", self.event()).returncode, 0)
 
+    def check_pr_audit(self, declarations, newline="\n"):
+        event = Path(self.event())
+        payload = json.loads(event.read_text(encoding="utf-8"))
+        sections = payload["pull_request"]["body"].split("\n\n", 1)[1]
+        payload["pull_request"]["body"] = (declarations + "\n\n" + sections).replace("\n", newline)
+        event.write_text(json.dumps(payload), encoding="utf-8")
+        # Use the committed diff/event arguments from documentation-audit in CI.
+        return self.cli("check_docs.py", "--base", self.base, "--head", "HEAD", "--event-file", str(event))
+
+    def test_pr_audit_accepts_exactly_one_nonblocked_declaration(self):
+        for status in ("PASS", "PASS WITH RISKS"):
+            for newline in ("\n", "\r\n"):
+                for trailing in ("", " \t"):
+                    with self.subTest(status=status, newline=newline, trailing=trailing):
+                        result = self.check_pr_audit(f"Audit result: {status}{trailing}", newline)
+                        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_pr_audit_rejects_a_single_blocked_declaration(self):
+        result = self.check_pr_audit("Audit result: BLOCKED")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("PR audit is BLOCKED", result.stderr)
+
+    def test_pr_audit_rejects_missing_declaration(self):
+        result = self.check_pr_audit("")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("exactly one", result.stderr)
+
+    def test_pr_audit_rejects_duplicate_declarations(self):
+        for status in ("PASS", "PASS WITH RISKS", "BLOCKED"):
+            with self.subTest(status=status):
+                result = self.check_pr_audit(f"Audit result: {status}\nAudit result: {status}")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("exactly one", result.stderr)
+
+    def test_pr_audit_rejects_conflicting_declarations_in_any_order(self):
+        for first in ("PASS", "PASS WITH RISKS", "BLOCKED"):
+            for second in ("PASS", "PASS WITH RISKS", "BLOCKED"):
+                if first != second:
+                    with self.subTest(first=first, second=second):
+                        result = self.check_pr_audit(f"Audit result: {first}\n\nAudit result: {second}")
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn("exactly one", result.stderr)
+
+    def test_pr_audit_rejects_malformed_declarations(self):
+        for declaration in ("Audit result:", "Audit result: UNKNOWN", "Audit result: pass",
+                            "Audit result: PASS extra text", "Audit result:PASS", " Audit result: PASS"):
+            with self.subTest(declaration=declaration):
+                result = self.check_pr_audit(declaration)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Audit result:", result.stderr)
+
+    def test_pr_audit_valid_declaration_cannot_hide_a_malformed_duplicate(self):
+        for extra in ("Audit result:", "Audit result: UNKNOWN", " Audit result: BLOCKED"):
+            for declarations in (f"Audit result: PASS\n{extra}", f"{extra}\nAudit result: PASS"):
+                with self.subTest(declarations=declarations):
+                    result = self.check_pr_audit(declarations)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("exactly one", result.stderr)
+
     def test_real_commit_msg_hook_matches_cli(self):
         message = self.root / "message.txt"
         for subject, expected in (("fix(batch): preserve state", 0), ("bad commit", 1)):

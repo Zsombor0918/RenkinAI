@@ -64,7 +64,13 @@ and bodies are read from the event JSON, never expanded as shell commands.
 - `commit-conventions`: every commit in base..head plus the PR title; old base
   history is exempt. Syntax is shared with commit-msg.
 - `documentation-audit`: offline guard tests followed by merge-base/head docs
-  audit, local links and the completed PR audit. `Audit result: BLOCKED` fails.
+  audit, local links and the completed PR audit. Exactly one unindented
+  `Audit result: PASS`, `Audit result: PASS WITH RISKS` or `Audit result: BLOCKED`
+  line is required. LF/CRLF and trailing horizontal whitespace are supported.
+  Missing, malformed, repeated or conflicting declarations fail; an indented
+  or malformed extra `Audit result:` line also counts as a duplicate. A single
+  `BLOCKED` declaration fails. This applies to the complete raw PR body, including
+  any declaration lines left in examples; remove those extra lines before review.
 - Existing [Android CI](../../.github/workflows/ci.yml), job `build`: compile,
   Robolectric/JVM unit tests, assembleDebug, APK artifact and failure reports.
   Its triggers, job and build commands are preserved. SDK setup explicitly requests
@@ -78,16 +84,19 @@ review prevents accepting a weakened gate just because its own CI passes.
 
 ## Main protection — observed status
 
-Checked October 11, 2026 via the GitHub connector:
+Rechecked October 11, 2026 at 10:49 UTC during the P1 audit follow-up, after the
+owner reported manual configuration, via the GitHub connector:
 
 - Branch endpoint: `protected: false`, protection enabled false, required checks empty.
 - Repository rulesets endpoint: `[]`.
 - Direct branch-protection endpoint: 403 `Resource not accessible by integration`.
 - Connector exposes no administration write tool. No protection/ruleset was changed.
 
-Therefore main protection must **not** be described as active. The repository
-permission summary reporting admin does not grant the integration administration
-API scope. UI configuration below is an owner action still outstanding.
+The reported manual setup is not confirmed by these reads; no active protection
+is observable. Therefore main protection must **not** be described as active.
+The repository permission summary reporting admin does not grant the integration administration
+API scope. The owner should verify that the saved rule is active and targets main
+using the steps below; this follow-up does not change administration settings.
 
 ## Owner setup, click by click
 
