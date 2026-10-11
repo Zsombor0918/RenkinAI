@@ -75,6 +75,14 @@ fix automatic-clock idle. A narrow test-only follow-up drives Compose frames
 explicitly in those two form tests, keeping their real inputs, actions, restoration
 and route assertions. It must pass fresh CI; no timeout increase or test removal.
 
+That explicit-clock checkpoint `277d463e2cbb95e256d75a068b2dcc28375dee96`,
+[CI 38143220425](https://github.com/Zsombor0918/RenkinAI/actions/runs/38143220425),
+also executed 628 tests with the same **2 FAILED**. Clock changes were ineffective
+and are removed. The next narrow test-only change uses a standard 450 × 800 dp
+phone viewport for those real-dialog tests while keeping native graphics, normal
+idling, real input and all assertions. This is isolation pending verification,
+not a claimed production/dialog fix. Wide/foldable Home coverage is unchanged.
+
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions
 are not a full Activity/device test. Manual Apply/Cancel, source picker, GlobalOptions

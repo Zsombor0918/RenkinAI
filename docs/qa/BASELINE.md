@@ -18,6 +18,7 @@ implementation; #1 merged and its P1 fix/tests/thread verified.
 | Feature [Governance 38140946802](https://github.com/Zsombor0918/RenkinAI/actions/runs/38140946802), same head | Commit conventions PASS; 45 guard tests PASS; audit intentionally FAILED on BLOCKED draft | Log proves BLOCKED exit propagation; source/link/shape checks had no other errors |
 | Feature [CI 38141510224](https://github.com/Zsombor0918/RenkinAI/actions/runs/38141510224), head `4c218c0e8e3862dfe9ddcd033bb27a7853ba6587` | App/test compile SUCCESS; 627 executed, **2 FAILED** | Both ProjectShellComposeTest form-opening cases hit AppNotIdleException; other tests passed; APK skipped. Failure-report artifact inspected |
 | Feature [CI 38142645850](https://github.com/Zsombor0918/RenkinAI/actions/runs/38142645850), head `6435d8486463ea3709c0ca2aa63fe80da7d5f311` | App/test compile SUCCESS; 628 executed, **2 FAILED** | Same two form-idle failures remained after bounding widths. New ActivityResultRegistry loading/ID-change regression passed; APK skipped |
+| Feature [CI 38143220425](https://github.com/Zsombor0918/RenkinAI/actions/runs/38143220425), head `277d463e2cbb95e256d75a068b2dcc28375dee96` | App/test compile SUCCESS; 628 executed, **2 FAILED** | Explicit clock also did not resolve the same form-idle failures; APK skipped |
 
 Recreation follow-up adds a persisted editor-entry counter and an intro-visibility
 helper that distinguishes pending prefs from explicit re-show, plus regressions.
@@ -26,9 +27,11 @@ The editor-session follow-up bounds profile form fields and tests a real registe
 external-result callback across profile loading and ID changes. The retained
 composition is concealed while loading; profile identity remains VM-owned.
 That run confirms external-result delivery but not successful form interaction.
-The two form tests now drive the Compose clock explicitly with real input/action
-and restoration assertions intact. Fresh execution of this test-only follow-up is
-pending; bounded widths alone did not resolve the automatic-clock idle failure.
+Explicit clock control also failed and has been removed. The next test-only
+follow-up isolates both real-dialog tests at a 450 × 800 dp phone viewport, retaining
+native graphics, automatic idling and every input/action/restoration assertion.
+Fresh execution is pending. Wide/hinge Home tests retain their existing viewport;
+large real-device forms still require the device matrix.
 
 Staged/range/PR audits and final feature-head Actions are recorded after execution
 in this ledger or the PR audit. No pending tests or historical count is reported
