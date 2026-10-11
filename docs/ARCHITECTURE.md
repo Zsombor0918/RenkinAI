@@ -455,7 +455,7 @@ existence or non-null drawables are insufficient; transparent/failed previews ar
 broken. Adaptive/vector/bitmap rendering is fixture-tested, not proof of complete
 animated/themed/OEM behavior. Cancellation propagates; package/index/theme changes
 invalidate the whole scan. UI effects key on profile/source/component/local snapshot
-and resume, preventing stale cross-profile publication and retaining explicit Retry.
+and resume/selected-package broadcasts/displayed theme, preventing stale cross-profile publication and retaining explicit Retry. The screen-scoped receiver is disposed when leaving setup; it never refreshes icons. Concurrent pack rescans cannot let an older finally block clear the newest loading flag.
 
 Counters partition known unique component entries into covered/broken/unmapped/
 unknown/unavailable. Declared means exact item declaration, independent of drawing.

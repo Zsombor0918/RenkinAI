@@ -1,6 +1,12 @@
 package dev.renkinProject.renkin.ui.project
 
 import android.app.Application
+import android.content.Intent
+import android.net.Uri
+import android.content.Context
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.platform.LocalContext
+import androidx.test.core.app.ApplicationProvider
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -17,6 +23,7 @@ import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import dev.renkinProject.renkin.apk.*
+import dev.renkinProject.renkin.R
 import dev.renkinProject.renkin.data.IconPack
 import dev.renkinProject.renkin.data.Profile
 import dev.renkinProject.renkin.ui.theme.RenkinTheme
@@ -42,6 +49,7 @@ class CreateExtendFlowComposeTest {
         CoverageTarget("app/Main", "Original"), CoverageTarget("app/Other", "Manual", LocalIconState.CUSTOM_OR_MANUAL),
         CoverageTarget("locked/Main", "Locked", locked = true))))
     private val opens = mutableListOf<Long>()
+    private lateinit var activity: ComponentActivity
     private var creates = 0
     private var saves = 0
     private var rescans = 0
@@ -53,6 +61,7 @@ class CreateExtendFlowComposeTest {
         else operation = ProjectSessionState.Opened(id).also { home = home.copy(activeProfileId = id) }
     }
     @Composable private fun Content() {
+        activity = LocalContext.current as ComponentActivity
         RenkinTheme(dark) {
             ProjectShell(home, operation, ingress, attention,
                 onOpen = ::open,
@@ -145,7 +154,7 @@ class CreateExtendFlowComposeTest {
         compose.onNodeWithTag("setup-profile-7").performScrollTo().performClick()
         compose.onNodeWithTag("project-save-continue").performClick()
         assertEquals(1, saves); assertEquals(7L, home.activeProfileId)
-        scroll("coverage-counts"); compose.onNodeWithTag("coverage-counts").assertTextContains("drawn: 1")
+        scroll("coverage-counts"); compose.onNodeWithTag("coverage-counts").assertTextEquals("Launcher entries: 3 · declared: 2 · drawn: 1 Unmapped: 1 · broken: 1 · unknown: 0 · unavailable: 0")
         scroll("setup-select-all"); compose.onNodeWithTag("setup-select-all").performClick()
         compose.onNodeWithTag("setup-selection-count").assertTextEquals("Selected: 0 / 3 known launcher entries")
         compose.onNodeWithTag("setup-filter").performClick()
@@ -170,7 +179,7 @@ class CreateExtendFlowComposeTest {
     }
     @Test fun noPacksAndCancelledFormNeverCreateOrChooseDefaultAndEditorStillWorks() {
         start(); compose.onNodeWithTag("project-create").performClick()
-        compose.onNodeWithText("Cancel").performClick(); assertEquals(0, creates)
+        compose.onNodeWithText(ApplicationProvider.getApplicationContext<Context>().getString(R.string.dismiss)).performClick(); assertEquals(0, creates)
         compose.onNodeWithTag("project-extend").performClick()
         compose.onNodeWithTag("setup-no-packs").assertExists()
         compose.onNodeWithTag("setup-reload-packs").performClick(); assertEquals(1, reloads)
@@ -211,4 +220,42 @@ class CreateExtendFlowComposeTest {
         compose.runOnIdle { dark = true }
         compose.onNodeWithTag("setup-target-app/Other").assertIsDisplayed().performClick().assertIsOn()
     }
+    @Test fun setupBackReturnsHomeWithoutImplicitSaveAndExtendProfileBackDoesNotSwitch() {
+        data = data.copy(packs = listOf(pack("pack.two")))
+        start(); setup(1)
+        compose.runOnIdle { activity.onBackPressedDispatcher.onBackPressed() }
+        compose.onNodeWithTag("project-home").assertIsDisplayed()
+        compose.onNodeWithTag("project-home").performScrollToNode(hasTestTag("project-extend"))
+        compose.onNodeWithTag("project-extend").performClick()
+        compose.onNodeWithTag("setup-source-pack.two").performScrollTo().performClick()
+        compose.runOnIdle { activity.onBackPressedDispatcher.onBackPressed() }
+        compose.onNodeWithTag("setup-source").assertIsDisplayed()
+        assertEquals(listOf(1L), opens); assertEquals(0, saves); assertEquals(0, creates)
+    }
+    @Test fun selectedSourceBroadcastsInvalidateOnlyThatScreenAndAreDisposedOnLeaving() {
+        var source: String? by mutableStateOf("pack.two")
+        var visible by mutableStateOf(true)
+        var invalidations = 0
+        compose.setContent {
+            if (visible) ObserveCoverageInvalidation(source) { invalidations++ }
+            Text("Read-only invalidation fixture")
+        }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        fun broadcast(pack: String, action: String = Intent.ACTION_PACKAGE_CHANGED) {
+            compose.runOnIdle { context.sendBroadcast(Intent(action, Uri.parse("package:$pack"))) }
+            compose.waitForIdle()
+        }
+        val baseline = invalidations
+        broadcast("other.pack"); assertEquals(baseline, invalidations)
+        broadcast("pack.two", Intent.ACTION_PACKAGE_REMOVED)
+        broadcast("pack.two", Intent.ACTION_PACKAGE_REPLACED)
+        assertEquals(baseline + 2, invalidations)
+        compose.runOnIdle { source = "pack.one" }
+        val changed = invalidations
+        broadcast("pack.two"); assertEquals(changed, invalidations)
+        broadcast("pack.one"); assertEquals(changed + 1, invalidations)
+        compose.runOnIdle { visible = false }
+        broadcast("pack.one"); assertEquals(changed + 1, invalidations)
+    }
+
 }

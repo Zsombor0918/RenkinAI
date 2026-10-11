@@ -1,5 +1,9 @@
 package dev.renkinProject.renkin.ui.project
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,20 +22,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.core.content.ContextCompat
 import dev.renkinProject.renkin.MainViewModel
 import dev.renkinProject.renkin.R
 import dev.renkinProject.renkin.apk.CoverageSnapshot
 import dev.renkinProject.renkin.apk.CoverageTarget
 import dev.renkinProject.renkin.apk.IconCoverageAnalyzer
 import dev.renkinProject.renkin.data.IconPack
+import dev.renkinProject.renkin.packages.PackageResourceResolver
 import dev.renkinProject.renkin.ui.CenteredFullscreenContent
 import dev.renkinProject.renkin.ui.WavyLoadingBar
 import kotlinx.coroutines.CancellationException
@@ -56,6 +64,34 @@ internal data class ProjectSetupData(
     val appIcon: @Composable (String) -> Unit = {}
 )
 
+/** Screen-scoped invalidation only, never a background watcher or icon refresh. */
+@Composable
+internal fun ObserveCoverageInvalidation(source: String?, onInvalidate: () -> Unit) {
+    val context = LocalContext.current
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val invalidate by rememberUpdatedState(onInvalidate)
+    DisposableEffect(lifecycle, context, source) {
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) invalidate() }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (source != null && intent?.data?.schemeSpecificPart == source) invalidate()
+            }
+        }
+        lifecycle.addObserver(observer)
+        if (source != null) ContextCompat.registerReceiver(context, receiver, IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addDataScheme("package")
+        }, ContextCompat.RECEIVER_NOT_EXPORTED)
+        onDispose {
+            lifecycle.removeObserver(observer)
+            if (source != null) context.unregisterReceiver(receiver)
+        }
+    }
+}
+
 @Composable
 internal fun rememberProjectSetupData(
     viewModel: MainViewModel, mode: ProjectSetupMode, page: ProjectSetupPage,
@@ -64,31 +100,26 @@ internal fun rememberProjectSetupData(
     val targets = viewModel.coverageTargets()
     var rescan by remember { mutableIntStateOf(0) }
     var resumeCheck by remember { mutableIntStateOf(0) }
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) resumeCheck++
-        }
-        lifecycle.addObserver(observer)
-        onDispose { lifecycle.removeObserver(observer) }
-    }
+    ObserveCoverageInvalidation(source) { resumeCheck++ }
+    val theme = PackageResourceResolver.displayedNightMode
     var packReload by remember { mutableIntStateOf(0) }
     var reloadedPacks by remember(viewModel.iconPacks) { mutableStateOf<List<IconPack>?>(null) }
     var packFailed by remember { mutableStateOf(false) }
     var packLoading by remember { mutableStateOf(false) }
     LaunchedEffect(packReload) {
         if (packReload > 0) {
+            val request = packReload
             packLoading = true
             packFailed = false
             try { reloadedPacks = viewModel.coverageSources() }
             catch (error: CancellationException) { throw error }
             catch (_: Exception) { packFailed = true; reloadedPacks = null }
-            finally { packLoading = false }
+            finally { if (request == packReload) packLoading = false }
         }
     }
     // A new profile/component/local snapshot starts with no result; old rows never leak.
-    var coverage by remember(profileId, source, targets, rescan, resumeCheck) { mutableStateOf<CoverageUiState>(CoverageUiState.Loading()) }
-    LaunchedEffect(profileId, source, targets, rescan, resumeCheck, page, mode, viewModel.activeProfileId,
+    var coverage by remember(profileId, source, targets, rescan, resumeCheck, theme) { mutableStateOf<CoverageUiState>(CoverageUiState.Loading()) }
+    LaunchedEffect(profileId, source, targets, rescan, resumeCheck, theme, page, mode, viewModel.activeProfileId,
         viewModel.profileSummaryReady, viewModel.iconPackLoaded) {
         if (mode == ProjectSetupMode.EXTEND && page == ProjectSetupPage.TARGETS &&
             source != null && profileId == viewModel.activeProfileId && viewModel.profileSummaryReady && viewModel.iconPackLoaded) {

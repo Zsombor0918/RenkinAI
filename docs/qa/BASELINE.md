@@ -169,3 +169,22 @@ bottom/top, not a height property; the receiver mismatch is compile-time evidenc
 No unit test executed and APK was skipped. Correct only that measurement expression,
 preserving the 48dp assertion. Governance commit-conventions and offline guard job
 passed; documentation-audit correctly failed the single BLOCKED declaration.
+
+### M2 executable checkpoint — fixtures corrected next
+
+At `4a447d88dea9506aecf3b6c42bb45429dd5d2b78`,
+[Android 38159397296](https://github.com/Zsombor0918/RenkinAI/actions/runs/38159397296)
+compiled app/tests, then ran **667 tests, 3 failures**, APK skipped.
+Artifact 11708809083 HTML stack traces were downloaded and inspected:
+CoveragePreviewTest passed raw XmlPullAttributes to the platform vector inflater,
+which requires compiled XmlBlock.Parser; use the existing compiled ic_github vector.
+The coverage node already contained all correct counts, but assertTextContains
+requested exact matching to a fragment; assert the full observed count string.
+ProfileDetailsDialog uses the dismiss resource, not literal Cancel; use that actual
+resource label to test the unchanged dismissal interaction. These are fixture/API
+errors, not evidence that source draw or dialog UX should be changed.
+
+A scope-completeness inspection additionally adds screen-scoped package invalidation,
+so a source removed/updated while foreground cannot retain its old result until
+resume. Displayed theme is an explicit read key; rapid pack rescans retain the newest
+loading flag. New actual broadcast/disposal and Back tests are awaiting execution.

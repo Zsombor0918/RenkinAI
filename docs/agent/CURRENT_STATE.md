@@ -136,8 +136,9 @@ requires its own decision and compatibility work.
 Reads run off the main thread, sequentially, with cancellation between targets,
 Boolean-only per-scan draw caching and one small preview at a time. Results carry
 package/version/update/revision/theme plus profile/component/local snapshot. Reloads,
-rapid source changes and leaving setup cancel prior jobs; resume revalidates package
-identity. Explicit rescan rereads only the selected source or the existing pack catalog.
+rapid source changes and leaving setup cancel prior jobs; resume and selected-package install/remove/update broadcasts revalidate package
+identity. The receiver exists only while setup is composed; it never refreshes icons
+or watches launcher apps in the background. Theme changes also invalidate reads. Explicit rescan rereads only the selected source or the existing pack catalog.
 It does not change primary preferences, refresh icons, build, install or call AI.
 A slow pathological drawable can delay cancellation during its own synchronous draw;
 96 px validation cannot certify animation, monochrome or OEM behavior.

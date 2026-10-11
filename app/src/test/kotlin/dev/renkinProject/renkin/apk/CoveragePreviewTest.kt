@@ -12,7 +12,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.VectorDrawable
-import android.util.Xml
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
 import org.junit.Test
@@ -20,7 +19,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import java.io.StringReader
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [33])
@@ -33,12 +31,8 @@ class CoveragePreviewTest {
         finally { source.recycle() }
     }
     @Test fun vectorDrawAndAdaptiveLayersActuallyProducePixels() {
-        val parser = Xml.newPullParser().apply { setInput(StringReader("""
-            <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
-              <path android:fillColor="#ff0000" android:pathData="M0,0 L24,0 L24,24 L0,24 Z"/>
-            </vector>
-        """.trimIndent())) }
-        val vector = Drawable.createFromXml(resources, parser)
+        // Platform Resources require AAPT-compiled XML, not XmlPullAttributes.
+        val vector = resources.getDrawable(dev.renkinProject.renkin.R.drawable.ic_github, null)
         assertTrue(vector is VectorDrawable)
         assertTrue(drawCoveragePreview(vector))
         assertTrue(drawCoveragePreview(AdaptiveIconDrawable(ColorDrawable(Color.BLACK), ColorDrawable(Color.GREEN))))
