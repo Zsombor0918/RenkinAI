@@ -5,7 +5,11 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 ## Unreleased
 
-- No Android application behavior changes in the documentation/governance work.
+- Start from Projects, continue any real Renkin profile or create a separate icon pack.
+- Open the classic editor from either Create or Complete an existing icon pack;
+  automatic style recognition and source coverage are still planned.
+- Return from the editor to Projects without switching or saving implicitly;
+  save/cancel protects changes before entering a different project.
 
 ## 2026.10.04-ai2 — existing fork baseline
 

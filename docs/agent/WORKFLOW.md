@@ -12,6 +12,27 @@ topic branch. Implement, update canonical docs, add a dated change note, run tes
 update handoff, commit with a validated subject, and open an audited PR. Report the
 base and final head SHA. Leave reviewer acceptance and merge to the authorized owner.
 
+## Profile form regressions
+
+The read-only PR workflow `compose-regressions.yml` runs
+`python3 scripts/run_compose_regressions.py` on the exact PR head: both formerly
+blocked real-form shell tests individually, together, then the shared-form class.
+It retains per-case XML/HTML/logs and `build/compose-regressions/summary.json` with
+HEAD, exit codes and counts. Nonzero Gradle exit, missing results, failure/error or
+skipped tests fail the runner/job. The full Android CI still runs the entire suite
+and debug build; filtered regressions do not replace it or the three required checks.
+After the filtered runs the runner executes the unfiltered
+`./gradlew compileDebugKotlin testDebugUnitTest assembleDebug` command, retains
+complete suite XML/counts, and verifies that requested selectors occurred. The
+additional complete run also checks order dependence after the filtered runs.
+
+Native SDK 33 form tests use 320 dp width to avoid the measured Robolectric
+WRAP_CONTENT custom-width loop. Wide/hinge Home tests remain unchanged; wider-device
+form/TalkBack checks remain manual. No production dialog sizing, clock, timeout or
+idling behavior was changed. Temporary probes/reflection, draw/window overrides
+and known-negative timeout cases were removed after capturing their evidence.
+See the [correction record](../changes/2026-10-11-compose-dialog-regression-fix.md).
+
 ## Automatic documentation minimum
 
 `check_docs.py --staged` reads Git blobs from the index and compares with HEAD.
@@ -84,7 +105,9 @@ review prevents accepting a weakened gate just because its own CI passes.
 
 ## Main protection — observed status
 
-Verified October 11, 2026 during the owner-authorized closure of PR #1:
+Verified October 11, 2026, 12:16 UTC at the Codex 01 gate and reread at 15:52 UTC
+with the same values, after the owner merged
+PR #1 as `005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`:
 
 - [Ruleset 24877351](https://github.com/Zsombor0918/RenkinAI/rules/24877351),
   `main-reviewed-and-audited`, is **active** and includes `refs/heads/main`, with no exclusions.
@@ -92,19 +115,21 @@ Verified October 11, 2026 during the owner-authorized closure of PR #1:
   the active ruleset, rather than a classic branch rule, provides the protection.
 - Deletion and non-fast-forward updates are restricted. Bypass actors are empty,
   and the connector's current user can never bypass the rule.
-- PRs are required. The required approving-review count is zero, but
-  `require_last_push_approval: true` still requires approval of the latest push
-  by someone other than its pusher. Stale approvals are dismissed. At this read,
-  PR #1 has no approving review and GitHub reports its merge state as `blocked`.
+- PRs are required. Required approving-review count is **zero** and
+  `require_last_push_approval: false`; an approving review is not currently enforced.
+  Stale approvals are dismissed if present. The previous closure audit observed
+  latest-push approval true and a blocked PR; later owner settings and the actual
+  merge supersede that observation. No administration write was made here.
 - Required checks are exactly `build`, `commit-conventions`, `documentation-audit`,
   all sourced from GitHub Actions (integration id 15368).
 - Conversation resolution is **not required** by the saved rule, and strict
   up-to-date status checks are **disabled**. These differ from the recommended
   setup below; do not describe those requirements as enabled. The P1 thread on
   PR #1 is nevertheless verified resolved.
-- The owner explicitly authorized finishing and merging #1 in the current work
-  session. This is owner acceptance, not a submitted GitHub approving review;
-  external merge requirements still apply.
+- The owner accepted and merged #1. That acceptance does not approve later feature
+  PRs. Explicit authorized acceptance remains required under AGENTS. Required review,
+  conversation resolution and up-to-date checks remain manual owner tasks, using
+  steps 7–9 below; do not claim them enabled.
 
 The earlier inactive observations are historical, retained in QA. The connector
 did not modify administration settings; the owner created the active ruleset.

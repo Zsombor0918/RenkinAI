@@ -313,7 +313,7 @@
     <string name="editInAnotherApp">Edit in another app</string>
     <string name="noImageEditorAvailable">No compatible image editor is available</string>
     <string name="openInImageToolbox">Open in ImageToolbox</string>
-    <string name="sharedImageAdded">Image added to your uploads</string>
+    <string name="sharedImageAdded">Image added to uploads. Open an app editor and choose the Upload tab.</string>
     <string name="centerIcon">Auto-center</string>
     <string name="positionHorizontal">Horizontal position</string>
     <string name="positionVertical">Vertical position</string>
@@ -735,4 +735,36 @@
     <string name="whatsNewBackup">**Backup:** Save and restore the whole app in one file.</string>
     <string name="whatsNewTextSvg">**More sources:** Create text icons or import SVG artwork.</string>
     <string name="whatsNewMaterialShapes">**Material You shapes:** Crop icons or place them on a colour plate.</string>
+    <!-- Profile-backed Projects entry point; AI automation belongs to later milestones. -->
+    <string name="projectHomeBrand">RenkinAI</string>
+    <string name="projectHomeTitle">Projects</string>
+    <string name="projectHomeDescription">Create an icon pack or continue one of your projects. Each project uses an existing Renkin profile.</string>
+    <string name="projectCreate">Create new icon pack</string>
+    <string name="projectCreateDescription">Start a separate profile, then choose and edit icons in the classic Renkin editor.</string>
+    <string name="projectExtend">Complete an existing icon pack</string>
+    <string name="projectExtendDescription">Use an installed icon pack as a source in a Renkin profile, then edit its icons in the classic editor.</string>
+    <string name="projectAutomationLater">These entry points use the classic editor. Automatic AI style recognition, source coverage analysis and the new AI workflows are not available yet. Existing manual AI tools remain in the editor.</string>
+    <string name="projectClassicEditor">Open classic editor</string>
+    <string name="projectListTitle">Your projects</string>
+    <string name="projectContinue">Continue / Edit</string>
+    <string name="projectOpenDescription">Continue editing %1$s, project %2$d</string>
+    <string name="projectIdentity">Project %1$d</string>
+    <string name="projectActive">Active project</string>
+    <string name="projectUnsaved">Unsaved edits in this session</string>
+    <string name="projectEmpty">No profiles are available. Reload the project list before creating a new project.</string>
+    <string name="projectDefaultOnly">Your default profile is ready to use. Keep editing it or create a separate project above.</string>
+    <string name="projectInitializing">Loading profiles, installed apps and saved icons…</string>
+    <string name="projectOpening">Loading your project and its saved icons…</string>
+    <string name="projectUnavailable">Projects could not finish loading. Your saved profiles have not been removed.</string>
+    <string name="projectOperationFailed">The project could not open. Check the project list before creating another; a newly created profile may already be saved.</string>
+    <string name="projectInterrupted">A project operation was interrupted. It was not replayed. Any saved profile remains in the project list; continue it there.</string>
+    <string name="projectReload">Reload projects</string>
+    <string name="projectBackHome">Back to Projects</string>
+    <string name="projectExtendInstructions">This phase uses the classic Renkin editor. Continue the active profile, or create a separate profile below. To continue a different project, close this explanation and choose its card.\n\nIn the editor, tap the icon source card and choose an installed icon pack. Refresh and review the icons before building. Your generated pack keeps its Renkin profile identity; this does not modify the source pack.\n\nAutomatic AI style recognition and exact source coverage analysis are planned for later phases.</string>
+    <string name="projectExtensionCreate">Create separate profile</string>
+    <string name="projectSaveBeforeSwitch">This project has unsaved edits. Save them before changing projects, or cancel to keep editing. Saving keeps the icons without building an APK.</string>
+    <string name="projectExitTitle">Leave unsaved edits?</string>
+    <string name="projectExitUnsaved">Your active project has edits kept only in this session. Return to the editor to save or build, or leave without saving these edits.</string>
+    <string name="projectReturnEditor">Return to editor</string>
+    <string name="projectExitDiscard">Leave without saving</string>
 </resources>

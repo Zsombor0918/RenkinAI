@@ -1,10 +1,32 @@
 # Current implementation
 
-Source baseline: `eb4daa5de82fab54e115363c073eb8981f2203d6`, inspected October 11,
-2026. Codex 00 changes documentation and development infrastructure only; no Kotlin,
-manifest, dependency, Room schema or signing is changed. The Android CI tasks are
-preserved; SDK setup explicitly selects platform-tools to avoid v3's missing tools package.
-Existence in source and runtime validation are different; see [QA baseline](../qa/BASELINE.md).
+Codex 01 source baseline: merged main `005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`,
+inspected October 11, 2026. PR #1 merged at 12:15:29 UTC with the P1 audit-result
+fix and resolved review thread. Codex 01 adds the Projects entry point on
+`feat/project-home-m1`; final source/check SHAs belong in its PR audit.
+Manifest, dependencies, Room v18, provider/storage contracts, APK/signing/install
+and Android CI are unchanged. Existence in source and runtime validation are
+different; see [QA baseline](../qa/BASELINE.md).
+
+At head `8bd57953ec54c7056dac4acf850f5a8863b8bd64`, CI 38143988918 compiled
+app/tests but failed the same two form-idle cases out of 628. Phone viewport,
+bounded widths and earlier explicit clock did not fix them. Full XML and independent
+controls subsequently established a Robolectric 4.14.1 WRAP_CONTENT field-dialog
+measure/layout loop with custom 450 dp width. At the same SDK 33/native/800 dp height,
+the actual form and shell passed at 320 dp; same measured 450×416 px explicit platform
+bounds also passed. Clock, draw, SDK 35 and legacy graphics did not resolve it.
+The two original tests now use compatible 320 dp width, all their assertions remain,
+and three actual shared-form regressions plus isolated/combined CI were added.
+Production code is unchanged from the audited starting head. At correction
+`ae80fbd818eb17c98a7463f689603cfb94dcbaa3`, CI 38152173163 passed compile,
+all unit tests and debug APK; 38152173157 passed original creation/ingress separately,
+together and all three form regressions. At evidence head
+`b9ec57b59671ffdb36f4f091706c8f7ae62825f3`, 38152705800 retained 116 XML
+reports proving 631/631 full-suite tests passed with zero failures/errors/skips,
+after the same separate/together/form tests; unfiltered compile/test/debug build
+also passed. Original Android CI 38152705787 independently built/uploaded the APK.
+Final documentation-head SHA/check results belong in PR #2. Devices remain NOT RUN.
+See [measured correction](../changes/2026-10-11-compose-dialog-regression-fix.md).
 
 ## Product and implemented paths
 
@@ -15,6 +37,9 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 | Implemented area | Source evidence and boundary |
 | --- | --- |
 | Existing app list/editor | [MainActivity](../../app/src/main/kotlin/dev/renkinProject/renkin/MainActivity.kt), MainViewModel and UI; launcher components from InstalledAppCatalog, including user profiles; keys are package/activity, not labels |
+| Projects entry point | [ProjectHome](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/ProjectHome.kt) reads the real profile flow; ID-keyed cards show name, description, saved unbuilt flag and active-session unsaved edits; default/empty/loading/unavailable/busy states are explicit |
+| Create / complete / classic entry | Create confirms the existing profile fields before allocation. Complete opens instructions with working active-editor and separate-profile actions, then the classic source card/picker. Both visibly defer automatic AI/style/coverage workflows; AI1/AI2 stay in the classic editor |
+| Home/editor navigation | [RenkinAiRoot](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt) uses the Activity's existing VM; editor Back returns Home after search/dialog handlers, Home clean Back exits, dirty Back offers return to editor or explicit exit without saving; no implicit save/switch/build/request on navigation |
 | Pack sources, modifications, import | ApplicationProvider, IconGenerationService, IconGenerator, UploadedImageStore; custom/base/rendered separation and existing SVG/vector/adaptive paths |
 | Named profiles | ProfileManager, DbApplication, DataPreferences; Room `renkinPack` v18, default id 1; settings snapshots switch with the profile, source/provenance locks remain |
 | Export and installation | IconPackBuildService, IconPackBuilder, PackKeystore, ApkInstaller; calendar/clock/adaptive/themed outputs, appfilter/appmap/theme_resources; build snapshot persists to its owning profile |
@@ -38,6 +63,28 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 
 ## Known limitations and cautions
 
+- Different-project/create requests offer Save or Cancel for dirty work. Success
+  requires the profile load and baseline reset; repeated taps cannot enqueue a
+  second insert. Process restoration reports interruption without replaying the
+  request. Any committed profile stays visible by ID; a failed load can be reloaded.
+  Profile creation and preference/ icon loading are not a cross-store transaction.
+- Classic editor UI state is saved for Home round trips; icons remain
+  in MainViewModel/ApplicationProvider. Session-only unsaved icons still do not
+  survive process death without explicit save/build, as in the existing editor.
+- On Editor, loading conceals classic content and blocks its taps while retaining
+  Activity-result registrations across early profile-ID changes. Home does not
+  keep a hidden editor. Profile form measurement is bounded to the dialog width;
+  retry explicitly resets list loading rather than briefly reusing stale rows.
+- Editor-entry versions use the VM SavedStateHandle, so a restored image/watch
+  request is not lost before the shell consumes it. Intro dismissal distinguishes
+  pending preference reads from an explicit Settings request to show the tour again.
+- Watch requests/pending suggestions and VM-owned legacy prompts take priority over
+  Home. Shared images open the editor and toast directs users to an app's Upload
+  tab. The original URI instance-state key suppresses recreation imports; separately
+  delivered shares can import the same URI again. Upload handling remains unchanged.
+- Wide/dark/light/hinge and interaction tests use Robolectric/fake state; real
+  TalkBack, Samsung/fold lifecycle, notification delivery and installer round trips
+  still need the recorded device checks in QA.
 - Missing means `createdIcon == null` and not locked. Fallbacks/custom icons make
   an app non-missing; it is not an audit of a source pack's appfilter coverage.
 - Batch is a ViewModel coroutine plus AtomicFile journal, not an AI WorkManager
@@ -54,12 +101,14 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 - Theme Park/One UI/Flip cover-screen compatibility requires a real device.
   The historical manifest INTERNET comment predates AI and is incomplete; actual
   networking also includes OpenAiImageClient and StabilityImageClient.
-- Source supports backup/migrations; this infrastructure PR does not test an
+- Source supports backup/migrations; this UI PR does not test an
   actual device upgrade or guarantee a reproducible CI debug signing identity.
 
 ## Planned, not implemented
 
-ProjectHome/project onboarding, redesigned AI flows, hosted backend authentication,
-credits/billing, server-side spend enforcement, automatic/background AI scheduling
-and Play publication are future work. Profiles already exist; a project home screen
-does not. Follow [ROADMAP](../ROADMAP.md) and the next task in [HANDOFF](HANDOFF.md).
+Separated CreateProjectFlow/ExtendProjectFlow and real source coverage are Codex 02.
+Projects-specific style/asset persistence precedes automatic style recognition,
+trial icons, batch staging and AI edits. Hosted backend authentication, credits,
+automatic paid scheduling and Play publication remain future work. This Home
+adds no new AI endpoint, source coverage estimate, schema or pack builder.
+Follow [ROADMAP](../ROADMAP.md) and the next task in [HANDOFF](HANDOFF.md).

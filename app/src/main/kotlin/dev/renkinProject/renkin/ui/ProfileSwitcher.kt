@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
@@ -38,6 +39,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -439,7 +441,7 @@ internal fun ProfileActionsMenu(
  * the name becomes the top-bar title and the label the pack's launcher name.
  */
 @Composable
-private fun ProfileDetailsDialog(
+internal fun ProfileDetailsDialog(
     title: String,
     confirmLabel: String,
     onConfirm: (name: String, description: String, packLabel: String) -> Unit,
@@ -456,7 +458,7 @@ private fun ProfileDetailsDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column {
+            Column(Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it.take(MAX_PROFILE_NAME) },
@@ -465,14 +467,14 @@ private fun ProfileDetailsDialog(
                         { Text(stringResource(R.string.requiredField)) }
                     } else null,
                     singleLine = true,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).testTag("profile-name")
                 )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it.take(MAX_PROFILE_DESCRIPTION) },
                     label = { Text(stringResource(R.string.profileDescription)) },
                     singleLine = true,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).testTag("profile-description")
                 )
                 OutlinedTextField(
                     value = packLabel,
@@ -481,14 +483,16 @@ private fun ProfileDetailsDialog(
                     supportingText = if (packLabel.isBlank()) {
                         { Text(stringResource(R.string.requiredField)) }
                     } else null,
-                    singleLine = true
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().testTag("profile-pack-label")
                 )
             }
         },
         confirmButton = {
             TextButton(
                 onClick = { onConfirm(name.trim(), description.trim(), packLabel.trim()) },
-                enabled = name.isNotBlank() && packLabel.isNotBlank()
+                enabled = name.isNotBlank() && packLabel.isNotBlank(),
+                modifier = Modifier.testTag("profile-create-confirm")
             ) { Text(confirmLabel) }
         },
         dismissButton = {

@@ -8,7 +8,9 @@ and [CONTRIBUTING.md](CONTRIBUTING.md). Source-backed implementation:
 [current state](docs/agent/CURRENT_STATE.md); planned work: [roadmap](docs/ROADMAP.md);
 latest transfer: [handoff](docs/agent/HANDOFF.md). AI needs internet access and a
 user-entered provider key; ordinary icon editing and pack assembly remain local.
-ProjectHome and public backend/credits are future work.
+The unreleased Projects home lists real Renkin profiles, creates a separate profile
+or opens the classic editor to use an installed source pack. Automatic AI style
+recognition, exact source coverage and public backend/credits remain future work.
 
 The overview, screenshots and release badges below originate from **upstream
 Renkin**, not a published RenkinAI release. Fork builds come from this repository's

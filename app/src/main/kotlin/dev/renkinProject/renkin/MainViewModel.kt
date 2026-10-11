@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.renkinProject.renkin.apk.ApkUninstaller
@@ -65,6 +66,11 @@ import dev.renkinProject.renkin.icon.creator.PackBrowserPreviews
 import dev.renkinProject.renkin.icon.creator.PackIconPreview
 import dev.renkinProject.renkin.icon.creator.PackRowPreviews
 import dev.renkinProject.renkin.packages.PackageInfoStruct
+import dev.renkinProject.renkin.ui.project.ProjectRequest
+import dev.renkinProject.renkin.ui.project.EditorEntryRequests
+import dev.renkinProject.renkin.ui.project.ProjectSaveRequired
+import dev.renkinProject.renkin.ui.project.ProjectSessionBackend
+import dev.renkinProject.renkin.ui.project.ProjectSessionController
 import dev.renkinProject.renkin.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -120,7 +126,8 @@ class MainViewModel @Inject constructor(
     private val appProvider: ApplicationProvider,
     private val watchRepo: WatchRepository,
     private val backupManager: BackupManager,
-    private val autoBackupManager: AutoBackupManager
+    private val autoBackupManager: AutoBackupManager,
+    savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application), IconPreviewBuilder {
     private val installerCatalog = InstallerCatalog(application)
     /**
@@ -128,6 +135,45 @@ class MainViewModel @Inject constructor(
      * operation that changed the icon. The provider separately protects its live icon list.
      */
     private val profileSessionOperations = Mutex()
+
+    /** External intents request the existing editor without constructing another session. */
+    private val editorEntries = EditorEntryRequests(savedStateHandle)
+    val editorEntryVersion: Long get() = editorEntries.version
+
+    fun requestEditorEntry() { editorEntries.request() }
+
+    internal val projectSession = ProjectSessionController(viewModelScope, savedStateHandle,
+        object : ProjectSessionBackend {
+            override val activeProfileId: Long get() = this@MainViewModel.activeProfileId
+            override val ready: Boolean get() = profileSummaryReady
+            override val canStart: Boolean
+                get() = startupComplete && !startupLoading && !isProfileSwitching && !isRefreshing
+            override fun hasUnsavedChanges() = this@MainViewModel.hasUnsavedChanges()
+
+            override suspend fun open(request: ProjectRequest.Open, saveFirst: Boolean): Long {
+                performSwitch(request.profileId, saveFirst, leavingProfileId = request.leavingProfileId)
+                return request.profileId
+            }
+
+            override suspend fun create(
+                request: ProjectRequest.Create,
+                saveFirst: Boolean,
+                onCreated: (Long) -> Unit
+            ): Long {
+                val id = profileSessionOperations.withLock {
+                    prepareProjectSwitch(request.leavingProfileId, saveFirst)
+                    // Allocate only after confirmation and a successful save. An interrupted
+                    // load keeps this real profile visible; neither UI nor restoration retries
+                    // the insert. The existing provider/Room identity remains authoritative.
+                    val createdId = appProvider.createProfile(request.name, request.description, request.packLabel)
+                    onCreated(createdId)
+                    switchAndResetBaselines(createdId)
+                    createdId
+                }
+                refreshMissingPacks()
+                return id
+            }
+        })
 
     val applicationList: List<PackageInfoStruct> get() = appProvider.applicationList
 
@@ -1123,20 +1169,40 @@ class MainViewModel @Inject constructor(
     private suspend fun performSwitch(
         id: Long,
         saveFirst: Boolean,
-        saveIfChanged: Boolean = false
+        saveIfChanged: Boolean = false,
+        leavingProfileId: Long? = null
     ) {
         profileSessionOperations.withLock {
+            if (leavingProfileId != null) {
+                check(appProvider.profileExists(id)) { "Project no longer exists" }
+                if (id == activeProfileId && !profileSummaryReady) {
+                    check(activeProfileId == leavingProfileId)
+                } else prepareProjectSwitch(leavingProfileId, saveFirst)
+            }
             // Notification-driven switches automatically preserve unsaved work. Evaluate this
             // only after waiting for an in-flight watch apply, otherwise a freshly applied icon
             // could land after the earlier check and then be discarded by this switch.
-            if (saveFirst || (saveIfChanged && hasUnsavedChanges())) {
+            if (leavingProfileId == null && (saveFirst || (saveIfChanged && hasUnsavedChanges()))) {
                 appProvider.saveActiveProfileIcons()
             }
-            invalidateChangeBaselines()
-            appProvider.switchProfile(id)
-            resetChangeBaselines()
+            switchAndResetBaselines(id, recoverIncompleteLoad = leavingProfileId != null)
         }
         refreshMissingPacks()
+    }
+
+    /** Called only while the profile-session mutex is held; no wrong-profile save is allowed. */
+    private suspend fun prepareProjectSwitch(leavingProfileId: Long, saveFirst: Boolean) {
+        check(activeProfileId == leavingProfileId) { "Active project changed while awaiting confirmation" }
+        if (!saveFirst && hasUnsavedChanges()) throw ProjectSaveRequired()
+        if (saveFirst) appProvider.saveActiveProfileIcons()
+    }
+
+    private suspend fun switchAndResetBaselines(id: Long, recoverIncompleteLoad: Boolean = false) {
+        val reload = recoverIncompleteLoad && id == activeProfileId && !profileSummaryReady
+        invalidateChangeBaselines()
+        if (reload) appProvider.reloadActiveProfile() else appProvider.switchProfile(id)
+        resetChangeBaselines()
+        check(activeProfileId == id && profileSummaryReady) { "Project baseline did not finish loading" }
     }
 
     /** Switches the active profile (prefs snapshot + icon set swap), optionally saving first. */

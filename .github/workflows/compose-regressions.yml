@@ -1,0 +1,40 @@
+name: Profile form regressions
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/src/main/kotlin/dev/renkinProject/renkin/ui/**'
+      - 'app/src/test/kotlin/dev/renkinProject/renkin/ui/**'
+      - 'scripts/run_compose_regressions.py'
+      - '.github/workflows/compose-regressions.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  profile-form-regressions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Run original cases separately, together and the shared form
+        run: python3 scripts/run_compose_regressions.py
+      - name: Retain exact-head regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: profile-form-regressions
+          path: build/compose-regressions/
+          if-no-files-found: error

@@ -92,6 +92,7 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -119,7 +120,10 @@ import dev.renkinProject.renkin.GlobalOptionsActivity
 import dev.renkinProject.renkin.MainViewModel
 import dev.renkinProject.renkin.OptionsViewModel
 import dev.renkinProject.renkin.WatchViewModel
+import dev.renkinProject.renkin.ui.project.ProjectEditorBackHandler
+import androidx.compose.material.icons.filled.Home
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -223,7 +227,12 @@ private fun LazyGridState.isScrollingUp(): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainColumn(iconPacks: List<IconPack>) {
+fun MainColumn(
+    iconPacks: List<IconPack>,
+    onNavigateHome: (() -> Unit)? = null,
+    viewModel: MainViewModel = hiltViewModel(),
+    collectToastEvents: Boolean = true
+) {
     var packageFilter by remember { mutableStateOf("") }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val listState = rememberLazyGridState()
@@ -236,7 +245,6 @@ fun MainColumn(iconPacks: List<IconPack>) {
     }
 
     val prefs = getPreferences()
-    val viewModel: MainViewModel = hiltViewModel()
     val sortOrder = prefs.getEnumValue(AppSortOrderKey, AppSortOrder.NAME)
     val storedFilterNoIcon = prefs.getBooleanValue(AppFilterNoIconKey)
     // Mirror the persisted filter locally so switching the hero buttons updates the list in
@@ -274,8 +282,8 @@ fun MainColumn(iconPacks: List<IconPack>) {
         setProblemFilter(AppProblemFilter.LOCKED, false)
     }
 
-    // Require a second back press to leave. Registered here (before the search bar),
-    // so the search bar's clear-on-back handler takes priority while it has text.
+    // Shell Back returns to Projects; standalone MainColumn retains double-Back exit.
+    // Registration precedes search, so clear-on-back still has priority over navigation.
     val context = LocalContext.current
     val activity = getCurrentMainActivity()
     val isInRefresh = viewModel.isRefreshing
@@ -286,8 +294,10 @@ fun MainColumn(iconPacks: List<IconPack>) {
     val toaster = LocalToaster.current
     val clipboard = LocalClipboard.current
     val coroutineScope = rememberCoroutineScope()
-    LaunchedEffect(Unit) {
-        viewModel.toastEvents.collect { resId -> toaster.show(context.getString(resId)) }
+    if (collectToastEvents) {
+        LaunchedEffect(viewModel) {
+            viewModel.toastEvents.collect { resId -> toaster.show(context.getString(resId)) }
+        }
     }
 
     // Undoable changes get a snackbar instead of a toast: a toast cannot be acted on, and the
@@ -433,7 +443,7 @@ fun MainColumn(iconPacks: List<IconPack>) {
 
     val pressBackMessage = stringResource(R.string.pressBackToExit)
     var lastBackPress by remember { mutableStateOf(0L) }
-    BackHandler {
+    ProjectEditorBackHandler(onNavigateHome = onNavigateHome, onLegacyBack = {
         val now = System.currentTimeMillis()
         if (now - lastBackPress < 2000) {
             activity.finish()
@@ -441,7 +451,7 @@ fun MainColumn(iconPacks: List<IconPack>) {
             lastBackPress = now
             toaster.show(pressBackMessage)
         }
-    }
+    })
 
     // The pinned search bar sits right under the top bar, so it tracks the same
     // scrolled tint — otherwise the header looks split (tinted bar, white search)
@@ -463,7 +473,7 @@ fun MainColumn(iconPacks: List<IconPack>) {
     CompositionLocalProvider(LocalIntroTargets provides introTargets) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = { TitleBar(scrollBehavior) },
+            topBar = { TitleBar(scrollBehavior, onNavigateHome) },
             snackbarHost = { SnackbarHost(snackbarHostState) },
             floatingActionButton = {
                 BuildPackFab(
@@ -498,17 +508,19 @@ fun MainColumn(iconPacks: List<IconPack>) {
     }
 
     // First-run intro: shows until dismissed once; Settings → "Show intro" clears the flag
-    // to bring it back. Initial=true so nothing flashes while the DataStore loads. It waits for the
+    // to bring it back. Null means preferences have not loaded yet; it waits for the
     // app list because it points at a real row, and starts from the top where every target sits.
-    val onboardingSeen by remember {
-        prefs.data.map { it.getBooleanValue(OnboardingSeenKey) }
-    }.collectAsState(initial = true)
-    if (!onboardingSeen && viewModel.startupComplete) {
+    val onboardingSeen by produceState<Boolean?>(null, prefs) {
+        prefs.data.collect { value = it.getBooleanValue(OnboardingSeenKey) }
+    }
+    val introVisibility = rememberIntroVisibility(onboardingSeen)
+    if (introVisibility.visible && viewModel.startupComplete) {
         LaunchedEffect(Unit) {
             listState.scrollToItem(0)
             scrollBehavior.state.heightOffset = 0f
         }
         IntroShowcase(introTargets) {
+            introVisibility.dismiss()
             viewModel.setOnboardingSeen(true)
         }
     }
@@ -1058,7 +1070,8 @@ fun RefreshButton() {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TitleBar(
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    onNavigateHome: (() -> Unit)? = null
 ) {
     val prefs = getPreferences()
     var openSettings by rememberSaveable { mutableStateOf(false) }
@@ -1078,6 +1091,13 @@ fun TitleBar(
         ),
         title = {
             Box(Modifier.introTarget(IntroTarget.PROFILE)) { ProfileSwitcherTitle() }
+        },
+        navigationIcon = {
+            if (onNavigateHome != null) {
+                IconButton(onClick = onNavigateHome, modifier = Modifier.testTag("editor-project-home")) {
+                    Icon(Icons.Filled.Home, contentDescription = stringResource(R.string.projectBackHome))
+                }
+            }
         },
         actions = {
             // Lit while any of the active profile's icons are locked behind a missing pack.

@@ -62,6 +62,22 @@ import dev.renkinProject.renkin.R
 import dev.renkinProject.renkin.ui.theme.DialogShape
 import kotlin.math.roundToInt
 
+internal class IntroVisibility(val visible: Boolean, val dismiss: () -> Unit)
+
+/** Distinguish not-yet-read preferences from Settings explicitly requesting another intro. */
+@Composable
+internal fun rememberIntroVisibility(seen: Boolean?): IntroVisibility {
+    var dismissed by rememberSaveable { mutableStateOf(false) }
+    var previousSeen by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    LaunchedEffect(seen) {
+        if (seen != null) {
+            if (!seen && previousSeen == true) dismissed = false
+            previousSeen = seen
+        }
+    }
+    return IntroVisibility(visible = seen == false && !dismissed, dismiss = { dismissed = true })
+}
+
 internal enum class IntroTarget {
     SOURCE, REFRESH, ADVANCED_OPTIONS, APP_ROW, WATCHED_ICONS, BUILD, PROFILE, SETTINGS, INFO
 }

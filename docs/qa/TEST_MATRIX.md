@@ -1,7 +1,28 @@
 # Regression and test matrix
 
-Status is scoped to Codex 00. A test class existing in source is not a passed run.
+Current checkpoint is Codex 01; Codex 00 results below are historical.
+A test class existing in source is not a passed run.
 Results and environment belong in [BASELINE](BASELINE.md) and each PR audit.
+
+## Codex 01 — feature regression coverage
+
+| Area | Automated coverage and boundary | Required device scenario | Current checkpoint |
+| --- | --- | --- | --- |
+| Home/accessibility | ProjectHomeComposeTest: states/IDs/duplicates/long titles, tags/descriptions, light/dark/hinge/48dp | TalkBack, fonts, phones/tablets/fold/cover/rotation | Passed in full 38152705800 (631/631); device NOT RUN |
+| Navigation/Back | ProjectShellComposeTest: same editor handler, real dialog/search priority, route/draft restore, Home, dirty exit, refresh, Extend, intro dismissal during pending prefs | Full MainColumn nested editor Apply/Cancel, keyboard/dialogs | Originals passed separately/together and full 631/631 in 38152705800; final documentation-head checks in PR #2; full Activity NOT RUN |
+| Shared profile form | ProfileDetailsDialogComposeTest: actual required/trimmed/capped fields, confirm once, restored draft/Cancel; SDK 33/native/320 dp, no idling bypass | Wider dialog/font scaling/keyboard/TalkBack | All 3 passed separately and full 631/631 in 38152705800; device NOT RUN |
+| Profiles/async | ProjectSessionTest: active no-op, Save/Cancel/origin, queued dirty check, delayed baseline, failure, one create/no replay | Existing/default/delete/import/restore, rapid taps, kill/relaunch | Fake backend and existing manager/gate/migration suites passed in full 38152705800; device NOT RUN |
+| External ingress | SharedImageIngressTest uses Activity's URI guard and SavedStateHandle counter; shell tests entry/pending-watch priority and actual ActivityResultRegistry during loading | Notification owning/missing profile, real SEND/Upload, URI grant/recreation | URI/counter, result-registration and formerly blocked ingress passed in full 38152705800; real delivery/device NOT RUN |
+| Existing AI1/AI2 | Existing mock AiImagePipeline/AiPersistence/AiBatchRunner suites | Paid trial only under separate authorization | Passed in full 38152705800; no new endpoint/client/batch behavior |
+| Global/preview/build | Existing provider/build/signing/installer suites | GlobalOptions Apply/Back/result; BuildPackFab → WallpaperPreview → build/sign → install/update; installer onResume | Existing unit suites passed in full 38152705800; contracts/IDs unchanged; device NOT RUN |
+| Data/source/OEM | Existing profile/backup/provenance/render suites | Source picker, backup/restore, default/delete, Theme Park/One UI/cover/fold, old pack update | Existing unit suites passed in full 38152705800; no schema/SDK/permission/key changes; device NOT RUN |
+| Governance/enforcement | 45 guard tests passed locally; final three checks must match final PR head | Owner enable reviews/conversations and explicitly accept audit | 45 guards passed fresh; build/regressions passed at b9ec57b5; exact final documentation-head contexts in PR #2; owner review/conversation settings pending |
+
+Final documentation-head compile/unit/APK, regressions and governance must all be
+checked on that same SHA; their observed statuses are recorded in PR #2. Fake-state tests do not prove actual MainActivity lifecycle, import, all old
+editor interactions or visual QA. Keep the manual scenarios marked NOT RUN.
+
+## Codex 00 — historical matrix
 
 | Area | Automated coverage / command | Required manual evidence | Codex 00 status |
 | --- | --- | --- | --- |
