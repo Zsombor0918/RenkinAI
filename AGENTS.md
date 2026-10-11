@@ -29,7 +29,8 @@ This repository is GPLv3; retain upstream attribution and library identities.
    in English, with a lowercase start and at most 72 ASCII characters. Existing
    history is exempt. See [workflow](docs/agent/WORKFLOW.md) for guard behavior.
 2. Update relevant canonical documents; add a new [change note](docs/changes/README.md)
-   for every meaningful PR. State/milestone/architecture/durable-decision impacts
+   for every meaningful PR and each meaningful staged follow-up commit (the local
+   hook compares with HEAD). State/milestone/architecture/durable-decision impacts
    must be explicit. Make long-term decisions in numbered ADRs.
 3. Run the required checks on the final change. Record commands, environment,
    observed result and missing coverage. Never call an attempted build a passed

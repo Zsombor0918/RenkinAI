@@ -2,7 +2,8 @@
 
 Source baseline: `eb4daa5de82fab54e115363c073eb8981f2203d6`, inspected October 11,
 2026. Codex 00 changes documentation and development infrastructure only; no Kotlin,
-manifest, dependency, Room schema, signing or Android CI behavior is changed.
+manifest, dependency, Room schema or signing is changed. The Android CI tasks are
+preserved; SDK setup explicitly selects platform-tools to avoid v3's missing tools package.
 Existence in source and runtime validation are different; see [QA baseline](../qa/BASELINE.md).
 
 ## Product and implemented paths

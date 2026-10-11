@@ -6,7 +6,7 @@ Results and environment belong in [BASELINE](BASELINE.md) and each PR audit.
 | Area | Automated coverage / command | Required manual evidence | Codex 00 status |
 | --- | --- | --- | --- |
 | Repo guards | `python3 -m unittest discover -s scripts/tests -v`; valid/invalid commits, missing/empty notes, good docs, bad links, exceptions, hooks, exits | Git Bash/IDE hook setup on Windows | Offline suite passed; native Windows not run |
-| App compile/unit/build | `compileDebugKotlin testDebugUnitTest assembleDebug`; existing JVM/Robolectric suite | Install the resulting APK and cold start | Local attempt blocked at Gradle download; PR CI must supply results |
+| App compile/unit/build | `compileDebugKotlin testDebugUnitTest assembleDebug`; existing JVM/Robolectric suite | Install the resulting APK and cold start | Local download blocked; first PR CI setup failed on legacy tools; corrected SDK input awaits a fresh run |
 | App list/identity | InstalledAppCatalogTest, ApplicationManagerComponentTest | Multiple launcher activities, work profile, reload | Tests exist; not rerun locally |
 | Manual/custom/modifier icons | IconGeneratorTest, IconDraftStateTest, SVG/adaptive/outline tests | Select/import/edit/save/reopen; custom icon survives refresh | Not tested on device |
 | Profiles and data | ProfileManagerTest, ProfileOperationGateTest, RenkinPackMigrationTest, backup tests | Unsaved switch, delete/default guards, upgrade/backup/restore | No schema change here; device coverage outstanding |

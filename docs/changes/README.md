@@ -2,6 +2,8 @@
 
 Every meaningful non-doc PR adds a **new** file named
 `YYYY-MM-DD-short-topic.md`. Do not edit an old record to stand in for a new PR.
+The local hook compares with HEAD, so meaningful follow-up commits also add a new
+related note; CI considers their combined scope as one PR audit.
 The small Android-test/docs-only exceptions are defined in [WORKFLOW](../agent/WORKFLOW.md).
 Each document explains one reviewable scope; it is an engineering audit record,
 not a replacement for user-facing CHANGELOG or canonical current state.

@@ -13,13 +13,17 @@ PR audit after committing; locally inspect `git rev-parse HEAD` and `git log -1`
 - Shared Python validators with stage/PR snapshots, internal links, path-based
   required docs, substantive new change notes and honest audit declarations.
 - Local pre-commit/commit-msg hooks; PR-only, read-only governance jobs alongside
-  the unchanged Android CI. Guard regression tests use offline temporary Git repos.
+  the existing Android CI. Compile/tests/APK steps are retained; SDK setup avoids
+  the unavailable legacy tools package. Guard tests use offline temporary Git repos.
 - Corrections to existing architecture identity/build gate details; Hungarian
   handoff and watch brainstorm remain labeled historical, without copying their
   claimed build results into new verification.
 
 Detailed files, rationale and rollback: [Codex 00 change note](../changes/2026-10-11-agent-docs-governance.md).
 Final verification evidence: [QA baseline](../qa/BASELINE.md).
+The first PR run passed both governance jobs but Android setup failed at
+`sdkmanager tools`. The [CI setup follow-up](../changes/2026-10-11-android-ci-sdk-setup.md)
+corrects that infrastructure input; subsequent run results belong in the PR audit.
 
 ## Open risks and administration state
 
@@ -36,7 +40,8 @@ correctness or prevent a reviewer from approving false declarations.
 
 ## Next safe task
 
-First finish Codex 00 review, require the three CI contexts and configure/verify
+First verify the SDK setup follow-up in Android CI, finish Codex 00 review, require
+the three CI contexts and configure/verify
 main protection. Then begin the separately authorized Codex 01 ProjectHome task:
 read MainActivity/MainViewModel, ProfileManager, profile-operation gates and
 DataPreferences; propose a profile-backed entry point with explicit migration and

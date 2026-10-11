@@ -17,6 +17,8 @@ base and final head SHA. Leave reviewer acceptance and merge to the authorized o
 `check_docs.py --staged` reads Git blobs from the index and compares with HEAD.
 `--base BASE --head HEAD` reads committed head blobs and compares with the Git
 merge-base, so unrelated changes on a diverged base do not count as PR changes.
+Each meaningful staged commit needs a new note relative to HEAD; a multi-commit
+PR can have several related notes, all inspected together in the PR diff.
 Deletes/renames count (renames appear as deletion + addition). Required documents
 cannot be deleted. All tracked Markdown local file links, reference definitions,
 HTML href/src and Markdown heading fragments are checked without network calls.
@@ -65,7 +67,9 @@ and bodies are read from the event JSON, never expanded as shell commands.
   audit, local links and the completed PR audit. `Audit result: BLOCKED` fails.
 - Existing [Android CI](../../.github/workflows/ci.yml), job `build`: compile,
   Robolectric/JVM unit tests, assembleDebug, APK artifact and failure reports.
-  Its triggers, job and build commands remain unchanged by Codex 00.
+  Its triggers, job and build commands are preserved. SDK setup explicitly requests
+  `platform-tools`, replacing v3's default request for the unavailable legacy `tools`
+  package; see the [CI follow-up audit](../changes/2026-10-11-android-ci-sdk-setup.md).
 
 CI does not validate natural-language truth, visual quality, actual device behavior,
 reviewer identity/authority, provider availability or Play acceptance. Scripts and

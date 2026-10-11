@@ -6,6 +6,8 @@ Implement a canonical agent entry path, contributor hooks, shared offline guards
 read-only PR governance CI, substantive change records and a complete audit template.
 Work stays on `chore/agent-docs-governance`; main baseline is
 `eb4daa5de82fab54e115363c073eb8981f2203d6`. No merge or release is performed.
+This note records the initial infrastructure commit. A subsequently observed SDK
+setup failure is addressed by the [separate CI follow-up](2026-10-11-android-ci-sdk-setup.md).
 
 ## Why
 
