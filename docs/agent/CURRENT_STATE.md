@@ -51,6 +51,9 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 - Editor UI state is saved per active profile ID for Home round trips; icons remain
   in MainViewModel/ApplicationProvider. Session-only unsaved icons still do not
   survive process death without explicit save/build, as in the existing editor.
+- Editor-entry versions use the VM SavedStateHandle, so a restored image/watch
+  request is not lost before the shell consumes it. Intro dismissal distinguishes
+  pending preference reads from an explicit Settings request to show the tour again.
 - Watch requests/pending suggestions and VM-owned legacy prompts take priority over
   Home. Shared images open the editor and toast directs users to an app's Upload
   tab. The original URI instance-state key suppresses recreation imports; separately

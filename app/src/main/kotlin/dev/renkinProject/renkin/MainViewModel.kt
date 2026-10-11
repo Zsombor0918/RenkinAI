@@ -67,6 +67,7 @@ import dev.renkinProject.renkin.icon.creator.PackIconPreview
 import dev.renkinProject.renkin.icon.creator.PackRowPreviews
 import dev.renkinProject.renkin.packages.PackageInfoStruct
 import dev.renkinProject.renkin.ui.project.ProjectRequest
+import dev.renkinProject.renkin.ui.project.EditorEntryRequests
 import dev.renkinProject.renkin.ui.project.ProjectSaveRequired
 import dev.renkinProject.renkin.ui.project.ProjectSessionBackend
 import dev.renkinProject.renkin.ui.project.ProjectSessionController
@@ -136,10 +137,10 @@ class MainViewModel @Inject constructor(
     private val profileSessionOperations = Mutex()
 
     /** External intents request the existing editor without constructing another session. */
-    var editorEntryVersion by mutableStateOf(0L)
-        private set
+    private val editorEntries = EditorEntryRequests(savedStateHandle)
+    val editorEntryVersion: Long get() = editorEntries.version
 
-    fun requestEditorEntry() { editorEntryVersion++ }
+    fun requestEditorEntry() { editorEntries.request() }
 
     internal val projectSession = ProjectSessionController(viewModelScope, savedStateHandle,
         object : ProjectSessionBackend {

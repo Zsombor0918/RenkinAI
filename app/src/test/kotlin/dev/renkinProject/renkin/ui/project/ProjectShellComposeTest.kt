@@ -25,6 +25,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import dev.renkinProject.renkin.data.Profile
 import dev.renkinProject.renkin.ui.RenkinAlertDialog
+import dev.renkinProject.renkin.ui.rememberIntroVisibility
 import dev.renkinProject.renkin.ui.theme.RenkinTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -52,6 +53,7 @@ class ProjectShellComposeTest {
     private var attention by mutableStateOf(false)
     private var childOpen by mutableStateOf(false)
     private var searchOpen by mutableStateOf(false)
+    private var onboardingSeen: Boolean? by mutableStateOf(true)
     private val opens = mutableListOf<Long>()
     private var creates = 0
     private var saves = 0
@@ -94,10 +96,14 @@ class ProjectShellComposeTest {
                 // Use the same handler as MainColumn, before search/dialog children.
                 ProjectEditorBackHandler(goHome) { legacyExits++ }
                 var draft by rememberSaveable { mutableStateOf("") }
+                val intro = rememberIntroVisibility(onboardingSeen)
                 Column(Modifier.testTag("test-editor")) {
                     Text("Editor profile ${home.activeProfileId}")
                     OutlinedTextField(draft, { draft = it }, modifier = Modifier.testTag("editor-draft"))
                     TextButton(onClick = goHome, modifier = Modifier.testTag("editor-home")) { Text("Projects") }
+                    if (intro.visible) {
+                        TextButton(onClick = intro.dismiss, modifier = Modifier.testTag("test-intro")) { Text("Skip intro") }
+                    }
                 }
                 BackHandler(enabled = searchOpen) { searchOpen = false }
                 if (childOpen || attention) {
@@ -229,6 +235,22 @@ class ProjectShellComposeTest {
         assertEquals(listOf(1L), opens)
         assertEquals(0, creates)
         assertEquals(0, saves)
+    }
+
+    @Test
+    fun introDoesNotRestartOnHomeReturnWhileDismissPreferenceIsStillPending() {
+        onboardingSeen = false
+        start()
+        compose.onNodeWithTag("project-classic").performClick()
+        compose.onNodeWithTag("test-intro").performClick()
+        compose.onNodeWithTag("editor-home").performClick()
+        compose.runOnIdle { onboardingSeen = null } // New editor's preference read is pending.
+        compose.onNodeWithTag("project-classic").performClick()
+        compose.runOnIdle { onboardingSeen = false } // Save flag has not reached disk yet.
+        compose.onNodeWithTag("test-intro").assertDoesNotExist()
+        compose.runOnIdle { onboardingSeen = true }
+        compose.runOnIdle { onboardingSeen = false } // Settings explicitly asks to show it again.
+        compose.onNodeWithTag("test-intro").assertIsDisplayed()
     }
 
     @Test

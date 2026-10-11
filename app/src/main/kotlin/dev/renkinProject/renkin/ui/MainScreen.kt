@@ -123,6 +123,7 @@ import dev.renkinProject.renkin.WatchViewModel
 import dev.renkinProject.renkin.ui.project.ProjectEditorBackHandler
 import androidx.compose.material.icons.filled.Home
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -507,20 +508,19 @@ fun MainColumn(
     }
 
     // First-run intro: shows until dismissed once; Settings → "Show intro" clears the flag
-    // to bring it back. Initial=true so nothing flashes while the DataStore loads. It waits for the
+    // to bring it back. Null means preferences have not loaded yet; it waits for the
     // app list because it points at a real row, and starts from the top where every target sits.
-    val onboardingSeen by remember {
-        prefs.data.map { it.getBooleanValue(OnboardingSeenKey) }
-    }.collectAsState(initial = true)
-    var introDismissed by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(onboardingSeen) { if (onboardingSeen) introDismissed = false }
-    if (!onboardingSeen && !introDismissed && viewModel.startupComplete) {
+    val onboardingSeen by produceState<Boolean?>(null, prefs) {
+        prefs.data.collect { value = it.getBooleanValue(OnboardingSeenKey) }
+    }
+    val introVisibility = rememberIntroVisibility(onboardingSeen)
+    if (introVisibility.visible && viewModel.startupComplete) {
         LaunchedEffect(Unit) {
             listState.scrollToItem(0)
             scrollBehavior.state.heightOffset = 0f
         }
         IntroShowcase(introTargets) {
-            introDismissed = true
+            introVisibility.dismiss()
             viewModel.setOnboardingSeen(true)
         }
     }

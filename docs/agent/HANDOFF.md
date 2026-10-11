@@ -45,6 +45,15 @@ Linux/Python 3.12.14/Git 2.51.1/JDK 17.0.20, no SDK/device. Existing main-merge
 [CI 38138580216](https://github.com/Zsombor0918/RenkinAI/actions/runs/38138580216)
 was rechecked successful, as baseline evidence only. New Kotlin/Compose tests
 require feature-head CI; results are recorded after completion in QA/the PR audit.
+First feature head `b60b477864fd50a9776f1f1b2c85d5226e9ccfc1` compiled in
+[CI 38140946784](https://github.com/Zsombor0918/RenkinAI/actions/runs/38140946784),
+then unit-test compilation failed on DpRect width/height property use, before any
+unit execution/APK. Follow-up uses edge differences and tests retained editor-entry
+version plus intro dismissal across pending preference reads. It also persists
+ingress in SavedStateHandle. Details: [recreation note](../changes/2026-10-11-project-home-recreation.md).
+Draft PR [#2](https://github.com/Zsombor0918/RenkinAI/pull/2) stays BLOCKED while
+its own fresh full build results are pending; the guard correctly rejected that
+declaration even though its 45 offline tests and commit conventions passed in CI.
 
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions

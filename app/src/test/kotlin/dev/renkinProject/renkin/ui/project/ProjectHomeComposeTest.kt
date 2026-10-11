@@ -116,9 +116,9 @@ class ProjectHomeComposeTest {
         show(ready(Profile(1, "Default")))
         val create = compose.onNodeWithTag("project-create").getUnclippedBoundsInRoot()
         val extend = compose.onNodeWithTag("project-extend").getUnclippedBoundsInRoot()
-        assertEquals(create.width.value, extend.width.value, 1f)
+        assertEquals((create.right - create.left).value, (extend.right - extend.left).value, 1f)
         assertTrue(extend.left >= create.right)
-        assertTrue(create.height >= 48.dp && extend.height >= 48.dp)
+        assertTrue(create.bottom - create.top >= 48.dp && extend.bottom - extend.top >= 48.dp)
     }
 
     @Test

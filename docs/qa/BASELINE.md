@@ -14,6 +14,12 @@ implementation; #1 merged and its P1 fix/tests/thread verified.
 | Main merge [CI 38138580216](https://github.com/Zsombor0918/RenkinAI/actions/runs/38138580216) | Existing push run rechecked successful on main SHA | Baseline only, not new ProjectHome validation |
 | New Home/Shell/Session/ingress tests | Added; Android execution pending feature CI | Fake async state and real Compose/Back components; IDs/states, no replay, restoration, light/dark/hinge/48dp; not full Activity/device/pixel proof |
 | Ruleset/branch at 12:16 UTC | Active/protected, PR and three checks; no bypass, deletion/force push blocked | Review count 0, last-push false, conversation false, strict false; owner must enable missing review/conversation requirements |
+| Feature [CI 38140946784](https://github.com/Zsombor0918/RenkinAI/actions/runs/38140946784), head `b60b477864fd50a9776f1f1b2c85d5226e9ccfc1` | App compile SUCCESS; unit-test compile FAILED on DpRect width/height | Unit tests/APK did not execute; follow-up uses edge differences; no false suite success |
+| Feature [Governance 38140946802](https://github.com/Zsombor0918/RenkinAI/actions/runs/38140946802), same head | Commit conventions PASS; 45 guard tests PASS; audit intentionally FAILED on BLOCKED draft | Log proves BLOCKED exit propagation; source/link/shape checks had no other errors |
+
+Recreation follow-up adds a persisted editor-entry counter and an intro-visibility
+helper that distinguishes pending prefs from explicit re-show, plus regressions.
+Fresh full feature-head execution remains required after these changes.
 
 Staged/range/PR audits and final feature-head Actions are recorded after execution
 in this ledger or the PR audit. No pending tests or historical count is reported

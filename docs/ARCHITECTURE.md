@@ -185,11 +185,19 @@ before search/child handlers. Standalone `MainColumn(iconPacks)` retains the old
 double-Back exit and its toast collector; the shell owns exactly one collector
 while Home is visible. Onboarding's saved progress/dismissal survives Home returns
 and the global preference still allows Settings to request the existing intro again.
+The preference reader uses null until its first value. Saved dismissal resets only
+on a real seen-to-unseen transition, rather than the initial loading value. The
+same rememberIntroVisibility helper is exercised through the shell's saved editor.
 Home clean Back exits; dirty Back explains loss and allows return to editor or
 explicit exit without save. Merely entering Home has no profile/save/AI/build effect.
 
 Watch intents request Editor before resolving the owning profile through the
 existing watch/mutex path; pendingWatchSuggestionId is not consumed by Home. Legacy
+editor-entry versions are stored in SavedStateHandle as well: if process death
+occurs before the shell's consuming effect, restored intent routing still reaches
+Editor without importing an image or creating a profile again. A consumed request
+does not override a later saved Home route merely on recreation. The counter is
+UI ingress state, not another profile session.
 VM-owned watch, missing-pack, backup and installer prompts bring MainColumn into
 the tree. Shared-image import requests Editor, reuses the original URI restoration
 guard and explains the Upload tab in the existing toast. GlobalOptions and
