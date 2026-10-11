@@ -117,7 +117,7 @@ class ProfileDialogDiagnosticsTest {
 }
 
 /** Reports the existing test rule's idler/root state before its teardown, without pumping it. */
-internal class ComposeIdleProbe(private val compose: ComposeContentTestRule) : TestWatcher() {
+class ComposeIdleProbe(private val compose: ComposeContentTestRule) : TestWatcher() {
     val compositions = AtomicInteger()
     private val writes = AtomicInteger()
     private val applies = AtomicInteger()

@@ -93,6 +93,10 @@ isolates plain content, empty dialog, individual labelled/unlabelled/supporting
 fields, three fields, the real form and real shell. It captures installed idler
 flags, snapshot write stacks and complete XML independently, with nonzero failure.
 See [diagnosis note](../changes/2026-10-11-compose-idling-diagnosis.md).
+Initial diagnostic head `e8c2ee56d0481d50ba5cd4deb47566ecd2f78038` failed
+test compilation because a public JUnit property exposed an internal probe class.
+A test-only visibility correction precedes remeasurement; it does not establish
+the original idle cause. All 45 local guards freshly passed again.
 
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions

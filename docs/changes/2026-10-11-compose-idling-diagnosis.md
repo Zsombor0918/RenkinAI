@@ -41,6 +41,11 @@ The latest failure HTML was downloaded and both full stacks inspected. Both fail
 inside RobolectricIdlingStrategy waiting for idle before the first text input or
 ingress state update; this proves a boundary, not a component cause. New diagnostic
 Android execution requires GitHub Actions because the local SDK/Gradle is unavailable.
+The first diagnostic checkpoint `e8c2ee56d0481d50ba5cd4deb47566ecd2f78038`
+failed test compilation: a public JUnit rule exposed internal ComposeIdleProbe.
+The helper's visibility is corrected in a narrow test-only follow-up; no isolation
+case or Android suite pass is claimed at that checkpoint. The fresh local guard
+run passed all 45 tests in 16.058 seconds; local Android again failed Gradle download.
 
 ## Not tested
 
