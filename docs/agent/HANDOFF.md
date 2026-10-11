@@ -58,8 +58,14 @@ experiments are removed. The permanent regression runner checks both originals
 separately/together and retains complete XML/SHA/count evidence; full Android CI
 and governance are unchanged. [Correction note](../changes/2026-10-11-compose-dialog-regression-fix.md)
 contains measurements, boundaries, preserved scope and rollback. Final correction
-SHA execution is pending; keep PR #2 BLOCKED until actual full tests/APK and guards
-pass, then document missing devices as PASS WITH RISKS for owner/reviewer decision.
+`ae80fbd818eb17c98a7463f689603cfb94dcbaa3` passed
+[Android 38152173163](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152173163)
+compile/unit/debug APK, and [regressions 38152173157](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152173157)
+passed original creation 1/1, ingress 1/1, combined 2/2 and form 3/3, with no skips.
+The original success log has no numeric suite count; the evidence runner now retains
+an additional unfiltered complete compile/test/APK run and verifies actual selectors.
+Fresh final SHA results are still required. Missing devices need PASS WITH RISKS
+and an authorized owner/reviewer decision after automation succeeds.
 
 ### Earlier failed checkpoints — historical
 

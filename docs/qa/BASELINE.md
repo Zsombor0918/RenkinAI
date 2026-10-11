@@ -26,6 +26,8 @@ implementation; #1 merged and its P1 fix/tests/thread verified.
 | [Controls 38150132443](https://github.com/Zsombor0918/RenkinAI/actions/runs/38150132443), head `bb2dde21c5439bfda45a056ddea640dc41c6670a` | SDK 35 also FAILED; first draw control failed before drawing | No draw conclusion; real window-availability condition added next |
 | [Window controls 38150826550](https://github.com/Zsombor0918/RenkinAI/actions/runs/38150826550), head `8c1dddc4c3a75ffc0dd612fab543c5e3ed2de64d` | Native draw FAILED; same 450×416 px explicit bounds PASSED; legacy FAILED | Only exact platform bounds cleared pending layout; no production sizing change used |
 | [Width-only 38151317631](https://github.com/Zsombor0918/RenkinAI/actions/runs/38151317631), head `7aad5bd410e9d2dcc88188028671c4f356755eb0` | Actual form and shell both PASSED separately at 320×800 dp | Same SDK 33/native/height/components/input; all busy flags false; artifact 11706736726 contains full XML |
+| Corrected [Android 38152173163](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152173163), head `ae80fbd818eb17c98a7463f689603cfb94dcbaa3` | Compile, full unit task, debug APK/upload all SUCCESS | Success log does not print numeric full count; artifact 11707221864 is real APK, not device installation proof |
+| Corrected [regressions 38152173157](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152173157), same head | Creation 1/1, ingress 1/1, combined 2/2, shared form 3/3, all exit zero | Zero failures/errors/skips; exact-head XML artifact 11707590246; full numeric collection added next |
 
 Recreation follow-up adds a persisted editor-entry counter and an intro-visibility
 helper that distinguishes pending prefs from explicit re-show, plus regressions.
@@ -46,7 +48,8 @@ the busy condition or prove a Material 3, animation, focus or production defect.
 Full XML and native controls above establish the WRAP_CONTENT/custom-width layout
 boundary. The final test correction uses 320 dp for the two real-form cases and
 adds three shared-form regressions. Temporary probes/negative controls are removed.
-Fresh original isolated/combined tests and complete suite/APK still require execution.
+Corrected original isolated/combined/form and complete Android tasks passed above.
+The additional unfiltered XML/count collection and final SHA verification are pending.
 Upstream issue 8460 is context, not a replacement for these actual CI measurements.
 
 Staged/range/PR audits and final feature-head Actions are recorded after execution

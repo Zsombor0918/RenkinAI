@@ -17,6 +17,7 @@ CASES = {
     "ingress": [INGRESS],
     "both": [CREATION, INGRESS],
     "shared-form": [PACKAGE + "ProfileDetailsDialogComposeTest"],
+    "full-suite": [],
 }
 
 
@@ -28,7 +29,8 @@ def main():
     for name, selectors in CASES.items():
         destination = OUTPUT / name
         destination.mkdir(exist_ok=True)
-        command = ["./gradlew", "testDebugUnitTest", "--console=plain"]
+        tasks = ["compileDebugKotlin", "testDebugUnitTest", "assembleDebug"] if name == "full-suite" else ["testDebugUnitTest"]
+        command = ["./gradlew", *tasks, "--console=plain"]
         for selector in selectors:
             command.extend(["--tests", selector])
         print(f"Running {name} on {head}", flush=True)
@@ -41,12 +43,18 @@ def main():
                 shutil.copytree(path, destination / target, dirs_exist_ok=True)
         reports = list((destination / "xml").glob("TEST-*.xml"))
         counts = {key: 0 for key in ("tests", "failures", "errors", "skipped")}
+        observed = set()
         for report in reports:
-            attributes = ET.parse(report).getroot().attrib
+            suite = ET.parse(report).getroot()
+            attributes = suite.attrib
+            observed.add(attributes["name"])
+            observed.update(attributes["name"] + "." + case.attrib["name"].split("[", 1)[0]
+                            for case in suite.findall("testcase"))
             for key in counts:
                 counts[key] += int(attributes.get(key, 0))
-        passed = result.returncode == 0 and counts["tests"] > 0 and not any(counts[key] for key in ("failures", "errors", "skipped"))
-        summary["cases"][name] = {"exit": result.returncode, "passed": passed, **counts}
+        missing = [selector for selector in selectors if selector not in observed]
+        passed = result.returncode == 0 and counts["tests"] > 0 and not missing and not any(counts[key] for key in ("failures", "errors", "skipped"))
+        summary["cases"][name] = {"exit": result.returncode, "passed": passed, "missing_selectors": missing, **counts}
         failed |= not passed
         print(f"{name}: {summary['cases'][name]}", flush=True)
     (OUTPUT / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")

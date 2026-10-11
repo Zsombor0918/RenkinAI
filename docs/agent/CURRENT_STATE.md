@@ -17,8 +17,11 @@ the actual form and shell passed at 320 dp; same measured 450×416 px explicit p
 bounds also passed. Clock, draw, SDK 35 and legacy graphics did not resolve it.
 The two original tests now use compatible 320 dp width, all their assertions remain,
 and three actual shared-form regressions plus isolated/combined CI were added.
-Production code is unchanged from the audited starting head. Final original/full
-tests and APK still require fresh verification; PR #2 remains BLOCKED until then.
+Production code is unchanged from the audited starting head. At correction
+`ae80fbd818eb17c98a7463f689603cfb94dcbaa3`, CI 38152173163 passed compile,
+all unit tests and debug APK; 38152173157 passed original creation/ingress separately,
+together and all three form regressions. Complete passing XML/count collection is
+added next; final SHA/check results belong in PR #2. Devices remain NOT RUN.
 See [measured correction](../changes/2026-10-11-compose-dialog-regression-fix.md).
 
 ## Product and implemented paths

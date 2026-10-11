@@ -21,6 +21,10 @@ It retains per-case XML/HTML/logs and `build/compose-regressions/summary.json` w
 HEAD, exit codes and counts. Nonzero Gradle exit, missing results, failure/error or
 skipped tests fail the runner/job. The full Android CI still runs the entire suite
 and debug build; filtered regressions do not replace it or the three required checks.
+After the filtered runs the runner executes the unfiltered
+`./gradlew compileDebugKotlin testDebugUnitTest assembleDebug` command, retains
+complete suite XML/counts, and verifies that requested selectors occurred. The
+additional complete run also checks order dependence after the filtered runs.
 
 Native SDK 33 form tests use 320 dp width to avoid the measured Robolectric
 WRAP_CONTENT custom-width loop. Wide/hinge Home tests remain unchanged; wider-device
