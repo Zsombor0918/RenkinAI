@@ -24,6 +24,9 @@ temporary instrumentation after capturing the cause, keeping useful regressions.
 The next controls compare a single actual native Canvas draw of the already laid-out
 dialog and SDK 35. These are measured hypotheses, not idling bypasses or substitutions
 for the existing SDK 33 real-form tests. Steady-state write samples accompany flags.
+Window controls wait on an attached, measured actual dialog before drawing or setting
+its measured platform bounds. A legacy graphics case is a diagnostic comparison only;
+the original native tests remain mandatory. No timeout is increased.
 
 ## Automatic documentation minimum
 

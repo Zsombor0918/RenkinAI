@@ -127,7 +127,7 @@ class ProfileDialogDiagnosticsTest {
             if (show) ProfileDetailsDialog("Create new icon pack", "Create", { _, _, _ -> }, {})
         }
         compose.onNodeWithTag("show-dialog").performClick()
-        compose.mainClock.advanceTimeByFrame()
+        awaitDialogWindow()
         compose.runOnUiThread {
             shadowOf(Looper.getMainLooper()).idle()
             val view = requireNotNull(ShadowDialog.getLatestDialog()?.window?.decorView)
@@ -141,6 +141,37 @@ class ProfileDialogDiagnosticsTest {
     }
 
     @Test @Config(sdk = [35]) fun realProfileDialogSdk35() {
+        content { ProfileDetailsDialog("Create new icon pack", "Create", { _, _, _ -> }, {}) }
+        compose.onNodeWithTag("profile-name").performTextInput("Night")
+    }
+
+    private fun awaitDialogWindow() {
+        compose.waitUntil {
+            compose.runOnUiThread {
+                shadowOf(Looper.getMainLooper()).idle()
+                val view = ShadowDialog.getLatestDialog()?.window?.decorView
+                view != null && view.isAttachedToWindow && view.width > 0 && view.height > 0
+            }
+        }
+    }
+
+    @Test fun realProfileDialogWithMeasuredWindowBounds() {
+        content {
+            var show by remember { mutableStateOf(false) }
+            TextButton(onClick = { show = true }, modifier = Modifier.testTag("show-dialog")) { Text("Create") }
+            if (show) ProfileDetailsDialog("Create new icon pack", "Create", { _, _, _ -> }, {})
+        }
+        compose.onNodeWithTag("show-dialog").performClick()
+        awaitDialogWindow()
+        compose.runOnUiThread {
+            val window = requireNotNull(ShadowDialog.getLatestDialog()?.window)
+            println("WINDOW_BOUNDS before params=${window.attributes.width}x${window.attributes.height} measured=${window.decorView.width}x${window.decorView.height}")
+            window.setLayout(window.decorView.width, window.decorView.height)
+        }
+        compose.onNodeWithTag("profile-name").performTextInput("Night")
+    }
+
+    @Test @GraphicsMode(GraphicsMode.Mode.LEGACY) fun realProfileDialogLegacyGraphicsControl() {
         content { ProfileDetailsDialog("Create new icon pack", "Create", { _, _, _ -> }, {}) }
         compose.onNodeWithTag("profile-name").performTextInput("Night")
     }
@@ -165,7 +196,11 @@ class ComposeIdleProbe(private val compose: ComposeContentTestRule) : TestWatche
                 synchronized(samples) {
                     if (number > 120 || samples.none { it.endsWith(stack) }) {
                         if (samples.size >= 12) samples.removeAt(0)
-                        samples += "write=$number ${state.toString().take(180)}: $stack"
+                        val proxy = (state as? androidx.compose.runtime.MutableState<*>)?.value
+                        val layout = if (proxy?.javaClass?.name?.endsWith("TextLayoutResultProxy") == true) {
+                            runCatching { proxy.javaClass.getMethod("getValue").invoke(proxy) as androidx.compose.ui.text.TextLayoutResult }.getOrNull()
+                        } else null
+                        samples += "write=$number ${state.toString().take(180)} constraints=${layout?.layoutInput?.constraints} size=${layout?.size}: $stack"
                     }
                 }
             }

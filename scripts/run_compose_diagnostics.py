@@ -8,7 +8,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "compose-diagnostics"
 CASES = [
-    "realProfileDialogAfterPlatformDraw", "realProfileDialogSdk35",
+    "realProfileDialogAfterPlatformDraw", "realProfileDialogWithMeasuredWindowBounds",
+    "realProfileDialogLegacyGraphicsControl",
 ]
 
 

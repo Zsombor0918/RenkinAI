@@ -105,6 +105,11 @@ root was attached, unfocused, pending measurement and requesting layout; no cloc
 setContent, snapshot or recomposer pending flag. This establishes the narrow boundary,
 not yet a missing-draw/component root cause. Draw and SDK controls are next; see
 [experiment note](../changes/2026-10-11-dialog-layout-experiments.md).
+Controls on `bb2dde21c5439bfda45a056ddea640dc41c6670a` failed on SDK 35 too;
+the first draw control did not draw because it ran before a dialog existed.
+Late write samples identify CoreTextField measurement and positioned coordinates.
+Refined event-based native draw/window-bounds/legacy comparisons remain diagnostic,
+not a production fix. See [window controls](../changes/2026-10-11-dialog-window-controls.md).
 
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions
