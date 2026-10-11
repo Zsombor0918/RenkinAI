@@ -104,6 +104,8 @@ internal fun TargetSelection(
                 Text(stringResource(R.string.projectIdentity, profileId))
                 Text(stringResource(R.string.setupPreparationOnly))
                 Text(stringResource(R.string.setupSelectionDurable))
+                if (data.launcherInventoryChanged) Text(stringResource(R.string.setupLauncherChanged),
+                    Modifier.testTag("setup-launcher-changed"))
                 OutlinedButton(onClick = onStyle, enabled = ready && !selectionBusy,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-project-style")) {
                     Text(stringResource(R.string.projectStyleTitle))

@@ -127,6 +127,9 @@ class ApplicationProvider internal constructor(
     }
 
     internal suspend fun coverageSources(): List<IconPack> = iconPackRepo.coverageSources()
+    internal suspend fun coverageLauncherIdentity(): Map<String, Boolean> = withContext(Dispatchers.Default) {
+        installedAppCatalog.readLauncherIdentity()
+    }
     internal suspend fun coverageReader(packageName: String, rescan: Boolean): CoverageSourceReader =
         iconPackRepo.coverageReader(packageName, rescan)
     // Icon-pack data (packs, app-filter elements, calendar icons) lives in

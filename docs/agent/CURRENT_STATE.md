@@ -185,3 +185,15 @@ GenerationPlan entity, generation confirmation, backend, login, credits, Billing
 background scheduling, source auto-sampling or Play publication is implemented.
 Device acceptance and feature-head automated evidence remain separate in QA.
 Follow [ROADMAP](../ROADMAP.md) and [HANDOFF](HANDOFF.md).
+
+## First Codex 03 hosted checkpoint
+
+Head ea5f4032 compiled, but 710 tests had eight failures; full evidence is in QA.
+Corrections run asset/legacy DAO work on IO and share one DB asset lease across
+restore/import/GC. Share profile creation stays on Room's transaction thread.
+Grouped imports and explicit removed-draft cleanup preserve historical pins.
+Target preparation rereads launcher identities on screen resume/package changes
+and again at Save: removed apps disappear, new/unloaded or user-uncertain rows
+are disabled with explanation. EXTEND Save uses a fresh read-only index matching
+explicit rescan. Neither path refreshes icons or grants paid permission. Follow-up
+Android/ownership/device acceptance remains pending.

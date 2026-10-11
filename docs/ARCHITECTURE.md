@@ -547,3 +547,22 @@ submission; any post-submission error is Uncertain, cancellation propagates a ty
 CancellationException with billing uncertainty. No retry or pricing estimate.
 Legacy AI1/AI2 do not delegate to this port yet; their journals/quick apply remain.
 [ADR 0004](decisions/0004-project-ai-persistence.md) records the durable contract.
+
+### Codex 03 IO and fresh-context corrections
+
+ProjectAiRepository's per-DB asset lease runs file/synchronous ProfileDao accesses
+on IO and serializes restore/share import with explicit GC. Share import inserts
+its new Profile through the existing DAO on the suspending Room transaction thread,
+without the legacy createProfile Default dispatcher escape. Profile/icon/project
+rows commit together; earlier immutable files are collectible after rollback.
+Grouped reference imports insert after all copies succeed; failures/cancellation
+release only newly imported unlinked rows, retaining pre-existing/history pins.
+Explicit UI removal and saved draft-import hashes cover discard/recreation.
+
+InstalledAppCatalog exposes a fresh identity-only read without icons or catalog
+mutation. Preparation intersects that identity with loaded local/lock state; new
+entries have UNKNOWN local state and cannot be selected until catalog reload.
+Resume/package changes and explicit Save revalidate identities. Source Save reads
+the selected pack's fresh index, including the same version/update/revision/theme/
+mapping fingerprint used by explicit rescan. No refreshIcons, primary-source
+write, watcher service or generation is invoked.

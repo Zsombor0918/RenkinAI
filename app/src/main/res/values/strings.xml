@@ -841,6 +841,7 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="projectStyleDiscardText">Cancel to keep editing, or explicitly discard this draft. Your saved style and icon edits stay as they are.</string>
     <string name="projectStyleDiscard">Discard style draft</string>
     <string name="setupSelectionDurable">Save the exact selection locally for this project. Reopening requires a fresh catalog and source check. This is preparation, never permission to generate or charge.</string>
+    <string name="setupLauncherChanged">Installed apps changed. Review the current targets. Newly added entries stay unavailable until you reopen the app to load their icons and local state; this screen does not refresh your edits.</string>
     <string name="setupSaveSelection">Save project target selection</string>
     <string name="setupSavedSelectionReview">Saved targets are available. Review and confirm them against the current apps and source before reuse.</string>
     <string name="setupSavedSelectionStale">Apps, source or coverage context changed. Review the saved targets; unavailable, locked or uncertain components cannot be reused.</string>

@@ -50,6 +50,7 @@ class ProjectSelectionComposeTest {
         val restoration = StateRestorationTester(compose); restoration.setContent { Content() }
         scroll("setup-select-all"); compose.onNodeWithTag("setup-select-all").performClick()
         scroll("setup-save-selection"); compose.onNodeWithTag("setup-save-selection").performClick()
+        compose.onNodeWithTag("setup-selection-saved").assertExists()
         assertEquals(listOf("pkg/Main"), ProjectSelection.decode(metadata!!.selectionJson)!!.componentKeys)
         assertEquals(1, saves)
         restoration.emulateSavedInstanceStateRestore()
@@ -62,7 +63,7 @@ class ProjectSelectionComposeTest {
         metadata = ProjectAiMetadata(1, selectionJson = saved.encode())
         targets = targets.map { if (it.key == "pkg/Main") it.copy(ambiguousUser = true) else it }
         compose.setContent { Content() }
-        scroll("setup-saved-selection"); compose.onNodeWithTag("setup-saved-selection").assertTextContains("changed")
+        scroll("setup-saved-selection"); compose.onNodeWithTag("setup-saved-selection").assertTextContains("changed", substring = true)
         assertEquals(0, saves)
         scroll("setup-revalidate-selection"); compose.onNodeWithTag("setup-revalidate-selection").performClick()
         scroll("setup-selection-count"); compose.onNodeWithTag("setup-selection-count").assertTextEquals("Selected: 0 / 2 known launcher entries")
@@ -75,7 +76,7 @@ class ProjectSelectionComposeTest {
             selectionJson = ProjectSelection("EXTEND", "pack.source", projectSourceStamp(original), projectCatalogStamp(targets), listOf("pkg/Main")).encode())
         coverage = snapshot(index(2))
         compose.setContent { Content() }
-        scroll("setup-saved-selection"); compose.onNodeWithTag("setup-saved-selection").assertTextContains("changed")
+        scroll("setup-saved-selection"); compose.onNodeWithTag("setup-saved-selection").assertTextContains("changed", substring = true)
         scroll("setup-revalidate-selection"); compose.onNodeWithTag("setup-revalidate-selection").performClick()
         scroll("setup-selection-count"); compose.onNodeWithTag("setup-selection-count").assertTextEquals("Selected: 1 / 2 known launcher entries")
         compose.runOnIdle { coverage = snapshot(index(2, CoverageIndexState.UNKNOWN)) }

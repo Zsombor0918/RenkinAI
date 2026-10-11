@@ -75,3 +75,14 @@ provider test ran, and the main review/conversation/strict gaps remain owner wor
 | Legacy M1/M2/AI1/AI2 | Preserve original isolated/combined/form/create-extend/domain suites and unfiltered Android suite/APK | Existing manual editor/global/watch/share/backup/build/install matrix remains NOT RUN |
 
 All newly added Android tests are initially NOT RUN locally because Gradle distribution networking is unavailable. Fresh hosted results must be appended to BASELINE and PR audit. New PNG references may be opaque; gateway output must still be square, visible and transparent. No fake coverage, automatic approval or price/cost consent is tested or claimed.
+
+## Codex 03 correction coverage
+
+First feature head ea5f4032 failed eight tests; preserve that checkpoint in BASELINE.
+Follow-up adds strict (no allowMainThreadQueries) persistence, GC queued behind
+archive finalization, grouped failed-reference cleanup retaining earlier pins,
+explicit removed/imported draft cleanup after restoration, and fresh launcher/source
+Save checks. New/unloaded apps and changed work-user identities cannot be silently
+selected; rescan must verify a fresh source without rendering or generating.
+All these corrections await their own hosted-head result. Original form cases and
+all gateway/legacy AI selectors stay unchanged; devices remain NOT RUN.

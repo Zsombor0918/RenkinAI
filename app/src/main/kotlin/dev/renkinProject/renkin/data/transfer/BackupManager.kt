@@ -50,7 +50,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 /**
@@ -65,7 +64,9 @@ import java.util.zip.ZipOutputStream
  *    that pack is installed there — but because the pixels ride along, a pack that later
  *    disappears from the store keeps working (its verdict flips to unlisted and unlocks).
  *
- * Import is all-or-nothing: the file is fully parsed BEFORE any store is touched. Whether
+ * Archives are fully staged and validated BEFORE any store is touched. Profile/icon/project
+ * rows commit together; preferences, watch, gallery and signing remain separate stores and
+ * are not a cross-store transaction. Whether
  * imported icons are usable is decided on the importing device every time they load
  * (PackVerdictManager) — verdicts inside the file are never trusted. After an import the
  * caller reloads the in-memory state and kicks off verdict verification.
@@ -318,7 +319,7 @@ class BackupManager(
         else -> throw IOException("Unknown file kind")
     }
 
-    private suspend fun restoreBackup(archive: ValidatedBackupArchive): ImportResult {
+    private suspend fun restoreBackup(archive: ValidatedBackupArchive): ImportResult = projectAi.withAssetLease {
         val data = archive.data
         requireValidBackup(data)
         // Finalize and verify immutable project files before any DB replacement. Failure here
@@ -386,7 +387,7 @@ class BackupManager(
         // transaction. Legacy watch/prefs/gallery remain separate stores, not cross-store ACID.
         packRepo.replaceEverything(data.profiles.map { it.profile }, data.profiles.flatMap { it.icons }, data.projectAi)
 
-        return ImportResult(ImportKind.BACKUP, data.profiles.size, data.profiles.sumOf { it.icons.size })
+        ImportResult(ImportKind.BACKUP, data.profiles.size, data.profiles.sumOf { it.icons.size })
     }
 
     private fun requireValidBackup(data: BackupData) {
@@ -396,13 +397,15 @@ class BackupManager(
     }
 
     /** A shared profile always lands as a NEW profile — imports never overwrite anything. */
-    private suspend fun importProfile(archive: ValidatedBackupArchive): ImportResult {
+    private suspend fun importProfile(archive: ValidatedBackupArchive): ImportResult = projectAi.withAssetLease {
         val data = archive.data
         val bp = data.profiles.firstOrNull() ?: throw IOException("File contains no profile")
         // A numbered suffix keeps repeated imports of the same share tellable apart.
-        val name = uniqueProfileName(bp.profile.name, packRepo.profiles().map { it.name }.toSet())
         val newId = packRepo.database.withTransaction {
-        val createdId = packRepo.createProfile(
+        // Use the existing DAO on Room's transaction dispatcher; createProfile's legacy
+        // Default dispatcher cannot inherit this suspending transaction safely.
+        val name = uniqueProfileName(bp.profile.name, packRepo.database.profileDao().getAll().map { it.name }.toSet())
+        val createdId = packRepo.database.profileDao().insert(
             // Fresh identity (the id also names the built pack's package) and fresh flags:
             // the icons are saved-but-not-built, and the missing-pack dialog choice is local.
             bp.profile.copy(id = 0, name = name, hasUnbuiltChanges = true, hideMissingPackWarning = false)
@@ -419,7 +422,7 @@ class BackupManager(
         watchRepo.insertRules(bp.watchRules.map { it.toImport(newId) })
         WatchChecker(context, iconPackCatalog, watchRepo).initializeMissingBaselines()
         storePackLabels(data.packLabels)
-        return ImportResult(ImportKind.PROFILE, 1, bp.icons.size, importedProfileId = newId)
+        ImportResult(ImportKind.PROFILE, 1, bp.icons.size, importedProfileId = newId)
     }
 
     private fun uniqueProfileName(base: String, existing: Set<String>): String {
@@ -598,8 +601,6 @@ private fun ZipOutputStream.putFileEntry(name: String, file: File) {
     closeEntry()
 }
 
-/** Reads the CURRENT zip entry (ZipInputStream ends the stream at each entry boundary). */
-private fun ZipInputStream.readEntryText(): String = readBytes().toString(Charsets.UTF_8)
 
 /**
  * Writes the current zip entry to [target] via a temporary file, so a failure part-way (a full

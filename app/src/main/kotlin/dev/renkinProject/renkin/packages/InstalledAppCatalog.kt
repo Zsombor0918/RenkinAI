@@ -42,6 +42,18 @@ internal class InstalledAppCatalog(private val context: Context) {
     var uncertainUserKeys: Set<String> = emptySet()
         private set
 
+    /** Fresh identities only: no drawable, icon refresh or mutation of the active catalog.
+     * The boolean retains collisions and non-current Android users as uncertain. */
+    fun readLauncherIdentity(): Map<String, Boolean> {
+        val users = context.getSystemService(Context.USER_SERVICE) as UserManager
+        val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+        val entries = users.userProfiles.flatMap { user -> launcher.getActivityList(null, user).map {
+            user to "${it.componentName.packageName}/${it.componentName.className}"
+        } }
+        val uncertain = uncertainLauncherKeys(entries, Process.myUserHandle())
+        return entries.map { it.second }.distinct().associateWith { it in uncertain }
+    }
+
     /**
      * Lightweight component references for every launcher entry. Labels and drawables are left
      * unloaded for identity-only consumers such as appfilter matching and the watch checker.

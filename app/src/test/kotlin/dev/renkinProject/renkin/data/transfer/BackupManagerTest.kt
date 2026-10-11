@@ -30,6 +30,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
@@ -41,6 +42,7 @@ import java.io.ByteArrayOutputStream
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [33])
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class BackupManagerTest {
 
     private lateinit var context: Context

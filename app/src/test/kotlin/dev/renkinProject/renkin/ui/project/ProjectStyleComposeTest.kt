@@ -57,6 +57,7 @@ class ProjectStyleComposeTest {
     private val records = mutableMapOf<Long, SavedProjectStyle>()
     private var saves = 0
     private var imports = 0
+    private val discardedHashes = mutableListOf<String>()
     private var failSave = false
     private var gate: CompletableDeferred<Unit>? = null
     private var data by mutableStateOf(ProjectSetupData(targets = listOf(CoverageTarget("pkg/Main", "App"))))
@@ -68,6 +69,7 @@ class ProjectStyleComposeTest {
             return ReferenceAsset(id, hash, ProjectAssetStore.path(id, hash), 100, 32, 32)
         }
         override suspend fun copyGlobal(id: Long) = ProjectStyleDraft("copied global", "", emptyList())
+        override suspend fun discard(id: Long, hashes: List<String>) { discardedHashes.addAll(hashes) }
         override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft,
             mode: ProjectSetupMode, source: String?, stamp: String?): SavedProjectStyle {
             saves++
@@ -137,6 +139,20 @@ class ProjectStyleComposeTest {
         scroll("project-style-description"); compose.onNodeWithTag("project-style-description").assert(
             SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("")))
         assertEquals(0, saves)
+    }
+
+    @Test fun explicitRemovalReleasesItsDraftImportAndRestoredDiscardKeepsRemovedHashesCovered() {
+        val restoration = StateRestorationTester(compose); restoration.setContent { Content() }; open()
+        addReference()
+        scroll("project-style-remove-0"); compose.onNodeWithTag("project-style-remove-0").performClick()
+        compose.onNodeWithTag("project-style-add-reference").assertIsEnabled()
+        assertEquals(listOf("1".repeat(64)), discardedHashes)
+        addReference()
+        restoration.emulateSavedInstanceStateRestore()
+        back(); compose.onNodeWithTag("project-style-discard").performClick()
+        compose.onNodeWithTag("setup-project-style").assertExists()
+        assertTrue("2".repeat(64) in discardedHashes)
+        assertEquals(0, saves); assertEquals(0, calls)
     }
 
     @Test fun restorationDoesNotSubmitDraftAndExternalEntryPreservesItForItsOwner() {

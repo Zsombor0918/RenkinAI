@@ -74,7 +74,6 @@ import dev.renkinProject.renkin.ui.project.ProjectSessionController
 import dev.renkinProject.renkin.ui.project.ProjectStyleBackend
 import dev.renkinProject.renkin.ui.project.ProjectStyleDraft
 import dev.renkinProject.renkin.ui.project.ProjectSetupMode
-import dev.renkinProject.renkin.ui.project.projectCatalogStamp
 import dev.renkinProject.renkin.ui.project.projectSourceStamp
 import dev.renkinProject.renkin.ui.project.withProjectOwner
 import dev.renkinProject.renkin.data.project.ProjectAiRepository
@@ -192,6 +191,7 @@ class MainViewModel @Inject constructor(
     /** Read-only preparation: no profile persistence, primary source or refresh mutation. */
     internal fun coverageTargets() = appProvider.coverageTargets()
     internal suspend fun coverageSources() = appProvider.coverageSources()
+    internal suspend fun coverageLauncherIdentity() = appProvider.coverageLauncherIdentity()
     internal suspend fun coverageReader(packageName: String, rescan: Boolean) = appProvider.coverageReader(packageName, rescan)
 
     private suspend fun <T> projectOperation(id: Long, action: suspend () -> T): T =
@@ -212,11 +212,11 @@ class MainViewModel @Inject constructor(
         }
         override suspend fun copyGlobal(id: Long) = projectOperation(id) {
             val global = aiSettingsStore.load().also { it.validate() }
-            val hashes = global.referenceNames.map { name ->
-                val file = java.io.File(UploadedImageStore.directory(getApplication()), name)
-                projectAiRepository.importReference(id, file.inputStream()).hash
+            val sources = global.referenceNames.map { name ->
+                { java.io.File(UploadedImageStore.directory(getApplication()), name).inputStream() }
             }
-            ProjectStyleDraft(global.style, "", hashes.distinct())
+            val references = projectAiRepository.importReferences(id, sources)
+            ProjectStyleDraft(global.style, "", references.map { it.hash }.distinct())
         }
         override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft,
             mode: ProjectSetupMode, source: String?, stamp: String?) = projectOperation(id) {
@@ -226,16 +226,8 @@ class MainViewModel @Inject constructor(
     }
     internal suspend fun saveProjectSelection(id: Long, expectedVersion: Long, selection: ProjectSelection) =
         projectOperation(id) {
-            val targets = dev.renkinProject.renkin.apk.uniqueCoverageTargets(coverageTargets())
-            check(selection.catalogStamp == projectCatalogStamp(targets) && selection.componentKeys.all { key ->
-                targets.any { it.key == key && it.selectable }
-            }) { "Application catalog changed. Review the targets again." }
-            if (selection.mode == "EXTEND") {
-                val reader = coverageReader(checkNotNull(selection.sourcePackage), false)
-                check(reader.isCurrent() && reader.index.state == dev.renkinProject.renkin.apk.CoverageIndexState.READY &&
-                    reader.index.stamp.versionCode != null && selection.sourceStamp == projectSourceStamp(reader.index) &&
-                    selection.componentKeys.none { it in reader.index.dynamicKeys }) { "Source pack changed. Rescan and review the targets." }
-            }
+            val targets = dev.renkinProject.renkin.ui.project.revalidateLauncherTargets(coverageTargets(), coverageLauncherIdentity())
+            dev.renkinProject.renkin.ui.project.verifyProjectSelectionContext(selection, targets, ::coverageReader)
             projectAiRepository.saveSelection(id, expectedVersion, selection)
         }
 

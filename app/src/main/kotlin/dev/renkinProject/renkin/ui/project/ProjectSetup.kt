@@ -67,7 +67,8 @@ internal data class ProjectSetupData(
     val savedMetadata: ProjectAiMetadata? = null,
     val metadataLoading: Boolean = false,
     val metadataFailed: Boolean = false,
-    val onSaveSelection: suspend (Long, ProjectSelection) -> ProjectAiMetadata = { _, _ -> error("Preparation persistence unavailable") }
+    val onSaveSelection: suspend (Long, ProjectSelection) -> ProjectAiMetadata = { _, _ -> error("Preparation persistence unavailable") },
+    val launcherInventoryChanged: Boolean = false
 )
 
 /** Screen-scoped invalidation only, never a background watcher or icon refresh. */
@@ -80,11 +81,11 @@ internal fun ObserveCoverageInvalidation(source: String?, onInvalidate: () -> Un
         val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) invalidate() }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (source != null && intent?.data?.schemeSpecificPart == source) invalidate()
+                if (intent?.data?.schemeSpecificPart != null) invalidate()
             }
         }
         lifecycle.addObserver(observer)
-        if (source != null) ContextCompat.registerReceiver(context, receiver, IntentFilter().apply {
+        ContextCompat.registerReceiver(context, receiver, IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_ADDED)
             addAction(Intent.ACTION_PACKAGE_REMOVED)
             addAction(Intent.ACTION_PACKAGE_CHANGED)
@@ -93,7 +94,7 @@ internal fun ObserveCoverageInvalidation(source: String?, onInvalidate: () -> Un
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
         onDispose {
             lifecycle.removeObserver(observer)
-            if (source != null) context.unregisterReceiver(receiver)
+            context.unregisterReceiver(receiver)
         }
     }
 }
@@ -103,7 +104,7 @@ internal fun rememberProjectSetupData(
     viewModel: MainViewModel, mode: ProjectSetupMode, page: ProjectSetupPage,
     profileId: Long?, source: String?
 ): ProjectSetupData {
-    val targets = viewModel.coverageTargets()
+    val loadedTargets = viewModel.coverageTargets()
     var metadata by remember(profileId) { mutableStateOf<ProjectAiMetadata?>(null) }
     var metadataLoading by remember(profileId) { mutableStateOf(true) }
     var metadataFailed by remember(profileId) { mutableStateOf(false) }
@@ -120,6 +121,19 @@ internal fun rememberProjectSetupData(
     var rescan by remember { mutableIntStateOf(0) }
     var resumeCheck by remember { mutableIntStateOf(0) }
     ObserveCoverageInvalidation(source) { resumeCheck++ }
+    var launcherIdentity by remember(profileId, page, resumeCheck) { mutableStateOf<Map<String, Boolean>?>(null) }
+    var launcherLoading by remember(profileId, page, resumeCheck) { mutableStateOf(page == ProjectSetupPage.TARGETS) }
+    var launcherFailed by remember(profileId, page, resumeCheck) { mutableStateOf(false) }
+    LaunchedEffect(profileId, page, resumeCheck, viewModel.applicationsLoaded) {
+        if (page == ProjectSetupPage.TARGETS && viewModel.applicationsLoaded) {
+            try { launcherIdentity = viewModel.coverageLauncherIdentity() }
+            catch (cancel: CancellationException) { throw cancel }
+            catch (_: Exception) { launcherFailed = true }
+            finally { launcherLoading = false }
+        }
+    }
+    val targets = launcherIdentity?.let { revalidateLauncherTargets(loadedTargets, it) } ?: loadedTargets
+    val launcherChanged = launcherIdentity?.keys?.let { it != loadedTargets.map { target -> target.key }.toSet() } ?: false
     val theme = PackageResourceResolver.displayedNightMode
     var packReload by remember { mutableIntStateOf(0) }
     var reloadedPacks by remember(viewModel.iconPacks) { mutableStateOf<List<IconPack>?>(null) }
@@ -139,9 +153,10 @@ internal fun rememberProjectSetupData(
     // A new profile/component/local snapshot starts with no result; old rows never leak.
     var coverage by remember(profileId, source, targets, rescan, resumeCheck, theme) { mutableStateOf<CoverageUiState>(CoverageUiState.Loading()) }
     LaunchedEffect(profileId, source, targets, rescan, resumeCheck, theme, page, mode, viewModel.activeProfileId,
-        viewModel.profileSummaryReady, viewModel.iconPackLoaded) {
+        viewModel.profileSummaryReady, viewModel.iconPackLoaded, launcherLoading, launcherFailed) {
         if (mode == ProjectSetupMode.EXTEND && page == ProjectSetupPage.TARGETS &&
-            source != null && profileId == viewModel.activeProfileId && viewModel.profileSummaryReady && viewModel.iconPackLoaded) {
+            source != null && profileId == viewModel.activeProfileId && viewModel.profileSummaryReady && viewModel.iconPackLoaded &&
+            !launcherLoading && !launcherFailed) {
             coverage = CoverageUiState.Loading()
             try {
                 val reader = viewModel.coverageReader(source, rescan > 0 || viewModel.iconPacks.none { it.packageName == source })
@@ -154,12 +169,13 @@ internal fun rememberProjectSetupData(
         }
     }
     return ProjectSetupData(targets, reloadedPacks ?: viewModel.iconPacks,
-        viewModel.applicationsLoaded && viewModel.iconPackLoaded && !packLoading,
-        packFailed || viewModel.startupFailed, coverage,
+        viewModel.applicationsLoaded && viewModel.iconPackLoaded && !packLoading && !launcherLoading && !launcherFailed,
+        packFailed || launcherFailed || viewModel.startupFailed, coverage,
         onRescan = { rescan++ }, onReloadPacks = { packReload++ },
         appIcon = { key -> ProjectOriginalIcon(viewModel.applicationList.find { it.key == key }?.icon) },
         savedMetadata = metadata, metadataLoading = metadataLoading, metadataFailed = metadataFailed,
-        onSaveSelection = { version, selection -> viewModel.saveProjectSelection(checkNotNull(profileId), version, selection).also { metadata = it } })
+        onSaveSelection = { version, selection -> viewModel.saveProjectSelection(checkNotNull(profileId), version, selection).also { metadata = it } },
+        launcherInventoryChanged = launcherChanged)
 }
 
 @Composable

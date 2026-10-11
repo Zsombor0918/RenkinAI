@@ -3,9 +3,12 @@ package dev.renkinProject.renkin.data.project
 import androidx.room.withTransaction
 import dev.renkinProject.renkin.data.RenkinPackDatabase
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.util.WeakHashMap
 
@@ -16,7 +19,13 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
     private val dao = database.projectAiDao()
     private val storage = synchronized(locks) { locks.getOrPut(database) { Mutex() } }
 
-    suspend fun load(profileId: Long): SavedProjectStyle = storage.withLock {
+    /** Files and synchronous legacy DAOs must never run on a UI caller's dispatcher.
+     * Archive restore shares this lease so explicit GC cannot collect staged assets. */
+    internal suspend fun <T> withAssetLease(action: suspend () -> T): T = withContext(Dispatchers.IO) {
+        storage.withLock { action() }
+    }
+
+    suspend fun load(profileId: Long): SavedProjectStyle = withAssetLease {
         val result = database.withTransaction {
             check(database.profileDao().get(profileId) != null) { "Project no longer exists." }
             val meta = dao.metadata(profileId)
@@ -33,7 +42,7 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
 
     suspend fun history(id: Long): List<StyleRevision> = dao.history(id)
     suspend fun metadata(id: Long): ProjectAiMetadata? = dao.metadata(id)
-    suspend fun referenceBytes(id: Long, hash: String): ByteArray = storage.withLock {
+    suspend fun referenceBytes(id: Long, hash: String): ByteArray = withAssetLease {
         files.read(checkNotNull(dao.assets(id).find { it.hash == hash }) { "Project reference is missing." })
     }
     suspend fun references(id: Long, revision: Long): List<ReferenceAsset> {
@@ -41,22 +50,44 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
         return dao.references(id).filter { it.revision == revision }.map { checkNotNull(assets[it.assetHash]) }
     }
 
-    suspend fun importReference(id: Long, input: InputStream, mime: String = "image/png"): ReferenceAsset = storage.withLock {
-        check(database.profileDao().get(id) != null) { "Project no longer exists." }
-        val asset = files.copy(id, input, mime)
-        currentCoroutineContext().ensureActive()
-        database.withTransaction {
-            check(database.profileDao().get(id) != null)
-            dao.insertAssets(listOf(asset))
+    suspend fun importReference(id: Long, input: InputStream, mime: String = "image/png"): ReferenceAsset = input.use {
+        importReferences(id, listOf({ input }), mime).single()
+    }
+
+    /** Explicit global-copy imports succeed as a group. Failed/cancelled copies drop only
+     * rows created by this operation and collect unrecorded files under the same storage lease. */
+    internal suspend fun importReferences(id: Long, sources: List<() -> InputStream>, mime: String = "image/png"): List<ReferenceAsset> {
+        require(sources.size <= 5)
+        val imported = mutableListOf<ReferenceAsset>()
+        var previous = emptySet<String>()
+        try {
+            return withAssetLease {
+                check(database.profileDao().get(id) != null) { "Project no longer exists." }
+                previous = dao.assets(id).map { it.hash }.toSet()
+                for (source in sources) source().use { imported += files.copy(id, it, mime) }
+                currentCoroutineContext().ensureActive()
+                database.withTransaction {
+                    check(database.profileDao().get(id) != null)
+                    dao.insertAssets(imported)
+                }
+                imported.toList()
+            }
+        } catch (failure: Throwable) {
+            try {
+                withContext(NonCancellable) { withAssetLease {
+                    database.withTransaction { dao.discardUnlinked(id, imported.map { it.hash }.filter { it !in previous }) }
+                    files.collectUnreferenced(dao.allAssets())
+                } }
+            } catch (cleanup: Throwable) { failure.addSuppressed(cleanup) }
+            throw failure
         }
-        asset
     }
 
     /** The caller holds the existing session mutex and checks active ID before entering.
      * The DB transaction supplies optimistic revision protection for independent writers. */
     suspend fun saveStyle(id: Long, expectedRevision: Long?, specification: String,
         userInstruction: String, orderedHashes: List<String>, mode: String? = null,
-        source: String? = null, sourceStamp: String? = null): SavedProjectStyle = storage.withLock {
+        source: String? = null, sourceStamp: String? = null): SavedProjectStyle = withAssetLease {
         require(mode == null || mode in setOf("CREATE", "EXTEND"))
         require(mode != "EXTEND" || !source.isNullOrBlank())
         val candidate = StyleRevision(id, 1, specification = specification.trim(), userInstruction = userInstruction.trim())
@@ -91,7 +122,7 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
         }
     }
 
-    suspend fun saveSelection(id: Long, expectedVersion: Long, selection: ProjectSelection): ProjectAiMetadata = storage.withLock {
+    suspend fun saveSelection(id: Long, expectedVersion: Long, selection: ProjectSelection): ProjectAiMetadata = withAssetLease {
         selection.validate()
         database.withTransaction {
             check(database.profileDao().get(id) != null) { "Project no longer exists." }
@@ -103,7 +134,7 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
         }
     }
 
-    suspend fun insertVariant(row: IconAssetVariant) = storage.withLock {
+    suspend fun insertVariant(row: IconAssetVariant) = withAssetLease {
         val snapshot = snapshotUnlocked()
         validateSnapshot(snapshot.copy(variants = snapshot.variants + row), database.profileDao().getAll().map { it.id }.toSet())
         snapshot.assets.filter { it.profileId == row.profileId && it.hash in listOfNotNull(row.rawAssetHash, row.editedAssetHash) }
@@ -113,14 +144,14 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
 
     suspend fun variants(id: Long, key: String): List<IconAssetVariant> = dao.variants(id, key)
 
-    suspend fun snapshot(): ProjectAiSnapshot = storage.withLock { database.withTransaction { snapshotUnlocked() } }
+    suspend fun snapshot(): ProjectAiSnapshot = withAssetLease { database.withTransaction { snapshotUnlocked() } }
     private suspend fun snapshotUnlocked() = ProjectAiSnapshot(dao.allMetadata(), dao.allRevisions(),
         dao.allAssets(), dao.allReferences(), dao.allVariants())
 
     /** Only unknown files/temp files are collected. Draft imports with Room rows remain pinned;
      * active/history/variant records cannot lose their images. No automatic startup GC. */
-    suspend fun collectUnreferencedFiles(): Int = storage.withLock { files.collectUnreferenced(dao.allAssets()) }
-    suspend fun discardDraftReferences(id: Long, hashes: List<String>) = storage.withLock {
+    suspend fun collectUnreferencedFiles(): Int = withAssetLease { files.collectUnreferenced(dao.allAssets()) }
+    suspend fun discardDraftReferences(id: Long, hashes: List<String>) = withAssetLease {
         database.withTransaction { dao.discardUnlinked(id, hashes) }
         files.collectUnreferenced(dao.allAssets())
     }

@@ -56,6 +56,8 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
     var savedSpecification by rememberSaveable(id) { mutableStateOf("") }
     var savedInstruction by rememberSaveable(id) { mutableStateOf("") }
     var savedHashes by rememberSaveable(id) { mutableStateOf(arrayListOf<String>()) }
+    // Keep removed/replaced draft imports too, so explicit discard can release them.
+    var importedHashes by rememberSaveable(id) { mutableStateOf(arrayListOf<String>()) }
     var loaded by remember(id) { mutableStateOf(false) }
     var busy by remember(id) { mutableStateOf(false) }
     var error by remember(id) { mutableStateOf<String?>(null) }
@@ -93,6 +95,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
             scope.launch {
                 try {
                     val asset = backend.importReference(id, uri)
+                    importedHashes = ArrayList((importedHashes + asset.hash).distinct())
                     if (asset.hash !in hashes) hashes = ArrayList(hashes + asset.hash)
                     error = null
                 } catch (cancel: CancellationException) { throw cancel }
@@ -141,6 +144,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     scope.launch {
                         try {
                             val draft = backend.copyGlobal(id)
+                            importedHashes = ArrayList((importedHashes + draft.hashes).distinct())
                             specification = draft.specification
                             instruction = draft.instruction
                             hashes = ArrayList(draft.hashes)
@@ -164,7 +168,23 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     ProjectReferencePreview(id, hash, backend)
                     Text(stringResource(R.string.projectStyleReferenceNumber, position + 1))
                     Text(hash.take(12))
-                    TextButton(onClick = { hashes = ArrayList(hashes.filter { it != hash }) }, enabled = enabled,
+                    TextButton(onClick = {
+                        if (enabled) {
+                            busy = true
+                            scope.launch {
+                                try {
+                                    // An explicit removal can release a pending row; saved history
+                                    // and variants remain pinned by the repository's SQL predicate.
+                                    backend.discard(id, listOf(hash))
+                                    hashes = ArrayList(hashes.filter { it != hash })
+                                    importedHashes = ArrayList(importedHashes.filter { it != hash })
+                                    error = null
+                                } catch (cancel: CancellationException) { throw cancel }
+                                catch (_: Exception) { error = "discard" }
+                                finally { busy = false }
+                            }
+                        }
+                    }, enabled = enabled,
                         modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-remove-$position")) {
                         Text(stringResource(R.string.projectStyleRemove))
                     }
@@ -183,7 +203,10 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     val draft = ProjectStyleDraft(specification, instruction, hashes.toList())
                     val revision = expectedRevision
                     scope.launch {
-                        try { applySaved(backend.save(id, revision, draft, mode, source, stamp)); error = null }
+                        try {
+                            applySaved(backend.save(id, revision, draft, mode, source, stamp))
+                            error = null
+                        }
                         catch (cancel: CancellationException) { throw cancel }
                         catch (_: Exception) { error = "save" }
                         finally { busy = false }
@@ -204,7 +227,8 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                 busy = true
                 scope.launch {
                     try {
-                        backend.discard(id, hashes); initialized = false; discardOpen = false
+                        backend.discard(id, (hashes + importedHashes).distinct())
+                        importedHashes = arrayListOf(); initialized = false; discardOpen = false
                         if (reloadAfterDiscard) reload++ else onBack()
                     }
                     catch (cancel: CancellationException) { throw cancel }

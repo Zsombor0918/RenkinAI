@@ -38,7 +38,7 @@ class ProjectAiPersistenceTest {
     private lateinit var repo: ProjectAiRepository
     @Before fun setup() = runBlocking {
         context = RuntimeEnvironment.getApplication()
-        db = Room.inMemoryDatabaseBuilder(context, RenkinPackDatabase::class.java).allowMainThreadQueries().build()
+        db = Room.inMemoryDatabaseBuilder(context, RenkinPackDatabase::class.java).build()
         packs = RenkinPackRepository(db)
         repo = ProjectAiRepository(db, ProjectAssetStore(context))
         packs.replaceEverything(listOf(Profile(1, "Same"), Profile(2, "Same")), emptyList())
@@ -126,6 +126,38 @@ class ProjectAiPersistenceTest {
         assertEquals(2, repo.collectUnreferencedFiles())
         assertFalse(repo.files.resolve(unrecorded.relativePath).exists())
         assertEquals("saved", repo.load(1).revision!!.specification)
+    }
+
+    @Test fun archiveAssetLeaseKeepsGcBehindFileAndRoomFinalization() = runBlocking {
+        val finalized = CompletableDeferred<ReferenceAsset>()
+        val release = CompletableDeferred<Unit>()
+        val writer = async {
+            repo.withAssetLease {
+                val asset = repo.files.install(1, projectTestPng())
+                finalized.complete(asset)
+                release.await()
+                db.projectAiDao().insertAssets(listOf(asset))
+            }
+        }
+        val asset = finalized.await()
+        val collector = async(start = CoroutineStart.UNDISPATCHED) { repo.collectUnreferencedFiles() }
+        assertFalse(collector.isCompleted)
+        release.complete(Unit)
+        writer.await()
+        assertEquals(0, collector.await())
+        assertArrayEquals(projectTestPng(), repo.referenceBytes(1, asset.hash))
+    }
+
+    @Test fun failedGroupedImportKeepsPreviouslyOwnedDraftAndCleansOnlyItsNewFiles() = runBlocking {
+        val existing = reference()
+        val failed = runCatching { repo.importReferences(1, listOf(
+            { ByteArrayInputStream(projectTestPng()) },
+            { ByteArrayInputStream(projectTestPng(Color.RED)) },
+            { ByteArrayInputStream(byteArrayOf(1, 2, 3)) })) }
+        assertTrue(failed.isFailure)
+        assertEquals(listOf(existing.hash), repo.snapshot().assets.map { it.hash })
+        assertEquals(listOf(existing.hash + ".png"), File(context.filesDir, "project_ai_assets/1").list()!!.sorted())
+        assertArrayEquals(projectTestPng(), repo.referenceBytes(1, existing.hash))
     }
 
     @Test fun deletionCascadesAndReusedIdCannotInheritAnotherStyle() = runBlocking {

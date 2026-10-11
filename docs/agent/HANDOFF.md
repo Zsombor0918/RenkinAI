@@ -69,3 +69,17 @@ sampler, billable GenerationPlan, billing consent, backend or credits exist now.
 
 
 Local pre-publication verification: the staged documentation guard passed 43 changed paths. The full governance suite passed again, 45/45 in 18.348 s. No Android execution succeeded locally.
+
+## First hosted Codex 03 correction checkpoint
+
+Draft [PR #4](https://github.com/Zsombor0918/RenkinAI/pull/4), initial head
+`ea5f4032228c2aab5ee9c954e722bb10020a6962`: Android compiled but 710/710 ran with
+eight failures, zero errors/skips; APK skipped. Run 38174665908 and regression
+38174665913 agree. Original form/Create/Extend/coverage and gateway+legacy groups
+passed separately. This is preserved failure evidence, not a fresh success.
+See [targeted corrections](../changes/2026-10-11-project-persistence-ci-corrections.md).
+Actual KSP schema 19 is copied unchanged from artifact 11715826463.
+Corrections fix DAO/thread/transaction and test synchronization/graphics semantics,
+share the asset lease with restore/GC, and reread launcher/source context safely.
+Fresh Android suites/APK are the next gate; audit remains BLOCKED and PR draft.
+Governance passed again 45/45 in 24.813 s. No main/ruleset/live API changes.

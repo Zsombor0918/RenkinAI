@@ -248,3 +248,11 @@ The retained runner adds ProjectStyleComposeTest/ProjectSelectionComposeTest, Pr
 
 
 Local pre-publication verification: the staged documentation guard passed 43 changed paths. The full governance suite passed again, 45/45 in 18.348 s. No Android execution succeeded locally.
+
+## Codex 03 first hosted failure and correction checkpoint
+
+- Head `ea5f4032228c2aab5ee9c954e722bb10020a6962`, [Android run 38174665908](https://github.com/Zsombor0918/RenkinAI/actions/runs/38174665908): Compile PASS, unit FAIL, APK SKIPPED.
+- [Regression run 38174665913](https://github.com/Zsombor0918/RenkinAI/actions/runs/38174665913), artifact 11715826463: independently counted 127 JUnit XML, 710 tests, 8 failures, 0 errors, 0 skipped. Isolated creation 1/1, ingress 1/1, both 2/2, shared form 3/3, Create/Extend 10/10, coverage 28/28, gateway/legacy 31/31 PASS; new UI 7/10 and data 23/25, full 702/710 FAIL.
+- Failure boundaries: ProfileDao main-thread read (one migration case); createProfile's Default dispatcher escaping an enclosing suspending Room transaction (three share cases); legacy graphics produces invalid PNG fixture (one inspection case); exact-versus-substring assertions (two selection cases); reading state before launched Save completes (one selection case). No new AppNotIdleException occurred.
+- The genuine KSP schema 19 was exported despite test failure; identity `7e4b1aec61364b15b862957ac574c8b7`, SHA256 `6c93a2fe875ad2e64482d68dcb72f5c0e1d79892a12f5481145c93440bdb8452`. Source JSON copied byte-for-byte from artifact, never synthesized.
+- Correction local governance 45/45 PASS in 24.813 s; `git diff --check` PASS. Android correction suites/APK pending hosted CI; local Network is unreachable remains. Physical devices and live provider requests NOT RUN.
