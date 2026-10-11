@@ -158,3 +158,14 @@ The expanded evidence runner preserves all old selectors and adds CreateExtendFl
 IconCoverageAnalyzerTest, CoverageAppFilterTest and CoveragePreviewTest. New fixtures
 include actual vector/adaptive/bitmap draw and parser last-winner/error behavior;
 existing profile, AI, batch, backup, package/build regressions remain in the full suite.
+
+### M2 first hosted checkpoint — not successful
+
+Feature head `28ed77265fbc392f88f07f905cccb046968e75de`,
+[Android 38159074131](https://github.com/Zsombor0918/RenkinAI/actions/runs/38159074131):
+production `compileDebugKotlin` PASSED; unit-test Kotlin compilation FAILED at new
+CreateExtendFlowComposeTest line 208. This Compose version returns DpRect with
+bottom/top, not a height property; the receiver mismatch is compile-time evidence.
+No unit test executed and APK was skipped. Correct only that measurement expression,
+preserving the 48dp assertion. Governance commit-conventions and offline guard job
+passed; documentation-audit correctly failed the single BLOCKED declaration.

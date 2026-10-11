@@ -205,7 +205,8 @@ class CreateExtendFlowComposeTest {
     fun wideDarkAndLightSetupKeepsSemanticTargetsAndMinimumTouchSize() {
         start(); setup(1)
         scroll("setup-select-all")
-        assertTrue(compose.onNodeWithTag("setup-select-all").getUnclippedBoundsInRoot().height >= 48.dp)
+        val bounds = compose.onNodeWithTag("setup-select-all").getUnclippedBoundsInRoot()
+        assertTrue(bounds.bottom - bounds.top >= 48.dp)
         scroll("setup-target-app/Other"); compose.onNodeWithTag("setup-target-app/Other").assertIsEnabled().assertIsOff()
         compose.runOnIdle { dark = true }
         compose.onNodeWithTag("setup-target-app/Other").assertIsDisplayed().performClick().assertIsOn()

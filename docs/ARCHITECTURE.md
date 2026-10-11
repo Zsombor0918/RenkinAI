@@ -9,10 +9,10 @@
 A guide for developers (and AI assistants) working on this codebase. The app builds
 installable Android icon packs on-device.
 
-Codex 01 current-source audit: October 11, 2026, merged main
-`005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`, then `feat/project-home-m1`.
+Codex 02 current-source audit: October 11, 2026, owner-merged main
+`73a15e2210cb55cf003e60ebc2033130ee7a9e58`, then `feat/create-extend-coverage-m2`.
 Entry map: [INDEX](INDEX.md); implementation/limitations: [CURRENT_STATE](agent/CURRENT_STATE.md).
-Codex 00 is merged. Codex 01 changes only the UI root/profile entry API described below.
+Codex 00/01 are owner-merged. Codex 02 adds only preparation routes and read-only source inspection described below.
 
 ## Naming — read this first
 
