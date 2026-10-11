@@ -40,11 +40,15 @@ The initial governance PR run succeeded and its 38 offline guard tests passed.
 The actual Android job log was inspected and the v3 action definition was read.
 Local YAML structure and staged hook validation are executed for this follow-up;
 its completed Actions result is recorded in the PR audit after committing.
+Follow-up verification: source head `8481c021818eef6cf14ac8ab3b33593dff2af81a`
+passed [Android run 38130190199](https://github.com/Zsombor0918/RenkinAI/actions/runs/38130190199),
+with all three Gradle commands and debug artifact successful; the two governance
+jobs passed in run 38130194904. This evidence update changes Markdown only.
 
 ## Not tested
 
-No Android build/test task completed in the failed first run or local attempt.
-The corrected workflow is not called successful until its fresh run completes.
+No Android build/test task completed in the failed first run or local attempt;
+the later corrected GitHub run completed them successfully as recorded above.
 No physical-device, Windows-host or live provider request was made.
 
 ## Risks
@@ -73,6 +77,6 @@ and [maintainer documentation](https://github.com/android-actions/setup-android#
 
 ## Follow-up
 
-Observe fresh Android and governance CI results; resolve actual blockers before
-requesting acceptance. Configure main protection and complete Codex 00 review,
+Fresh Android/governance evidence is recorded; final-head status remains in PR #1.
+Configure main protection and complete Codex 00 review,
 then start the separately authorized ProjectHome task.

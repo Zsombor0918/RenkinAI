@@ -15,9 +15,15 @@ Audit date: October 11, 2026. Source baseline main:
 | Main protection reads | Inactive in observed APIs; no rulesets | Branch protected false; rulesets empty; direct protection read 403 integration restriction |
 | [Governance run 38129900629](https://github.com/Zsombor0918/RenkinAI/actions/runs/38129900629) | Both jobs successful on initial PR head `dfe8d45b4287aeddf5ba73f95c67080ceb98832e` | Real PR commits/title/audit/docs + offline guard suite |
 | [Android run 38129900648](https://github.com/Zsombor0918/RenkinAI/actions/runs/38129900648) | Failed before compile/tests/APK at SDK setup | v3 default `sdkmanager tools`: Failed to find package 'tools'; corrected by the follow-up note |
+| [Governance run 38130194904](https://github.com/Zsombor0918/RenkinAI/actions/runs/38130194904) | Both checks successful after the SDK fix | Head `8481c021818eef6cf14ac8ab3b33593dff2af81a`; commit conventions and docs audit/38 offline guard tests |
+| [Android run 38130190199](https://github.com/Zsombor0918/RenkinAI/actions/runs/38130190199) | Compile, unit tests, debug APK and upload all successful | Same head; logs show BUILD SUCCESSFUL for all three Gradle commands; fresh unit count is not reported in logs |
+| [Debug APK artifact](https://github.com/Zsombor0918/RenkinAI/actions/runs/38130190199/artifacts/11699098599) | RenkinAI-debug uploaded successfully | CI test artifact; no device installation or stable update signing asserted |
 
-The final staged/range checks and PR CI outcomes are recorded in the change note
-and PR. Only a completed workflow's observed result can be called a fresh CI pass.
+Final staged/range checks pass for the implementation and SDK follow-up. This QA
+checkpoint changes only Markdown documentation; Android source, tests, build files,
+CI and guards are identical to the verified head above. Final-head CI status and
+commit SHA are in [PR #1](https://github.com/Zsombor0918/RenkinAI/pull/1).
+Only a completed workflow's observed result can be called a fresh CI pass.
 Governance checks being present in source does not make them required on main.
 
 ## Historical evidence, not rerun
