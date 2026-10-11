@@ -5,7 +5,10 @@ verified October 11, 2026. PR #3 is merged (20:21:28 UTC), owner Zsombor0918;
 head `e8e04c433ca94a4e28b5716f33581aeeb963b0a4` is an ancestor and its tree is
 identical to that merge. Owner authorization supplied acceptance; no independent
 APPROVED review is claimed. Codex 03 works on `feat/project-ai-persistence-m3`.
-Source implementation below is awaiting fresh feature-head Android verification;
+Verified Codex 03 head 06e71532 passed 718/718, every isolated original/new group
+and debug APK, including legacy-gallery compatibility. The final documentation/
+diagnostic-removal commit is checked separately in PR #4's exact-head audit;
+owner and physical-device acceptance remain pending.
 669/669 belongs to accepted Codex 02, not this change. Room is now v19 with an
 additive v18 migration. Manifest, dependencies, identities, signing/install and
 original Android CI remain unchanged. See [QA](../qa/BASELINE.md).
@@ -183,34 +186,30 @@ Codex 04 automatic analysis, 05 trial icons/approval, 06 staging gallery and 07 
 remain separate tasks. Project style is saved, never automatically approved. No
 GenerationPlan entity, generation confirmation, backend, login, credits, Billing,
 background scheduling, source auto-sampling or Play publication is implemented.
-Device acceptance and feature-head automated evidence remain separate in QA.
+Device acceptance and exact-final-head automated evidence remain separate in QA
+and the PR audit.
 Follow [ROADMAP](../ROADMAP.md) and [HANDOFF](HANDOFF.md).
 
-## First Codex 03 hosted checkpoint
+## Storage/thread and live-context boundaries
 
-Head ea5f4032 compiled, but 710 tests had eight failures; full evidence is in QA.
-Corrections run asset/legacy DAO work on IO and share one DB asset lease across
-restore/import/GC. Share profile creation stays on Room's transaction thread.
-Grouped imports and explicit removed-draft cleanup preserve historical pins.
-Target preparation rereads launcher identities on screen resume/package changes
-and again at Save: removed apps disappear, new/unloaded or user-uncertain rows
-are disabled with explanation. EXTEND Save uses a fresh read-only index matching
-explicit rescan. Neither path refreshes icons or grants paid permission. Follow-up
-Android/ownership/device acceptance remains pending.
+The project repository executes file and synchronous legacy DAO work on IO. Its
+per-existing-DB asset lease serializes import/restore with explicit GC; shared
+profile creation stays on Room's transaction dispatcher. Failed grouped imports
+clean only their newly finalized candidate paths and unlinked rows. Historical,
+variant, pre-existing pending and unrelated unrecorded files are preserved.
+Explicit UI removal/discard releases only unlinked references; restored draft
+import hashes cover replaced references too.
 
-Codex 03 c06d225a follow-up: compile PASS; 716 tests, three failures; APK SKIPPED
-([Android 38175713388](https://github.com/Zsombor0918/RenkinAI/actions/runs/38175713388),
-artifact 11715578079). Import-error cleanup must be candidate-scoped, not global
-GC; the unchanged source-only M2 observer contract must stay default, while
-launcher preparation opts into all package events only on its screen. Those two
-corrections and opt-in/disposal coverage are now added. The one remaining real
-selection Save interaction is being diagnosed with enabled/displayed assertions
-and semantics/callback evidence; no claim of follow-up Android success yet.
-See [cleanup correction record](../changes/2026-10-11-project-cleanup-regression-boundaries.md).
+Fresh launcher identity-only reads on composed preparation resume/package events
+and explicit Save remove uninstalled components. New/unloaded or uncertain user
+entries are disabled with an explanation until a real catalog reload verifies
+local icons. Source-only observation stays the default for original M2 callers;
+preparation explicitly opts into launcher changes. Source Save requests a fresh
+read-only index matching the reviewed rescan fingerprint. No icon refresh,
+primary-source mutation, hidden background watcher, network or paid permission.
 
-Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
-fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
-PNG signature/CRC/end/dimension/decode validation without the project-reference
-visible-artwork rule. Project references retain four MiB and reject empty artwork.
-The real format-3 large/transparent PNG regression is pending hosted verification;
-legacy upload/render code and credentials/signing contracts remain unchanged.
+Legacy full-archive gallery entries allow 20 MiB with genuine signature/CRC/end/
+dimension/decode checks and may be transparent, matching existing sampled uploads.
+Project references retain 4 MiB and reject empty artwork. The genuine format-3
+large/transparent gallery restore fixture passed with byte-for-byte comparisons
+at 06e71532; upload/render code is unchanged.

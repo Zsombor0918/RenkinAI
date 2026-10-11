@@ -286,3 +286,45 @@ PNG signature/CRC/end/dimension/decode validation without the project-reference
 visible-artwork rule. Project references retain four MiB and reject empty artwork.
 The real format-3 large/transparent PNG regression is pending hosted verification;
 legacy upload/render code and credentials/signing contracts remain unchanged.
+
+## First complete Codex 03 technical success — 88933c95
+
+[Android 38176787953](https://github.com/Zsombor0918/RenkinAI/actions/runs/38176787953)
+and [regressions 38176787903](https://github.com/Zsombor0918/RenkinAI/actions/runs/38176787903)
+on `88933c95ce6841747b61914ef44fdd20c60c398c` succeeded including compile and
+assembleDebug. Artifact 11716765047 summary/XML: 717 tests, zero failures/errors/skips;
+original creation 1, ingress 1, both 2, shared form 3, Create/Extend 10, coverage 28,
+new UI 12, data/session 30, gateway/legacy 31 all passed with exit 0 and no missing
+selectors. The archived system output proves the prior fake equality expression
+returned false for initial version 0, while explicit Long expected version produced
+saves=1, metadata.version=1 and exact pkg/Main. This is a fake numeric-comparison
+contract error; enabled/displayed real Save and UI error semantics excluded layout/
+idling. Temporary diagnostic prints are now removed with all assertions retained.
+Subsequent legacy-gallery regression/probe removal needs final-head evidence.
+Physical devices and paid APIs NOT RUN; audit remains BLOCKED until next-head gates.
+
+## Legacy-compatible complete checkpoint — 06e71532
+
+[Android 38177165898](https://github.com/Zsombor0918/RenkinAI/actions/runs/38177165898)
+and [regressions 38177165977](https://github.com/Zsombor0918/RenkinAI/actions/runs/38177165977)
+on `06e715323f4358cbb08abf8766e56b64547924ea` both succeeded: compile, full unit
+suite, assembleDebug and debug upload. APK artifact 11716760691 belongs to that SHA.
+Downloaded regression artifact 11716575779 independently counted **127 full-suite
+JUnit XML, 718 tests, zero failures/errors/skips**. All filters have exit 0 and no
+missing selectors: creation 1/1, ingress 1/1, both 2/2, shared form 3/3, Create/Extend
+10/10, coverage domain 28/28, project UI 12/12, data/session 31/31, gateway/legacy 31/31.
+ProjectAiBackupTest's nine cases include genuine format-3 larger-than-four-MiB and
+transparent gallery PNGs restored byte-for-byte, independently rejected as project
+references. Strict project limits remain intact. KSP v19 export SHA256 is unchanged:
+`6c93a2fe875ad2e64482d68dcb72f5c0e1d79892a12f5481145c93440bdb8452`.
+
+Local governance rerun: 45/45 in 16.053 s on Linux/Python 3.12.14. The local full
+Gradle command remains blocked at distribution download by Network is unreachable;
+it is not local Android success. Diagnostics are removed in the final checkpoint
+commit; its own fresh exact-head runs and governance are recorded in PR #4 after
+publication. No earlier-head result proves that final commit. Physical devices,
+real URI providers, storage-full/kill, upgrade/SAF/keystore/generated-pack update/
+install, TalkBack and Samsung/Flip/One UI/Theme Park remain **NOT RUN**. No live paid
+API call or release occurred. Earlier failed checkpoints above remain evidence;
+the initial Save scheduling hypothesis was superseded by the measured fake numeric
+comparison, not by a runtime interaction change.

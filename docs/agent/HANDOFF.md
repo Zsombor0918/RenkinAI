@@ -1,115 +1,94 @@
 # Agent handoff — Codex 03 project AI persistence
 
-Base/main: `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`. Branch:
-`feat/project-ai-persistence-m3`, created cleanly from freshly fetched accepted main;
-hooks installed before code changes. PR #3 is actually merged at 20:21:28 UTC on
-October 11, owner Zsombor0918, head `e8e04c433ca94a4e28b5716f33581aeeb963b0a4`.
-The merge has identical tree and contains the expected M2/governance files. There
-were no open PRs/working-tree changes at the gate. Owner authorization supplied
-acceptance; no independent approved review is claimed. Codex 03 is not merged.
-Exact final feature SHA/PR/checks belong in its audit after commits.
+Accepted base/main: `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`. Owner-authorized
+PR #3 merge at 20:21:28 UTC on October 11, 2026; head e8e04c43 is an ancestor with
+identical tree. Codex 03 branch `feat/project-ai-persistence-m3`,
+[PR #4](https://github.com/Zsombor0918/RenkinAI/pull/4); no Codex 03 merge/release.
+The exact final SHA/checks belong in the PR audit after commits. Hooks installed;
+main/ruleset and historical commits were not changed by this feature.
 
-## Implemented scope
+## Implemented scope and ownership
 
-Per-profile style text/instruction, ordered 0–5 private PNG references and explicit
-local Save through existing setup/ProjectShell; unset starts, global copy only by
-user action, no global AI1/AI2 change. Profile-keyed drafts survive recreation and
-external editor ingress; Back Cancel/explicit discard protects them. Existing icon
-Save/Cancel/session/launcher/Back ownership is retained. Room v19 adds profile-owned
-metadata, immutable history, asset links and functional variant persistence; no
-new DB or project identity. Current/source/candidate metadata is preparation, not
-approval or paid permission. Source/catalog/user uncertainty requires fresh review.
+Existing Profile.id and existing Room DB v19 own metadata, immutable StyleRevision
+history, ordered 0–5 private PNGs and functional variant records. Create/Extend
+setup opens local style/instruction/import/reorder/Save; unset starts and global
+copy is explicit. Existing session mutex and expected revision/version protect
+wrong-profile/stale writes. Only durable completion reports Saved. Primitive,
+profile-keyed drafts retain Back/Cancel/recreation/ingress behavior. No second VM,
+provider, database, generation/approval or icon autosave is introduced.
 
-Full backup and profile-share format 4 embed verified PNGs/history. Shares rekey
-owners/paths; old full archives clear new metadata. Staging validates one bounded
-input before writes; project files precede the final profile/icon/project transaction.
-Legacy multi-store restore remains non-atomic; see the exact boundary in the ADR.
-No credentials, batch journals or draft markers are exported. Existing signing and
-pack identity remain. The real future gateway reuses existing clients with offline
-HTTP seams; legacy AI1/AI2 still use their existing service (not full integration).
+Private assets use bounded PNG/CRC/hash checks and temp/fsync/rename before Room.
+IO/per-DB asset lease serializes restore/import/explicit GC. Candidate-only failed
+import cleanup retains earlier pending/history/variant/unrelated files; explicit
+remove/discard covers saved draft-import hashes. Fresh launcher/source verification
+requires current selectable keys; new/unloaded/work-user uncertainty is disabled.
+Source-only observation remains default, preparation opts into screen-only launcher
+changes, disposal unregisters. Save does not refresh icons or alter primary source.
 
-Files/rationale: [change note](../changes/2026-10-11-project-ai-persistence.md),
-[ADR 0004](../decisions/0004-project-ai-persistence.md), [architecture](../ARCHITECTURE.md).
+Format 4 full backups and profile shares carry verified PNG/history/variants; shares
+allocate/remap existing profile IDs. Old full archives clear new metadata. Stage and
+validate one bounded immutable ZIP before writes; files precede final profile/icon/
+project transaction. Legacy watch/prefs/presets/gallery/keystore remain separate and
+can be interrupted partially. Gallery compatibility allows genuine transparent or
+larger sampled PNGs with a 20 MiB bound; project refs retain 4 MiB/nonempty rules.
+No credentials, batch journals or draft markers travel. v19 rollback is forward
+repair or explicit pre-upgrade-backup recovery; v18 APK cannot read populated v19.
 
-## Verification checkpoint and open risks
+Real future IconGenerationGateway reuses existing clients/AiCredentialStore. Offline
+MockWebServer/fakes verify order/0–5 refs, Stability exactly two, invalid/timeout/
+cancel/429 no retries. Legacy AI1/AI2 still use their existing global service, not
+this gateway. No live/paid request, backend, billing or Codex 04–07 implementation.
 
-Local governance baseline: **45/45 passed**, 17.344 s. `git diff --check` and runner
-Python compile passed before publication. Local `./gradlew compileDebugKotlin
- testDebugUnitTest assembleDebug` stopped at downloading Gradle 8.11.1 with Network
-is unreachable; no local Android success. Fresh feature-head hosted checks are
-still required; PR audit must stay BLOCKED until actual Android evidence exists.
-New selectors retain every M1/M2 case, add project data/UI/gateway groups and retain
-the real KSP schema export. Historical accepted M2 e8e04c43 passed 669/669 and APK;
-that is not a Codex 03 result. Previous M1/M2 failures remain recorded in QA/change notes.
+## Verified checkpoints and next gate
 
-Devices/One UI/Theme Park/Flip/rotation/TalkBack, real URI providers, physical upgrade,
-backup restore and pack update/install are NOT RUN. No live or paid API request.
-Limits and explicit cleanup/partial legacy restore are documented; old APKs cannot
-open v19. No 04–07 features or user-handle identity migration implemented.
+- Initial ea5f4032: compiled, 710 tests/eight failures; APK skipped.
+- c06d225a: compiled, 716 tests/three failures; APK skipped.
+- 02c23aa5: original CI attempt had 490 pre-test Maven fixture checksum 404s;
+  same-head retry and independent regressions narrowed to one failure in 717.
+- 88933c95: all filtered groups and 717/717 full tests, zero failure/error/skip;
+  compile/debug APK PASS in Android 38176787953 and regressions 38176787903,
+  artifact 11716765047. The measured old fake version comparison was false at
+  initial version zero; explicitly typed Long produced one save and correct keys.
+  This was a test backend check, not a production Save/layout/idling failure.
+- 06e71532: legacy-gallery compatibility verified. Android 38177165898 and
+  regressions 38177165977 PASS including debug APK. Artifact 11716575779 has
+  127 full-suite XML, independently counted 718/718, zero failure/error/skip;
+  original cases 1/1, 1/1, 2/2, 3/3, Create/Extend 10/10, coverage 28/28,
+  UI 12/12, data/session 31/31, gateway/legacy 31/31 all pass. Format-3 larger
+  and transparent gallery restore compares exact PNG bytes; project references
+  still reject them. APK artifact 11716760691 exists at that same SHA.
+- Real KSP v19 export is committed unchanged: identity 7e4b1aec61364b15b862957ac574c8b7.
+  Migration actual-v18 fixture, reopen/current identity/FK/legacy data passed.
+- Local guards 45/45 (latest 16.053 s), staged/range docs and conventional hooks PASS.
+  Local full Gradle command failed before configuration: Network is unreachable.
 
-Main ruleset 24877351 reread: active, no bypass, PR and exact build/commit-conventions/
-documentation-audit required, force/delete forbidden. Approvals=0, conversation
-resolution/last-push approval/strict checks=false; owner may strengthen these using
-[WORKFLOW](WORKFLOW.md). Settings were not changed and are not claimed enabled.
+This last commit removes temporary diagnostics without weakening any assertion
+and consolidates canonical docs. Its own complete isolated/full Android/APK/
+governance results and exact final SHA are recorded in PR #4 after publication.
+Only all-green final checks permit a PASS WITH RISKS audit and review-ready state;
+owner acceptance is still required. Earlier-head green is not final-head proof.
+Failed history remains in BASELINE/change notes.
+Physical devices/URI providers/upgrade/SAF/signing/installer/TalkBack/OEM NOT RUN.
 
-## Next safe task
+## Main rules and owner acceptance
 
-First finish feature-head migration/asset/backup/UI/gateway regressions, complete
-unfiltered Android unit suite/APK and all governance checks; inspect final SHA and
-PR review threads, then obtain owner/reviewer decision. Do not auto-merge or publish.
-Rollback is a forward repair on v19 or explicit pre-upgrade-backup recovery, never
-blind downgrade over new data. Keep application and pack signing continuity.
+Ruleset 24877351: active, main-only, empty bypasses, PR plus build/commit-conventions/
+documentation-audit, force/delete prohibited. Approvals=0; conversation resolution,
+last-push approval and strict up-to-date checks=false. Do not claim these owner
+settings enabled. See WORKFLOW. Owner/reviewer acceptance remains mandatory even
+with green CI; do not merge/publish or change rules without separate authorization.
 
-After explicit Codex 03 acceptance/main merge, Codex 04 may read current StyleRevision,
-project instruction and ordered private references; revalidate saved Create/Extend
-source/catalog selections first. Add a separate multimodal structured-text analysis
-port/approval rules; this image gateway is not style recognition. Codex 05 trial icons
-and approval, 06 candidate staging and 07 edits remain separate. No automatic source
-sampler, billable GenerationPlan, billing consent, backend or credits exist now.
+## Next safe development boundary
 
+First finish the final evidence and review of PR #4. After explicit Codex 03
+acceptance/main merge, Codex 04 may read current revision specification, project
+instruction and ordered private validated refs, with fresh Create/Extend source/
+launcher review. Add its own multimodal structured-text analysis port and approval
+contract. The image gateway is not analysis. Automatic reference sampling, 05
+trials/approval, 06 staging, 07 edits and a billable GenerationPlan remain separate.
+Global legacy AiSettingsStore remains the AI1/AI2 default; project Save grants no
+cost permission. Preserve signing, package identity and manual editor/backup paths.
 
-Local pre-publication verification: the staged documentation guard passed 43 changed paths. The full governance suite passed again, 45/45 in 18.348 s. No Android execution succeeded locally.
-
-## First hosted Codex 03 correction checkpoint
-
-Draft [PR #4](https://github.com/Zsombor0918/RenkinAI/pull/4), initial head
-`ea5f4032228c2aab5ee9c954e722bb10020a6962`: Android compiled but 710/710 ran with
-eight failures, zero errors/skips; APK skipped. Run 38174665908 and regression
-38174665913 agree. Original form/Create/Extend/coverage and gateway+legacy groups
-passed separately. This is preserved failure evidence, not a fresh success.
-See [targeted corrections](../changes/2026-10-11-project-persistence-ci-corrections.md).
-Actual KSP schema 19 is copied unchanged from artifact 11715826463.
-Corrections fix DAO/thread/transaction and test synchronization/graphics semantics,
-share the asset lease with restore/GC, and reread launcher/source context safely.
-Fresh Android suites/APK are the next gate; audit remains BLOCKED and PR draft.
-Governance passed again 45/45 in 24.813 s. No main/ruleset/live API changes.
-
-Codex 03 c06d225a follow-up: compile PASS; 716 tests, three failures; APK SKIPPED
-([Android 38175713388](https://github.com/Zsombor0918/RenkinAI/actions/runs/38175713388),
-artifact 11715578079). Import-error cleanup must be candidate-scoped, not global
-GC; the unchanged source-only M2 observer contract must stay default, while
-launcher preparation opts into all package events only on its screen. Those two
-corrections and opt-in/disposal coverage are now added. The one remaining real
-selection Save interaction is being diagnosed with enabled/displayed assertions
-and semantics/callback evidence; no claim of follow-up Android success yet.
-See [cleanup correction record](../changes/2026-10-11-project-cleanup-regression-boundaries.md).
-
-## Selection Save narrow diagnosis
-
-On 02c23aa5, independent regression run 38176212110 passed all retained original
-selectors, data 30/30 and gateway/legacy 31/31. Full XML counted 717 with one failure,
-zero errors/skips. Semantics showed enabled/displayed Save, selected=1, error node,
-and fake saves=0/metadata=null: the fake's initial version equality check is the
-remaining narrow boundary. Its default is now explicitly Long with old-comparison
-diagnostics pending verification; runtime does not change. Separate Android run
-38176212112 attempt 1 failed 490 fixture initializations because repo1 Maven returned
-404 for the SDK 33 instrumented POM checksum; same-head failed job was rerun.
-Offline fixture credentials are generated in memory, not hardcoded. Local guards
-45/45 passed in 21.989 s. This next-head test correction is not yet proven successful.
-
-Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
-fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
-PNG signature/CRC/end/dimension/decode validation without the project-reference
-visible-artwork rule. Project references retain four MiB and reject empty artwork.
-The real format-3 large/transparent PNG regression is pending hosted verification;
-legacy upload/render code and credentials/signing contracts remain unchanged.
+See [initial implementation](../changes/2026-10-11-project-ai-persistence.md),
+[ADR](../decisions/0004-project-ai-persistence.md), [architecture](../ARCHITECTURE.md)
+and [QA evidence](../qa/BASELINE.md).

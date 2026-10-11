@@ -1,6 +1,9 @@
 # Regression and test matrix
 
-Current checkpoint is Codex 02; Codex 00/01 results below are historical. M2 source head a8b3e4b2 passed 669/669, 10 UI and 28 coverage fixtures; exact-head final checks are in PR #3.
+Current checkpoint is Codex 03. Head 06e71532 passed 718/718 and all filtered
+groups/APK including legacy gallery compatibility. The final documentation/probe-
+removal head is verified separately in PR #4's audit.
+Codex 00/01/02 sections below remain historical, including M2's 669/669 baseline.
 A test class existing in source is not a passed run.
 Results and environment belong in [BASELINE](BASELINE.md) and each PR audit.
 
@@ -74,45 +77,23 @@ provider test ran, and the main review/conversation/strict gaps remain owner wor
 | Image gateway | Real existing-client MockWebServer original/ref order 0–5, Stability two requests, invalid input/credentials, error/timeout/cancel no retry, fake counts | NO live/paid API testing authorized |
 | Legacy M1/M2/AI1/AI2 | Preserve original isolated/combined/form/create-extend/domain suites and unfiltered Android suite/APK | Existing manual editor/global/watch/share/backup/build/install matrix remains NOT RUN |
 
-All newly added Android tests are initially NOT RUN locally because Gradle distribution networking is unavailable. Fresh hosted results must be appended to BASELINE and PR audit. New PNG references may be opaque; gateway output must still be square, visible and transparent. No fake coverage, automatic approval or price/cost consent is tested or claimed.
+All Android execution is hosted; local Gradle download is blocked. 06e71532 passed
+718/718, project UI 12/12, data/session 31/31, gateway/legacy 31/31 and all retained
+M1/M2 selectors. Final documentation/probe-removal evidence must match the final PR
+head; see BASELINE and its audit. New PNG references may be opaque; gateway output must still be square, visible and transparent. No fake coverage, automatic approval or price/cost consent is tested or claimed.
 
-## Codex 03 correction coverage
+## Corrected regression boundaries
 
-First feature head ea5f4032 failed eight tests; preserve that checkpoint in BASELINE.
-Follow-up adds strict (no allowMainThreadQueries) persistence, GC queued behind
-archive finalization, grouped failed-reference cleanup retaining earlier pins,
-explicit removed/imported draft cleanup after restoration, and fresh launcher/source
-Save checks. New/unloaded apps and changed work-user identities cannot be silently
-selected; rescan must verify a fresh source without rendering or generating.
-All these corrections await their own hosted-head result. Original form cases and
-all gateway/legacy AI selectors stay unchanged; devices remain NOT RUN.
+Strict persistence disables allowMainThreadQueries. Asset lease/queued GC, failed
+grouped imports retaining prior/unrelated files, explicit removed/imported-draft
+cleanup after restoration and fresh launcher/source Save validation passed in the
+30-case group at 88933c95. Default source-only M2 broadcast assertions and explicit
+launcher opt-in/disposal both passed. Real target Save retains version/completion/
+exact-key/restoration assertions with correctly typed Long fake metadata.version.
+No layout, clock, timeout, idle rule, test or original selector was weakened.
 
-Codex 03 c06d225a follow-up: compile PASS; 716 tests, three failures; APK SKIPPED
-([Android 38175713388](https://github.com/Zsombor0918/RenkinAI/actions/runs/38175713388),
-artifact 11715578079). Import-error cleanup must be candidate-scoped, not global
-GC; the unchanged source-only M2 observer contract must stay default, while
-launcher preparation opts into all package events only on its screen. Those two
-corrections and opt-in/disposal coverage are now added. The one remaining real
-selection Save interaction is being diagnosed with enabled/displayed assertions
-and semantics/callback evidence; no claim of follow-up Android success yet.
-See [cleanup correction record](../changes/2026-10-11-project-cleanup-regression-boundaries.md).
-
-## Selection Save narrow diagnosis
-
-On 02c23aa5, independent regression run 38176212110 passed all retained original
-selectors, data 30/30 and gateway/legacy 31/31. Full XML counted 717 with one failure,
-zero errors/skips. Semantics showed enabled/displayed Save, selected=1, error node,
-and fake saves=0/metadata=null: the fake's initial version equality check is the
-remaining narrow boundary. Its default is now explicitly Long with old-comparison
-diagnostics pending verification; runtime does not change. Separate Android run
-38176212112 attempt 1 failed 490 fixture initializations because repo1 Maven returned
-404 for the SDK 33 instrumented POM checksum; same-head failed job was rerun.
-Offline fixture credentials are generated in memory, not hardcoded. Local guards
-45/45 passed in 21.989 s. This next-head test correction is not yet proven successful.
-
-Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
-fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
-PNG signature/CRC/end/dimension/decode validation without the project-reference
-visible-artwork rule. Project references retain four MiB and reject empty artwork.
-The real format-3 large/transparent PNG regression is pending hosted verification;
-legacy upload/render code and credentials/signing contracts remain unchanged.
+The added format-3 large and transparent gallery PNG byte-for-byte restore test
+separately rejects those images as project references, with oversized gallery ZIP
+negative coverage. It passed at 06e71532 in the nine-case ProjectAiBackupTest. Physical
+process-kill, URI permissions, storage exhaustion, Samsung/Flip/One UI/TalkBack,
+SAF/keystore and generated-pack install/update remain NOT RUN.

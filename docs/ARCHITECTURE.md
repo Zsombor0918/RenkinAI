@@ -567,19 +567,10 @@ the selected pack's fresh index, including the same version/update/revision/them
 mapping fingerprint used by explicit rescan. No refreshIcons, primary-source
 write, watcher service or generation is invoked.
 
-Codex 03 c06d225a follow-up: compile PASS; 716 tests, three failures; APK SKIPPED
-([Android 38175713388](https://github.com/Zsombor0918/RenkinAI/actions/runs/38175713388),
-artifact 11715578079). Import-error cleanup must be candidate-scoped, not global
-GC; the unchanged source-only M2 observer contract must stay default, while
-launcher preparation opts into all package events only on its screen. Those two
-corrections and opt-in/disposal coverage are now added. The one remaining real
-selection Save interaction is being diagnosed with enabled/displayed assertions
-and semantics/callback evidence; no claim of follow-up Android success yet.
-See [cleanup correction record](changes/2026-10-11-project-cleanup-regression-boundaries.md).
-
-Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
-fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
-PNG signature/CRC/end/dimension/decode validation without the project-reference
-visible-artwork rule. Project references retain four MiB and reject empty artwork.
-The real format-3 large/transparent PNG regression is pending hosted verification;
-legacy upload/render code and credentials/signing contracts remain unchanged.
+Failed-import file cleanup is candidate-scoped, never a global GC authorization:
+only newly finalized hash paths without any retained row can be removed. Source-only
+package observation remains the default; composed preparation opts into all launcher
+changes, and disposal removes its receiver. Legacy gallery entries use a separate
+20 MiB bound and may be transparent; project references keep the 4 MiB visible-art
+rule. Both still require bounded genuine PNG/CRC/decode validation. Runtime upload,
+legacy AI, signing and icon-session contracts are unchanged.

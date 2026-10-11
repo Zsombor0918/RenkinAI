@@ -37,7 +37,6 @@ class ProjectSelectionComposeTest {
             TargetSelection(mode, 1, "Project", if (mode == ProjectSetupMode.CREATE) null else "pack.source",
                 ProjectSetupData(targets = targets, coverage = coverage, savedMetadata = metadata,
                     onSaveSelection = { version, selection ->
-                        println("Version comparison diagnostic: prior=${version == (metadata?.version ?: 0)}, expectedType=${(metadata?.version ?: 0).javaClass.name}, actual=$version")
                         val expected: Long = metadata?.version ?: 0L
                         check(version == expected)
                         saves++
@@ -57,8 +56,6 @@ class ProjectSelectionComposeTest {
         val restoration = StateRestorationTester(compose); restoration.setContent { Content() }
         scroll("setup-select-all"); compose.onNodeWithTag("setup-select-all").performClick()
         scroll("setup-save-selection"); compose.onNodeWithTag("setup-save-selection").assertIsEnabled().assertIsDisplayed().performClick()
-        compose.runOnIdle { println("Selection save diagnostic: saves=$saves, metadata=$metadata") }
-        println(compose.onRoot().printToString())
         compose.onNodeWithTag("setup-selection-saved").assertExists()
         assertEquals(listOf("pkg/Main"), ProjectSelection.decode(metadata!!.selectionJson)!!.componentKeys)
         assertEquals(1, saves)
