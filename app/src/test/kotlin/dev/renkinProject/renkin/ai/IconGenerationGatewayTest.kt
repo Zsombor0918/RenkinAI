@@ -17,13 +17,15 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.util.concurrent.TimeUnit
+import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class IconGenerationGatewayTest {
+    private val offlineCredential = UUID.randomUUID().toString()
     private fun adapter(server: MockWebServer, timeout: Long = 3000) = ClientIconGenerationGateway(
-        { "offline-test-credential" },
+        { offlineCredential },
         OpenAiImageClient(http(timeout), server.url("/openai")),
         StabilityImageClient(http(timeout), server.url("/style"), server.url("/background")))
     private fun http(timeout: Long) = OkHttpClient.Builder().retryOnConnectionFailure(false)
@@ -57,7 +59,7 @@ class IconGenerationGatewayTest {
                 assertTrue(text.contains(input.specification))
                 assertTrue(text.contains(input.appInstruction))
                 assertTrue(text.contains("transparent"))
-                assertFalse(text.contains("offline-test-credential"))
+                assertFalse(text.contains(offlineCredential))
                 assertFalse(text.contains("profileId"))
                 assertFalse(text.contains(input.requestId))
                 assertEquals(input.requestId, result.requestId)

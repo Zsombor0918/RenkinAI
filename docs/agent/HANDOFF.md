@@ -93,3 +93,16 @@ corrections and opt-in/disposal coverage are now added. The one remaining real
 selection Save interaction is being diagnosed with enabled/displayed assertions
 and semantics/callback evidence; no claim of follow-up Android success yet.
 See [cleanup correction record](../changes/2026-10-11-project-cleanup-regression-boundaries.md).
+
+## Selection Save narrow diagnosis
+
+On 02c23aa5, independent regression run 38176212110 passed all retained original
+selectors, data 30/30 and gateway/legacy 31/31. Full XML counted 717 with one failure,
+zero errors/skips. Semantics showed enabled/displayed Save, selected=1, error node,
+and fake saves=0/metadata=null: the fake's initial version equality check is the
+remaining narrow boundary. Its default is now explicitly Long with old-comparison
+diagnostics pending verification; runtime does not change. Separate Android run
+38176212112 attempt 1 failed 490 fixture initializations because repo1 Maven returned
+404 for the SDK 33 instrumented POM checksum; same-head failed job was rerun.
+Offline fixture credentials are generated in memory, not hardcoded. Local guards
+45/45 passed in 21.989 s. This next-head test correction is not yet proven successful.

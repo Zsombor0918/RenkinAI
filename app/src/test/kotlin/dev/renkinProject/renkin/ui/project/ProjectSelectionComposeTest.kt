@@ -37,7 +37,9 @@ class ProjectSelectionComposeTest {
             TargetSelection(mode, 1, "Project", if (mode == ProjectSetupMode.CREATE) null else "pack.source",
                 ProjectSetupData(targets = targets, coverage = coverage, savedMetadata = metadata,
                     onSaveSelection = { version, selection ->
-                        check(version == (metadata?.version ?: 0))
+                        println("Version comparison diagnostic: prior=${version == (metadata?.version ?: 0)}, expectedType=${(metadata?.version ?: 0).javaClass.name}, actual=$version")
+                        val expected: Long = metadata?.version ?: 0L
+                        check(version == expected)
                         saves++
                         ProjectAiMetadata(1, selection.mode, selection.sourcePackage, selection.sourceStamp,
                             selectionJson = selection.encode(), version = version + 1).also { metadata = it }
