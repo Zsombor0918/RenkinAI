@@ -3,6 +3,12 @@
 Alap: `renkindevbugs/Renkin`, main, `fbec389458560b77e4639dfdd55620743c1a9a66`.
 Az upstream GPLv3 licenc és az eredeti szerzők feltüntetése megmarad.
 
+2026. október 11-i forrásellenőrzés: a main `eb4daa5de82fab54e115363c073eb8981f2203d6`.
+Ez használati útmutató; az aktuális implementáció és korlátok hiteles térképe a
+[CURRENT_STATE](agent/CURRENT_STATE.md), a munkarend az [AGENTS](../AGENTS.md) és
+[WORKFLOW](agent/WORKFLOW.md). A korábbi APK-/tesztállítások történeti adatok;
+az új ellenőrzések eredménye a [BASELINE](qa/BASELINE.md).
+
 ## Mi készült el?
 
 - Apponkénti **Generate with AI → Preview → Use in editor → ✓**.
@@ -89,9 +95,9 @@ A namespace és Kotlin package-ek upstream értéke megmarad, ahogy az Alembicon
    és egy megfelelő system image. A projekt minimuma API 23, targetje 35.
 3. Git clone **submodule-okkal**:
    ```powershell
-   git clone --recurse-submodules <a-sajat-forkod-URL-je> RenkinAI
+   git clone --recurse-submodules https://github.com/Zsombor0918/RenkinAI.git RenkinAI
    cd RenkinAI
-   git checkout feature/ai-icons
+   git switch -c chore/your-topic
    ```
 4. Nyisd meg a gyökérmappát Android Studióban, Gradle JDK: **17**, majd Gradle Sync.
    JDK szükséges, puszta JRE nem elegendő. A wrapper Gradle 8.11.1; ne cseréld találomra.
@@ -146,8 +152,11 @@ A generált icon-pack **másik** kulcsot használ: Renkin `filesDir/renkinpack.k
 frissíthető az új kulccsal; el kell távolítani és újratelepíteni, Theme Parkban újraalkalmazni.
 Az API-kulcs viszont szándékosan nincs benne a backupban; azt újra be kell írni.
 
-GitHub Actions nem kötelező. A CI fordít, tesztel, debug APK-t épít és artifactként feltölti;
-kézzel is indítható. Nincs benne API-kulcs, és nem végez fizetős OpenAI-hívást.
+Helyi buildhez nem szükséges GitHub Actions. PR elfogadásához az Android CI mellett a
+governance ellenőrzések is szükségesek, és mainen ezt a repository-tulajdonosnak kell
+védelmi szabályként beállítania; a tényleges státusz a WORKFLOW-ban szerepel. A CI fordít,
+tesztel, debug APK-t épít és artifactként feltölti; kézzel is indítható. Nincs benne API-kulcs,
+és nem végez fizetős OpenAI-hívást. Hookok/Windows: [CONTRIBUTING](../CONTRIBUTING.md).
 
 ## Tesztelés és fennmaradó ellenőrzések
 
@@ -182,6 +191,8 @@ A megvalósításkor, 2026. október 3-án ellenőrzött OpenAI referencia:
 
 A paraméterek szolgáltatói változásakor újra ellenőrizendők. A manuális generálás nem tartalmaz
 beépített pénzügyi garanciát: a költési korlátot az API-projektben állítsd be.
+Az itt megnevezett modell a kódban rögzített konfiguráció, nem 2026. október 11-én
+ellenőrzött API-elérhetőség vagy új szolgáltatói ajánlás. Codex 00 nem küldött élő kérést.
 
 Buildjavítás: AGP 8.9.0 → 8.10.1 a függőségek Kotlin-metaadatainak és API 36-nak megfelelő feldolgozásához. Gradle 8.11.1 és JDK 17 megmarad.
 Forrás: https://developer.android.com/build/releases/agp-8-10-0-release-notes
@@ -189,9 +200,10 @@ Forrás: https://developer.android.com/build/releases/agp-8-10-0-release-notes
 
 ## AI2 használata és valós Pause / Cancel / Resume működés
 
-1. Telepítsd a `RenkinAI-v2026.10.04-ai2-debug.apk`-t a meglévő Renkin AI frissítéseként.
+1. A korábbi AI2 csomaghoz tartozó utasítás: telepítsd a `RenkinAI-v2026.10.04-ai2-debug.apk`-t a meglévő Renkin AI frissítéseként.
    Ne töröld az előző appot, és ne töröld az adatait. Az applicationId változatlan,
-   versionCode 56; a kiadott APK a korábbi debug aláírókulcsot használja.
+   versionCode 56; a korábbi átadás szerint az akkori APK a korábbi debug aláírókulcsot használta.
+   Ez nem bizonyítja, hogy egy új helyi/CI build tanúsítványa is ugyanaz lesz.
 2. Főképernyő → Advanced options → Global style → a fejléc alatti **Generate missing with AI**.
    A Global style gomb továbbra is a Renkin globális módosítóképernyőjét nyitja;
    az AI-nak külön gombja van ezen a képernyőn.

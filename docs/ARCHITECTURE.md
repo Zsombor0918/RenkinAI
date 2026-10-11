@@ -9,15 +9,20 @@
 A guide for developers (and AI assistants) working on this codebase. The app builds
 installable Android icon packs on-device.
 
+Current-source audit: October 11, 2026, main `eb4daa5de82fab54e115363c073eb8981f2203d6`.
+Entry map: [INDEX](INDEX.md); implementation/limitations: [CURRENT_STATE](agent/CURRENT_STATE.md).
+Codex 00 corrects inherited prose; it does not change this runtime architecture.
+
 ## Naming — read this first
 
 Several names float around; this trips up newcomers:
 
 | Thing | Value |
 | --- | --- |
-| App display name | **Renkin** |
-| Application id / namespace | `dev.renkinProject.renkin` (renamed 2026-07; a brand-new app identity) |
-| Generated icon pack package | `dev.renkinProject.renkinpack` (`IconPackBuilder.PACKAGE_NAME`); non-default profiles append `.p<profileId>` so several packs install side by side |
+| App display name | **Renkin AI** (`res/values/strings.xml`) |
+| Kotlin namespace / package | `dev.renkinProject.renkin` (upstream identity retained in code) |
+| Installed application id | `hu.zsombor.renkinai`; debug adds `.dev` (`app/build.gradle.kts`) |
+| Generated icon pack package | `${BuildConfig.APPLICATION_ID}.pack` (`IconPackBuilder.PACKAGE_NAME`); non-default profiles append `.p<profileId>` so several packs install side by side |
 | External libraries | `dev.alembiconsProject.imagetracer`, `dev.alembiconsProject.tgCannyEdgeCompose` and the `com.github.Alembicons` gradle coordinates are **upstream libraries — never rename** |
 
 It is a fork of **Alembicons** (formerly *Iconeration*). The upstream attribution
@@ -61,9 +66,43 @@ Hilt. `getCurrentMainActivity()` is still used in a couple of places, but only f
 Activity operations (`finish()`, starting services, permission requests).
 
 `ApplicationProvider` is the orchestration boundary, not the composition root. Hilt supplies
-its repositories, catalogs, stores, profile/lock managers, generation and pack-build services as
-application singletons, so those collaborators can be tested or reused without constructing the
-whole provider and all persistence state is shared deliberately.
+its repositories, stores, profile/lock managers, generation and pack-build services as
+application singletons through `di/AppModule.kt`. AppModule constructs the provider's
+ApplicationManager and InstalledAppCatalog; AI clients/stores use constructor injection.
+Those collaborators can be tested or reused without constructing the whole provider,
+and persistence state is shared deliberately.
+
+## AI integration boundaries
+
+- `AiSettingsStore` owns global provider/style/model/quality/reference preferences;
+  these are deliberately outside profile-generation snapshots. `AiPromptStore`
+  separately hashes profile/component for optional per-app instructions.
+- `AiCredentialStore` holds encrypted provider credentials under `noBackupFilesDir`
+  using unchanged Android Keystore aliases. Keys do not travel in full/profile backups.
+- `OpenAiImageClient` sends original icon then references to Images Edits, one PNG
+  per request; `StabilityImageClient` uses one reference and two calls. Neither path
+  automatically retries billable requests. Model names are a source list, not a
+  verified statement of present provider availability.
+- `AiIconGenerationService` serializes generation, checks PNG dimensions/alpha,
+  stores a 512 px PNG in UploadedImageStore, then saves a per-target fingerprint
+  marker before returning preview. The gallery is under filesDir; markers are not
+  backed up. Validation does not assess recognizability, lettering or visual quality.
+- Single-icon acceptance feeds IndividualOptions' existing upload draft;
+  MainViewModel applies it under its profile-session mutex, then normal Save/Build
+  persists it. It does not replace the render/Room pipeline.
+- Batch uses AiBatchViewModel → AiBatchRunner → AiBatchStore (AtomicFile journal,
+  noBackupFilesDir). States are PENDING, REQUESTING, GENERATED, SUCCEEDED, FAILED,
+  SKIPPED. A killed request without a matching saved PNG becomes uncertain/FAILED.
+  Resume does not automatically resend failures; retry requires user confirmation.
+- `ApplicationProvider.applyAiMissingIconAndSave` checks current profile, component,
+  missing/lock state and then custom-renders, edits and saves the **whole** current
+  profile under its operation gate. Every completed item persists before the next
+  request. Existing icons are never batch targets. No AI WorkManager/foreground
+  runner, server backend, billing or ProjectHome is present.
+
+The gallery/cache/journal distinction and manual paid-request controls must survive
+future UI work. See [AI_FORK_HU](AI_FORK_HU.md) for usage and [QA](qa/TEST_MATRIX.md)
+for the device/process-death coverage still required.
 
 ## Activities
 
@@ -202,8 +241,11 @@ each successful build and after "Clear icons". `updatedKeys` tracks this session
 
 `IconPackBuildService` receives an immutable active-profile snapshot from `ApplicationProvider`,
 then resolves calendar/lock data and delegates assembly to `IconPackBuilder`. The provider holds
-the profile-operation gate throughout the build and persists that same snapshot after the install
-attempt, so switching profiles cannot mix build inputs or results.
+the profile-operation gate during assembly/signing. Installation is a later operation outside
+that gate; `finishInstallAttempt` reacquires it and persists the snapshot to its original
+`profileId`, including when installation is dismissed or fails. The gate is not held across
+the entire installer UI. `recordBuiltPrimary` writes an inactive profile's snapshot rather
+than the new active profile's shared preferences.
 
 `IconPackBuilder` assembles the APK with reandroid (no external build tools). The generated
 pack's dex classes come from prebuilt smali assets (`app/src/main/assets/{R,RLayout,

@@ -1,5 +1,11 @@
 # Renkin AI2 átadás – 2026. október 4.
 
+> **Történeti átadás, eredeti eredményállításokkal.** Az alábbi build, 592 teszt és
+> aláírás 2026. október 4-i állítás, Codex 00 nem futtatta újra. A GitHub-feltöltésre
+> és a saját ZIP-re vonatkozó szöveg az akkori állapotot írja le; az aktuális forrás
+> már a Zsombor0918/RenkinAI main ágában van. Új átadás: [HANDOFF](agent/HANDOFF.md),
+> friss bizonyítékok: [BASELINE](qa/BASELINE.md), működés: [CURRENT_STATE](agent/CURRENT_STATE.md).
+
 ## Telepítés és használat
 
 1. Töltsd le és nyisd meg a `RenkinAI-v2026.10.04-ai2-debug.apk`-t a telefonon.

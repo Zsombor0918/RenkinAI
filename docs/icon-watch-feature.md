@@ -1,9 +1,11 @@
 # Icon Watch & Notifications — design / brainstorm
 
-> Branch: `feature/icon-watch-notifications`
-> Status: **brainstorm only, no code written yet.** This doc is the spec for the
-> next session. Read it together with the "Existing code to reuse" section before
-> implementing.
+> Historical branch: `feature/icon-watch-notifications`.
+> **Archived design rationale, superseded by current source.** WatchDatabase v3,
+> WatchRepository, WatchChecker, WatchWorker and the watch UI now exist; the old
+> schema/dependency/proposed-phase wording below is historical, not implementation
+> instructions. Do not apply its old destructive-migration suggestion. Current
+> authority: [ARCHITECTURE](ARCHITECTURE.md) and [CURRENT_STATE](agent/CURRENT_STATE.md).
 
 ## 1. Goal (in the user's words)
 
@@ -49,8 +51,8 @@ Watching should be **event-driven**: only look when a watched pack actually
   death / reboot without our own `BootCompletedReceiver` plumbing. This is simpler to
   evolve than the started-service + runtime-receiver approach.
 - **Optional later fast-path:** extend the existing runtime receiver
-  ([`PackageAddedService`](app/src/main/kotlin/dev/alembiconsProject/alembicons/service/PackageAddedService.kt) /
-  [`PackageAddedReceiver`](app/src/main/kotlin/dev/alembiconsProject/alembicons/service/PackageAddedReceiver.kt))
+  (the old `PackageAddedService` / `PackageAddedReceiver`, absent from this checkout;
+  current engine: [WatchWorker](../app/src/main/kotlin/dev/renkinProject/renkin/service/WatchWorker.kt))
   with `ACTION_PACKAGE_REPLACED` to enqueue an expedited one-off check immediately
   when a watched pack updates. Not required for v1 — the periodic job already covers
   correctness. (Implicit package broadcasts can't be manifest-declared since API 26,
@@ -87,7 +89,8 @@ change the user ignored — see open questions.
 
 ## 3. Data model (Room) — new entities
 
-Current DB: [`AlchemiconPackDatabase` / `AlchemiconPackDao` / `DbApplication`](app/src/main/kotlin/dev/alembiconsProject/alembicons/data/DbApplication.kt)
+Historical DB: `AlchemiconPackDatabase` / `AlchemiconPackDao`; current
+[DbApplication](../app/src/main/kotlin/dev/renkinProject/renkin/data/DbApplication.kt)
 (version 1, single table). We need to **bump the version** and add a migration (or,
 since the pack table is rebuilt on every install, a destructive migration for the
 new tables is acceptable — confirm with user).
@@ -147,14 +150,14 @@ IconSuggestionCandidate       // the new icon options, one per matching pack
 
 ### 4.1 Entry point
 - Add a **bell `IconButton`** to the home top bar in
-  [`MainScreen.kt` `TitleBar`](app/src/main/kotlin/dev/alembiconsProject/alembicons/ui/MainScreen.kt)
+  [`MainScreen.kt` `TitleBar`](../app/src/main/kotlin/dev/renkinProject/renkin/ui/MainScreen.kt)
   (next to refresh / info / settings). Opens the Watch screen.
 - The bell carries a **badge** = number of completed (undeleted) rules (M3
   `BadgedBox`). `0` → no badge.
 
 ### 4.2 Watch screen (new composable / full-screen dialog)
 Mirror the look of the existing full-screen editor
-[`OptionsDialog`](app/src/main/kotlin/dev/alembiconsProject/alembicons/ui/IndividualOptions.kt)
+[`OptionsDialog`](../app/src/main/kotlin/dev/renkinProject/renkin/ui/IndividualOptions.kt)
 (slide-in `Dialog`, `Surface`, M3 Expressive). Contents:
 - List of **rules**, grouped Active vs Completed (or a "done" chip on completed
   ones). Each rule card shows its apps + watched packs.
@@ -184,7 +187,7 @@ Mirror the look of the existing full-screen editor
 - The "new icon" is produced by running the resolved pack `ResourceDrawable`
   through the normal generation path:
   `appProvider.getIcon(app, options, customIcon = resolvedResourceDrawable)`
-  (see [`ApplicationProvider.getIcon`](app/src/main/kotlin/dev/alembiconsProject/alembicons/apk/ApplicationProvider.kt)).
+  (see [`ApplicationProvider.getIcon`](../app/src/main/kotlin/dev/renkinProject/renkin/apk/ApplicationProvider.kt)).
 - **Confirm = store and consume (decided):** `editApplication(index, app.changeExport(icon))`
   (same as the editor's `onConfirm`) and **show a toast** telling the user to press
   **Build** to regenerate the pack with the new icon. **Do NOT auto-rebuild/reinstall.**
@@ -240,7 +243,7 @@ WorkManager periodic tick   (optional fast-path: PACKAGE_REPLACED → expedited 
   maintainability).
 - New **notification channel** for "icon available" (separate from the existing
   `alembicons_package_added` / `alembicons_update_pack` channels in
-  [`NotificationManager`](app/src/main/kotlin/dev/alembiconsProject/alembicons/service/NotificationManager.kt)).
+  historical `NotificationManager`; current [RenkinNotifications](../app/src/main/kotlin/dev/renkinProject/renkin/service/RenkinNotifications.kt)).
 - *(Optional, later)* fast-path: extend the runtime `IntentFilter` in
   `PackageAddedService` with `Intent.ACTION_PACKAGE_REPLACED` to enqueue an expedited
   one-off check. Not needed for v1.
