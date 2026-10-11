@@ -84,19 +84,32 @@ review prevents accepting a weakened gate just because its own CI passes.
 
 ## Main protection — observed status
 
-Rechecked October 11, 2026 at 10:49 UTC during the P1 audit follow-up, after the
-owner reported manual configuration, via the GitHub connector:
+Verified October 11, 2026 during the owner-authorized closure of PR #1:
 
-- Branch endpoint: `protected: false`, protection enabled false, required checks empty.
-- Repository rulesets endpoint: `[]`.
-- Direct branch-protection endpoint: 403 `Resource not accessible by integration`.
-- Connector exposes no administration write tool. No protection/ruleset was changed.
+- [Ruleset 24877351](https://github.com/Zsombor0918/RenkinAI/rules/24877351),
+  `main-reviewed-and-audited`, is **active** and includes `refs/heads/main`, with no exclusions.
+- Main reports `protected: true`. Its classic-protection summary remains disabled;
+  the active ruleset, rather than a classic branch rule, provides the protection.
+- Deletion and non-fast-forward updates are restricted. Bypass actors are empty,
+  and the connector's current user can never bypass the rule.
+- PRs are required. The required approving-review count is zero, but
+  `require_last_push_approval: true` still requires approval of the latest push
+  by someone other than its pusher. Stale approvals are dismissed. At this read,
+  PR #1 has no approving review and GitHub reports its merge state as `blocked`.
+- Required checks are exactly `build`, `commit-conventions`, `documentation-audit`,
+  all sourced from GitHub Actions (integration id 15368).
+- Conversation resolution is **not required** by the saved rule, and strict
+  up-to-date status checks are **disabled**. These differ from the recommended
+  setup below; do not describe those requirements as enabled. The P1 thread on
+  PR #1 is nevertheless verified resolved.
+- The owner explicitly authorized finishing and merging #1 in the current work
+  session. This is owner acceptance, not a submitted GitHub approving review;
+  external merge requirements still apply.
 
-The reported manual setup is not confirmed by these reads; no active protection
-is observable. Therefore main protection must **not** be described as active.
-The repository permission summary reporting admin does not grant the integration administration
-API scope. The owner should verify that the saved rule is active and targets main
-using the steps below; this follow-up does not change administration settings.
+The earlier inactive observations are historical, retained in QA. The connector
+did not modify administration settings; the owner created the active ruleset.
+The setup steps below remain the recommended configuration, while the observed
+values above and the live PR merge state determine the actual enforcement.
 
 ## Owner setup, click by click
 

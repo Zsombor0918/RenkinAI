@@ -8,7 +8,7 @@ is [CURRENT_STATE](agent/CURRENT_STATE.md); test evidence is [BASELINE](qa/BASEL
 | Upstream Renkin pipeline | Exists in source | Preserve editor, profile/storage, lock/provenance, backup/watch and APK exports |
 | AI1: single-icon generation | Exists in source | Device/provider quality and Samsung compatibility still need recorded trials |
 | AI2: selected missing batch + instructions | Exists in source | Device pause/cancel/process-death and pack-update scenarios remain open |
-| Codex 00: docs, hooks, governance | Implemented on PR branch, review pending | Guard tests and PR CI recorded; owner review and external main protection required before closure |
+| Codex 00: docs, hooks, governance | Implemented and accepted by owner; merge pending at closure audit | Active main ruleset verified; all prior-head checks green and P1 thread resolved; GitHub still requires latest-push approval by a different reviewer. Actual completion/merge SHA is recorded in [PR #1](https://github.com/Zsombor0918/RenkinAI/pull/1) |
 | Codex 01: profile-backed ProjectHome | Not implemented | Separate authorized task: design against ProfileManager; preserve existing data and profile lifecycle |
 | New AI UX/capability improvements | Planned | Separate scope and tests after ProjectHome; current user-entered keys remain during testing |
 | Hosted backend and public billing | Planned | Authentication, server spend controls and explicit product/security design; no backend in Codex 00 |

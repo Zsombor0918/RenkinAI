@@ -4,6 +4,24 @@ Audit date: October 11, 2026. Source baseline main:
 `eb4daa5de82fab54e115363c073eb8981f2203d6`. Infrastructure branch:
 `chore/agent-docs-governance`. Final head SHA is recorded in the PR audit.
 
+## Owner-authorized closure verification
+
+Closure baseline: `50ccda65720e70bcb31e361b67f76bba59bbdacc`, October 11, 2026.
+The owner explicitly accepted the infrastructure work and requested merge of #1.
+
+| Check | Observed result | Evidence boundary |
+| --- | --- | --- |
+| Main/ruleset API | Active main ruleset 24877351; branch protected true | Correct main target, PR rule, deletion/force-push restrictions, empty bypasses and three required GitHub Actions checks |
+| Saved review/status settings | Latest-push approval true; approving-review count zero; conversation resolution false; strict status checks false | Report actual settings, not all recommended settings as implemented |
+| [Governance run 38134217603](https://github.com/Zsombor0918/RenkinAI/actions/runs/38134217603) | Both checks successful on closure baseline | Existing results rechecked; 45-test source unchanged, no new local suite run claimed |
+| [Android run 38133704315](https://github.com/Zsombor0918/RenkinAI/actions/runs/38133704315) | Build successful on closure baseline | Compile, unit tests, debug APK and upload passed; this is a rechecked prior run |
+| P1 review thread / approvals / PR | P1 resolved; no approving review; PR open with merge state blocked | Owner acceptance is not GitHub latest-push approval |
+| `python3 scripts/check_docs.py --staged` and `git diff --check` | Passed, exit 0 | Seven documentation paths; required impact documents, complete note and internal links validated |
+
+The closure commit changes Markdown only. Its checks and actual merge result are
+recorded in the PR audit after pushing; no merged state is asserted before GitHub
+confirms it. Earlier inactive protection observations below are historical.
+
 ## Fresh P1 follow-up checks
 
 Follow-up baseline: `ac6dc81f0abbee0ce9f0e43ee66d616761b6dcb1`; same branch and

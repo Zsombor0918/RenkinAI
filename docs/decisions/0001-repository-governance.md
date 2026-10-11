@@ -1,6 +1,7 @@
 # ADR 0001 — repository governance and agent context
 
-Date: October 11, 2026. Status: proposed for acceptance with Codex 00 PR.
+Date: October 11, 2026. Status: accepted by the repository owner on October 11,
+2026 through the explicit instruction to finish and merge PR #1.
 Applies to development infrastructure; no Android architecture is replaced.
 
 ## Context
@@ -53,6 +54,8 @@ accuracy or English grammar. New guard/workflow changes require this decision or
 another numbered ADR and independent review. No credential, billable provider call,
 Room migration, APK pipeline or existing Android CI behavior changes here.
 
-Protection is observed inactive and cannot be written through this integration.
-[WORKFLOW](../agent/WORKFLOW.md) records owner setup and verification. This ADR
-becomes accepted only when the owner approves the PR; do not silently mark accepted.
+Main ruleset 24877351 is now verified active; the owner configured it outside this
+integration. [WORKFLOW](../agent/WORKFLOW.md) records the exact settings, including
+latest-push approval, disabled conversation resolution and non-strict status checks.
+Owner acceptance of this decision is distinct from a GitHub approving review.
+The connector must satisfy the saved merge rules; no bypass or review is fabricated.
