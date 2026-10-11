@@ -1,6 +1,42 @@
 # Verification baseline
 
-## Codex 01 ProjectHome — current checkpoint
+## Codex 02 — verified implementation checkpoint
+
+Base/main `73a15e2210cb55cf003e60ebc2033130ee7a9e58`; branch
+`feat/create-extend-coverage-m2`; [PR #3](https://github.com/Zsombor0918/RenkinAI/pull/3).
+Owner merge of #2 at 16:32:02 UTC was verified before starting; no independent
+APPROVED review existed. The tested M2 source head is
+`a8b3e4b22e6611042aa8de1d1ce03f3175989976`. This evidence commit changes
+only documentation; its own final-head runs must be checked in PR #3.
+
+| Fresh observed evidence | Actual result | Source / artifact |
+| --- | --- | --- |
+| Original Android compile/unit/debug APK | SUCCESS | [38160285188](https://github.com/Zsombor0918/RenkinAI/actions/runs/38160285188); RenkinAI-debug artifact 11710600148, 34,311,571 bytes |
+| Original creation alone / ingress alone / combined | 1/1, 1/1, 2/2 PASS | [38160285156](https://github.com/Zsombor0918/RenkinAI/actions/runs/38160285156); original case IDs occurred, zero failures/errors/skips |
+| Actual shared profile form | 3/3 PASS | Same run; native SDK 33/320dp harness retained |
+| Create/Extend UI, restore, Save/Cancel, Back, ingress, broadcast/disposal | 10/10 PASS | Same run, CreateExtendFlowComposeTest |
+| Domain + existing-parser + bitmap/vector/adaptive render | 28/28 PASS | Same run, three actual test classes |
+| Unfiltered full compile/unit/debug APK after all groups | 669/669 PASS | Same run, independent tally of 120 XML reports; zero failures/errors/skips; artifact 11709179629 |
+| Source-head governance guards/conventions | 45 offline PASS, 6.420 s; commit-conventions SUCCESS | Governance 38160285196; documentation-audit failed **only** because PR audit was still BLOCKED |
+| Local complete guards and range audits | 45 PASS, 7.556 s; docs/commit range PASS | Linux/Python 3.12.14/Git 2.51.1; no validator changes |
+| Local full Android command | FAILED before configuration | Gradle download Network is unreachable; no local Android success claimed |
+
+The downloaded evidence summary HEAD exactly matched the tested source commit;
+all requested selectors occurred, all Gradle exits were zero and full XML totals
+matched summary counts. Failed checkpoints below remain failed historical records.
+Protected source comparisons show unchanged manifest/SDK/IDs, old MainActivity/
+MainColumn/source picker/profile manager, AI/batch, storage/backup, renderer and
+APK build/sign/install, plus original CI and governance/hook/validator files.
+
+**NOT RUN**, no device available: actual external pack mapping/missing sanity,
+full Create inventory, Save/Cancel/Back, work user, uninstall/reinstall/update,
+GlobalOptions/manual AI, pack build/sign/install/update, Samsung One UI/Theme Park/
+Flip cover/fold, rotation/process death and real TalkBack. **0 live/paid AI requests**.
+PASS WITH RISKS requires a separate owner/reviewer decision; green CI is not release
+or device approval. Main rule is active but review count/conversations/strict remain
+0/false/false, without bypasses. The Play release gate is unchanged.
+
+## Codex 01 ProjectHome — historical accepted checkpoint
 
 Date: October 11, 2026. Branch `feat/project-home-m1`; accepted main/base
 `005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`. Source/special routes reread before

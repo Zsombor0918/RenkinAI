@@ -1,6 +1,6 @@
 # Regression and test matrix
 
-Current checkpoint is Codex 01; Codex 00 results below are historical.
+Current checkpoint is Codex 02; Codex 00/01 results below are historical. M2 source head a8b3e4b2 passed 669/669, 10 UI and 28 coverage fixtures; exact-head final checks are in PR #3.
 A test class existing in source is not a passed run.
 Results and environment belong in [BASELINE](BASELINE.md) and each PR audit.
 
@@ -46,7 +46,7 @@ the matrix status.
 
 ## Codex 02 preparation and read-only coverage
 
-| Area | Automated evidence to execute | Physical/device status |
+| Area | Automated coverage (passed at a8b3e4b2) | Physical/device status |
 | --- | --- | --- |
 | Full Create inventory | IconCoverageAnalyzerTest: 0/1/N, edited rows, multiple activities/search; CreateExtendFlowComposeTest: no-source select/clear and saved round trip | NOT RUN: actual launcher inventory sanity check |
 | Source facts / local actionability | Fake reader: two packages, mapped-drawn vs broken/unmapped/unknown/unavailable, independent manual/fallback/applied/lock counts and overrides | NOT RUN: installed-pack coverage and lock sanity check |
@@ -56,6 +56,7 @@ the matrix status.
 | Accessibility/layout | New tags, checkbox semantics, 48dp, narrow and wide dark/light; existing hinge/Home tests retained | NOT RUN: real TalkBack, fonts, fold/Flip cover screen |
 | Legacy functionality | Full unchanged AI1/AI2/batch/profile/backup/render/build suite, full Android compile/unit/APK and retained targeted M1 workflow | NOT RUN: GlobalOptions/manual AI/pack build-sign-install/update, Samsung One UI/Theme Park |
 
-Fresh M2 executed counts/SHA must be added to BASELINE after hosted results; new
-source test classes are not themselves a passing run. No physical scenario or live
+Fresh M2 counts/SHA/artifacts were independently verified in BASELINE: 669 full,
+10 new UI and 28 coverage fixtures, no skips; final documentation-head checks must
+remain green in PR #3. Test source alone is never passing evidence. No physical scenario or live
 provider test ran, and the main review/conversation/strict gaps remain owner work.

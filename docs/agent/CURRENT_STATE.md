@@ -5,30 +5,15 @@ inspected October 11, 2026. Owner Zsombor0918 merged PR #2 at 16:32:02 UTC;
 its head `05dc320fd6dbdb1a16d4a5390d32c5617413e6a0` is an ancestor and the
 merge tree is identical. Reviews/threads were empty; owner merge is acceptance,
 not evidence of an independent APPROVED review. Codex 02 works separately on
-`feat/create-extend-coverage-m2`; fresh feature CI is pending until recorded in QA.
+`feat/create-extend-coverage-m2`; implementation checkpoint a8b3e4b22e6611042aa8de1d1ce03f3175989976 passed fresh Android and complete regression evidence (669/669); final documentation-head checks belong in PR #3. Owner/device acceptance is still pending.
 Manifest, dependencies, Room v18, provider/storage contracts, APK/signing/install
 and Android CI are unchanged. Existence in source and runtime validation are
 different; see [QA baseline](../qa/BASELINE.md).
 
-At head `8bd57953ec54c7056dac4acf850f5a8863b8bd64`, CI 38143988918 compiled
-app/tests but failed the same two form-idle cases out of 628. Phone viewport,
-bounded widths and earlier explicit clock did not fix them. Full XML and independent
-controls subsequently established a Robolectric 4.14.1 WRAP_CONTENT field-dialog
-measure/layout loop with custom 450 dp width. At the same SDK 33/native/800 dp height,
-the actual form and shell passed at 320 dp; same measured 450×416 px explicit platform
-bounds also passed. Clock, draw, SDK 35 and legacy graphics did not resolve it.
-The two original tests now use compatible 320 dp width, all their assertions remain,
-and three actual shared-form regressions plus isolated/combined CI were added.
-Production code is unchanged from the audited starting head. At correction
-`ae80fbd818eb17c98a7463f689603cfb94dcbaa3`, CI 38152173163 passed compile,
-all unit tests and debug APK; 38152173157 passed original creation/ingress separately,
-together and all three form regressions. At evidence head
-`b9ec57b59671ffdb36f4f091706c8f7ae62825f3`, 38152705800 retained 116 XML
-reports proving 631/631 full-suite tests passed with zero failures/errors/skips,
-after the same separate/together/form tests; unfiltered compile/test/debug build
-also passed. Original Android CI 38152705787 independently built/uploaded the APK.
-PR #2 final head passed Android 38153469680, regressions 38153469669 and Governance 38154063977 before owner merge. These are historical M1 results, not M2 validation. Devices remain NOT RUN.
-See [measured correction](../changes/2026-10-11-compose-dialog-regression-fix.md).
+The M1 Robolectric 4.14.1 WRAP_CONTENT dialog-width correction remains in the
+compatible native SDK 33 / 320dp form harness; original identifiers, interactions
+and isolated/combined/form workflow are retained. Historical failed and successful
+runs remain in [QA baseline](../qa/BASELINE.md) and [correction record](../changes/2026-10-11-compose-dialog-regression-fix.md), not fresh M2 results.
 
 ## Product and implemented paths
 

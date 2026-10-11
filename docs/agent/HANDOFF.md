@@ -33,13 +33,13 @@ See [change note](../changes/2026-10-11-create-extend-coverage.md),
 
 ## Verification, protection and limitations
 
-Local guards passed 45 tests (7.025 s baseline, 6.912 s after implementation).
+Local guards passed 45 tests (7.025 s baseline, 6.912 s after implementation, 7.556 s after corrections).
 Local `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug` failed before
 configuration while downloading Gradle 8.11.1: Network is unreachable. No local
 Android test/build success is claimed; hosted final-head verification is required.
 The runner retains every M1 original separately/together/shared form, adds M2 UI and
 domain/parser/render groups, then runs unfiltered compile/unit/debug APK again.
-Initial M2 Android 38159074131 compiled production but failed test compilation on the DpRect height expression; no Android test or APK success. A narrow bottom-minus-top correction retains the 48dp assertion. The next head 4a447d88 ran 667 tests with three fixture/API failures (compiled vector XML, full count matching, actual dismiss label); the next a2d1d9de checkpoint passed 668 of 669 with one new broadcast-test baseline ordering failure. Awaiting composition before capturing its counter preserves exact lifecycle assertions; fresh follow-up automation is required.
+Initial M2 Android 38159074131 compiled production but failed test compilation on the DpRect height expression; no Android test or APK success. A narrow bottom-minus-top correction retains the 48dp assertion. The next head 4a447d88 ran 667 tests with three fixture/API failures (compiled vector XML, full count matching, actual dismiss label); the next a2d1d9de checkpoint passed 668 of 669 with one new broadcast-test baseline ordering failure. Awaiting composition before capturing its counter preserves exact lifecycle assertions; At a8b3e4b2 both Android 38160285188 and regressions 38160285156 passed: original cases 1/1, 1/1 and 2/2, shared form 3/3, new UI 10/10, coverage fixtures 28/28 and unfiltered 669/669 with debug APK. Downloaded artifact 11709179629 proved zero failures/errors/skips in 120 XML reports; original CI uploaded real APK artifact 11710600148. Governance 38160285196 passed 45 guards and commit conventions, with documentation failure only for the then-BLOCKED audit. This docs-only evidence commit still needs its own fresh checks in PR #3.
 
 Main rule 24877351 is active, main is protected, bypasses empty; PR/build/
 commit-conventions/documentation-audit required, force push/delete forbidden.
@@ -52,7 +52,7 @@ cancellation within its synchronous draw.
 
 ## Next safe task
 
-Finish fresh M2 automated verification and obtain explicit owner/reviewer acceptance;
+Verify final-head evidence in PR #3 and obtain explicit owner/reviewer acceptance;
 do not merge automatically. Then Codex 03 may define project-specific style/assets,
 selection lifecycle and a small API gateway with explicit billing/cancellation
 contracts. No style analysis/demos/gallery/billing in this PR. Preserve profile ID,
