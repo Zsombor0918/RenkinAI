@@ -9,9 +9,10 @@
 A guide for developers (and AI assistants) working on this codebase. The app builds
 installable Android icon packs on-device.
 
-Current-source audit: October 11, 2026, main `eb4daa5de82fab54e115363c073eb8981f2203d6`.
+Codex 01 current-source audit: October 11, 2026, merged main
+`005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`, then `feat/project-home-m1`.
 Entry map: [INDEX](INDEX.md); implementation/limitations: [CURRENT_STATE](agent/CURRENT_STATE.md).
-Codex 00 corrects inherited prose; it does not change this runtime architecture.
+Codex 00 is merged. Codex 01 changes only the UI root/profile entry API described below.
 
 ## Naming — read this first
 
@@ -98,7 +99,8 @@ and persistence state is shared deliberately.
   missing/lock state and then custom-renders, edits and saves the **whole** current
   profile under its operation gate. Every completed item persists before the next
   request. Existing icons are never batch targets. No AI WorkManager/foreground
-  runner, server backend, billing or ProjectHome is present.
+  runner, server backend or billing is present. ProjectHome delegates to the classic
+  editor and introduces no AI operation.
 
 The gallery/cache/journal distinction and manual paid-request controls must survive
 future UI work. See [AI_FORK_HU](AI_FORK_HU.md) for usage and [QA](qa/TEST_MATRIX.md)
@@ -106,7 +108,10 @@ for the device/process-death coverage still required.
 
 ## Activities
 
-- **MainActivity** — the whole app UI; provides `LocalMainActivity` and `LocalToaster`.
+- **MainActivity** — provides `LocalMainActivity`/`LocalToaster`, instantiates its
+  Activity-scoped MainViewModel before Composition, then renders RenkinAiRoot.
+  Shared-image/watch intents request the editor in the same VM, preserving the
+  original UploadedImageStore, Activity URI state key and onResume installer hook.
 - **GlobalOptionsActivity** — wallpaper-backed Global options grid. It uses a lightweight
   view model over the shared provider and performs guarded provider initialization when Android
   recreates it in a cold process without MainActivity/MainViewModel.
@@ -132,6 +137,64 @@ builds its own pack APK under its own package (see Naming). The default profile 
 undeletable; deleting a profile also deletes its watch rules, and a watch notification whose
 profile has since been deleted shows an explanation instead of applying to the wrong profile.
 Switcher = the top-bar title dropdown.
+
+## Projects root and asynchronous profile entry
+
+[RenkinAiRoot](../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt)
+observes the existing profile flow and VM readiness; ProjectHome is stateless.
+ProjectShell saves only Home/Editor route, UI forms and consumed ingress version.
+A SaveableStateHolder keeps editor primitives under the **active profile ID**;
+drawables and icon data remain owned by the existing provider. Classic refresh does
+not dispose the editor. A profile load/baseline mismatch does not show old icons
+under a new project name. No navigation library, database or second provider/VM
+is introduced. [ADR 0002](decisions/0002-profile-backed-project-home.md) explains alternatives.
+
+MainViewModel owns ProjectSessionController and a SavedStateHandle. Legacy
+`switchProfile`/`createProfile` signatures remain available. New Home operations
+enter the existing `profileSessionOperations` mutex, recheck the leaving profile ID
+and dirty state there, save only that origin if explicitly approved, call the
+provider's existing profile APIs, then load/reset baselines before reporting Opened.
+Cancellation of a Save prompt allocates nothing. Repeated acceptance is blocked
+synchronously before launching; no UI effect retries an insert and no timing delay
+is used for navigation. A queued dirty edit causes a fresh Save/Cancel decision.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Home
+    Home --> Editor: active profile already ready
+    Home --> SavePrompt: dirty different profile or create
+    Home --> Loading: clean request
+    SavePrompt --> Home: cancel without mutation
+    SavePrompt --> Loading: explicit save
+    Loading --> Editor: profile and baseline ready
+    Loading --> Home: failure or interruption
+    Editor --> Home: root Back or Home button
+```
+
+Loading holds a synchronous reentry guard; completion is an explicit state consumed
+by the shell. SavedStateHandle records in-flight acceptance and, after Room
+allocation returns, the new ID. Activity recreation retains the VM/job. Process
+restoration reports Interrupted and **never replays creation**. A committed profile
+is an ordinary, discoverable project even if loading was interrupted; select it by
+ID after checking the list. No new persistent idempotency table is added, and no
+atomicity across Room/DataStore is claimed. Reloading a failed active load restores
+saved data before allowing another switch; it does not save a partial target load.
+
+Root Back is delegated to MainColumn's handler at the former double-Back location,
+before search/child handlers. Standalone `MainColumn(iconPacks)` retains the old
+double-Back exit and its toast collector; the shell owns exactly one collector
+while Home is visible. Onboarding's saved progress/dismissal survives Home returns
+and the global preference still allows Settings to request the existing intro again.
+Home clean Back exits; dirty Back explains loss and allows return to editor or
+explicit exit without save. Merely entering Home has no profile/save/AI/build effect.
+
+Watch intents request Editor before resolving the owning profile through the
+existing watch/mutex path; pendingWatchSuggestionId is not consumed by Home. Legacy
+VM-owned watch, missing-pack, backup and installer prompts bring MainColumn into
+the tree. Shared-image import requests Editor, reuses the original URI restoration
+guard and explains the Upload tab in the existing toast. GlobalOptions and
+WallpaperPreview result launchers still live in the classic editor's Activity/VM
+session; provider, build/sign/install and result contracts are unchanged.
 
 ## Threading & state
 

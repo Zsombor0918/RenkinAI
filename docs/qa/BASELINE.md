@@ -1,4 +1,25 @@
-# Verification baseline — Codex 00
+# Verification baseline
+
+## Codex 01 ProjectHome — current checkpoint
+
+Date: October 11, 2026. Branch `feat/project-home-m1`; accepted main/base
+`005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`. Source/special routes reread before
+implementation; #1 merged and its P1 fix/tests/thread verified.
+
+| Check | Actual result | Boundary |
+| --- | --- | --- |
+| Git/main/PR gate | Clean branch from accepted main; initially no open PRs | No main write or merge in this work |
+| `python3 -m unittest discover -s scripts/tests -v` | 45 passed, exit 0, freshly run twice | P1/hook/CI parity; Linux/Python 3.12.14/Git 2.51.1 |
+| `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug` at baseline | Failed, exit 1 at Gradle 8.11.1 download | `java.net.SocketException: Network is unreachable`; JDK 17.0.20, no SDK/device; no local Android test/count/APK |
+| Main merge [CI 38138580216](https://github.com/Zsombor0918/RenkinAI/actions/runs/38138580216) | Existing push run rechecked successful on main SHA | Baseline only, not new ProjectHome validation |
+| New Home/Shell/Session/ingress tests | Added; Android execution pending feature CI | Fake async state and real Compose/Back components; IDs/states, no replay, restoration, light/dark/hinge/48dp; not full Activity/device/pixel proof |
+| Ruleset/branch at 12:16 UTC | Active/protected, PR and three checks; no bypass, deletion/force push blocked | Review count 0, last-push false, conversation false, strict false; owner must enable missing review/conversation requirements |
+
+Staged/range/PR audits and final feature-head Actions are recorded after execution
+in this ledger or the PR audit. No pending tests or historical count is reported
+as PASS. No physical device or live paid provider call.
+
+## Codex 00 — historical verification
 
 Audit date: October 11, 2026. Source baseline main:
 `eb4daa5de82fab54e115363c073eb8981f2203d6`. Infrastructure branch:

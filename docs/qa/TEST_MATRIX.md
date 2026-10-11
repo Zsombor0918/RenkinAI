@@ -1,7 +1,27 @@
 # Regression and test matrix
 
-Status is scoped to Codex 00. A test class existing in source is not a passed run.
+Current checkpoint is Codex 01; Codex 00 results below are historical.
+A test class existing in source is not a passed run.
 Results and environment belong in [BASELINE](BASELINE.md) and each PR audit.
+
+## Codex 01 — feature regression coverage
+
+| Area | Automated coverage and boundary | Required device scenario | Current checkpoint |
+| --- | --- | --- | --- |
+| Home/accessibility | ProjectHomeComposeTest: states/IDs/duplicates/long titles, tags/descriptions, light/dark/hinge/48dp | TalkBack, fonts, phones/tablets/fold/cover/rotation | Added, feature CI pending; device NOT RUN |
+| Navigation/Back | ProjectShellComposeTest: same editor handler, real dialog/search priority, route/draft restore, Home, dirty exit, refresh, Extend | Full MainColumn nested editor Apply/Cancel, keyboard/dialogs | Added, feature CI pending; full Activity NOT RUN |
+| Profiles/async | ProjectSessionTest: active no-op, Save/Cancel/origin, queued dirty check, delayed baseline, failure, one create/no replay | Existing/default/delete/import/restore, rapid taps, kill/relaunch | Fake backend added; existing manager/gate/migration tests preserved; device NOT RUN |
+| External ingress | SharedImageIngressTest uses Activity's URI guard; shell tests entry/pending-watch priority | Notification owning/missing profile, real SEND/Upload, URI grant/recreation | Added; real WatchApplyModal/delivery/device NOT RUN |
+| Existing AI1/AI2 | Existing mock AiImagePipeline/AiPersistence/AiBatchRunner suites | Paid trial only under separate authorization | No new endpoint/client/batch behavior; full feature suite pending |
+| Global/preview/build | Existing provider/build/signing/installer suites | GlobalOptions Apply/Back/result; BuildPackFab → WallpaperPreview → build/sign → install/update; installer onResume | Contracts/IDs unchanged; device NOT RUN |
+| Data/source/OEM | Existing profile/backup/provenance/render suites | Source picker, backup/restore, default/delete, Theme Park/One UI/cover/fold, old pack update | No schema/SDK/permission/key changes; device NOT RUN |
+| Governance/enforcement | 45 guard tests passed locally; final three checks must match final PR head | Owner enable reviews/conversations and explicitly accept audit | Active rule requires PR/checks; final feature CI pending |
+
+Only successful final feature-head compile/unit/APK plus governance closes pending
+CI. Fake-state tests do not prove actual MainActivity lifecycle, import, all old
+editor interactions or visual QA. Keep the manual scenarios marked NOT RUN.
+
+## Codex 00 — historical matrix
 
 | Area | Automated coverage / command | Required manual evidence | Codex 00 status |
 | --- | --- | --- | --- |

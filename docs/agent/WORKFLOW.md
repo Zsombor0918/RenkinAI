@@ -84,7 +84,8 @@ review prevents accepting a weakened gate just because its own CI passes.
 
 ## Main protection — observed status
 
-Verified October 11, 2026 during the owner-authorized closure of PR #1:
+Verified October 11, 2026, 12:16 UTC at the Codex 01 gate, after the owner merged
+PR #1 as `005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`:
 
 - [Ruleset 24877351](https://github.com/Zsombor0918/RenkinAI/rules/24877351),
   `main-reviewed-and-audited`, is **active** and includes `refs/heads/main`, with no exclusions.
@@ -92,19 +93,21 @@ Verified October 11, 2026 during the owner-authorized closure of PR #1:
   the active ruleset, rather than a classic branch rule, provides the protection.
 - Deletion and non-fast-forward updates are restricted. Bypass actors are empty,
   and the connector's current user can never bypass the rule.
-- PRs are required. The required approving-review count is zero, but
-  `require_last_push_approval: true` still requires approval of the latest push
-  by someone other than its pusher. Stale approvals are dismissed. At this read,
-  PR #1 has no approving review and GitHub reports its merge state as `blocked`.
+- PRs are required. Required approving-review count is **zero** and
+  `require_last_push_approval: false`; an approving review is not currently enforced.
+  Stale approvals are dismissed if present. The previous closure audit observed
+  latest-push approval true and a blocked PR; later owner settings and the actual
+  merge supersede that observation. No administration write was made here.
 - Required checks are exactly `build`, `commit-conventions`, `documentation-audit`,
   all sourced from GitHub Actions (integration id 15368).
 - Conversation resolution is **not required** by the saved rule, and strict
   up-to-date status checks are **disabled**. These differ from the recommended
   setup below; do not describe those requirements as enabled. The P1 thread on
   PR #1 is nevertheless verified resolved.
-- The owner explicitly authorized finishing and merging #1 in the current work
-  session. This is owner acceptance, not a submitted GitHub approving review;
-  external merge requirements still apply.
+- The owner accepted and merged #1. That acceptance does not approve later feature
+  PRs. Explicit authorized acceptance remains required under AGENTS. Required review,
+  conversation resolution and up-to-date checks remain manual owner tasks, using
+  steps 7–9 below; do not claim them enabled.
 
 The earlier inactive observations are historical, retained in QA. The connector
 did not modify administration settings; the owner created the active ruleset.

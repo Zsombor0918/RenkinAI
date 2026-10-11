@@ -45,6 +45,8 @@ import dev.renkinProject.renkin.service.WatchWorker
 import dev.renkinProject.renkin.service.AutoBackupWorker
 import dev.renkinProject.renkin.util.CrashReporter
 import dev.renkinProject.renkin.ui.*
+import dev.renkinProject.renkin.ui.project.RenkinAiRoot
+import dev.renkinProject.renkin.ui.project.SharedImageIngress
 import dev.renkinProject.renkin.ui.theme.RenkinTheme
 import dev.renkinProject.renkin.util.Log
 import kotlinx.coroutines.CancellationException
@@ -63,7 +65,7 @@ class MainActivity : ComponentActivity() {
     lateinit var iconPackCatalog: IconPackCatalog
 
     private val viewModel: MainViewModel by viewModels()
-    private var consumedSharedImageUri: String? = null
+    private val sharedImageIngress = SharedImageIngress()
 
     // Activity-scoped (not remember-ed in composition) so non-compose code — e.g. the share
     // receiver in handleSharedImage — can queue toasts through the same single ToastHost.
@@ -71,7 +73,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        consumedSharedImageUri = savedInstanceState?.getString(STATE_CONSUMED_SHARED_IMAGE_URI)
+        sharedImageIngress.consumedUri = savedInstanceState?.getString(STATE_CONSUMED_SHARED_IMAGE_URI)
 
         // Instantiate the view model now, on the main thread, before setContent. This forces
         // its ApplicationProvider — and the Compose snapshot state that provider holds
@@ -151,7 +153,7 @@ class MainActivity : ComponentActivity() {
                                     color = MaterialTheme.colorScheme.background
                                 ) {
                                     ToastHost(toaster)
-                                    MainColumn(viewModel.iconPacks)
+                                    RenkinAiRoot(viewModel)
 
                                     if (crashPending) {
                                         CrashReportDialog(
@@ -171,7 +173,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        consumedSharedImageUri?.let { outState.putString(STATE_CONSUMED_SHARED_IMAGE_URI, it) }
+        sharedImageIngress.consumedUri?.let { outState.putString(STATE_CONSUMED_SHARED_IMAGE_URI, it) }
         super.onSaveInstanceState(outState)
     }
 
@@ -179,7 +181,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         // A newly delivered SEND is a new user action even when it points to the same URI.
-        consumedSharedImageUri = null
+        sharedImageIngress.onNewIntent()
         handleWatchIntent(intent)
         handleSharedImage(intent)
     }
@@ -222,7 +224,10 @@ class MainActivity : ComponentActivity() {
         if (intent?.action == ACTION_OPEN_SUGGESTION) {
             val id = intent.getLongExtra(EXTRA_SUGGESTION_ID, -1L)
             // Switches to the owning profile first (auto-saving the current one), then opens.
-            if (id >= 0) viewModel.openSuggestionInProfile(id)
+            if (id >= 0) {
+                viewModel.requestEditorEntry()
+                viewModel.openSuggestionInProfile(id)
+            }
         }
     }
 
@@ -237,8 +242,8 @@ class MainActivity : ComponentActivity() {
         // Activity state survives both configuration changes and process restoration; mutating an
         // incoming Intent extra does not reliably survive the latter.
         val uriKey = uri.toString()
-        if (consumedSharedImageUri == uriKey) return
-        consumedSharedImageUri = uriKey
+        if (!sharedImageIngress.accept(uriKey)) return
+        viewModel.requestEditorEntry()
 
         lifecycleScope.launch(Dispatchers.IO) {
             // A shared URI can be revoked, one-shot or served by a broken provider — the same
