@@ -3,6 +3,17 @@
 AI icon generation, persistent missing-icon batches and per-app prompt instructions. [Hungarian setup, architecture and limitations](docs/AI_FORK_HU.md).
 Based on the upstream Renkin project below; GPLv3 and upstream attribution retained.
 
+Start development with [AGENTS.md](AGENTS.md), the [documentation index](docs/INDEX.md)
+and [CONTRIBUTING.md](CONTRIBUTING.md). Source-backed implementation:
+[current state](docs/agent/CURRENT_STATE.md); planned work: [roadmap](docs/ROADMAP.md);
+latest transfer: [handoff](docs/agent/HANDOFF.md). AI needs internet access and a
+user-entered provider key; ordinary icon editing and pack assembly remain local.
+ProjectHome and public backend/credits are future work.
+
+The overview, screenshots and release badges below originate from **upstream
+Renkin**, not a published RenkinAI release. Fork builds come from this repository's
+source/Actions; do not install an upstream APK expecting the AI features.
+
 <p align="center">
   <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="96" alt="Renkin">
 </p>
@@ -28,7 +39,9 @@ Fork of [Alembicons](https://codeberg.org/kaanelloed/Alembicons) by kaanelloed (
 
 ## Download
 
-Grab the latest APK from [GitHub Releases](https://github.com/renkindevbugs/Renkin/releases/latest).
+Upstream Renkin APKs are available from [upstream GitHub Releases](https://github.com/renkindevbugs/Renkin/releases/latest).
+For this fork, follow the [Hungarian build guide](docs/AI_FORK_HU.md) or inspect
+completed [RenkinAI Actions](https://github.com/Zsombor0918/RenkinAI/actions) artifacts.
 
 ## Screenshots
 
@@ -76,6 +89,8 @@ JAVA_HOME="<jdk-17>" ./gradlew assembleRelease
 ```
 
 Architecture, persistence and the gotchas: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Offline infrastructure checks: `python3 -m unittest discover -s scripts/tests -v`.
+Required checks and observed main-protection status: [agent workflow](docs/agent/WORKFLOW.md).
 
 ## License
 

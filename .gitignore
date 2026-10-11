@@ -19,7 +19,10 @@ CLAUDE.local.md
 /.secrets/
 /.claude/
 # Local-only AI assistant tooling — never committed to the public repo.
-# codebase-memory-mcp binary + its per-agent MCP config; Codex's local AGENTS.md instructions.
+# codebase-memory-mcp binary + its per-agent MCP config. AGENTS.md is shared governance.
 /.aitools/
 /.mcp.json
-/AGENTS.md
+
+# Python guard caches are local build output.
+__pycache__/
+*.py[cod]

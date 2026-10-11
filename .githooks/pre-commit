@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+if command -v python3 >/dev/null 2>&1; then
+    python=python3
+elif command -v python >/dev/null 2>&1; then
+    python=python
+elif command -v py >/dev/null 2>&1; then
+    python=py
+else
+    echo "Python 3.10+ is required for repository guards." >&2
+    exit 1
+fi
+git diff --cached --check
+"$python" scripts/check_docs.py --staged
