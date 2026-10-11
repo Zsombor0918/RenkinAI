@@ -79,7 +79,7 @@ class ProjectAssetStore(context: Context) {
 
     /** Caller holds the repository's storage lock. Active AND historical links/variants pin files.
      * Pending imported rows are retained too; no startup/background deletion of drafts or Upload. */
-    internal fun collectUnreferenced(retained: List<ReferenceAsset>): Int {
+    internal fun collectUnreferenced(retained: List<ReferenceAsset>, candidates: Set<String>? = null): Int {
         if (!root.exists()) return 0
         require(root.canonicalPath == root.absolutePath)
         val paths = retained.map { it.relativePath }.toSet()
@@ -89,7 +89,7 @@ class ProjectAssetStore(context: Context) {
             directory.listFiles().orEmpty().filter { it.canonicalPath == it.absolutePath }.forEach { file ->
                 val relative = "${directory.name}/${file.name}"
                 if ((file.name.matches(Regex("[a-f0-9]{64}\\.png")) || file.name.startsWith(".write-")) &&
-                    relative !in paths && file.delete()) removed++
+                    relative !in paths && (candidates == null || relative in candidates) && file.delete()) removed++
             }
             if (directory.listFiles().isNullOrEmpty()) directory.delete()
         }

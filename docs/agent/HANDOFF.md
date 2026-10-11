@@ -83,3 +83,13 @@ Corrections fix DAO/thread/transaction and test synchronization/graphics semanti
 share the asset lease with restore/GC, and reread launcher/source context safely.
 Fresh Android suites/APK are the next gate; audit remains BLOCKED and PR draft.
 Governance passed again 45/45 in 24.813 s. No main/ruleset/live API changes.
+
+Codex 03 c06d225a follow-up: compile PASS; 716 tests, three failures; APK SKIPPED
+([Android 38175713388](https://github.com/Zsombor0918/RenkinAI/actions/runs/38175713388),
+artifact 11715578079). Import-error cleanup must be candidate-scoped, not global
+GC; the unchanged source-only M2 observer contract must stay default, while
+launcher preparation opts into all package events only on its screen. Those two
+corrections and opt-in/disposal coverage are now added. The one remaining real
+selection Save interaction is being diagnosed with enabled/displayed assertions
+and semantics/callback evidence; no claim of follow-up Android success yet.
+See [cleanup correction record](../changes/2026-10-11-project-cleanup-regression-boundaries.md).

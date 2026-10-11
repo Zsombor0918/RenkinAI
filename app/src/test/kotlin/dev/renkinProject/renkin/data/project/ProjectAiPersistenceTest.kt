@@ -150,14 +150,19 @@ class ProjectAiPersistenceTest {
 
     @Test fun failedGroupedImportKeepsPreviouslyOwnedDraftAndCleansOnlyItsNewFiles() = runBlocking {
         val existing = reference()
+        val unrelated = repo.files.install(1, projectTestPng(Color.GREEN))
         val failed = runCatching { repo.importReferences(1, listOf(
             { ByteArrayInputStream(projectTestPng()) },
             { ByteArrayInputStream(projectTestPng(Color.RED)) },
             { ByteArrayInputStream(byteArrayOf(1, 2, 3)) })) }
         assertTrue(failed.isFailure)
         assertEquals(listOf(existing.hash), repo.snapshot().assets.map { it.hash })
-        assertEquals(listOf(existing.hash + ".png"), File(context.filesDir, "project_ai_assets/1").list()!!.sorted())
+        assertEquals(listOf(existing.hash + ".png", unrelated.hash + ".png").sorted(),
+            File(context.filesDir, "project_ai_assets/1").list()!!.sorted())
         assertArrayEquals(projectTestPng(), repo.referenceBytes(1, existing.hash))
+        assertTrue(repo.files.resolve(unrelated.relativePath).isFile)
+        assertEquals(1, repo.collectUnreferencedFiles())
+        assertFalse(repo.files.resolve(unrelated.relativePath).exists())
     }
 
     @Test fun deletionCascadesAndReusedIdCannotInheritAnotherStyle() = runBlocking {

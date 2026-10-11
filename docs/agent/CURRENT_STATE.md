@@ -197,3 +197,13 @@ and again at Save: removed apps disappear, new/unloaded or user-uncertain rows
 are disabled with explanation. EXTEND Save uses a fresh read-only index matching
 explicit rescan. Neither path refreshes icons or grants paid permission. Follow-up
 Android/ownership/device acceptance remains pending.
+
+Codex 03 c06d225a follow-up: compile PASS; 716 tests, three failures; APK SKIPPED
+([Android 38175713388](https://github.com/Zsombor0918/RenkinAI/actions/runs/38175713388),
+artifact 11715578079). Import-error cleanup must be candidate-scoped, not global
+GC; the unchanged source-only M2 observer contract must stay default, while
+launcher preparation opts into all package events only on its screen. Those two
+corrections and opt-in/disposal coverage are now added. The one remaining real
+selection Save interaction is being diagnosed with enabled/displayed assertions
+and semantics/callback evidence; no claim of follow-up Android success yet.
+See [cleanup correction record](../changes/2026-10-11-project-cleanup-regression-boundaries.md).

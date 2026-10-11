@@ -566,3 +566,13 @@ Resume/package changes and explicit Save revalidate identities. Source Save read
 the selected pack's fresh index, including the same version/update/revision/theme/
 mapping fingerprint used by explicit rescan. No refreshIcons, primary-source
 write, watcher service or generation is invoked.
+
+Codex 03 c06d225a follow-up: compile PASS; 716 tests, three failures; APK SKIPPED
+([Android 38175713388](https://github.com/Zsombor0918/RenkinAI/actions/runs/38175713388),
+artifact 11715578079). Import-error cleanup must be candidate-scoped, not global
+GC; the unchanged source-only M2 observer contract must stay default, while
+launcher preparation opts into all package events only on its screen. Those two
+corrections and opt-in/disposal coverage are now added. The one remaining real
+selection Save interaction is being diagnosed with enabled/displayed assertions
+and semantics/callback evidence; no claim of follow-up Android success yet.
+See [cleanup correction record](changes/2026-10-11-project-cleanup-regression-boundaries.md).

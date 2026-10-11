@@ -75,8 +75,10 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
         } catch (failure: Throwable) {
             try {
                 withContext(NonCancellable) { withAssetLease {
-                    database.withTransaction { dao.discardUnlinked(id, imported.map { it.hash }.filter { it !in previous }) }
-                    files.collectUnreferenced(dao.allAssets())
+                    val newHashes = imported.map { it.hash }.filter { it !in previous }
+                    database.withTransaction { dao.discardUnlinked(id, newHashes) }
+                    // Import failure is cleanup of this operation, not permission for global GC.
+                    files.collectUnreferenced(dao.allAssets(), newHashes.map { ProjectAssetStore.path(id, it) }.toSet())
                 } }
             } catch (cleanup: Throwable) { failure.addSuppressed(cleanup) }
             throw failure

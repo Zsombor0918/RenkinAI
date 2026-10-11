@@ -1,6 +1,11 @@
 package dev.renkinProject.renkin.ui.project
 
 import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.test.core.app.ApplicationProvider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.StateRestorationTester
@@ -49,7 +54,9 @@ class ProjectSelectionComposeTest {
     @Test fun explicitSavePersistsExactKeysAndRestorationNeverResubmits() {
         val restoration = StateRestorationTester(compose); restoration.setContent { Content() }
         scroll("setup-select-all"); compose.onNodeWithTag("setup-select-all").performClick()
-        scroll("setup-save-selection"); compose.onNodeWithTag("setup-save-selection").performClick()
+        scroll("setup-save-selection"); compose.onNodeWithTag("setup-save-selection").assertIsEnabled().assertIsDisplayed().performClick()
+        compose.runOnIdle { println("Selection save diagnostic: saves=$saves, metadata=$metadata") }
+        println(compose.onRoot().printToString())
         compose.onNodeWithTag("setup-selection-saved").assertExists()
         assertEquals(listOf("pkg/Main"), ProjectSelection.decode(metadata!!.selectionJson)!!.componentKeys)
         assertEquals(1, saves)
@@ -90,6 +97,27 @@ class ProjectSelectionComposeTest {
         compose.runOnIdle { mode = ProjectSetupMode.EXTEND; coverage = CoverageUiState.Failed }
         compose.onNodeWithTag("setup-project-style").performScrollTo().assertIsEnabled().performClick()
         assertEquals(2, styleEntries)
+        assertEquals(0, saves)
+    }
+
+    @Test fun launcherPreparationOptsIntoAllPackageChangesAndDisposesItsScreenReceiver() {
+        var visible by mutableStateOf(true)
+        var invalidations = 0
+        compose.setContent {
+            if (visible) ObserveCoverageInvalidation(null, observeLauncherChanges = true) { invalidations++ }
+            Text("Read-only launcher preparation")
+        }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        compose.waitForIdle()
+        val baseline = invalidations
+        compose.runOnIdle { context.sendBroadcast(Intent(Intent.ACTION_PACKAGE_ADDED, Uri.parse("package:new.app"))) }
+        compose.waitForIdle(); assertEquals(baseline + 1, invalidations)
+        compose.runOnIdle { context.sendBroadcast(Intent(Intent.ACTION_PACKAGE_REMOVED, Uri.parse("package:old.app"))) }
+        compose.waitForIdle(); assertEquals(baseline + 2, invalidations)
+        compose.runOnIdle { visible = false }
+        compose.waitForIdle()
+        compose.runOnIdle { context.sendBroadcast(Intent(Intent.ACTION_PACKAGE_REPLACED, Uri.parse("package:new.app"))) }
+        compose.waitForIdle(); assertEquals(baseline + 2, invalidations)
         assertEquals(0, saves)
     }
 }

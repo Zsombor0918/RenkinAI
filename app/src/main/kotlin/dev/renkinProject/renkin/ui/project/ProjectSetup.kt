@@ -73,19 +73,20 @@ internal data class ProjectSetupData(
 
 /** Screen-scoped invalidation only, never a background watcher or icon refresh. */
 @Composable
-internal fun ObserveCoverageInvalidation(source: String?, onInvalidate: () -> Unit) {
+internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges: Boolean = false, onInvalidate: () -> Unit) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val invalidate by rememberUpdatedState(onInvalidate)
-    DisposableEffect(lifecycle, context, source) {
+    DisposableEffect(lifecycle, context, source, observeLauncherChanges) {
         val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) invalidate() }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.data?.schemeSpecificPart != null) invalidate()
+                val pack = intent?.data?.schemeSpecificPart
+                if (pack != null && (observeLauncherChanges || source != null && pack == source)) invalidate()
             }
         }
         lifecycle.addObserver(observer)
-        ContextCompat.registerReceiver(context, receiver, IntentFilter().apply {
+        if (source != null || observeLauncherChanges) ContextCompat.registerReceiver(context, receiver, IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_ADDED)
             addAction(Intent.ACTION_PACKAGE_REMOVED)
             addAction(Intent.ACTION_PACKAGE_CHANGED)
@@ -94,7 +95,7 @@ internal fun ObserveCoverageInvalidation(source: String?, onInvalidate: () -> Un
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
         onDispose {
             lifecycle.removeObserver(observer)
-            context.unregisterReceiver(receiver)
+            if (source != null || observeLauncherChanges) context.unregisterReceiver(receiver)
         }
     }
 }
@@ -120,7 +121,7 @@ internal fun rememberProjectSetupData(
     }
     var rescan by remember { mutableIntStateOf(0) }
     var resumeCheck by remember { mutableIntStateOf(0) }
-    ObserveCoverageInvalidation(source) { resumeCheck++ }
+    ObserveCoverageInvalidation(source, observeLauncherChanges = true) { resumeCheck++ }
     var launcherIdentity by remember(profileId, page, resumeCheck) { mutableStateOf<Map<String, Boolean>?>(null) }
     var launcherLoading by remember(profileId, page, resumeCheck) { mutableStateOf(page == ProjectSetupPage.TARGETS) }
     var launcherFailed by remember(profileId, page, resumeCheck) { mutableStateOf(false) }
