@@ -52,8 +52,7 @@ import org.robolectric.shadows.ShadowDialog
 @Config(application = Application::class, sdk = [33], qualifiers = "w450dp-h1400dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ProjectShellComposeTest {
-    @get:Rule(order = 0) val compose = createComposeRule()
-    @get:Rule(order = 1) val idleProbe = ComposeIdleProbe(compose)
+    @get:Rule val compose = createComposeRule()
     private lateinit var activity: ComponentActivity
     private var home by mutableStateOf(ProjectHomeState(
         profiles = listOf(Profile(1, "Default"), Profile(2, "Night")),
@@ -213,7 +212,10 @@ class ProjectShellComposeTest {
     }
 
     @Test
-    @Config(qualifiers = "w450dp-h800dp")
+    // Robolectric's WRAP_CONTENT dialog/text-field measurement loops above its
+    // default 320 dp window width (robolectric/robolectric#8460). Keep native
+    // rendering and every real form interaction; wide Home tests stay separate.
+    @Config(qualifiers = "w320dp-h800dp")
     fun confirmedCreationRecompositionAndRestorationDoNotResubmitOrOpenEarly() {
         val restoration = StateRestorationTester(compose)
         restoration.setContent { Content() }
@@ -244,7 +246,7 @@ class ProjectShellComposeTest {
     }
 
     @Test
-    @Config(qualifiers = "w450dp-h800dp")
+    @Config(qualifiers = "w320dp-h800dp")
     fun externalImageEntryAndPendingWatchTakePriorityOverHomeAndCreateForms() {
         start()
         compose.onNodeWithTag("project-create").performClick()

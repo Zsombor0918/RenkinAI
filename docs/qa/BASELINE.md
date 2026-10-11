@@ -24,6 +24,8 @@ implementation; #1 merged and its P1 fix/tests/thread verified.
 | [Isolation 38149176046](https://github.com/Zsombor0918/RenkinAI/actions/runs/38149176046), head `f67c3a6a020be922274fdb02ffc02b26130da2c6` | Nine independent cases: 3 passed, 6 failed | Plain/empty dialog/outside field pass. Every field-in-dialog variant failed only pending measure/layout; resolved UI/runtime/UI-test 1.9.3, Material3 1.5.0-alpha14, Robolectric 4.14.1; full XML retained |
 | Full [CI 38149176086](https://github.com/Zsombor0918/RenkinAI/actions/runs/38149176086), same head | 637 executed, 8 FAILED; app/test compile success; APK skipped | Six diagnostic reproductions plus the two original cases; original dialog roots have the same sole pending-layout flag |
 | [Controls 38150132443](https://github.com/Zsombor0918/RenkinAI/actions/runs/38150132443), head `bb2dde21c5439bfda45a056ddea640dc41c6670a` | SDK 35 also FAILED; first draw control failed before drawing | No draw conclusion; real window-availability condition added next |
+| [Window controls 38150826550](https://github.com/Zsombor0918/RenkinAI/actions/runs/38150826550), head `8c1dddc4c3a75ffc0dd612fab543c5e3ed2de64d` | Native draw FAILED; same 450×416 px explicit bounds PASSED; legacy FAILED | Only exact platform bounds cleared pending layout; no production sizing change used |
+| [Width-only 38151317631](https://github.com/Zsombor0918/RenkinAI/actions/runs/38151317631), head `7aad5bd410e9d2dcc88188028671c4f356755eb0` | Actual form and shell both PASSED separately at 320×800 dp | Same SDK 33/native/height/components/input; all busy flags false; artifact 11706736726 contains full XML |
 
 Recreation follow-up adds a persisted editor-entry counter and an intro-visibility
 helper that distinguishes pending prefs from explicit re-show, plus regressions.
@@ -41,9 +43,11 @@ large real-device forms still require the device matrix.
 The latest HTML full stacks show 123016/124285 idle attempts over 60 seconds at
 the first text-input lookup / first runOnIdle after Create. They do not expose
 the busy condition or prove a Material 3, animation, focus or production defect.
-Measured SDK 33/native isolation and XML capture are pending the diagnostic run.
-Isolation and SDK controls above now establish the pending-layout boundary.
-The width-only comparison is pending; upstream issue 8460 is not a claimed local pass.
+Full XML and native controls above establish the WRAP_CONTENT/custom-width layout
+boundary. The final test correction uses 320 dp for the two real-form cases and
+adds three shared-form regressions. Temporary probes/negative controls are removed.
+Fresh original isolated/combined tests and complete suite/APK still require execution.
+Upstream issue 8460 is context, not a replacement for these actual CI measurements.
 
 Staged/range/PR audits and final feature-head Actions are recorded after execution
 in this ledger or the PR audit. No pending tests or historical count is reported

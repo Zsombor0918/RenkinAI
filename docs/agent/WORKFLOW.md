@@ -12,24 +12,22 @@ topic branch. Implement, update canonical docs, add a dated change note, run tes
 update handoff, commit with a validated subject, and open an audited PR. Report the
 base and final head SHA. Leave reviewer acceptance and merge to the authorized owner.
 
-## Temporary Codex 01 diagnostics
+## Profile form regressions
 
-The PR-only `compose-diagnostics.yml` workflow independently runs
-`python3 scripts/run_compose_diagnostics.py` with normal SDK 33/native Compose
-idling and real dialog components. It records resolved dependencies and preserves
-each isolation case's XML, HTML and bounded snapshot/idler probe output. A failed
-case makes the runner and job fail; collecting all cases does not suppress failure.
-The original Android CI and governance remain required and unchanged. Remove the
-temporary instrumentation after capturing the cause, keeping useful regressions.
-The next controls compare a single actual native Canvas draw of the already laid-out
-dialog and SDK 35. These are measured hypotheses, not idling bypasses or substitutions
-for the existing SDK 33 real-form tests. Steady-state write samples accompany flags.
-Window controls wait on an attached, measured actual dialog before drawing or setting
-its measured platform bounds. A legacy graphics case is a diagnostic comparison only;
-the original native tests remain mandatory. No timeout is increased.
-The width-only comparison keeps SDK 33/native/800 dp height and varies 450 → 320 dp
-for the same actual form/shell. Upstream Robolectric issue 8460 is supporting context;
-our independent results must establish whether it applies here.
+The read-only PR workflow `compose-regressions.yml` runs
+`python3 scripts/run_compose_regressions.py` on the exact PR head: both formerly
+blocked real-form shell tests individually, together, then the shared-form class.
+It retains per-case XML/HTML/logs and `build/compose-regressions/summary.json` with
+HEAD, exit codes and counts. Nonzero Gradle exit, missing results, failure/error or
+skipped tests fail the runner/job. The full Android CI still runs the entire suite
+and debug build; filtered regressions do not replace it or the three required checks.
+
+Native SDK 33 form tests use 320 dp width to avoid the measured Robolectric
+WRAP_CONTENT custom-width loop. Wide/hinge Home tests remain unchanged; wider-device
+form/TalkBack checks remain manual. No production dialog sizing, clock, timeout or
+idling behavior was changed. Temporary probes/reflection, draw/window overrides
+and known-negative timeout cases were removed after capturing their evidence.
+See the [correction record](../changes/2026-10-11-compose-dialog-regression-fix.md).
 
 ## Automatic documentation minimum
 

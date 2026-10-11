@@ -40,6 +40,29 @@ historical; their 592-test claim is not a new result.
 
 ## Verification and open risks
 
+### Targeted Compose correction — current checkpoint
+
+Starting PR head `8bd57953ec54c7056dac4acf850f5a8863b8bd64` is preserved in all
+production files. The measured blocker is Robolectric 4.14.1 WRAP_CONTENT dialog
+measure/layout with a custom 450 dp width, not profile/session logic or clock work.
+Width-only native SDK 33 controls in
+[38151317631](https://github.com/Zsombor0918/RenkinAI/actions/runs/38151317631)
+passed the same actual form and shell at 320×800 dp. Explicit unchanged measured
+450×416 px window bounds also passed; actual draw, SDK 35 and legacy graphics did not.
+The exact internal platform call is not independently proven on a device.
+
+Both original cases now use 320×800 dp, preserving every action/assertion and native
+rendering. New shared-form tests cover required/trimmed/capped input, restoration
+and Cancel; no profile allocation or API calls. Temporary probes and negative
+experiments are removed. The permanent regression runner checks both originals
+separately/together and retains complete XML/SHA/count evidence; full Android CI
+and governance are unchanged. [Correction note](../changes/2026-10-11-compose-dialog-regression-fix.md)
+contains measurements, boundaries, preserved scope and rollback. Final correction
+SHA execution is pending; keep PR #2 BLOCKED until actual full tests/APK and guards
+pass, then document missing devices as PASS WITH RISKS for owner/reviewer decision.
+
+### Earlier failed checkpoints — historical
+
 45 offline governance tests freshly passed twice. Baseline local
 `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug` stopped before
 configuration at Gradle download: `Network is unreachable`. Environment:
@@ -143,7 +166,8 @@ owner/reviewer decision; do not merge automatically.
 
 ## Next safe task
 
-Review this feature, verify final-head CI, decide ADR 0002 and complete the device
+Verify the targeted correction's original isolated/combined tests, full suite and
+APK plus governance at the final head; then review this feature, decide ADR 0002 and complete the device
 matrix before acceptance. Do not call unresolved editor/profile regressions done.
 After explicit acceptance/merge, fetch fresh main for separate Codex 02:
 CreateProjectFlow/ExtendProjectFlow plus IconCoverageAnalyzer from component mapping
