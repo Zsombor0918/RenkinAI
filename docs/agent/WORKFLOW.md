@@ -105,7 +105,8 @@ review prevents accepting a weakened gate just because its own CI passes.
 
 ## Main protection — observed status
 
-Verified October 11, 2026, 12:16 UTC at the Codex 01 gate, after the owner merged
+Verified October 11, 2026, 12:16 UTC at the Codex 01 gate and reread at 15:52 UTC
+with the same values, after the owner merged
 PR #1 as `005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`:
 
 - [Ruleset 24877351](https://github.com/Zsombor0918/RenkinAI/rules/24877351),

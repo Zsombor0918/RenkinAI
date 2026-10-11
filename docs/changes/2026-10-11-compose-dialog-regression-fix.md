@@ -72,8 +72,8 @@ Downloaded complete XML and flags from artifacts 11706392537, 11706582995,
 The width-only form/shell controls passed with all five busy flags false and
 320×416 px dialog roots, no pending layout. Local guard suite passed 45 tests;
 local Android download failed with Network is unreachable, not a build success.
-Fresh original tests/full suite/APK/guard checks at the final correction SHA are
-subsequently passed at `ae80fbd818eb17c98a7463f689603cfb94dcbaa3`:
+Original tests/full suite/APK checks subsequently passed at
+`ae80fbd818eb17c98a7463f689603cfb94dcbaa3`:
 38152173163 compiled, passed the full unit task and built/uploaded debug APK;
 38152173157 passed creation 1/1, ingress 1/1, both 2/2 and new shared form 3/3,
 with zero failures/errors/skips. Full numeric XML and final-head checks are recorded

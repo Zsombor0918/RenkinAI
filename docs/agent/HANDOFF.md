@@ -64,8 +64,19 @@ compile/unit/debug APK, and [regressions 38152173157](https://github.com/Zsombor
 passed original creation 1/1, ingress 1/1, combined 2/2 and form 3/3, with no skips.
 The original success log has no numeric suite count; the evidence runner now retains
 an additional unfiltered complete compile/test/APK run and verifies actual selectors.
-Fresh final SHA results are still required. Missing devices need PASS WITH RISKS
-and an authorized owner/reviewer decision after automation succeeds.
+At evidence head `b9ec57b59671ffdb36f4f091706c8f7ae62825f3`,
+[38152705800](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152705800)
+passed creation 1/1, ingress 1/1, combined 2/2, form 3/3 and the unfiltered
+compile/test/debug build: **631/631**, zero failures/errors/skips. All requested
+selectors occurred; 116 XML files and SHA/count summary were independently inspected
+in artifact 11707282850. Original [Android CI 38152705787](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152705787)
+independently passed and uploaded real debug APK artifact 11707013144.
+Local 45 governance tests passed again in 13.224 seconds; seven offline runner
+fault-injection cases passed (fixture Gradle, not Android), rejecting missing
+selectors/reports, empty/skipped/failed results and nonzero Gradle exits.
+The final documentation commit must have its own green checks; exact final SHA
+belongs in PR #2. Missing devices need PASS WITH RISKS and an authorized owner/reviewer
+decision; no automatic merge. Main remains `005cffa6d51b11e15c20e68349c0c4ce0f23cd8f`.
 
 ### Earlier failed checkpoints — historical
 
@@ -161,6 +172,9 @@ no bypasses. October 11 12:16 UTC read: review count **0**, latest-push approval
 **false**, conversation resolution **false**, strict checks **false**. This
 supersedes the earlier latest-push block. The connector has no administration
 write; this work did not weaken settings.
+Rechecked October 11 at **15:52 UTC**: the same values remain, bypass list empty,
+exact three required contexts intact. PR #2 has no submitted reviews or review
+threads and is open/unmerged; passing automation is not owner acceptance.
 
 Owner action: Settings → Rules → Rulesets → main-reviewed-and-audited → Edit
 ([existing rule](https://github.com/Zsombor0918/RenkinAI/rules/24877351)); require

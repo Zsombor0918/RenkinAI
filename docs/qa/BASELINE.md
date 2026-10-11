@@ -28,6 +28,10 @@ implementation; #1 merged and its P1 fix/tests/thread verified.
 | [Width-only 38151317631](https://github.com/Zsombor0918/RenkinAI/actions/runs/38151317631), head `7aad5bd410e9d2dcc88188028671c4f356755eb0` | Actual form and shell both PASSED separately at 320×800 dp | Same SDK 33/native/height/components/input; all busy flags false; artifact 11706736726 contains full XML |
 | Corrected [Android 38152173163](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152173163), head `ae80fbd818eb17c98a7463f689603cfb94dcbaa3` | Compile, full unit task, debug APK/upload all SUCCESS | Success log does not print numeric full count; artifact 11707221864 is real APK, not device installation proof |
 | Corrected [regressions 38152173157](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152173157), same head | Creation 1/1, ingress 1/1, combined 2/2, shared form 3/3, all exit zero | Zero failures/errors/skips; exact-head XML artifact 11707590246; full numeric collection added next |
+| Complete [regressions 38152705800](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152705800), head `b9ec57b59671ffdb36f4f091706c8f7ae62825f3` | Creation 1/1; ingress 1/1; both 2/2; form 3/3; unfiltered **631/631** and debug build SUCCESS | Zero failures/errors/skips/missing selectors; independently summed 116 XML reports in artifact 11707282850 and verified summary HEAD |
+| Original [CI 38152705787](https://github.com/Zsombor0918/RenkinAI/actions/runs/38152705787), same head | Compile/unit/debug APK/upload SUCCESS | Real APK artifact 11707013144; no device install or release certificate proof |
+| Local checks at complete evidence head | 45 guards PASS, 13.224 s; 7 runner fault-injection modes PASS | Positive plus nonzero/missing selector/missing report/empty/skipped/failed fixtures; fixture Gradle is not Android; staged/range/hooks PASS |
+| Main/PR/rules read at 15:52 UTC | Main still 005cffa6; rule active/empty bypasses/three checks; PR #2 open/unmerged, no reviews/threads | Review count 0, last-push false, conversation false, strict false; owner actions still required |
 
 Recreation follow-up adds a persisted editor-entry counter and an intro-visibility
 helper that distinguishes pending prefs from explicit re-show, plus regressions.
@@ -49,7 +53,9 @@ Full XML and native controls above establish the WRAP_CONTENT/custom-width layou
 boundary. The final test correction uses 320 dp for the two real-form cases and
 adds three shared-form regressions. Temporary probes/negative controls are removed.
 Corrected original isolated/combined/form and complete Android tasks passed above.
-The additional unfiltered XML/count collection and final SHA verification are pending.
+Complete XML/count collection now passed as recorded above. A final documentation
+head must also pass its fresh exact-head Android/regression/governance runs; its
+SHA and final statuses are recorded externally in PR #2 to avoid a self-hash cycle.
 Upstream issue 8460 is context, not a replacement for these actual CI measurements.
 
 Staged/range/PR audits and final feature-head Actions are recorded after execution

@@ -20,8 +20,12 @@ and three actual shared-form regressions plus isolated/combined CI were added.
 Production code is unchanged from the audited starting head. At correction
 `ae80fbd818eb17c98a7463f689603cfb94dcbaa3`, CI 38152173163 passed compile,
 all unit tests and debug APK; 38152173157 passed original creation/ingress separately,
-together and all three form regressions. Complete passing XML/count collection is
-added next; final SHA/check results belong in PR #2. Devices remain NOT RUN.
+together and all three form regressions. At evidence head
+`b9ec57b59671ffdb36f4f091706c8f7ae62825f3`, 38152705800 retained 116 XML
+reports proving 631/631 full-suite tests passed with zero failures/errors/skips,
+after the same separate/together/form tests; unfiltered compile/test/debug build
+also passed. Original Android CI 38152705787 independently built/uploaded the APK.
+Final documentation-head SHA/check results belong in PR #2. Devices remain NOT RUN.
 See [measured correction](../changes/2026-10-11-compose-dialog-regression-fix.md).
 
 ## Product and implemented paths

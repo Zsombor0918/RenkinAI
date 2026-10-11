@@ -38,13 +38,20 @@ Android CI remains independently mandatory and is not replaced by this runner.
 At ae80fbd8, Android CI 38152173163 returned BUILD SUCCESSFUL for compile/unit/APK
 and uploaded debug artifact 11707221864. Regression 38152173157 reported creation
 1/1, ingress 1/1, combined 2/2 and shared form 3/3, zero errors/failures/skipped,
-all exit zero; artifact 11707590246 retains XML. Local 45 guards passed in 14.198
-seconds; staged/range/hook checks passed. Fresh full-evidence runner execution is pending.
+all exit zero; artifact 11707590246 retains XML. Subsequently
+`b9ec57b59671ffdb36f4f091706c8f7ae62825f3` passed complete evidence run
+38152705800: creation 1/1, ingress 1/1, both 2/2, form 3/3 and full unfiltered
+631/631, zero failures/errors/skips/missing selectors; compile/debug build also passed.
+116 complete XML reports and SHA/count JSON were downloaded and independently
+summed from artifact 11707282850. Original CI 38152705787 independently passed and
+uploaded APK 11707013144. Local 45 guards passed in 13.224 seconds; seven runner
+fault-injection cases passed; staged/range/hook checks passed. Final documentation
+head checks and SHA belong in PR #2 after the final commit.
 
 ## Not tested
 
-No full numeric passing suite count is asserted from the original success log.
-The new runner step has not executed yet. All physical device scenarios and live
+No numeric count is inferred from the original success log; full XML proves it.
+All physical device scenarios and live
 paid providers remain NOT RUN; no signing/install/update or Play approval is claimed.
 
 ## Risks
@@ -63,7 +70,9 @@ no application or data rollback is needed.
 
 WORKFLOW explains unfiltered full evidence and selector validation. CURRENT_STATE,
 HANDOFF, BASELINE and TEST_MATRIX record the observed correction-head successes and
-missing numeric/device proof, preserving all prior failed checkpoints as historical.
+actual full numeric proof and missing device coverage, preserving failed checkpoints.
+ROADMAP's stale CI blocker is corrected; the feature remains unaccepted pending
+owner/device review, with no new implementation phase or architecture decision.
 
 ## Follow-up
 
