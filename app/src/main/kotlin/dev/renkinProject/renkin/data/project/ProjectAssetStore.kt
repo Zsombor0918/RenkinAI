@@ -123,7 +123,7 @@ internal fun sha256(bytes: ByteArray): String = MessageDigest.getInstance("SHA-2
 
 /** Bound before allocating pixels; validate every chunk CRC and terminal IEND (a lenient decoder
  * alone can accept truncated PNGs). References may be opaque; empty artwork is rejected. */
-internal fun inspectPng(bytes: ByteArray, limit: Int = ProjectAssetStore.MAX_BYTES): Pair<Int, Int> {
+internal fun inspectPng(bytes: ByteArray, limit: Int = ProjectAssetStore.MAX_BYTES, requireVisible: Boolean = true): Pair<Int, Int> {
     require(bytes.size in 33..limit && bytes.take(8).toByteArray().contentEquals(byteArrayOf(-119, 80, 78, 71, 13, 10, 26, 10))) {
         "Invalid or oversized PNG image."
     }
@@ -157,7 +157,7 @@ internal fun inspectPng(bytes: ByteArray, limit: Int = ProjectAssetStore.MAX_BYT
             bitmap.getPixels(row, 0, row.size, 0, y, row.size, 1)
             if (row.any { it ushr 24 != 0 }) { visible = true; break }
         }
-        require(visible) { "Reference artwork is empty." }
+        require(!requireVisible || visible) { "Reference artwork is empty." }
     } finally { bitmap.recycle() }
     return bounds.outWidth to bounds.outHeight
 }

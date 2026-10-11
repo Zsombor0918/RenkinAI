@@ -576,3 +576,10 @@ corrections and opt-in/disposal coverage are now added. The one remaining real
 selection Save interaction is being diagnosed with enabled/displayed assertions
 and semantics/callback evidence; no claim of follow-up Android success yet.
 See [cleanup correction record](changes/2026-10-11-project-cleanup-regression-boundaries.md).
+
+Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
+fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
+PNG signature/CRC/end/dimension/decode validation without the project-reference
+visible-artwork rule. Project references retain four MiB and reject empty artwork.
+The real format-3 large/transparent PNG regression is pending hosted verification;
+legacy upload/render code and credentials/signing contracts remain unchanged.

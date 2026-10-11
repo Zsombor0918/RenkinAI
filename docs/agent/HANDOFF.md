@@ -106,3 +106,10 @@ diagnostics pending verification; runtime does not change. Separate Android run
 404 for the SDK 33 instrumented POM checksum; same-head failed job was rerun.
 Offline fixture credentials are generated in memory, not hardcoded. Local guards
 45/45 passed in 21.989 s. This next-head test correction is not yet proven successful.
+
+Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
+fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
+PNG signature/CRC/end/dimension/decode validation without the project-reference
+visible-artwork rule. Project references retain four MiB and reject empty artwork.
+The real format-3 large/transparent PNG regression is pending hosted verification;
+legacy upload/render code and credentials/signing contracts remain unchanged.

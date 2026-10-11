@@ -2,6 +2,7 @@ package dev.renkinProject.renkin.data.transfer
 
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.room.Room
 import dev.renkinProject.renkin.data.*
@@ -111,6 +112,29 @@ class ProjectAiBackupTest {
         assertEquals("pixels", RenkinPackRepository(target).getAll(1).single().drawable)
     }
 
+    @Test fun legacyFullArchiveKeepsLargeAndTransparentGalleryPngsWithoutChangingProjectReferenceRules() = runBlocking {
+        val random = java.util.Random(9030017)
+        val bitmap = Bitmap.createBitmap(1300, 1300, Bitmap.Config.ARGB_8888)
+        val pixels = IntArray(1300 * 1300) { Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256)) }
+        bitmap.setPixels(pixels, 0, 1300, 0, 0, 1300, 1300)
+        val large = try { ByteArrayOutputStream().use {
+            assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)); it.toByteArray()
+        } } finally { bitmap.recycle() }
+        assertTrue(large.size > ProjectAssetStore.MAX_BYTES)
+        val transparent = projectTestPng(Color.TRANSPARENT)
+        assertTrue(runCatching { inspectPng(transparent) }.isFailure)
+        val old = BackupData(listOf(BackupProfile(Profile(1, "Legacy"), emptyList(), emptyList())), emptyMap())
+        val data = JSONObject(BackupCodec.encode(old)).apply { remove("projectAi") }.toString().toByteArray()
+        val bytes = archive(mapOf("manifest.json" to "{\"format\":3,\"kind\":\"backup\"}".toByteArray(),
+            "data.json" to data, "uploads/img_legacy_large.png" to large, "uploads/img_legacy_transparent.png" to transparent))
+        manager(target, targetWatch).importBackup { ByteArrayInputStream(bytes) }
+        assertArrayEquals(large, UploadedImageStore.directory(context).resolve("img_legacy_large.png").readBytes())
+        assertArrayEquals(transparent, UploadedImageStore.directory(context).resolve("img_legacy_transparent.png").readBytes())
+        assertTrue(dst.snapshot().metadata.isEmpty())
+        assertTrue(runCatching { dst.importReference(1, ByteArrayInputStream(large)) }.isFailure)
+        assertTrue(runCatching { dst.importReference(1, ByteArrayInputStream(transparent)) }.isFailure)
+    }
+
     @Test fun profileShareEmbedsStyleAndRekeysEveryOwnerWithoutExportingDeviceFiles() = runBlocking {
         val reference = saved()
         src.saveSelection(4, 1, ProjectSelection("EXTEND", "pack.source", "a".repeat(64), "b".repeat(64), listOf("pkg/Main")))
@@ -143,7 +167,7 @@ class ProjectAiBackupTest {
         for ((name, content) in listOf("../escape.png" to projectTestPng(),
             "project_ai_assets/1/${"a".repeat(64)}.png" to projectTestPng(),
             "noBackup/openai-key.enc" to byteArrayOf(1),
-            "uploads/bomb.png" to ByteArray(ProjectAssetStore.MAX_BYTES + 1))) {
+            "uploads/bomb.png" to ByteArray(ValidatedBackupArchive.MAX_UPLOAD_BYTES + 1))) {
             expectRejected(archive(LinkedHashMap(original).apply { put(name, content) }))
         }
     }
@@ -160,14 +184,15 @@ class ProjectAiBackupTest {
 
     @Test fun exportNeverIncludesNoBackupCredentialsDraftsOrBatchJournals() = runBlocking {
         saved()
-        val secret = File(context.noBackupFilesDir, "openai-key.enc").apply { writeText("not-a-real-key-secret") }
+        val sentinel = java.util.UUID.randomUUID().toString()
+        val secret = File(context.noBackupFilesDir, "openai-key.enc").apply { writeText(sentinel) }
         val draft = File(context.noBackupFilesDir, "ai-draft-test").apply { writeText("draft-marker-secret") }
         val journal = File(context.noBackupFilesDir, "ai-batch-4.json").apply { writeText("batch-journal-secret") }
         try {
             for (bytes in listOf(export(), export(true))) {
                 val decoded = entries(bytes)
                 assertFalse(decoded.keys.any { it.contains("key.enc") || it.contains("draft") || it.contains("ai-batch") })
-                assertFalse(decoded.values.any { String(it).contains("not-a-real-key-secret") || String(it).contains("batch-journal-secret") })
+                assertFalse(decoded.values.any { String(it).contains(sentinel) || String(it).contains("batch-journal-secret") })
             }
         } finally { secret.delete(); draft.delete(); journal.delete() }
     }

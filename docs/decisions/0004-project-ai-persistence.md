@@ -81,3 +81,10 @@ backend/login/credits/Billing and automatic sampling remain separate tasks.
 See [architecture](../ARCHITECTURE.md), [current state](../agent/CURRENT_STATE.md),
 [change record](../changes/2026-10-11-project-ai-persistence.md) and
 [QA](../qa/BASELINE.md). Green automation is not owner acceptance.
+
+Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
+fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
+PNG signature/CRC/end/dimension/decode validation without the project-reference
+visible-artwork rule. Project references retain four MiB and reject empty artwork.
+The real format-3 large/transparent PNG regression is pending hosted verification;
+legacy upload/render code and credentials/signing contracts remain unchanged.

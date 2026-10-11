@@ -27,6 +27,9 @@ internal class ValidatedBackupArchive private constructor(
     override fun close() { directory.deleteRecursively() }
 
     companion object {
+        // Legacy raster import can retain a side just below 2048 px, including transparent
+        // artwork. Do not impose the new project-reference 4 MiB/nonempty rule on its gallery.
+        internal const val MAX_UPLOAD_BYTES = 20 * 1024 * 1024
         private const val MAX_TOTAL = 512L * 1024 * 1024
         private const val MAX_ENTRIES = 10000
         fun read(context: Context, open: () -> InputStream): ValidatedBackupArchive {
@@ -47,7 +50,7 @@ internal class ValidatedBackupArchive private constructor(
                             name == "data.json" -> 128 * 1024 * 1024
                             name == "keystore/${IconPackBuilder.KEYSTORE_FILE_NAME}" -> 1024 * 1024
                             name == "keystore/${PackKeystore.PASSWORD_FILE_NAME}" -> 4096
-                            name.matches(Regex("uploads/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}\\.png")) && !name.contains("..") -> ProjectAssetStore.MAX_BYTES
+                            name.matches(Regex("uploads/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}\\.png")) && !name.contains("..") -> MAX_UPLOAD_BYTES
                             name.matches(Regex("project_ai_assets/[1-9][0-9]*/[a-f0-9]{64}\\.png")) -> ProjectAssetStore.MAX_BYTES
                             else -> error("Unsupported or unsafe backup entry.")
                         }
@@ -93,7 +96,9 @@ internal class ValidatedBackupArchive private constructor(
                         "Project backup image checksum or dimensions are invalid."
                     }
                 }
-                entries.filterKeys { it.startsWith("uploads/") }.values.forEach { inspectPng(it.readBytes()) }
+                entries.filterKeys { it.startsWith("uploads/") }.values.forEach {
+                    inspectPng(it.readBytes(), MAX_UPLOAD_BYTES, requireVisible = false)
+                }
                 return ValidatedBackupArchive(manifest, data, entries, temporary)
             } catch (error: Throwable) {
                 temporary.deleteRecursively()
