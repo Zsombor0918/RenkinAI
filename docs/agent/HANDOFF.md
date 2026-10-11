@@ -110,6 +110,11 @@ the first draw control did not draw because it ran before a dialog existed.
 Late write samples identify CoreTextField measurement and positioned coordinates.
 Refined event-based native draw/window-bounds/legacy comparisons remain diagnostic,
 not a production fix. See [window controls](../changes/2026-10-11-dialog-window-controls.md).
+Upstream [Robolectric issue 8460](https://github.com/robolectric/robolectric/issues/8460)
+describes the same custom-width dialog/field freeze. The next independent controls
+change only 450 → 320 dp width, keeping 800 dp height, SDK 33/native and actual form
+and shell. This must be verified locally to this PR's CI, not inferred from the
+external report. See [width note](../changes/2026-10-11-dialog-width-isolation.md).
 
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions

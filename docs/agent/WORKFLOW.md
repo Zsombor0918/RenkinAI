@@ -27,6 +27,9 @@ for the existing SDK 33 real-form tests. Steady-state write samples accompany fl
 Window controls wait on an attached, measured actual dialog before drawing or setting
 its measured platform bounds. A legacy graphics case is a diagnostic comparison only;
 the original native tests remain mandatory. No timeout is increased.
+The width-only comparison keeps SDK 33/native/800 dp height and varies 450 → 320 dp
+for the same actual form/shell. Upstream Robolectric issue 8460 is supporting context;
+our independent results must establish whether it applies here.
 
 ## Automatic documentation minimum
 

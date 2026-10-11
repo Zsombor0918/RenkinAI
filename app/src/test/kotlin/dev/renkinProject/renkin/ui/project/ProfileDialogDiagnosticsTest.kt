@@ -109,6 +109,22 @@ class ProfileDialogDiagnosticsTest {
         compose.onNodeWithTag("profile-name").performTextInput("Night")
     }
 
+    @Test @Config(qualifiers = "w320dp-h800dp") fun realProfileDialogAtMatchedWindowWidth() {
+        content { ProfileDetailsDialog("Create new icon pack", "Create", { _, _, _ -> }, {}) }
+        compose.onNodeWithTag("profile-name").performTextInput("Night")
+    }
+
+    @Test @Config(qualifiers = "w320dp-h800dp") fun realProjectShellAtMatchedWindowWidth() {
+        content { ProjectShell(
+            state = ProjectHomeState(profiles = listOf(Profile(1, "Default")), availability = ProjectHomeAvailability.READY),
+            operation = ProjectSessionState.Idle,
+            onOpen = {}, onCreate = { _, _, _ -> true }, onSave = {}, onCancel = {},
+            onAcknowledge = {}, onRetry = {}, onExit = {}, editor = { Text("Classic editor") }
+        ) }
+        compose.onNodeWithTag("project-create").performClick()
+        compose.onNodeWithTag("profile-name").performTextInput("Night")
+    }
+
     @Test fun realProjectShell() {
         content { ProjectShell(
             state = ProjectHomeState(profiles = listOf(Profile(1, "Default")), availability = ProjectHomeAvailability.READY),

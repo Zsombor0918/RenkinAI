@@ -42,6 +42,8 @@ The latest HTML full stacks show 123016/124285 idle attempts over 60 seconds at
 the first text-input lookup / first runOnIdle after Create. They do not expose
 the busy condition or prove a Material 3, animation, focus or production defect.
 Measured SDK 33/native isolation and XML capture are pending the diagnostic run.
+Isolation and SDK controls above now establish the pending-layout boundary.
+The width-only comparison is pending; upstream issue 8460 is not a claimed local pass.
 
 Staged/range/PR audits and final feature-head Actions are recorded after execution
 in this ledger or the PR audit. No pending tests or historical count is reported
