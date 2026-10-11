@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -47,6 +48,8 @@ import dev.renkinProject.renkin.ui.WhatsNewDialog
 import dev.renkinProject.renkin.ui.getCurrentMainActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import dev.renkinProject.renkin.data.project.ProjectAiMetadata
 
 @Composable
 internal fun RenkinAiRoot(viewModel: MainViewModel) {
@@ -111,6 +114,11 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
         onExit = activity::finish,
         homeDialogs = { if (viewModel.whatsNewVisible) WhatsNewDialog(viewModel::dismissWhatsNew) },
         setupData = { mode, page, id, source -> rememberProjectSetupData(viewModel, mode, page, id, source) },
+        readSetupContext = viewModel::projectMetadata,
+        stylePanel = { id, mode, source, stamp, back ->
+            ProjectStylePanel(id, mode, source, stamp, home.actionsEnabled && id == home.activeProfileId,
+                viewModel.projectStyleBackend, back)
+        },
         editor = { navigateHome ->
             MainColumn(viewModel.iconPacks, onNavigateHome = navigateHome,
                 viewModel = viewModel, collectToastEvents = false)
@@ -118,7 +126,7 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
     )
 }
 
-private enum class ProjectRoute { HOME, SETUP, EDITOR }
+private enum class ProjectRoute { HOME, SETUP, STYLE, EDITOR }
 
 /** UI-only routes/forms; profile operations are user callbacks, never restoration effects. */
 @Composable
@@ -136,6 +144,10 @@ internal fun ProjectShell(
     onExit: () -> Unit,
     homeDialogs: @Composable () -> Unit = {},
     setupData: @Composable (ProjectSetupMode, ProjectSetupPage, Long?, String?) -> ProjectSetupData = { _, _, _, _ -> ProjectSetupData() },
+    readSetupContext: suspend (Long) -> ProjectAiMetadata? = { null },
+    stylePanel: @Composable (Long, ProjectSetupMode, String?, String?, () -> Unit) -> Unit = { _, _, _, _, back ->
+        TextButton(onClick = back) { Text(stringResource(R.string.projectBackHome)) }
+    },
     editor: @Composable (onNavigateHome: () -> Unit) -> Unit
 ) {
     var route by rememberSaveable { mutableStateOf(ProjectRoute.HOME) }
@@ -148,6 +160,11 @@ internal fun ProjectShell(
     var pendingSetup by rememberSaveable { mutableStateOf(false) }
     var setupContexts by rememberSaveable { mutableStateOf(hashMapOf<String, String>()) }
     var exitOpen by rememberSaveable { mutableStateOf(false) }
+    var styleStamp by rememberSaveable { mutableStateOf<String?>(null) }
+    var contextBusy by remember { mutableStateOf(false) }
+    var contextFailed by remember { mutableStateOf(false) }
+    var contextRequest by remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
     val editorState = rememberSaveableStateHolder()
 
     LaunchedEffect(operation, state.availability, state.activeProfileId, state.busy) {
@@ -167,6 +184,8 @@ internal fun ProjectShell(
     }
     LaunchedEffect(editorEntryVersion, editorAttention) {
         if ((editorEntryVersion > 0 && editorEntryVersion != consumedEntry) || editorAttention) {
+            contextRequest++
+            contextBusy = false
             consumedEntry = editorEntryVersion
             onCancel()
             createOpen = false
@@ -192,7 +211,7 @@ internal fun ProjectShell(
     // within MainColumn own Editor Back; no later root handler overrides them.
     BackHandler(enabled = route == ProjectRoute.HOME) {
         when {
-            state.busy -> Unit
+            state.busy || contextBusy -> Unit
             operation is ProjectSessionState.ConfirmSave -> cancelOperation()
             state.hasUnsavedChanges -> exitOpen = true
             else -> onExit()
@@ -223,6 +242,14 @@ internal fun ProjectShell(
             }
         }
         BackHandler(enabled = !ready) { if (!state.busy) navigateHome() }
+    } else if (route == ProjectRoute.STYLE) {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            editorState.SaveableStateProvider("style-$setupProfileId") {
+                stylePanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage, styleStamp) {
+                    route = ProjectRoute.SETUP
+                }
+            }
+        }
     } else if (route == ProjectRoute.SETUP) {
         BackHandler { if (operation is ProjectSessionState.ConfirmSave) cancelOperation() else setupBack() }
         val data = setupData(setupMode, setupPage, setupProfileId, sourcePackage)
@@ -234,6 +261,10 @@ internal fun ProjectShell(
                     onNewProfile = { createOpen = true },
                     onBack = setupBack,
                     onChangeSource = { setupPage = ProjectSetupPage.SOURCE },
+                    onStyle = {
+                        styleStamp = (data.coverage as? CoverageUiState.Ready)?.snapshot?.let { projectSourceStamp(it.index) }
+                        route = ProjectRoute.STYLE
+                    },
                     onEditor = {
                         pendingSetup = false
                         onOpen(if (setupPage == ProjectSetupPage.TARGETS) setupProfileId ?: state.activeProfileId else state.activeProfileId)
@@ -242,17 +273,33 @@ internal fun ProjectShell(
         }
     } else {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-            ProjectHome(state,
+            ProjectHome(state.copy(busy = state.busy || contextBusy, operationFailed = state.operationFailed || contextFailed),
                 onOpen = { pendingSetup = false; onOpen(it) },
                 onCreate = { setupMode = ProjectSetupMode.CREATE; sourcePackage = null; createOpen = true },
                 onExtend = { setupMode = ProjectSetupMode.EXTEND; setupPage = ProjectSetupPage.SOURCE; sourcePackage = null; route = ProjectRoute.SETUP },
                 onClassicEditor = { pendingSetup = false; onOpen(state.activeProfileId) },
                 onRetry = onRetry,
                 onSetup = { id ->
-                    sourcePackage = setupContexts[id.toString()]?.takeIf { it.isNotEmpty() }
-                    setupMode = if (sourcePackage == null) ProjectSetupMode.CREATE else ProjectSetupMode.EXTEND
-                    pendingSetup = true
-                    onOpen(id)
+                    if (!contextBusy) {
+                        contextBusy = true
+                        contextFailed = false
+                        val request = ++contextRequest
+                        scope.launch {
+                            try {
+                                val saved = readSetupContext(id)
+                                if (request == contextRequest && route == ProjectRoute.HOME) {
+                                    sourcePackage = saved?.sourcePackage ?: setupContexts[id.toString()]?.takeIf { it.isNotEmpty() }
+                                    setupMode = if (saved != null) ProjectSetupMode.valueOf(saved.mode)
+                                        else if (sourcePackage == null) ProjectSetupMode.CREATE else ProjectSetupMode.EXTEND
+                                    if (setupMode == ProjectSetupMode.CREATE) sourcePackage = null
+                                    pendingSetup = true
+                                    onOpen(id)
+                                }
+                            } catch (cancel: CancellationException) { throw cancel }
+                            catch (_: Exception) { if (request == contextRequest) contextFailed = true }
+                            finally { if (request == contextRequest) contextBusy = false }
+                        }
+                    }
                 })
         }
         homeDialogs()

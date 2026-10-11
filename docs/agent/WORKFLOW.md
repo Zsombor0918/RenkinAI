@@ -174,3 +174,22 @@ Official references: [creating repository rulesets](https://docs.github.com/en/r
 [available rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets),
 [classic branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches).
 Check current GitHub labels/options when applying the settings.
+
+
+## Codex 03 verification additions
+
+The existing regression runner retains all M1/M2 selectors unchanged, adds project
+style/selection UI, data/migration/backup/session ownership and gateway/legacy AI
+parity groups, then the same unfiltered compileDebugKotlin/testDebugUnitTest/
+assembleDebug. It verifies selector presence, positive counts, zero failures/errors/
+skips and nonzero command exits; no idle/timeout bypass or test exclusion. The actual
+KSP-generated v19 schema is retained in the evidence artifact for source checkout;
+a missing export fails the runner. Original Android/governance workflows and required
+contexts are unchanged. New-schema rollback requires a pre-upgrade full backup or a
+forward repair; never recommend installing a v18 APK over a populated v19 database.
+
+At the Codex 03 gate, PR #3 is owner-authorized and merged as aefeb1b6. Ruleset
+24877351 was reread: active, bypasses empty, PR and exact build/commit-conventions/
+documentation-audit required, force/delete prohibited. Approvals remain 0,
+conversation resolution/last-push approval/strict checks false. Do not claim these
+recommended owner settings were enabled; no ruleset modification occurred.

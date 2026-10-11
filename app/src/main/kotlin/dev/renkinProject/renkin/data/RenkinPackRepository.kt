@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
  * Wraps the Room DAOs and runs every access off the main thread.
  */
 class RenkinPackRepository(private val db: RenkinPackDatabase) {
+    internal val database: RenkinPackDatabase get() = db
     /** Production entry point: uses the shared singleton database. Tests pass an in-memory
      * [RenkinPackDatabase] to the primary constructor instead. */
     constructor(context: Context) : this(RenkinPackDatabase.get(context))
@@ -41,11 +42,14 @@ class RenkinPackRepository(private val db: RenkinPackDatabase) {
      * the backup's profile ids (icons and watch rules reference them). Callers must have fully
      * parsed the incoming data first — a decode error must not run after the wipe.
      */
-    suspend fun replaceEverything(profiles: List<Profile>, apps: List<DbApplication>) = db.withTransaction {
+    suspend fun replaceEverything(profiles: List<Profile>, apps: List<DbApplication>,
+        projectAi: dev.renkinProject.renkin.data.project.ProjectAiSnapshot = dev.renkinProject.renkin.data.project.ProjectAiSnapshot()) = db.withTransaction {
+        dev.renkinProject.renkin.data.project.ProjectAiRepository.validateSnapshot(projectAi, profiles.map { it.id }.toSet())
         dao.deleteEverything()
         profileDao.deleteEverything()
         profiles.forEach { profileDao.insert(it) }
         dao.insertAll(apps)
+        dev.renkinProject.renkin.data.project.ProjectAiRepository.insertSnapshot(db, projectAi)
     }
 
     // ---- What the last build shipped -----------------------------------------------
@@ -195,8 +199,8 @@ class RenkinPackRepository(private val db: RenkinPackDatabase) {
     }
 
     /** Deletes the profile and all of its stored icons. The default profile is never deleted. */
-    suspend fun deleteProfile(id: Long) = withContext(Dispatchers.Default) {
-        if (id == DEFAULT_PROFILE_ID) return@withContext
+    suspend fun deleteProfile(id: Long) = db.withTransaction {
+        if (id == DEFAULT_PROFILE_ID) return@withTransaction
         dao.deleteAllApplications(id)
         profileDao.delete(id)
     }

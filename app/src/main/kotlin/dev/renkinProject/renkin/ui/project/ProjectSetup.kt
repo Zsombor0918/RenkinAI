@@ -39,6 +39,8 @@ import dev.renkinProject.renkin.apk.CoverageSnapshot
 import dev.renkinProject.renkin.apk.CoverageTarget
 import dev.renkinProject.renkin.apk.IconCoverageAnalyzer
 import dev.renkinProject.renkin.data.IconPack
+import dev.renkinProject.renkin.data.project.ProjectAiMetadata
+import dev.renkinProject.renkin.data.project.ProjectSelection
 import dev.renkinProject.renkin.packages.PackageResourceResolver
 import dev.renkinProject.renkin.ui.CenteredFullscreenContent
 import dev.renkinProject.renkin.ui.WavyLoadingBar
@@ -61,7 +63,11 @@ internal data class ProjectSetupData(
     val coverage: CoverageUiState = CoverageUiState.Loading(),
     val onRescan: () -> Unit = {},
     val onReloadPacks: () -> Unit = {},
-    val appIcon: @Composable (String) -> Unit = {}
+    val appIcon: @Composable (String) -> Unit = {},
+    val savedMetadata: ProjectAiMetadata? = null,
+    val metadataLoading: Boolean = false,
+    val metadataFailed: Boolean = false,
+    val onSaveSelection: suspend (Long, ProjectSelection) -> ProjectAiMetadata = { _, _ -> error("Preparation persistence unavailable") }
 )
 
 /** Screen-scoped invalidation only, never a background watcher or icon refresh. */
@@ -98,6 +104,19 @@ internal fun rememberProjectSetupData(
     profileId: Long?, source: String?
 ): ProjectSetupData {
     val targets = viewModel.coverageTargets()
+    var metadata by remember(profileId) { mutableStateOf<ProjectAiMetadata?>(null) }
+    var metadataLoading by remember(profileId) { mutableStateOf(true) }
+    var metadataFailed by remember(profileId) { mutableStateOf(false) }
+    LaunchedEffect(profileId, page) {
+        if (page == ProjectSetupPage.TARGETS && profileId != null) {
+            metadataLoading = true
+            metadataFailed = false
+            try { metadata = viewModel.projectMetadata(profileId) }
+            catch (cancel: CancellationException) { throw cancel }
+            catch (_: Exception) { metadataFailed = true }
+            finally { metadataLoading = false }
+        }
+    }
     var rescan by remember { mutableIntStateOf(0) }
     var resumeCheck by remember { mutableIntStateOf(0) }
     ObserveCoverageInvalidation(source) { resumeCheck++ }
@@ -138,7 +157,9 @@ internal fun rememberProjectSetupData(
         viewModel.applicationsLoaded && viewModel.iconPackLoaded && !packLoading,
         packFailed || viewModel.startupFailed, coverage,
         onRescan = { rescan++ }, onReloadPacks = { packReload++ },
-        appIcon = { key -> ProjectOriginalIcon(viewModel.applicationList.find { it.key == key }?.icon) })
+        appIcon = { key -> ProjectOriginalIcon(viewModel.applicationList.find { it.key == key }?.icon) },
+        savedMetadata = metadata, metadataLoading = metadataLoading, metadataFailed = metadataFailed,
+        onSaveSelection = { version, selection -> viewModel.saveProjectSelection(checkNotNull(profileId), version, selection).also { metadata = it } })
 }
 
 @Composable
@@ -146,13 +167,13 @@ internal fun ProjectSetup(
     mode: ProjectSetupMode, page: ProjectSetupPage, profileId: Long?, source: String?,
     state: ProjectHomeState, data: ProjectSetupData,
     onSource: (String) -> Unit, onProfile: (Long) -> Unit, onNewProfile: () -> Unit,
-    onBack: () -> Unit, onChangeSource: () -> Unit, onEditor: () -> Unit
+    onBack: () -> Unit, onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}
 ) {
     if (page == ProjectSetupPage.TARGETS) {
         val ready = state.actionsEnabled && profileId == state.activeProfileId && data.catalogReady
         TargetSelection(mode, profileId ?: state.activeProfileId,
             state.profiles.find { it.id == profileId }?.name.orEmpty(), source,
-            data, ready, onBack, onChangeSource, onEditor)
+            data, ready, onBack, onChangeSource, onEditor, onStyle)
         return
     }
     CenteredFullscreenContent {

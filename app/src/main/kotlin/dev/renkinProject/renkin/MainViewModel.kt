@@ -71,6 +71,16 @@ import dev.renkinProject.renkin.ui.project.EditorEntryRequests
 import dev.renkinProject.renkin.ui.project.ProjectSaveRequired
 import dev.renkinProject.renkin.ui.project.ProjectSessionBackend
 import dev.renkinProject.renkin.ui.project.ProjectSessionController
+import dev.renkinProject.renkin.ui.project.ProjectStyleBackend
+import dev.renkinProject.renkin.ui.project.ProjectStyleDraft
+import dev.renkinProject.renkin.ui.project.ProjectSetupMode
+import dev.renkinProject.renkin.ui.project.projectCatalogStamp
+import dev.renkinProject.renkin.ui.project.projectSourceStamp
+import dev.renkinProject.renkin.ui.project.withProjectOwner
+import dev.renkinProject.renkin.data.project.ProjectAiRepository
+import dev.renkinProject.renkin.data.project.ProjectSelection
+import dev.renkinProject.renkin.data.UploadedImageStore
+import dev.renkinProject.renkin.ai.AiSettingsStore
 import dev.renkinProject.renkin.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -127,7 +137,9 @@ class MainViewModel @Inject constructor(
     private val watchRepo: WatchRepository,
     private val backupManager: BackupManager,
     private val autoBackupManager: AutoBackupManager,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val projectAiRepository: ProjectAiRepository,
+    private val aiSettingsStore: AiSettingsStore
 ) : AndroidViewModel(application), IconPreviewBuilder {
     private val installerCatalog = InstallerCatalog(application)
     /**
@@ -181,6 +193,51 @@ class MainViewModel @Inject constructor(
     internal fun coverageTargets() = appProvider.coverageTargets()
     internal suspend fun coverageSources() = appProvider.coverageSources()
     internal suspend fun coverageReader(packageName: String, rescan: Boolean) = appProvider.coverageReader(packageName, rescan)
+
+    private suspend fun <T> projectOperation(id: Long, action: suspend () -> T): T =
+        withProjectOwner(profileSessionOperations, id, { activeProfileId }, { profileSummaryReady && !isRefreshing }, action)
+    internal suspend fun projectMetadata(id: Long) = projectAiRepository.metadata(id)
+    internal val projectStyleBackend: ProjectStyleBackend = object : ProjectStyleBackend {
+        override suspend fun load(id: Long) = projectOperation(id) {
+            projectAiRepository.load(id)
+        }
+        override suspend fun referencePreview(id: Long, hash: String) = projectAiRepository.referenceBytes(id, hash)
+        override suspend fun discard(id: Long, hashes: List<String>) = projectOperation(id) {
+            projectAiRepository.discardDraftReferences(id, hashes); Unit
+        }
+        override suspend fun importReference(id: Long, uri: Uri) = projectOperation(id) {
+            val resolver = getApplication<Application>().contentResolver
+            val input = checkNotNull(resolver.openInputStream(uri)) { "Cannot open reference image." }
+            projectAiRepository.importReference(id, input, resolver.getType(uri) ?: "image/png")
+        }
+        override suspend fun copyGlobal(id: Long) = projectOperation(id) {
+            val global = aiSettingsStore.load().also { it.validate() }
+            val hashes = global.referenceNames.map { name ->
+                val file = java.io.File(UploadedImageStore.directory(getApplication()), name)
+                projectAiRepository.importReference(id, file.inputStream()).hash
+            }
+            ProjectStyleDraft(global.style, "", hashes.distinct())
+        }
+        override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft,
+            mode: ProjectSetupMode, source: String?, stamp: String?) = projectOperation(id) {
+            projectAiRepository.saveStyle(id, expected, draft.specification, draft.instruction, draft.hashes,
+                mode.name, source, stamp)
+        }
+    }
+    internal suspend fun saveProjectSelection(id: Long, expectedVersion: Long, selection: ProjectSelection) =
+        projectOperation(id) {
+            val targets = dev.renkinProject.renkin.apk.uniqueCoverageTargets(coverageTargets())
+            check(selection.catalogStamp == projectCatalogStamp(targets) && selection.componentKeys.all { key ->
+                targets.any { it.key == key && it.selectable }
+            }) { "Application catalog changed. Review the targets again." }
+            if (selection.mode == "EXTEND") {
+                val reader = coverageReader(checkNotNull(selection.sourcePackage), false)
+                check(reader.isCurrent() && reader.index.state == dev.renkinProject.renkin.apk.CoverageIndexState.READY &&
+                    reader.index.stamp.versionCode != null && selection.sourceStamp == projectSourceStamp(reader.index) &&
+                    selection.componentKeys.none { it in reader.index.dynamicKeys }) { "Source pack changed. Rescan and review the targets." }
+            }
+            projectAiRepository.saveSelection(id, expectedVersion, selection)
+        }
 
     val colorPresets: kotlinx.coroutines.flow.StateFlow<List<dev.renkinProject.renkin.data.ColorPreset>> =
         appProvider.colorPresets().stateIn(

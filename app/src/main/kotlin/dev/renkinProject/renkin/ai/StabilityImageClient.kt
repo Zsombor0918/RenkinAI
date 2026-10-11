@@ -11,6 +11,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -22,17 +24,23 @@ import kotlin.coroutines.resumeWithException
 /** Stability's style-transfer endpoint takes one target and one style image, then a separate
  * remove-background call supplies actual PNG alpha. Each endpoint charges credits on success. */
 @Singleton
-class StabilityImageClient @Inject constructor() {
-    private val client = OkHttpClient.Builder()
+class StabilityImageClient internal constructor(private val client: OkHttpClient,
+    private val styleEndpoint: HttpUrl, private val backgroundEndpoint: HttpUrl) {
+    @Inject constructor() : this(defaultClient(),
+        "https://api.stability.ai/v2beta/stable-image/control/style-transfer".toHttpUrl(),
+        "https://api.stability.ai/v2beta/stable-image/edit/remove-background".toHttpUrl())
+    companion object {
+    private fun defaultClient() = OkHttpClient.Builder()
         .connectTimeout(25, TimeUnit.SECONDS).readTimeout(240, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS).callTimeout(240, TimeUnit.SECONDS)
         .retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build()
+    }
 
     suspend fun edit(key: String, settings: AiSettings, source: ByteArray, styleReference: ByteArray): ByteArray =
         withContext(Dispatchers.IO) {
             require(source.size in 1..4 * 1024 * 1024 && styleReference.size in 1..4 * 1024 * 1024)
-            val stylized = requestBytes(client.newCall(buildStabilityStyleRequest(key, settings, source, styleReference)))
-            requestBytes(client.newCall(buildStabilityRemoveBackgroundRequest(key, stylized)))
+            val stylized = requestBytes(client.newCall(buildStabilityStyleRequest(key, settings, source, styleReference).newBuilder().url(styleEndpoint).build()))
+            requestBytes(client.newCall(buildStabilityRemoveBackgroundRequest(key, stylized).newBuilder().url(backgroundEndpoint).build()))
         }
 }
 

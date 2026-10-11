@@ -7,7 +7,9 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 - Prepare a new pack from all launcher entries without an external source.
 - Inspect an installed source pack with actual static drawable coverage, separate project/lock status and searchable target selection; open the full classic editor.
-- Selections prepare work only; no automatic AI generation or durable project plan is added.
+- Save project-specific AI descriptions and up to five ordered PNG references locally, separately from legacy global AI settings.
+- Save exact Create/Extend targets for later review; source and app changes require revalidation. No generation plan or automatic AI work is added.
+- Full backups and profile shares carry project style history and reference images; legacy archives remain readable.
 
 - Start from Projects, continue any real Renkin profile or create a separate icon pack.
 - Open the classic editor from either Create or Complete an existing icon pack;

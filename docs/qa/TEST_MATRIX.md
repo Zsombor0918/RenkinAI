@@ -60,3 +60,18 @@ Fresh M2 counts/SHA/artifacts were independently verified in BASELINE: 669 full,
 10 new UI and 28 coverage fixtures, no skips; final documentation-head checks must
 remain green in PR #3. Test source alone is never passing evidence. No physical scenario or live
 provider test ran, and the main review/conversation/strict gaps remain owner work.
+
+
+## Codex 03 project persistence/gateway regression matrix
+
+| Area | Automated evidence required on feature head | Device status |
+| --- | --- | --- |
+| v18→v19, fresh/reopen/default/duplicate profiles | Real exported-v18 SQLite fixture with icon/base/source/custom/lock/build/preset rows, current identity equivalence and FK validation | NOT RUN: physical update/downgrade recovery |
+| Style save and ownership | Immutable ordered revisions, equal/concurrent saves, stale/cancelled writes, queued session-owner change, invalid schema/owner rejection | NOT RUN: process kill during disk/DB save |
+| PNG lifecycle | Signature/CRC/truncation/empty/size/path/symlink/hash/missing tests, Upload deletion, history/variant pins, explicit orphan/temp GC | NOT RUN: storage exhaustion/URI providers |
+| Full backup / shares | Verified embedded PNG/history/variants/selection, old full clear, new-owner rekey, ZIP duplicates/paths/bounds/checksums, failure keeps previous style, credential exclusion | NOT RUN: SAF restore/device signing update |
+| Project UI | Actual panel input/import/reorder/Save/completion/failure/Back/Cancel/restoration/ingress/isolation and explicit global-copy action; target revalidation | NOT RUN: light/dark TalkBack/Flip/fold/rotation |
+| Image gateway | Real existing-client MockWebServer original/ref order 0–5, Stability two requests, invalid input/credentials, error/timeout/cancel no retry, fake counts | NO live/paid API testing authorized |
+| Legacy M1/M2/AI1/AI2 | Preserve original isolated/combined/form/create-extend/domain suites and unfiltered Android suite/APK | Existing manual editor/global/watch/share/backup/build/install matrix remains NOT RUN |
+
+All newly added Android tests are initially NOT RUN locally because Gradle distribution networking is unavailable. Fresh hosted results must be appended to BASELINE and PR audit. New PNG references may be opaque; gateway output must still be square, visible and transparent. No fake coverage, automatic approval or price/cost consent is tested or claimed.

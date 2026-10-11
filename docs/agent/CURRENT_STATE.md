@@ -1,14 +1,14 @@
 # Current implementation
 
-Codex 02 baseline: fresh merged main `73a15e2210cb55cf003e60ebc2033130ee7a9e58`,
-inspected October 11, 2026. Owner Zsombor0918 merged PR #2 at 16:32:02 UTC;
-its head `05dc320fd6dbdb1a16d4a5390d32c5617413e6a0` is an ancestor and the
-merge tree is identical. Reviews/threads were empty; owner merge is acceptance,
-not evidence of an independent APPROVED review. Codex 02 works separately on
-`feat/create-extend-coverage-m2`; implementation checkpoint a8b3e4b22e6611042aa8de1d1ce03f3175989976 passed fresh Android and complete regression evidence (669/669); final documentation-head checks belong in PR #3. Owner/device acceptance is still pending.
-Manifest, dependencies, Room v18, provider/storage contracts, APK/signing/install
-and Android CI are unchanged. Existence in source and runtime validation are
-different; see [QA baseline](../qa/BASELINE.md).
+Codex 03 starts from accepted main `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`,
+verified October 11, 2026. PR #3 is merged (20:21:28 UTC), owner Zsombor0918;
+head `e8e04c433ca94a4e28b5716f33581aeeb963b0a4` is an ancestor and its tree is
+identical to that merge. Owner authorization supplied acceptance; no independent
+APPROVED review is claimed. Codex 03 works on `feat/project-ai-persistence-m3`.
+Source implementation below is awaiting fresh feature-head Android verification;
+669/669 belongs to accepted Codex 02, not this change. Room is now v19 with an
+additive v18 migration. Manifest, dependencies, identities, signing/install and
+original Android CI remain unchanged. See [QA](../qa/BASELINE.md).
 
 The M1 Robolectric 4.14.1 WRAP_CONTENT dialog-width correction remains in the
 compatible native SDK 33 / 320dp form harness; original identifiers, interactions
@@ -28,9 +28,9 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 | Create / extend / classic entry | Create confirms the real profile form and waits for completion, then opens all known launcher targets without a source requirement. Extend chooses an external source by package, then explicitly chooses/creates a target profile through the existing Save/Cancel controller, then inspects actual source coverage. Project setup actions return to session selections; the complete classic editor and AI1/AI2 remain available |
 | Home/setup/editor navigation | [RenkinAiRoot](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt) uses the Activity's existing VM; editor Back returns Home after search/dialog handlers, Home clean Back exits, dirty Back offers return to editor or explicit exit without saving; no implicit save/switch/build/request on navigation |
 | Pack sources, modifications, import | ApplicationProvider, IconGenerationService, IconGenerator, UploadedImageStore; custom/base/rendered separation and existing SVG/vector/adaptive paths |
-| Named profiles | ProfileManager, DbApplication, DataPreferences; Room `renkinPack` v18, default id 1; settings snapshots switch with the profile, source/provenance locks remain |
+| Named profiles | ProfileManager, DbApplication, DataPreferences; Room `renkinPack` v19, default id 1; settings snapshots switch with the profile, source/provenance locks remain |
 | Export and installation | IconPackBuildService, IconPackBuilder, PackKeystore, ApkInstaller; calendar/clock/adaptive/themed outputs, appfilter/appmap/theme_resources; build snapshot persists to its owning profile |
-| Backup/share/watch | data/transfer and data/watch plus WatchWorker/AutoBackupWorker; existing full-backup and profile-export semantics are retained |
+| Backup/share/watch | data/transfer and data/watch plus WatchWorker/AutoBackupWorker; format 4 adds project history/PNG assets to full backups and profile shares; legacy archives remain readable, device gallery/keystore boundaries remain |
 | Single AI icon | [AiIconGenerationService](../../app/src/main/kotlin/dev/renkinProject/renkin/ai/AiIconGenerationService.kt), AiIconViewModel, IndividualOptions; original icon plus up to five reference files; PNG/alpha validation, 512 px gallery/draft persistence before preview; user accepts upload draft, then editor applies and Save/Build persists |
 | Missing-icon batch | [AiBatchRunner](../../app/src/main/kotlin/dev/renkinProject/renkin/ai/AiBatchRunner.kt), AiBatchStore/ViewModel and GlobalOptions; searchable selection, app prompt, paid confirmation, serial calls, pause/cancel/manual resume and one-app retry |
 | App instructions | AiPromptStore; DataStore keyed by hash of profile/component; empty inherits common style; 2000-character maximum |
@@ -100,7 +100,7 @@ clear and counts. CREATE keeps manual/applied/fallback rows in the full launcher
 inventory. EXTEND keeps source facts separate from local icons and locks. Selection
 is UI preparation only, never input to quick batch or automatic generation. Primitive
 selection/search/source context survives setup/editor/Home saved UI round trips;
-there is no new project metadata store or durable selection guarantee.
+explicit Save now stores a per-profile preparation snapshot in ProjectAiMetadata. Reopen always requires current catalog/source verification and an explicit user review; selection is never cost consent.
 
 [IconCoverageAnalyzer](../../app/src/main/kotlin/dev/renkinProject/renkin/apk/IconCoverageAnalyzer.kt)
 uses the existing repository/parser. RESOLVABLE requires exact item mapping and a
@@ -128,11 +128,60 @@ It does not change primary preferences, refresh icons, build, install or call AI
 A slow pathological drawable can delay cancellation during its own synchronous draw;
 96 px validation cannot certify animation, monochrome or OEM behavior.
 
+## Codex 03 project style and assets
+
+[ProjectStylePanel](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/ProjectStylePanel.kt)
+is reachable through either Create/Extend target setup, including CREATE without a
+source. A profile starts unset. Users enter a description and separate project
+instruction, import 0–5 PNG references, reorder/remove them and explicitly Save.
+Global style/references are copied only through the labelled user action; AI1/AI2
+continue using AiSettingsStore and their existing service, not project style.
+No recognition, demo, gallery, batch launch, build or network action exists here.
+
+[ProjectAiRepository](../../app/src/main/kotlin/dev/renkinProject/renkin/data/project/ProjectAiRepository.kt)
+uses the existing Room DB. Style revisions are immutable and monotonically numbered
+per profile; equal saves are idempotent. Expected revision and the existing VM session
+mutex prevent stale/wrong-owner saves. Only durable completion reports Saved. Drafts
+use primitive saved UI state; Back offers Cancel/explicit discard. External editor
+attention preempts the panel while retaining its profile-keyed draft for reopening.
+An explicitly discarded draft drops only unlinked references; historical revisions
+and variants pin their images. Profiles cascade their new rows; default id 1 remains.
+
+Private `project_ai_assets/<profileId>/<sha256>.png` copies survive Upload deletion.
+Bounded CRC-checked, decodable, visible PNGs precede Room writes through temp/fsync/
+rename. Normal imports never overwrite files; explicit validated restore can repair
+corruption. References may be opaque, generated gateway output still requires genuine
+alpha. Limits: 4 MiB/image, 1–4096 px dimensions, 64 MiB/project; restore permits up to
+two quotas transiently while retaining the previous files. Explicit GC removes only
+files without retained rows, never Upload, history, variants or pending draft rows.
+
+Target selections store mode/source, catalog/index fingerprints and exact component
+keys. Source/app/lock/user uncertainty invalidates reuse; the user must review current
+available targets. Save rechecks current ownership, catalog and source index. Saved
+selection is not GenerationPlan and carries no paid permission. Source context changes
+on explicit Save clear the previous incompatible selection. No user-handle migration.
+
+Full backup and profile share carry style history, ordered references, functional
+variant records and verified PNGs. Shares allocate a new profile and remap every
+owner/path, with revalidation; no API credentials, AI2 journals or draft markers travel.
+Old full restores clear new metadata. Staging validates the complete allowlisted ZIP
+before mutation; project files finalize before the final transactional profile/icon/
+metadata replacement. Legacy watch/prefs/gallery/keystore remain separate stores:
+restore is not cross-store ACID. Old APKs cannot read v19; see rollback in the ADR.
+
+[IconGenerationGateway](../../app/src/main/kotlin/dev/renkinProject/renkin/ai/IconGenerationGateway.kt)
+has a real adapter reusing existing OpenAI/Stability clients and AiCredentialStore,
+and offline fakes. It preserves original-first ordered references, output validation,
+no retries and typed uncertain/cancelled outcomes. Stability requires exactly one
+reference and two requests. The adapter is not yet the legacy single/batch route and
+has no project UI consumer. No live API request was made. Variant records are a
+repository contract, not a new staging workflow or inferred origin for old icons.
+
 ## Planned, not implemented
 
-Codex 02 separate routes and read-only coverage exist in this branch; their fresh
-Android/device acceptance is recorded separately in QA. Projects-specific style/asset persistence precedes automatic style recognition,
-trial icons, batch staging and AI edits. Hosted backend authentication, credits,
-automatic paid scheduling and Play publication remain future work. This Home
-adds no new AI endpoint, schema or pack builder. Coverage is a bounded static draw, not dynamic launcher certification.
-Follow [ROADMAP](../ROADMAP.md) and the next task in [HANDOFF](HANDOFF.md).
+Codex 04 automatic analysis, 05 trial icons/approval, 06 staging gallery and 07 edits
+remain separate tasks. Project style is saved, never automatically approved. No
+GenerationPlan entity, generation confirmation, backend, login, credits, Billing,
+background scheduling, source auto-sampling or Play publication is implemented.
+Device acceptance and feature-head automated evidence remain separate in QA.
+Follow [ROADMAP](../ROADMAP.md) and [HANDOFF](HANDOFF.md).

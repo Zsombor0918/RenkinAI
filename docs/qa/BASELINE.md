@@ -238,3 +238,13 @@ baseline and before the post-disposal broadcast; retain all exact count assertio
 This is deterministic lifecycle synchronization, no sleep/timeout/idling bypass.
 Local 45 guards passed again in 7.556 s; range guards PASS. New QA-path workflow trigger
 keeps final evidence commits covered by the full retained regression runner.
+
+
+## Codex 03 initial verification checkpoint
+
+Fresh base: owner-merged aefeb1b69e7757c757c60ac2f00ce2125893e1e6 (PR #3 head e8e04c43, identical tree). Codex 02 final-head build/regressions/governance were reread at merge; prior 669/669 is baseline only. Codex 03 branch feat/project-ai-persistence-m3: 45 local governance tests passed in 17.344 s. Local full Gradle command failed before configuration at distribution download (Network is unreachable); no SDK/device or successful local Android execution. Initial source diff/runner Python syntax checks passed. New feature tests and generated Room v19 export require hosted verification, not inferred success. PR remains BLOCKED while pending.
+
+The retained runner adds ProjectStyleComposeTest/ProjectSelectionComposeTest, ProjectAiPersistenceTest/ProjectAiMigrationTest/ProjectAiBackupTest/ProjectPreparationTest and IconGenerationGatewayTest plus legacy AI pipeline/persistence/batch selectors. All original isolated/together/shared-form and M2 groups remain. The complete unfiltered suite and actual debug APK still run. Only real XML/summary/generated-schema artifacts at the final feature SHA can close this checkpoint.
+
+
+Local pre-publication verification: the staged documentation guard passed 43 changed paths. The full governance suite passed again, 45/45 in 18.348 s. No Android execution succeeded locally.
