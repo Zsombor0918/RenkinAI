@@ -197,8 +197,8 @@ Home clean Back exits; dirty Back explains loss and allows return to editor or
 explicit exit without save. Merely entering Home has no profile/save/AI/build effect.
 
 Watch intents request Editor before resolving the owning profile through the
-existing watch/mutex path; pendingWatchSuggestionId is not consumed by Home. Legacy
-editor-entry versions are stored in SavedStateHandle as well: if process death
+existing watch/mutex path; pendingWatchSuggestionId is not consumed by Home.
+Editor-entry versions are stored in SavedStateHandle as well: if process death
 occurs before the shell's consuming effect, restored intent routing still reaches
 Editor without importing an image or creating a profile again. A consumed request
 does not override a later saved Home route merely on recreation. The counter is

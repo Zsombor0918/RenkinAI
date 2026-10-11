@@ -149,6 +149,11 @@ class ProjectShellComposeTest {
     private fun start() { compose.setContent { Content() } }
     private fun back() { compose.runOnIdle { activity.onBackPressedDispatcher.onBackPressed() } }
 
+    // The existing three-field Material dialog does not reach automatic-clock idle in
+    // this native Robolectric environment. Drive its frames explicitly; keep real text
+    // input, confirmation, restoration and route assertions rather than bypassing them.
+    private fun advanceFormFrames() { compose.mainClock.advanceTimeBy(300) }
+
     @Test
     fun activeEditorHomeRoundTripPreservesDraftAndNeverUsesLegacyExit() {
         start()
@@ -213,20 +218,27 @@ class ProjectShellComposeTest {
 
     @Test
     fun confirmedCreationRecompositionAndRestorationDoNotResubmitOrOpenEarly() {
+        compose.mainClock.autoAdvance = false
         val restoration = StateRestorationTester(compose)
         restoration.setContent { Content() }
         compose.onNodeWithTag("project-create").performClick()
+        advanceFormFrames()
         compose.onNodeWithTag("profile-name").performTextInput("Night")
+        advanceFormFrames()
         compose.onNodeWithTag("profile-pack-label").performTextInput("Night pack")
+        advanceFormFrames()
         compose.onNodeWithTag("profile-create-confirm").performClick()
+        advanceFormFrames()
         compose.onNodeWithTag("project-create").assertIsNotEnabled()
         compose.onNodeWithTag("test-editor").assertDoesNotExist()
         restoration.emulateSavedInstanceStateRestore()
+        advanceFormFrames()
         assertEquals(1, creates)
         compose.runOnIdle {
             home = home.copy(activeProfileId = 3, busy = false, profiles = home.profiles + Profile(3, "Night"))
             operation = ProjectSessionState.Opened(3)
         }
+        advanceFormFrames()
         compose.onNodeWithTag("test-editor").assertIsDisplayed()
         assertEquals(1, creates)
     }
@@ -243,13 +255,18 @@ class ProjectShellComposeTest {
 
     @Test
     fun externalImageEntryAndPendingWatchTakePriorityOverHomeAndCreateForms() {
+        compose.mainClock.autoAdvance = false
         start()
         compose.onNodeWithTag("project-create").performClick()
+        advanceFormFrames()
         compose.runOnIdle { ingress++ }
+        advanceFormFrames()
         compose.onNodeWithTag("profile-name").assertDoesNotExist()
         compose.onNodeWithTag("test-editor").assertIsDisplayed()
         compose.onNodeWithTag("editor-home").performClick()
+        advanceFormFrames()
         compose.runOnIdle { home = home.copy(activeProfileId = 2); attention = true }
+        advanceFormFrames()
         compose.onNodeWithTag("child-dialog").assertIsDisplayed()
         assertEquals(2L, home.activeProfileId)
         assertEquals(0, creates)

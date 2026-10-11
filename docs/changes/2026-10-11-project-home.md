@@ -32,7 +32,7 @@ Durable decision: recorded
 - `app/src/main/kotlin/dev/renkinProject/renkin/ui/project/ProjectHome.kt`: stateless
   Material 3 profiles, equal actions, honest states/adaptive layout.
 - `app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt`: two saved
-  routes, per-profile UI primitives, intent/prompt priority and exit protection.
+  routes, saved classic UI primitives, intent/prompt priority and exit protection.
 - `app/src/main/kotlin/dev/renkinProject/renkin/ui/project/ProjectSession.kt`: VM-owned
   async state, synchronous reentry gate and interruption without replay.
 - `app/src/main/kotlin/dev/renkinProject/renkin/ui/project/SharedImageIngress.kt`:
@@ -48,8 +48,10 @@ Durable decision: recorded
 - `app/src/test/kotlin/dev/renkinProject/renkin/ui/project/SharedImageIngressTest.kt`:
   recreation suppression and separately delivered same-URI shares.
 
-ADR 0002 records durable profile identity/single-session/root choices. This is the
-complete non-doc scope; build/manifest/CI/guards/schema/storage/AI clients stay intact.
+ADR 0002 records durable profile identity/single-session/root choices. This lists
+the initial non-doc scope; the [recreation follow-up](2026-10-11-project-home-recreation.md)
+also modifies IntroShowcase and the [editor-lifetime follow-up](2026-10-11-editor-session-lifetime.md)
+explains the stable editor key. Build/manifest/CI/guards/schema/storage/AI clients stay intact.
 
 ## Behavior before / after
 

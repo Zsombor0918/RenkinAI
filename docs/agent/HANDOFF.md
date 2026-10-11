@@ -67,6 +67,14 @@ list retry, and adds an actual ActivityResultRegistry regression. These changes
 require a new complete CI run; they are not a claimed successful build.
 Details: [editor-session note](../changes/2026-10-11-editor-session-lifetime.md).
 
+Editor-session head `6435d8486463ea3709c0ca2aa63fe80da7d5f311`,
+[CI 38142645850](https://github.com/Zsombor0918/RenkinAI/actions/runs/38142645850),
+compiled app/tests and ran 628 tests: **2 FAILED**, the same form-idle cases.
+The new actual result-registry regression passed. Bounded widths alone did not
+fix automatic-clock idle. A narrow test-only follow-up drives Compose frames
+explicitly in those two form tests, keeping their real inputs, actions, restoration
+and route assertions. It must pass fresh CI; no timeout increase or test removal.
+
 No schema, SDK, permission, app/pack identity, signing key, APK builder, installer,
 credential store, AI1/AI2 or license change. No live paid API request. Fake sessions
 are not a full Activity/device test. Manual Apply/Cancel, source picker, GlobalOptions

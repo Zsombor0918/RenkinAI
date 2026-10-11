@@ -5,8 +5,8 @@ inspected October 11, 2026. PR #1 merged at 12:15:29 UTC with the P1 audit-resul
 fix and resolved review thread. Codex 01 adds the Projects entry point on
 `feat/project-home-m1`; final source/check SHAs belong in its PR audit.
 Manifest, dependencies, Room v18, provider/storage contracts, APK/signing/install
-and Android CI are unchanged. Existence in source is separate from validation.
-Existence in source and runtime validation are different; see [QA baseline](../qa/BASELINE.md).
+and Android CI are unchanged. Existence in source and runtime validation are
+different; see [QA baseline](../qa/BASELINE.md).
 
 ## Product and implemented paths
 
@@ -81,7 +81,7 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 - Theme Park/One UI/Flip cover-screen compatibility requires a real device.
   The historical manifest INTERNET comment predates AI and is incomplete; actual
   networking also includes OpenAiImageClient and StabilityImageClient.
-- Source supports backup/migrations; this infrastructure PR does not test an
+- Source supports backup/migrations; this UI PR does not test an
   actual device upgrade or guarantee a reproducible CI debug signing identity.
 
 ## Planned, not implemented
