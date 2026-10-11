@@ -328,3 +328,11 @@ install, TalkBack and Samsung/Flip/One UI/Theme Park remain **NOT RUN**. No live
 API call or release occurred. Earlier failed checkpoints above remain evidence;
 the initial Save scheduling hypothesis was superseded by the measured fake numeric
 comparison, not by a runtime interaction change.
+
+Final documentation consistency check: the ADR's compatibility paragraph now
+references the actual 06e71532 hosted success above instead of leaving its earlier
+pending-verification sentence as a current claim. No runtime or test assertion
+changes. Local governance at 68c05698 passed 45/45 in 18.300 s, commit range passed
+six subjects, docs range passed 51 changed paths. Its governance job 114583693727
+passed all 45 guard tests and rejected only the deliberately still-BLOCKED PR audit.
+Subsequent final documentation commit verification is recorded in that PR audit.

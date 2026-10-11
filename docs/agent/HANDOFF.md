@@ -68,6 +68,9 @@ governance results and exact final SHA are recorded in PR #4 after publication.
 Only all-green final checks permit a PASS WITH RISKS audit and review-ready state;
 owner acceptance is still required. Earlier-head green is not final-head proof.
 Failed history remains in BASELINE/change notes.
+ADR 0004 now points to the verified legacy-gallery checkpoint rather than its
+previous pending sentence. This documentation consistency follow-up adds no
+runtime or test changes; its own final contexts still belong in PR #4.
 Physical devices/URI providers/upgrade/SAF/signing/installer/TalkBack/OEM NOT RUN.
 
 ## Main rules and owner acceptance

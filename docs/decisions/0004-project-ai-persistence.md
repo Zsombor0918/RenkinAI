@@ -86,5 +86,6 @@ Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
 fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
 PNG signature/CRC/end/dimension/decode validation without the project-reference
 visible-artwork rule. Project references retain four MiB and reject empty artwork.
-The real format-3 large/transparent PNG regression is pending hosted verification;
-legacy upload/render code and credentials/signing contracts remain unchanged.
+The real format-3 large/transparent PNG regression passed at 06e71532; current
+exact-head evidence belongs in [QA](../qa/BASELINE.md) and PR #4's audit. Legacy
+upload/render code and credentials/signing contracts remain unchanged.
