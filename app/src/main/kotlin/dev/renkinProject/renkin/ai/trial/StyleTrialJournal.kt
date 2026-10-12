@@ -113,6 +113,7 @@ internal class StyleTrialJournal(context: Context) {
     /** A consumed plan UUID is never reusable, including partially written PREPARED inputs. */
     fun claim(plan: StyleTrialPlan, images: Map<String, ByteArray>): Boolean = synchronized(shared.lock) {
         plan.validate(); val id = plan.context.profileId
+        require(plan.context.styleFingerprint == styleFingerprint(plan.specification, plan.instruction)) { "Unknown style input cannot authorize a new request." }
         if (exists(marker(id, plan.id))) return false
         check(shared.active == null && current(plan)); require(records(id).size < MAX_RECORDS)
         require(plan.inputs.none { exists(consumedFile(it.requestId)) }) { "A trial request UUID is already consumed." }

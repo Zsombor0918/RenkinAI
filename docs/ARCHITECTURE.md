@@ -813,3 +813,15 @@ style revision or refs cannot reuse the old PNG. Eligibility and fresh owner/sou
 checks still fail closed. Read-only M6 reuse requires this current review proof and
 current approval, never merely an old ACCEPTED status. Historical regeneration may
 prepare a new current-input plan, but always needs new paid confirmation.
+
+
+The current input also hashes the actual saved specification plus separate user
+instruction. Reused numerical profile/revision IDs after restore cannot imply
+identical style text. Unknown historical style hashes remain viewable and cannot
+authorize a new request/reuse. Result insertion checks the saved text and ordered
+refs again under the asset lease. A 32,000-character composed-prompt ceiling keeps
+quoted maximum-length saved inputs intact and is validated before cost consent.
+Native multipart factories remain compatible; only actual network requests receive
+the whole-body one-shot wrapper (pinned4.12 does not propagate child flags).
+Provider model/account failures use safe typed categories with no raw server text,
+no automatic fallback/retry. Historical cards display their actual producer options.

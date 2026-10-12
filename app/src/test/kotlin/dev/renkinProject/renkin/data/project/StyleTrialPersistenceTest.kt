@@ -112,4 +112,17 @@ class StyleTrialPersistenceTest {
         assertTrue(runCatching { f.repo.approveTrials(p.context, originals(), { true }) }.isFailure)
         assertNull(f.db.projectAiDao().approval(1, 1)); assertEquals("ACCEPTED", f.repo.trialVariants(1).single().reviewStatus)
     }
+    @Test fun profileDeleteCascadesOnlyItsTrialRowsAndGcRetainsTheOtherOwner() = runBlocking {
+        val (p, row) = saved(); accept(p, row); f.repo.approveTrials(p.context, originals(), { true })
+        val first = f.repo.snapshot(); val second = first.rekey(1, 2)
+        second.assets.forEach { f.repo.files.install(2, f.repo.referenceBytes(1, it.hash), it.source) }
+        val combined = ProjectAiSnapshot(first.metadata + second.metadata, first.revisions + second.revisions,
+            first.assets + second.assets, first.references + second.references, first.variants + second.variants, first.approvals + second.approvals)
+        val packs = dev.renkinProject.renkin.data.RenkinPackRepository(f.db)
+        packs.replaceEverything(listOf(dev.renkinProject.renkin.data.Profile(1, "Project"), dev.renkinProject.renkin.data.Profile(2, "Other")), emptyList(), combined)
+        packs.deleteProfile(2); f.journal.invalidateProfile(2); f.repo.collectUnreferencedFiles()
+        assertEquals(first, f.repo.snapshot()); assertFalse(File(f.context.filesDir, "project_ai_assets/2").exists())
+        assertArrayEquals(projectTestPng(size = 1024), f.repo.referenceBytes(1, row.rawAssetHash))
+        assertEquals(row.id, f.repo.acceptedTrials(p.context, originals(), { true }).single().variantId)
+    }
 }

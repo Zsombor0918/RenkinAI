@@ -27,9 +27,10 @@ internal suspend fun currentTrialOriginal(context: Context, key: String): TrialO
     val drawable = manager.getActivityIcon(component)
     val bytes = renderTrialOriginal(drawable)
     val after = manager.getPackageInfo(component.packageName, 0)
-    check(before.lastUpdateTime == after.lastUpdateTime && before.versionCode == after.versionCode)
+    check(before.lastUpdateTime == after.lastUpdateTime && androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(before) ==
+        androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(after))
     val night = context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
-    TrialOriginal(bytes, "launcher:${component.flattenToString()}:${after.versionCode}:${after.lastUpdateTime}:$night:render1")
+    TrialOriginal(bytes, "launcher:${component.flattenToString()}:${androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(after)}:${after.lastUpdateTime}:$night:render1")
 }
 
 internal fun renderTrialOriginal(drawable: Drawable): ByteArray {

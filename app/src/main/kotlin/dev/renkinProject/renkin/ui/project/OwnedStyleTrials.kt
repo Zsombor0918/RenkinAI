@@ -65,7 +65,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val context = TrialContext(id, revision.revision, metadata.version, route.first.name, route.second, stamp,
             projectCatalogStamp(targets), sha256(metadata.selectionJson.toByteArray()),
             referenceFingerprint(style.references.map { it.hash }), withContext(Dispatchers.IO) { journal.epoch(id) },
-            defaults.first, defaults.second, defaults.third).also { it.validate() }
+            defaults.first, defaults.second, defaults.third, styleFingerprint(revision.specification, revision.userInstruction)).also { it.validate() }
         TrialPreparation(context, style, StyleTrialTargetSelector.candidates(route.first.name, targets, selection.componentKeys, coverage))
     }
     private suspend fun history(id: Long) {

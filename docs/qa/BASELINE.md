@@ -1,5 +1,26 @@
 # Verification baseline
 
+## Codex 05 executable checkpoint — dd855e74, two retained regressions
+
+[CI38287235362](https://github.com/Zsombor0918/RenkinAI/actions/runs/38287235362)
+compiled production/tests and ran851 tests, two failures, APK skipped.
+[Regressions38287235504](https://github.com/Zsombor0918/RenkinAI/actions/runs/38287235504)
+artifact11763214314, verified ZIP SHA25624c243f033475c77216f53ba24d8e90aa3bed2a70da047b5517048e9e2f953e3:
+exact summary HEAD, independently counted143 XML /851 tests /2 failures /0 errors/
+skips. Every selector occurred; all M5 groups passed: domain9, gateway7, journal10,
+UI12, persistence/session18. Retained original groups passed except gateway/legacy
+30/31 and analysis persistence/session19/20. Project data34/34 passed including
+new full/share/legacy trial backup. Genuine KSP21 remains byte-identical to11912e93.
+
+Measured failures: existing AiImagePipelineTest casts the factory body to native
+MultipartBody; keep that factory type and wrap only the actual transport. Pinned
+4.12 MultipartBody does not propagate child one-shot flags, so a part-only fix is
+unsafe. Existing M4 full-format assertion expected5, actual new format6; retain its
+analysis/PNG/epoch assertions and update only the current format. Source style-text
+fingerprints, original-version stamps, safe model/account categories and additional
+negative tests require next-head verification;851/849 is not their result.
+Local corrected guard rerun52/52 in7.378s. Device/live tests remain NOT RUN.
+
 ## Codex 05 first hosted checkpoint — 2920a5d7, test compilation failed
 
 [CI 38285597590](https://github.com/Zsombor0918/RenkinAI/actions/runs/38285597590)

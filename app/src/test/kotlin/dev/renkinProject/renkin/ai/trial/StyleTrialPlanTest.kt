@@ -28,7 +28,7 @@ class StyleTrialPlanTest {
     @Test fun frozenPlanRoundTripsAndEveryCostInputChangesFingerprint() = runBlocking {
         StyleTrialFixture(temporary.root).use { f ->
             f.initialize(); val p = f.plan(); assertEquals(p, StyleTrialPlan.parse(p.encode()))
-            for (changed in listOf(p.copy(instruction = "changed"), p.copy(context = p.context.copy(quality = "high")),
+            for (changed in listOf(p.copy(instruction = "changed", context = p.context.copy(styleFingerprint = styleFingerprint(p.specification, "changed"))), p.copy(context = p.context.copy(quality = "high")),
                 p.copy(context = p.context.copy(catalogStamp = "b".repeat(64))), p.copy(context = p.context.copy(epoch = "restored:initial")),
                 p.copy(inputs = p.inputs.reversed()), p.copy(inputs = p.inputs.map { it.copy(originalHash = "c".repeat(64)) })))
                 assertNotEquals(p.fingerprint, changed.fingerprint)
@@ -49,6 +49,19 @@ class StyleTrialPlanTest {
         assertTrue(text.length <= 16000); assertTrue(text.contains("u".repeat(2000)))
         assertTrue(PromptComposer.composeSaved("outline", "quoted \"value\"").contains("\\\"value\\\""))
         assertTrue(text.contains("original app identity")); assertTrue(text.contains("transparent PNG"))
+        assertTrue(PromptComposer.composeSaved("\"".repeat(6000), "\"".repeat(2000)).length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT)
+    }
+    @Test fun numericalRevisionReuseCannotMakeDifferentStyleTextAnIdenticalInput() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(); val p = f.plan()
+            val other = p.context.copy(styleFingerprint = styleFingerprint("different restored style", p.instruction))
+            assertFalse(p.context.sameArtworkInputs(other))
+            assertTrue(runCatching { p.copy(context = other).validate() }.isFailure)
+            val legacy = p.context.copy(styleFingerprint = "")
+            assertEquals(legacy, TrialContext.parse(org.json.JSONObject(legacy.encode())))
+            assertFalse(legacy.sameArtworkInputs(p.context))
+            assertTrue(runCatching { f.journal.claim(p.copy(context = legacy), f.images(p)) }.isFailure)
+        }
     }
     @Test fun realVectorAdaptiveAndTransparentOriginalRenderingIsBoundedAndRejectsBrokenArtwork() {
         val application = RuntimeEnvironment.getApplication()

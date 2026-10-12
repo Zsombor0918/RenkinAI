@@ -915,6 +915,8 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="trialProgressTitle">Saved request history</string>
     <string name="trialProgress">%1$d / %2$d reviewable · %3$d endpoint submission markers</string>
     <string name="trialUncertain">This request may have used provider credit. Stop, reopening and reconnecting never resend it. Check usage before a separately confirmed new attempt.</string>
+    <string name="trialModelUnavailable">The configured model or endpoint is unavailable. Check provider access and choose an available model explicitly; no fallback or retry was made.</string>
+    <string name="trialAccountError">The provider rejected access, billing or rate limits. Check the saved key, account balance and usage before a separately confirmed attempt; there is no automatic retry.</string>
     <string name="trialLocalPersistence">The PNG is staged locally, but its project record is not complete. Reload attempts only local recovery, with zero provider requests. Storage limits can block completion.</string>
     <string name="trialReviewTitle">Original vs generated trials</string>
     <string name="trialLight">Light preview</string>
@@ -935,5 +937,6 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="trialConfirmPaid">Start these paid API requests</string>
     <string name="trialOriginal">Original</string>
     <string name="trialGenerated">Generated</string>
+    <string name="trialImageUnavailable">Saved image unavailable. Restore its backup; do not regenerate automatically.</string>
     <string name="trialLauncherPreview">%1$s at 48 px launcher size</string>
 </resources>

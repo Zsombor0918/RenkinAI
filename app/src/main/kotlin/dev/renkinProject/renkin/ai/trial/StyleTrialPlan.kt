@@ -15,12 +15,14 @@ internal fun referenceFingerprint(hashes: List<String>): String {
     hashes.forEach(::trialHash)
     return sha256(JSONArray(hashes).toString().toByteArray())
 }
+internal fun styleFingerprint(specification: String, instruction: String) =
+    sha256(canonicalJson(json("specification" to specification, "instruction" to instruction)).toByteArray())
 
 /** All values remain local. Equality is deliberately conservative; none is cost permission. */
 internal data class TrialContext(val profileId: Long, val revision: Long, val metadataVersion: Long,
     val mode: String, val sourcePackage: String?, val sourceStamp: String?, val catalogStamp: String,
     val selectionHash: String, val referenceFingerprint: String, val epoch: String,
-    val provider: String, val model: String, val quality: String) {
+    val provider: String, val model: String, val quality: String, val styleFingerprint: String = "") {
     fun validate() {
         require(profileId > 0 && revision > 0 && metadataVersion >= 0)
         require(mode in setOf("CREATE", "EXTEND"))
@@ -29,25 +31,33 @@ internal data class TrialContext(val profileId: Long, val revision: Long, val me
         sourceStamp?.let(::trialHash); trialHash(catalogStamp); trialHash(selectionHash); trialHash(referenceFingerprint)
         require(epoch.matches(Regex("[a-zA-Z0-9:-]{1,140}")))
         require(provider in AiSettings.PROVIDERS && model in AiSettings.MODELS && quality in AiSettings.QUALITIES)
+        if (styleFingerprint.isNotEmpty()) trialHash(styleFingerprint)
     }
     fun json(): JSONObject { validate(); return json("profileId" to profileId, "revision" to revision,
         "metadataVersion" to metadataVersion, "mode" to mode, "sourcePackage" to sourcePackage,
         "sourceStamp" to sourceStamp, "catalogStamp" to catalogStamp, "selectionHash" to selectionHash,
         "referenceFingerprint" to referenceFingerprint, "epoch" to epoch, "provider" to provider,
-        "model" to model, "quality" to quality) }
+        "model" to model, "quality" to quality).also {
+            if (styleFingerprint.isNotEmpty()) it.put("styleFingerprint", styleFingerprint)
+        } }
     fun encode() = canonicalJson(json())
     /** Source/selection/epoch changes need human re-review, while actual artwork inputs stay fixed. */
     fun sameArtworkInputs(other: TrialContext) = profileId == other.profileId && revision == other.revision &&
+        styleFingerprint.isNotEmpty() && styleFingerprint == other.styleFingerprint &&
+        referenceFingerprint == other.referenceFingerprint && provider == other.provider && model == other.model && quality == other.quality
+    fun sameStyleKeys(other: TrialContext) = profileId == other.profileId && revision == other.revision &&
         referenceFingerprint == other.referenceFingerprint && provider == other.provider && model == other.model && quality == other.quality
     companion object {
         fun parse(r: JSONObject): TrialContext {
             r.exactKeys(setOf("profileId", "revision", "metadataVersion", "mode", "sourcePackage", "sourceStamp",
-                "catalogStamp", "selectionHash", "referenceFingerprint", "epoch", "provider", "model", "quality"))
+                "catalogStamp", "selectionHash", "referenceFingerprint", "epoch", "provider", "model", "quality") +
+                if (r.has("styleFingerprint")) setOf("styleFingerprint") else emptySet())
             return TrialContext(r.longValue("profileId"), r.longValue("revision"), r.longValue("metadataVersion"),
                 r.stringValue("mode"), if (r.isNull("sourcePackage")) null else r.stringValue("sourcePackage"),
                 if (r.isNull("sourceStamp")) null else r.stringValue("sourceStamp"), r.stringValue("catalogStamp"),
                 r.stringValue("selectionHash"), r.stringValue("referenceFingerprint"), r.stringValue("epoch"),
-                r.stringValue("provider"), r.stringValue("model"), r.stringValue("quality")).also { it.validate() }
+                r.stringValue("provider"), r.stringValue("model"), r.stringValue("quality"),
+                if (r.has("styleFingerprint")) r.stringValue("styleFingerprint") else "").also { it.validate() }
         }
     }
 }
@@ -78,6 +88,8 @@ internal data class StyleTrialPlan(val context: TrialContext, val specification:
     fun validate() {
         context.validate(); trialId(id)
         cleanText(specification, 6000, true); require(specification.isNotBlank()); cleanText(instruction, 2000, true)
+        require(context.styleFingerprint.isEmpty() || context.styleFingerprint == styleFingerprint(specification, instruction))
+        require(PromptComposer.composeSaved(specification, instruction).length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT)
         require(referenceFingerprint(referenceHashes) == context.referenceFingerprint)
         require(context.provider != AiSettings.STABILITY || referenceHashes.size == 1)
         require(inputs.size in 1..3 && inputs.map { it.key }.distinct().size == inputs.size &&
@@ -109,7 +121,7 @@ internal data class TrialVariantEvidence(val context: TrialContext, val planId: 
         require(originalOrigin.isNotBlank() && originalOrigin.length <= 1000)
         require(referenceFingerprint(referenceHashes) == context.referenceFingerprint)
         require((reviewContext == null) == (reviewOriginalOrigin == null))
-        reviewContext?.let { it.validate(); require(context.sameArtworkInputs(it)) }
+        reviewContext?.let { it.validate(); require(context.sameStyleKeys(it) && context.styleFingerprint == it.styleFingerprint) }
         reviewOriginalOrigin?.let { require(it.isNotBlank() && it.length <= 1000) }
         return canonicalJson(json("schema" to 2, "context" to context.json(), "planId" to planId,
             "requestId" to requestId, "originalOrigin" to originalOrigin, "referenceHashes" to JSONArray(referenceHashes),

@@ -130,4 +130,16 @@ class StyleTrialJournalTest {
         repair.recover(1); assertTrue(f.repo.trialVariants(1).isEmpty()); assertEquals(1, calls)
         assertFalse(f.journal.current(p)); assertFalse(f.journal.claim(p, f.images(p)))
     }
+    @Test fun evenWithoutEpochRotationDifferentRestoredStyleAtSameRevisionCannotTakeOldResult() = runBlocking {
+        val p = f.plan(listOf("a/Main")); var calls = 0
+        val c = StyleTrialCoordinator(f.journal, f.successful { calls++ }, f.repo) { if (it == "FILES_INSTALLED") error("kill") }
+        c.submit(p, f.images(p), true, { true })
+        val old = f.repo.snapshot()
+        val replaced = old.copy(revisions = old.revisions.map { it.copy(specification = "different restored content") })
+        dev.renkinProject.renkin.data.RenkinPackRepository(f.db).replaceEverything(
+            listOf(dev.renkinProject.renkin.data.Profile(1, "Project"), dev.renkinProject.renkin.data.Profile(2, "Other")), emptyList(), replaced)
+        StyleTrialCoordinator(f.journal, f.successful { calls++ }, f.repo).recover(1)
+        assertEquals(1, calls); assertTrue(f.repo.trialVariants(1).isEmpty())
+        assertEquals(TrialStatus.PNG_SAVED, f.journal.read(1, p.id)!!.items.single().status)
+    }
 }

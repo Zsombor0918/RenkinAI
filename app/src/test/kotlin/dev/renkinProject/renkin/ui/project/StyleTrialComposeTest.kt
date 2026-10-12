@@ -36,7 +36,8 @@ class StyleTrialComposeTest {
         val stamp = if (source == null) null else "b".repeat(64)
         val targets = (0 until n).map { CoverageTarget("p$it/Main", "App $it") }
         val context = TrialContext(1, 1, 2, mode.name, source, stamp, "a".repeat(64), "c".repeat(64),
-            referenceFingerprint(emptyList()), "initial:initial", AiSettings.OPENAI, AiSettings.MODELS.first(), "medium")
+            referenceFingerprint(emptyList()), "initial:initial", AiSettings.OPENAI, AiSettings.MODELS.first(), "medium",
+            styleFingerprint("saved outline", "separate instruction"))
         return TrialPreparation(context, SavedProjectStyle(ProjectAiMetadata(1, mode.name, source, stamp, 1, version = 2),
             StyleRevision(1, 1, specification = "saved outline", userInstruction = "separate instruction"), emptyList()),
             targets.map { TrialCandidate(it, true, true, false, "eligible") })
@@ -201,7 +202,8 @@ class StyleTrialComposeTest {
             override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft, mode: ProjectSetupMode, source: String?, stamp: String?): SavedProjectStyle {
                 val old = b.base!!; val rev = StyleRevision(1, expected!! + 1, specification = draft.specification, userInstruction = draft.instruction)
                 val saved = old.style.copy(revision = rev, metadata = old.style.metadata!!.copy(activeRevision = rev.revision, version = old.context.metadataVersion + 1))
-                b.base = old.copy(context = old.context.copy(revision = rev.revision, metadataVersion = old.context.metadataVersion + 1), style = saved)
+                b.base = old.copy(context = old.context.copy(revision = rev.revision, metadataVersion = old.context.metadataVersion + 1,
+                    styleFingerprint = styleFingerprint(rev.specification, rev.userInstruction)), style = saved)
                 return saved
             }
         }

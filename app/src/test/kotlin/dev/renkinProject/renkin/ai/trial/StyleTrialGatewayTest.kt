@@ -47,7 +47,12 @@ class StyleTrialGatewayTest {
             assertTrue(adapter(s).generate(input().copy(beforeEndpoint = { assertEquals(1, it); endpoints++ })) is IconGenerationOutcome.Uncertain)
             assertEquals(1, endpoints); assertEquals(3, s.requestCount); assertEquals("POST", s.takeRequest().method)
             val settings = AiSettings(referenceNames = emptyList())
-            assertTrue(buildImageEditRequest(credential, settings, listOf(input().originalPng)).body!!.isOneShot())
+            val factory = buildImageEditRequest(credential, settings, listOf(input().originalPng))
+            val transport = factory.withOneShotBody()
+            assertTrue(factory.body is MultipartBody); assertTrue(transport.body!!.isOneShot())
+            assertEquals(factory.body!!.contentType(), transport.body!!.contentType())
+            assertEquals(factory.body!!.contentLength(), transport.body!!.contentLength())
+            assertArrayEquals(Buffer().also { factory.body!!.writeTo(it) }.readByteArray(), Buffer().also { transport.body!!.writeTo(it) }.readByteArray())
         }
     }
     @Test fun realBodyKeepsOriginalFirstOrderedRefsAndNoLocalMetadataOrSecrets() = runBlocking {
@@ -79,8 +84,8 @@ class StyleTrialGatewayTest {
             assertEquals("/style", s.takeRequest().path)
             if (failedStep == 2) assertEquals("/background", s.takeRequest().path)
             val settings = AiSettings(provider = AiSettings.STABILITY, referenceNames = listOf("img_0_0.png"))
-            assertTrue(buildStabilityStyleRequest(credential, settings, input().originalPng, input(1).referencePngs.single()).body!!.isOneShot())
-            assertTrue(buildStabilityRemoveBackgroundRequest(credential, projectTestPng(size = 1024)).body!!.isOneShot())
+            assertTrue(buildStabilityStyleRequest(credential, settings, input().originalPng, input(1).referencePngs.single()).withOneShotBody().body!!.isOneShot())
+            assertTrue(buildStabilityRemoveBackgroundRequest(credential, projectTestPng(size = 1024)).withOneShotBody().body!!.isOneShot())
         }
     }
     @Test fun malformedFirstStabilityImageDoesNotStartSecondPaidEndpoint() = runBlocking {
@@ -108,6 +113,14 @@ class StyleTrialGatewayTest {
         MockWebServer().use { s ->
             cases.forEach { r -> s.enqueue(r); assertTrue(adapter(s).generate(input()) is IconGenerationOutcome.Uncertain) }
             assertEquals(cases.size, s.requestCount)
+        }
+    }
+    @Test fun unsupportedModelIsTypedForUiWithoutExposingServerMessageOrSwitchingModel() = runBlocking {
+        MockWebServer().use { s ->
+            s.enqueue(MockResponse().setResponseCode(404).setBody("{\"error\":{\"code\":\"model_not_found\",\"message\":\"private server value\"}}"))
+            val outcome = adapter(s).generate(input()) as IconGenerationOutcome.Uncertain
+            assertEquals("model_unavailable", outcome.reason); assertFalse(outcome.toString().contains("private server value"))
+            assertEquals(1, s.requestCount)
         }
     }
     @Test fun tcpTimeoutAndCancellationPreserveUnknownBillingAndDoNotRetry() = runBlocking {

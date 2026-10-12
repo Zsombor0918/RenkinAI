@@ -52,6 +52,11 @@ internal suspend fun ProjectAiRepository.installTrialVariant(plan: StyleTrialPla
     require(epochCurrent()) { "Project data was restored; old request rights are invalid." }
     validateTrialPng(png)
     val dao = database.projectAiDao()
+    val savedStyle = checkNotNull(dao.history(plan.context.profileId).find { it.revision == plan.context.revision })
+    check(savedStyle.specification == plan.specification && savedStyle.userInstruction == plan.instruction &&
+        dao.references(plan.context.profileId).filter { it.revision == plan.context.revision }.map { it.assetHash } == plan.referenceHashes) {
+        "Restored style history does not match the original generation input."
+    }
     val evidence = TrialVariantEvidence(plan.context, plan.id, input.requestId, input.origin, plan.referenceHashes).encode()
     val existing = dao.variant(input.requestId)
     if (existing != null) {
@@ -89,6 +94,8 @@ private suspend fun ProjectAiRepository.checkTrialContext(context: TrialContext)
     check(m.activeRevision == context.revision && m.version == context.metadataVersion && m.mode == context.mode &&
         m.sourcePackage == context.sourcePackage && m.sourceStamp == context.sourceStamp &&
         sha256(m.selectionJson.toByteArray()) == context.selectionHash) { "Trial preparation changed. Review the current project." }
+    val revision = checkNotNull(database.projectAiDao().history(context.profileId).find { it.revision == context.revision })
+    check(context.styleFingerprint == styleFingerprint(revision.specification, revision.userInstruction))
     val refs = database.projectAiDao().references(context.profileId).filter { it.revision == context.revision }.map { it.assetHash }
     check(referenceFingerprint(refs) == context.referenceFingerprint)
 }

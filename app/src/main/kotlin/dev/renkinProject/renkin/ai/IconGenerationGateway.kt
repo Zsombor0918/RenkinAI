@@ -29,7 +29,7 @@ sealed interface IconGenerationOutcome {
     data class InvalidInput(val requestId: String) : IconGenerationOutcome
     data class CredentialsUnavailable(val requestId: String) : IconGenerationOutcome
     /** Once submitted, rejection/timeout/invalid response can never authorize an automatic retry. */
-    data class Uncertain(val requestId: String, val provider: String) : IconGenerationOutcome
+    data class Uncertain(val requestId: String, val provider: String, val reason: String = "remote_outcome_unknown") : IconGenerationOutcome
 }
 
 /** Cancellation propagates as [GenerationCancelled]: the caller must preserve uncertain billing.
@@ -61,7 +61,7 @@ class ClientIconGenerationGateway internal constructor(
                 require(request.profileId == null || request.profileId > 0)
                 require(request.styleRevision == null || request.styleRevision > 0)
                 require(request.referencePngs.size <= 5)
-                require(request.composedPrompt == null || request.composedPrompt.isNotBlank() && request.composedPrompt.length <= 16000)
+                require(request.composedPrompt == null || request.composedPrompt.isNotBlank() && request.composedPrompt.length <= MAX_COMPOSED_ICON_PROMPT)
                 require(request.provider != AiSettings.STABILITY || request.referencePngs.size == 1)
                 (listOf(request.originalPng) + request.referencePngs).forEach { inspectPng(it) }
                 AiSettings(request.provider, request.specification, request.model, request.quality,
@@ -87,8 +87,9 @@ class ClientIconGenerationGateway internal constructor(
                 if (request.provider == AiSettings.STABILITY) 2 else 1)
         } catch (error: CancellationException) {
             throw GenerationCancelled(request.requestId, submitted, error)
-        } catch (_: Exception) {
-            return IconGenerationOutcome.Uncertain(request.requestId, request.provider)
+        } catch (error: Exception) {
+            return IconGenerationOutcome.Uncertain(request.requestId, request.provider,
+                if (error is ImageApiException) error.kind else "remote_outcome_unknown")
         }
     }
 }

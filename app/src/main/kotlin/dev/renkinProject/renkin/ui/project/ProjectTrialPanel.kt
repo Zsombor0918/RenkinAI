@@ -134,6 +134,8 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                         Text("${input.name}: ${item.status.name}", Modifier.testTag("trial-status-${item.requestId}"))
                         if (item.status == TrialStatus.UNCERTAIN) Text(stringResource(R.string.trialUncertain))
                         if (item.status == TrialStatus.PNG_SAVED) Text(stringResource(R.string.trialLocalPersistence))
+                        if (item.reason == "model_unavailable" || item.reason == "http_404") Text(stringResource(R.string.trialModelUnavailable))
+                        if (item.reason in setOf("http_401", "http_402", "http_403", "http_429")) Text(stringResource(R.string.trialAccountError))
                     }
                 }
             }
@@ -155,6 +157,8 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 val recheck = !current && evidence != null && p != null && evidence.context.sameArtworkInputs(p.context) && eligible
                 Column(Modifier.fillMaxWidth().testTag("trial-variant-${v.id}"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(v.componentKey); Text(stringResource(R.string.trialVariantRevision, v.styleRevision, v.reviewStatus))
+                    evidence?.let { e -> Text(if (e.context.provider == AiSettings.STABILITY) stringResource(R.string.trialStabilityRoute)
+                        else "${e.context.provider} · ${e.context.model} · ${e.context.quality}") }
                     if (!current) Text(stringResource(R.string.trialHistorical), Modifier.testTag("trial-historical-${v.id}"))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         TrialComparison(id, v.originalHash, backend, false, dark, checker, v.id)
@@ -248,6 +252,7 @@ private fun TrialComparison(id: Long, hash: String, backend: ProjectTrialBackend
 @Composable
 private fun TrialPreview(id: Long, hash: String, backend: ProjectTrialBackend, tag: String, size: Int,
     dark: Boolean, checker: Boolean, label: String) {
+    var unavailable by remember(id, hash, backend, size) { mutableStateOf(false) }
     val bitmap by produceState<Bitmap?>(null, id, hash, backend, size) {
         var decoded: Bitmap? = null
         try {
@@ -258,9 +263,10 @@ private fun TrialPreview(id: Long, hash: String, backend: ProjectTrialBackend, t
                 val sample = Integer.highestOneBit((maxOf(bounds.outWidth, bounds.outHeight) / size).coerceAtLeast(1))
                 decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
                 value = decoded
-            }
+                unavailable = decoded == null
+            } else unavailable = true
         } catch (cancel: CancellationException) { throw cancel }
-        catch (_: Exception) { value = null }
+        catch (_: Exception) { value = null; unavailable = true }
         awaitDispose { decoded?.recycle() }
     }
     val background = if (dark) Color(0xff202020) else Color.White
@@ -269,5 +275,6 @@ private fun TrialPreview(id: Long, hash: String, backend: ProjectTrialBackend, t
             if (dark) Color(0xff202020) else Color(0xffdddddd))
     }.testTag(tag)) {
         bitmap?.let { Image(it.asImageBitmap(), label, Modifier.fillMaxSize()) }
+        if (unavailable) Text(stringResource(R.string.trialImageUnavailable), style = MaterialTheme.typography.labelSmall)
     }
 }

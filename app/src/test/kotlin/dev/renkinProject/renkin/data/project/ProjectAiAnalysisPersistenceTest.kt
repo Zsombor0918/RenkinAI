@@ -105,7 +105,7 @@ class ProjectAiAnalysisPersistenceTest {
         val saved = save(); val journal = StyleAnalysisJournal(context); val candidate = analysisFixtureRequest()
         StyleAnalysisCoordinator(journal, StyleAnalysisGateway { StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_unreviewed", null) }).submit(candidate, true) { true }
         val bytes = export(); val zipped = entries(bytes)
-        assertEquals(5, JSONObject(String(zipped.getValue("manifest.json"))).getInt("format"))
+        assertEquals(6, JSONObject(String(zipped.getValue("manifest.json"))).getInt("format"))
         assertFalse(zipped.keys.any { it.contains("style_analysis") })
         assertFalse(zipped.values.any { String(it).contains("resp_unreviewed") })
         manager(target, targetWatch).importBackup { ByteArrayInputStream(bytes) }

@@ -38,6 +38,7 @@ internal class StyleTrialCoordinator(private val journal: StyleTrialJournal, pri
                         journal.failure(plan, input.requestId, when (result) {
                             is IconGenerationOutcome.InvalidInput -> "invalid_input"
                             is IconGenerationOutcome.CredentialsUnavailable -> "no_key"
+                            is IconGenerationOutcome.Uncertain -> result.reason
                             else -> "remote_outcome_unknown"
                         })
                         journal.skipPending(plan, "previous_request_failed"); break

@@ -69,7 +69,8 @@ class ProjectAiBackupTest {
         val original = projectTestPng(Color.BLUE, 1024)
         val input = TrialInput("pkg/Main", "App", sha256(original), "launcher:pkg/Main:1")
         val ctx = TrialContext(4, 1, meta.version, "CREATE", null, null, catalog, sha256(meta.selectionJson.toByteArray()),
-            referenceFingerprint(style.references.map { it.hash }), journal.epoch(4), AiSettings.OPENAI, AiSettings.MODELS.first(), "medium")
+            referenceFingerprint(style.references.map { it.hash }), journal.epoch(4), AiSettings.OPENAI, AiSettings.MODELS.first(), "medium",
+            styleFingerprint(style.revision!!.specification, style.revision.userInstruction))
         val plan = StyleTrialPlan(ctx, style.revision!!.specification, style.revision.userInstruction,
             style.references.map { it.hash }, listOf(input))
         val gateway = IconGenerationGateway { request ->

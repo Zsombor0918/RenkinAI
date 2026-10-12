@@ -46,7 +46,7 @@ internal class StyleTrialFixture(root: File) : AutoCloseable {
         val style = repo.load(1); val meta = checkNotNull(style.metadata); val rev = checkNotNull(style.revision)
         val context = TrialContext(1, rev.revision, meta.version, meta.mode, meta.sourcePackage, meta.sourceStamp,
             projectCatalogStamp(targets), sha256(meta.selectionJson.toByteArray()), referenceFingerprint(style.references.map { it.hash }),
-            journal.epoch(1), provider, AiSettings.MODELS.first(), "medium")
+            journal.epoch(1), provider, AiSettings.MODELS.first(), "medium", styleFingerprint(rev.specification, rev.userInstruction))
         return StyleTrialPlan(context, rev.specification, rev.userInstruction, style.references.map { it.hash }, keys.map { key ->
             val o = originals.getValue(key); TrialInput(key, targets.single { it.key == key }.name, o.hash, o.origin)
         })

@@ -24,6 +24,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 internal const val MAX_AI_RESPONSE_BYTES = 16 * 1024 * 1024
+internal class ImageApiException(val status: Int, val kind: String, message: String) : IOException(message)
 
 @Singleton
 class OpenAiImageClient internal constructor(private val client: OkHttpClient, private val endpoint: HttpUrl) {
@@ -39,7 +40,7 @@ class OpenAiImageClient internal constructor(private val client: OkHttpClient, p
     suspend fun edit(key: String, settings: AiSettings, images: List<ByteArray>,
         promptOverride: String? = null, beforeEndpoint: suspend (Int) -> Unit = {}): ByteArray =
         withContext(Dispatchers.IO) {
-            val request = buildImageEditRequest(key, settings, images, promptOverride).newBuilder().url(endpoint).build()
+            val request = buildImageEditRequest(key, settings, images, promptOverride).newBuilder().url(endpoint).build().withOneShotBody()
             beforeEndpoint(1)
             decodeImageResponse(execute(client.newCall(request)))
         }
@@ -47,7 +48,7 @@ class OpenAiImageClient internal constructor(private val client: OkHttpClient, p
 
 internal fun buildImageEditRequest(key: String, settings: AiSettings, images: List<ByteArray>, promptOverride: String? = null): Request {
     settings.validate()
-    require(promptOverride == null || promptOverride.isNotBlank() && promptOverride.length <= 16000)
+    require(promptOverride == null || promptOverride.isNotBlank() && promptOverride.length <= MAX_COMPOSED_ICON_PROMPT)
     require(images.size == settings.referenceNames.size + 1 && images.size in 1..6)
     require(images.all { it.isNotEmpty() && it.size <= 4 * 1024 * 1024 }) { "An input icon is too large." }
     val body = MultipartBody.Builder().setType(MultipartBody.FORM)
@@ -62,7 +63,7 @@ internal fun buildImageEditRequest(key: String, settings: AiSettings, images: Li
         body.addFormDataPart("image[]", "input_$index.png", png.toRequestBody("image/png".toMediaType()))
     }
     return Request.Builder().url("https://api.openai.com/v1/images/edits")
-        .header("Authorization", "Bearer $key").post(body.build().oneShot()).build()
+        .header("Authorization", "Bearer $key").post(body.build()).build()
 }
 
 internal suspend fun execute(call: Call): String = suspendCancellableCoroutine { continuation ->
@@ -91,17 +92,22 @@ internal suspend fun execute(call: Call): String = suspendCancellableCoroutine {
                         bytes.write(buffer, 0, count)
                     }
                     val text = bytes.toString("UTF-8")
-                    if (!it.isSuccessful) throw IOException(apiErrorMessage(it.code, text, it.header("Retry-After")))
+                    if (!it.isSuccessful) throw ImageApiException(it.code, apiFailureKind(it.code, text), apiErrorMessage(it.code, text, it.header("Retry-After")))
                     text
                 }
                 if (continuation.isActive) continuation.resume(payload)
             } catch (error: Exception) {
                 if (continuation.isActive) continuation.resumeWithException(
-                    IOException(if (error is IOException) error.message else "Invalid API response.")
+                    if (error is ImageApiException) error else IOException(if (error is IOException) error.message else "Invalid API response.")
                 )
             }
         }
     })
+}
+
+internal fun apiFailureKind(status: Int, body: String): String {
+    val code = runCatching { JSONObject(body).optJSONObject("error")?.optString("code") }.getOrNull()
+    return if (code in setOf("model_not_found", "invalid_model", "unsupported_model")) "model_unavailable" else "http_$status"
 }
 
 internal fun apiErrorMessage(status: Int, body: String, retryAfter: String?): String {
