@@ -1,6 +1,7 @@
 # ADR 0004 — Profile-owned AI style and immutable assets
 
-Date: October 11, 2026. Status: proposed in Codex 03; owner/reviewer acceptance pending.
+Date: October 11, 2026. Status: owner accepted through PR #4 merge on October 12,
+2026 at 04:45:50 UTC (main 6aed9e08); independent review/device acceptance not inferred.
 Base: owner-accepted main `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`.
 
 ## Decision

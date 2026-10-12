@@ -1,5 +1,29 @@
 # Verification baseline
 
+## Codex 04 starting checkpoint — October 12, 2026
+
+Fresh accepted main 6aed9e08ee5619c1061481972dc172546c7f5abe, owner-merged PR #4
+at 04:45:50 UTC. Source a73c1e02 is an ancestor with identical tree. Its historical
+final Android 38177949323, regressions 38177949324 and governance 38178529351 are
+rechecked SUCCESS; 718/718 is that M3 source baseline, not a new M4 run.
+Fresh local `python3 -m unittest discover -s scripts/tests -v`: 45/45 in 13.018 s.
+`./gradlew compileDebugKotlin testDebugUnitTest assembleDebug`: FAILED before
+configuration at Gradle 8.11.1 download, SocketException Network is unreachable.
+No local Android suite/APK, emulator/device or live API request. Active ruleset
+24877351 still requires the same three contexts, has empty bypasses and prohibits
+force/delete; approvals=0, conversation/last-push/strict=false. No rule mutation.
+
+
+## Codex 04 initial implementation checks
+
+Local `python3 -m unittest discover -s scripts/tests -v`: 51/51 in 15.308 s, exit 0.
+Six new runner tests inject missing selectors/XML, empty XML, skipped/failure/error,
+nonzero commands, malformed/forged counts and preserve original/full selectors.
+Their XML/schema stand-ins are synthetic runner tests, never Room/Android evidence.
+New Kotlin tests and exported v20 are pending hosted execution. Existing M1/M2/M3
+selectors remain; no ignored tests, idling bypass or enlarged timeout. Local
+Gradle/SDK/network limitation above is unchanged; device/provider/live requests NOT RUN.
+
 ## Codex 02 — verified implementation checkpoint
 
 Base/main `73a15e2210cb55cf003e60ebc2033130ee7a9e58`; branch

@@ -18,7 +18,7 @@ import java.io.File
 @Config(application = Application::class, sdk = [33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ProjectAiMigrationTest {
-    @Test fun physicalV18FilePreservesLegacyRowsAndReopensWithValidatedV19Identity() = runBlocking {
+    @Test fun physicalV18FilePreservesLegacyRowsAndReopensWithValidatedCurrentIdentity() = runBlocking {
         val context: Context = RuntimeEnvironment.getApplication()
         val name = "project-ai-v18-migration"
         val freshName = "project-ai-v19-fresh"
@@ -39,7 +39,7 @@ class ProjectAiMigrationTest {
             var identity = ""
             RenkinPackDatabase.open(context, name).useDatabase { db ->
                 val packs = RenkinPackRepository(db)
-                assertEquals(19, db.openHelper.writableDatabase.version)
+                assertEquals(20, db.openHelper.writableDatabase.version)
                 assertEquals(legacyProfile, packs.profile(4))
                 assertEquals(listOf(expected), packs.getAll(4))
                 assertEquals("last-built-hash", packs.builtIcons(4).single().iconHash)

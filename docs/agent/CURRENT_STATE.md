@@ -1,15 +1,14 @@
 # Current implementation
 
-Codex 03 starts from accepted main `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`,
-verified October 11, 2026. PR #3 is merged (20:21:28 UTC), owner Zsombor0918;
-head `e8e04c433ca94a4e28b5716f33581aeeb963b0a4` is an ancestor and its tree is
-identical to that merge. Owner authorization supplied acceptance; no independent
-APPROVED review is claimed. Codex 03 works on `feat/project-ai-persistence-m3`.
-Verified Codex 03 head 06e71532 passed 718/718, every isolated original/new group
-and debug APK, including legacy-gallery compatibility. The final documentation/
-diagnostic-removal commit is checked separately in PR #4's exact-head audit;
-owner and physical-device acceptance remain pending.
-669/669 belongs to accepted Codex 02, not this change. Room is now v19 with an
+Verified October 12, 2026: owner Zsombor0918 merged PR #4 at 04:45:50 UTC as main
+`6aed9e08ee5619c1061481972dc172546c7f5abe`. Accepted feature head
+`a73c1e026903b97f2964139e5831246ba465bd30` is an ancestor with identical tree.
+Its final Android/regression/governance checks passed: 718/718, every isolated
+group and debug APK; this is historical Codex 03 evidence, not fresh Codex 04.
+No independent APPROVED review or physical-device acceptance is inferred.
+Codex 04 starts on `feat/automatic-style-analysis-m4` from this accepted main;
+sampling/analysis/review work is in progress and not yet a verified feature.
+669/669 belongs to Codex 02. The accepted baseline uses Room v19 with an
 additive v18 migration. Manifest, dependencies, identities, signing/install and
 original Android CI remain unchanged. See [QA](../qa/BASELINE.md).
 
@@ -31,9 +30,9 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 | Create / extend / classic entry | Create confirms the real profile form and waits for completion, then opens all known launcher targets without a source requirement. Extend chooses an external source by package, then explicitly chooses/creates a target profile through the existing Save/Cancel controller, then inspects actual source coverage. Project setup actions return to session selections; the complete classic editor and AI1/AI2 remain available |
 | Home/setup/editor navigation | [RenkinAiRoot](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt) uses the Activity's existing VM; editor Back returns Home after search/dialog handlers, Home clean Back exits, dirty Back offers return to editor or explicit exit without saving; no implicit save/switch/build/request on navigation |
 | Pack sources, modifications, import | ApplicationProvider, IconGenerationService, IconGenerator, UploadedImageStore; custom/base/rendered separation and existing SVG/vector/adaptive paths |
-| Named profiles | ProfileManager, DbApplication, DataPreferences; Room `renkinPack` v19, default id 1; settings snapshots switch with the profile, source/provenance locks remain |
+| Named profiles | ProfileManager, DbApplication, DataPreferences; Room `renkinPack` v20 (explicit 19→20 nullable analysis fields), default id 1; settings snapshots switch with the profile, source/provenance locks remain |
 | Export and installation | IconPackBuildService, IconPackBuilder, PackKeystore, ApkInstaller; calendar/clock/adaptive/themed outputs, appfilter/appmap/theme_resources; build snapshot persists to its owning profile |
-| Backup/share/watch | data/transfer and data/watch plus WatchWorker/AutoBackupWorker; format 4 adds project history/PNG assets to full backups and profile shares; legacy archives remain readable, device gallery/keystore boundaries remain |
+| Backup/share/watch | data/transfer and data/watch plus WatchWorker/AutoBackupWorker; format 5 carries accepted analysis evidence and project history/PNG assets to full backups and profile shares; legacy archives remain readable, device gallery/keystore boundaries remain |
 | Single AI icon | [AiIconGenerationService](../../app/src/main/kotlin/dev/renkinProject/renkin/ai/AiIconGenerationService.kt), AiIconViewModel, IndividualOptions; original icon plus up to five reference files; PNG/alpha validation, 512 px gallery/draft persistence before preview; user accepts upload draft, then editor applies and Save/Build persists |
 | Missing-icon batch | [AiBatchRunner](../../app/src/main/kotlin/dev/renkinProject/renkin/ai/AiBatchRunner.kt), AiBatchStore/ViewModel and GlobalOptions; searchable selection, app prompt, paid confirmation, serial calls, pause/cancel/manual resume and one-app retry |
 | App instructions | AiPromptStore; DataStore keyed by hash of profile/component; empty inherits common style; 2000-character maximum |
@@ -139,7 +138,8 @@ source. A profile starts unset. Users enter a description and separate project
 instruction, import 0–5 PNG references, reorder/remove them and explicitly Save.
 Global style/references are copied only through the labelled user action; AI1/AI2
 continue using AiSettingsStore and their existing service, not project style.
-No recognition, demo, gallery, batch launch, build or network action exists here.
+Manual Save remains local. Optional Codex 04 analysis is a separate consent/review path
+below; no trial images, gallery, batch launch or build follows style Save.
 
 [ProjectAiRepository](../../app/src/main/kotlin/dev/renkinProject/renkin/data/project/ProjectAiRepository.kt)
 uses the existing Room DB. Style revisions are immutable and monotonically numbered
@@ -170,7 +170,7 @@ owner/path, with revalidation; no API credentials, AI2 journals or draft markers
 Old full restores clear new metadata. Staging validates the complete allowlisted ZIP
 before mutation; project files finalize before the final transactional profile/icon/
 metadata replacement. Legacy watch/prefs/gallery/keystore remain separate stores:
-restore is not cross-store ACID. Old APKs cannot read v19; see rollback in the ADR.
+restore is not cross-store ACID. Old v19 APKs cannot read current v20; see rollback in ADR 0005.
 
 [IconGenerationGateway](../../app/src/main/kotlin/dev/renkinProject/renkin/ai/IconGenerationGateway.kt)
 has a real adapter reusing existing OpenAI/Stability clients and AiCredentialStore,
@@ -182,10 +182,9 @@ repository contract, not a new staging workflow or inferred origin for old icons
 
 ## Planned, not implemented
 
-Codex 04 automatic analysis, 05 trial icons/approval, 06 staging gallery and 07 edits
-remain separate tasks. Project style is saved, never automatically approved. No
+Codex 05 trial icons/approval, 06 staging gallery and 07 edits remain separate tasks. Project style is saved, never automatically approved. No
 GenerationPlan entity, generation confirmation, backend, login, credits, Billing,
-background scheduling, source auto-sampling or Play publication is implemented.
+background scheduling or Play publication is implemented.
 Device acceptance and exact-final-head automated evidence remain separate in QA
 and the PR audit.
 Follow [ROADMAP](../ROADMAP.md) and [HANDOFF](HANDOFF.md).
@@ -213,3 +212,42 @@ dimension/decode checks and may be transparent, matching existing sampled upload
 Project references retain 4 MiB and reject empty artwork. The genuine format-3
 large/transparent gallery restore fixture passed with byte-for-byte comparisons
 at 06e71532; upload/render code is unchanged.
+
+
+## Codex 04 source implementation — fresh Android evidence pending
+
+The existing STYLE route adds local source reference sampling (EXTEND) or owned PNG
+preparation (CREATE), separately confirmed OpenAI structured-text analysis, candidate
+review, Advanced text/ref corrections and explicit style Save. Opening/recomposing/
+restoring STYLE never submits. Manual editing/Save and local sampling need no key;
+cloud analysis requires the existing saved OpenAI key. Suggestions never replace
+saved styles or dirty drafts without explicit Use, and Use itself does not save.
+
+ReferenceSampler uses the existing parser's opt-in all-source index, real static
+256px draw, <=120 uniformly distributed candidates and <=12 distinct diverse samples.
+A report exposes actual exclusions, small samples and suspected mixed styles; no
+coverage/progress/confidence percentage is invented. Night/package/version/index/
+algorithm stamps guard reuse; dynamic/unstable artwork is excluded. Generation refs
+retain their five-image cap, separately ordered/imported under the existing owner lease.
+
+StyleProfileV1 and PromptComposer bound categories/text/colors, escape untrusted input
+and keep identity plus separate user instructions. Responses uses gpt-5.4-mini, low
+detail, strict text.format and store false; user text/thumbnails only, no automatic
+metadata/inventory upload. HTTP/JSON/image/journal limits and durable consumed UUIDs
+prevent retry on reopen, cancellation or process death. A result saves locally before
+review; only current owner/preparation or explicitly re-reviewed source-only staleness
+can Save a new immutable revision. Unedited model spec is AUTO_ANALYSIS; changed
+spec/ref provenance is USER with evidence. AI1/AI2 remain global/classic.
+
+Room v20 adds two nullable StyleRevision JSON fields via 19→20. Format 5/project
+payload v2 carries accepted evidence/refs; share rekeys and full restore flags
+revalidation. Local unreviewed analysis journals/PNGs are excluded from backups, with
+8 MiB staging/512 markers per profile and consumed IDs retained after cleanup.
+Restoring/reusing profile IDs rotates epoch; deleting a profile tombstones evidence.
+A pre-upgrade backup or forward repair is required for v19 recovery.
+
+Offline guard/runner tests: 51/51 locally in 15.308 s. New Android tests are added
+but NOT YET VERIFIED at this work-in-progress checkpoint. Local Gradle distribution
+download failed before configuration; hosted full/isolated Android runs and genuine
+KSP v20 schema still required. No device/provider-quality/account-access check or
+live/billable request occurred. See QA and PR audit for subsequent actual evidence.

@@ -5,13 +5,14 @@ import org.json.JSONObject
 
 /** Explicit versioned, credential-free backup payload. File bytes travel as separate ZIP entries. */
 object ProjectAiCodec {
-    fun encode(data: ProjectAiSnapshot): JSONObject = obj("schema" to 1,
+    fun encode(data: ProjectAiSnapshot): JSONObject = obj("schema" to 2,
         "metadata" to array(data.metadata.map { obj("profileId" to it.profileId, "mode" to it.mode,
             "sourcePackage" to it.sourcePackage, "sourceStamp" to it.sourceStamp, "activeRevision" to it.activeRevision,
             "selectionJson" to it.selectionJson, "version" to it.version, "createdAt" to it.createdAt, "updatedAt" to it.updatedAt) }),
         "revisions" to array(data.revisions.map { obj("profileId" to it.profileId, "revision" to it.revision,
             "schemaVersion" to it.schemaVersion, "specification" to it.specification, "userInstruction" to it.userInstruction,
-            "origin" to it.origin, "createdAt" to it.createdAt) }),
+            "origin" to it.origin, "createdAt" to it.createdAt, "analysisProfileJson" to it.analysisProfileJson,
+            "analysisEvidenceJson" to it.analysisEvidenceJson) }),
         "assets" to array(data.assets.map { obj("profileId" to it.profileId, "hash" to it.hash,
             "relativePath" to it.relativePath, "byteCount" to it.byteCount, "width" to it.width, "height" to it.height,
             "source" to it.source, "createdAt" to it.createdAt) }),
@@ -25,7 +26,7 @@ object ProjectAiCodec {
 
     fun decode(root: JSONObject?): ProjectAiSnapshot {
         if (root == null) return ProjectAiSnapshot()
-        require(root.getInt("schema") == 1) { "Unsupported project AI backup version." }
+        require(root.getInt("schema") in 1..2) { "Unsupported project AI backup version." }
         return ProjectAiSnapshot(
             root.rows("metadata").map { ProjectAiMetadata(it.getLong("profileId"), it.getString("mode"),
                 it.nullString("sourcePackage"), it.nullString("sourceStamp"),
@@ -33,7 +34,7 @@ object ProjectAiCodec {
                 it.getString("selectionJson"), it.getLong("version"), it.getLong("createdAt"), it.getLong("updatedAt")) },
             root.rows("revisions").map { StyleRevision(it.getLong("profileId"), it.getLong("revision"),
                 it.getInt("schemaVersion"), it.getString("specification"), it.getString("userInstruction"),
-                it.getString("origin"), it.getLong("createdAt")) },
+                it.getString("origin"), it.getLong("createdAt"), it.nullString("analysisProfileJson"), it.nullString("analysisEvidenceJson")) },
             root.rows("assets").map { ReferenceAsset(it.getLong("profileId"), it.getString("hash"),
                 it.getString("relativePath"), it.getLong("byteCount"), it.getInt("width"), it.getInt("height"),
                 it.getString("source"), it.getLong("createdAt")) },

@@ -18,6 +18,7 @@ The Codex 00 baseline is `main` at `eb4daa5de82fab54e115363c073eb8981f2203d6`
 | [Changes](changes/README.md) | New detailed record for each meaningful PR |
 | [Governance ADR](decisions/0001-repository-governance.md) | Durable decision, alternatives and consequences |
 | [Project AI persistence ADR](decisions/0004-project-ai-persistence.md) | Profile-owned immutable history/assets, migration, full/share backup and gateway limits |
+| [Reviewed analysis ADR](decisions/0005-reviewed-style-analysis.md) | Bounded references, consent-bound recovery, structured evidence and explicit style acceptance |
 | [Read-only coverage ADR](decisions/0003-read-only-source-coverage.md) | Source facts separate from local profile state, bounded preview and user-identity limits |
 | [Project/session ADR](decisions/0002-profile-backed-project-home.md) | Profile IDs as projects, single session and explicit asynchronous navigation |
 | [BASELINE](qa/BASELINE.md) | Fresh verification versus historical results |

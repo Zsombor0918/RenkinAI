@@ -90,13 +90,13 @@ internal class ApplicationManager(
     }
 
     /** One pass through the existing parser; missing XML is not a proven empty index. */
-    internal fun readAppFilterForCoverage(iconPackName: String, applications: List<InstalledApplication>): CoverageAppFilterRead? {
+    internal fun readAppFilterForCoverage(iconPackName: String, applications: List<InstalledApplication>, allMappings: Boolean = false): CoverageAppFilterRead? {
         val res = resourceResolver.getResources(iconPackName) ?: return null
         val parser = getAppfilter(res, iconPackName) ?: return null
-        return readAppFilterForCoverage(parser, applications.map { it.toComponentInfo() })
+        return readAppFilterForCoverage(parser, applications.map { it.toComponentInfo() }, allMappings)
     }
 
-    internal fun readAppFilterForCoverage(parser: XmlPullParser, components: List<String>): CoverageAppFilterRead {
+    internal fun readAppFilterForCoverage(parser: XmlPullParser, components: List<String>, allMappings: Boolean = false): CoverageAppFilterRead {
         val mappings = linkedMapOf<String, String>()
         val calendars = mutableSetOf<String>()
         val clocks = mutableSetOf<String>()
@@ -105,8 +105,9 @@ internal class ApplicationManager(
             onItem = { component, drawable ->
                 // Legacy parsing ignores missing drawable attributes; valid duplicates keep
                 // its last-item winner, while a sole malformed declaration remains broken.
+                require(!allMappings || mappings.size < 20000 || component in mappings) { "Source index exceeds the reference safety limit." }
                 if (drawable != null || component !in mappings) mappings[component] = drawable.orEmpty()
-            }, onRoot = { root = it }, onCalendar = { calendars.add(it) }, onClock = { clocks.add(it) })
+            }, onRoot = { root = it }, onCalendar = { calendars.add(it) }, onClock = { clocks.add(it) }, allMappings = allMappings)
         return CoverageAppFilterRead(elements, mappings, root == "resources" || root == "appfilter", calendars, clocks)
     }
 
@@ -265,7 +266,8 @@ internal class ApplicationManager(
         onItem: (String, String?) -> Unit = { _, _ -> },
         onRoot: (String) -> Unit = {},
         onCalendar: (String) -> Unit = {},
-        onClock: (String) -> Unit = {}
+        onClock: (String) -> Unit = {},
+        allMappings: Boolean = false
     ): List<RawElement> {
         val list = mutableListOf<RawElement>()
         val componentSet = components.toHashSet()
@@ -280,7 +282,7 @@ internal class ApplicationManager(
                     val xmlDrawable = xmlParser.getAttributeValue(null, "drawable")
                     val xmlComponent = xmlParser.getAttributeValue(null, "component")
 
-                    if (xmlComponent != null && xmlComponent in componentSet) onItem(xmlComponent, xmlDrawable)
+                    if (xmlComponent != null && (allMappings || xmlComponent in componentSet)) onItem(xmlComponent, xmlDrawable)
 
                     if (xmlComponent in componentSet && xmlDrawable != null) {
                         list.add(RawItem(xmlComponent, xmlDrawable))
@@ -290,7 +292,7 @@ internal class ApplicationManager(
                 if (xmlParser.name == "calendar") {
                     val xmlPrefix = xmlParser.getAttributeValue(null, "prefix")
                     val xmlComponent = xmlParser.getAttributeValue(null, "component")
-                    if (xmlComponent != null && xmlComponent in componentSet) onCalendar(xmlComponent)
+                    if (xmlComponent != null && (allMappings || xmlComponent in componentSet)) onCalendar(xmlComponent)
 
                     if (xmlComponent in componentSet && xmlPrefix != null) {
                         list.add(RawCalendar(xmlComponent, xmlPrefix))
