@@ -184,13 +184,13 @@ internal fun ProjectSetup(
     mode: ProjectSetupMode, page: ProjectSetupPage, profileId: Long?, source: String?,
     state: ProjectHomeState, data: ProjectSetupData,
     onSource: (String) -> Unit, onProfile: (Long) -> Unit, onNewProfile: () -> Unit,
-    onBack: () -> Unit, onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}
+    onBack: () -> Unit, onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}, onTrials: () -> Unit = {}
 ) {
     if (page == ProjectSetupPage.TARGETS) {
         val ready = state.actionsEnabled && profileId == state.activeProfileId && data.catalogReady
         TargetSelection(mode, profileId ?: state.activeProfileId,
             state.profiles.find { it.id == profileId }?.name.orEmpty(), source,
-            data, ready, onBack, onChangeSource, onEditor, onStyle)
+            data, ready, onBack, onChangeSource, onEditor, onStyle, onTrials)
         return
     }
     CenteredFullscreenContent {

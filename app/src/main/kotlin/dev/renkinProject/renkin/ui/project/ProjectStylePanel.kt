@@ -50,7 +50,7 @@ internal interface ProjectStyleBackend {
  * Save/import start exclusively in callbacks. A restored form never resubmits a write. */
 @Composable
 internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?, stamp: String?,
-    available: Boolean, backend: ProjectStyleBackend, onBack: () -> Unit) {
+    available: Boolean, backend: ProjectStyleBackend, onBack: () -> Unit, onTrials: (() -> Unit)? = null) {
     var initialized by rememberSaveable(id) { mutableStateOf(false) }
     var specification by rememberSaveable(id) { mutableStateOf("") }
     var instruction by rememberSaveable(id) { mutableStateOf("") }
@@ -252,6 +252,10 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     Text(stringResource(R.string.saveAction))
                 }
                 Text(stringResource(R.string.projectStyleLater))
+                if (onTrials != null) OutlinedButton(onClick = onTrials, enabled = enabled && !dirty && expectedRevision != null,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-trials")) {
+                    Text(stringResource(R.string.trialTitle))
+                }
             }
         }
     }

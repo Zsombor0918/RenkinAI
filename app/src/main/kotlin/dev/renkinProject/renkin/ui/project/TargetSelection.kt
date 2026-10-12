@@ -58,7 +58,7 @@ internal fun ProjectOriginalIcon(drawable: Drawable?) {
 internal fun TargetSelection(
     mode: ProjectSetupMode, profileId: Long, profileName: String, source: String?,
     data: ProjectSetupData, ready: Boolean, onBack: () -> Unit,
-    onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}
+    onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}, onTrials: () -> Unit = {}
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selected by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
@@ -121,6 +121,10 @@ internal fun TargetSelection(
                     }, enabled = persistReady, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-revalidate-selection")) {
                         Text(stringResource(R.string.setupReviewSavedTargets))
                     }
+                }
+                OutlinedButton(onClick = onTrials, enabled = persistReady,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-trials")) {
+                    Text(stringResource(R.string.trialTitle))
                 }
                 if (invalidated) Text(stringResource(R.string.setupSavedSelectionStale))
                 if (selectionError || data.metadataFailed) Text(stringResource(R.string.setupSelectionSaveError), Modifier.testTag("setup-selection-error"))

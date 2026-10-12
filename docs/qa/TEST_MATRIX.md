@@ -1,6 +1,7 @@
 # Regression and test matrix
 
-Accepted baseline is Codex 03, owner-merged PR #4. Codex 04 source/testing is in progress. Head 06e71532 passed 718/718 and all filtered
+Accepted baseline is Codex 04, owner-merged PR #5 as af7bdb10. M5 source/testing
+is in progress; historical Codex 03 evidence follows. Head 06e71532 passed 718/718 and all filtered
 groups/APK including legacy gallery compatibility. The final documentation/probe-
 removal head is verified separately in PR #4's audit.
 Codex 00/01/02 sections below remain historical, including M2's 669/669 baseline.
@@ -122,3 +123,20 @@ failed before configuration at download; hosted native/Room/MockWebServer execut
 is verified. Final documentation head must independently pass all original/new
 groups, complete suite/APK and governance before the PR is ready. Device/live gaps
 above remain NOT RUN; green CI is not owner or Play release approval.
+
+
+## Codex 05 trials — source fixtures, execution pending
+
+| Area | New evidence required on actual final M5 HEAD | Physical/live status |
+| --- | --- | --- |
+| Selection/frozen inputs | StyleTrialTargetSelectorTest/StyleTrialPlanTest: Create/Extend 0–3/many, covered override, unknown/work/lock/local protections, duplicate/tie/manual, vector/adaptive/empty/broken originals, strict plan and composer bounds | Actual launcher/source/theme updates NOT RUN |
+| Real client/no-replay | StyleTrialGatewayTest plus unchanged legacy gateway/AI suites: original/ref order, alpha/count/config/privacy, unsafe 503 control vs one-shot OpenAI/both Stability, invalid first step, 307/308/auth/404/429/5xx/malformed/timeout/cancel | Account/model quality/cost NOT RUN; zero live requests |
+| Journal/recovery | StyleTrialJournalTest: no-consent/stale/duplicate UUID/concurrent/serial, cold request/Stop, separate Stability markers, result-file/asset/DB faults with no gateway recovery, corrupt/quota/restore | Physical process death/full storage NOT RUN |
+| Owned UI/controller | StyleTrialComposeTest/OwnedStyleTrialsTest: real shell route/style refinement, frozen decline/double tap, previews/48dp/checker/theme/wide/restoration, no key/refs/targets, explicit review/approval/regenerate, profile/source/lock/original/style invalidation, external editor priority | Samsung/TalkBack/hinge/rotation/One UI/Theme Park NOT RUN |
+| Room/history/backup | StyleTrialPersistenceTest/StyleTrialMigrationTest and added ProjectAiBackupTest cases: original+RAW durable/pinned, review/approval/reuse, stale/corrupt/competing, genuine physical v20→v21/fresh, format6/payload3/full/share/rekey/legacy5 | Upgrade/SAF/signing/install/update NOT RUN |
+| Full acceptance | All original groups, five additive M5 groups, unfiltered compile/unit/debug APK, actual XML and KSP19/20/21 plus Python guards/conventions/docs on one final SHA | Owner acceptance and merge remain separate |
+
+The historical 792/792 does not prove these new cases. No old assertion/selector
+is removed or ignored; old migration identity assertions now target genuine v21
+while new tests retain the actual v20 exported starting file. Exact observed results
+will be recorded in BASELINE and the PR audit, without substituting synthetic XML.

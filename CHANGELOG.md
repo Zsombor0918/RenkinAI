@@ -5,6 +5,13 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 ## Unreleased
 
+- Prepare up to three project style trials with separate frozen-input paid consent,
+  original/generated launcher previews and explicit per-image review/regeneration.
+- Preserve original/RAW variants and approve the shared immutable style separately;
+  no trial automatically applies, builds or launches a batch.
+- Recover staged results locally without rebilling; full/share backups preserve
+  completed trial history and require approval revalidation after restore/import.
+
 - Sample a source pack locally or prepare own references, then explicitly confirm
   one optional OpenAI style-analysis request. Review suggestions and save a project
   style separately; manual editing remains available without a key. No icons are generated.
@@ -14,7 +21,7 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 - Prepare a new pack from all launcher entries without an external source.
 - Inspect an installed source pack with actual static drawable coverage, separate project/lock status and searchable target selection; open the full classic editor.
 - Save project-specific AI descriptions and up to five ordered PNG references locally, separately from legacy global AI settings.
-- Save exact Create/Extend targets for later review; source and app changes require revalidation. No generation plan or automatic AI work is added.
+- Save exact Create/Extend targets for later review; source and app changes require revalidation. Saved selection alone authorizes no trial or automatic AI work.
 - Full backups and profile shares carry project style history and reference images; legacy archives remain readable.
 
 - Start from Projects, continue any real Renkin profile or create a separate icon pack.

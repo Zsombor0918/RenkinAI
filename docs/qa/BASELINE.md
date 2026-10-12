@@ -1,5 +1,23 @@
 # Verification baseline
 
+## Codex 05 initial source checkpoint — verification pending
+
+Accepted main is af7bdb104869b0d0dded2acdf020fc030642dcf9, owner merge of PR #5
+at 16:10:49 UTC on October 12. All #1–#5 merges were reread. M4 final aceb691c
+passed Android 38242055655 and regressions 38242055777: 135 XML / 792 tests /
+zero failures/errors/skips, all 16 groups and genuine schema 19/20, APK 11743631367.
+Four latest contexts were green before owner merge. This is not M5 test evidence.
+
+New branch feat/style-trials-m5 starts from that main. Linux/Python/JDK 17; fresh
+local baseline governance 51/51 in 6.981 s, initial expanded guards 52/52 in 8.458 s; strengthened schema-negative rerun 52/52 in 7.473 s.
+Local ./gradlew compileDebugKotlin testDebugUnitTest assembleDebug FAILED before
+configuration downloading Gradle 8.11.1: SocketException Network is unreachable.
+No local Android count or APK. New trial Kotlin/Compose/HTTP/Room/backup fixtures,
+genuine v21 export and complete feature-head evidence await hosted execution.
+Historical failures below remain unchanged. Device/emulator/OEM/TalkBack/physical
+storage/kill/upgrade/signing/install and provider quality/account/billing NOT RUN.
+Zero live/provider requests; all requests in test source use local fakes/mocks.
+
 ## Codex 04 verified code checkpoint — 47503e5c
 
 Code head `47503e5c0fa64a2508cab1e846896524f985f1a3` passed

@@ -23,6 +23,10 @@ internal object PromptComposer {
         reviewedDescription: String? = null): String {
         val base = reviewedDescription?.let { cleanText(it, 6000, multiline = true).also { v -> require(v.isNotBlank()) } }
             ?: specification(style)
+        return composeSaved(base, userInstruction, appInstruction)
+    }
+    fun composeSaved(specification: String, userInstruction: String, appInstruction: String = ""): String {
+        val base = cleanText(specification, 6000, multiline = true).also { require(it.isNotBlank()) }
         val user = cleanText(userInstruction, 2000, multiline = true)
         val app = cleanText(appInstruction, 2000, multiline = true)
         return buildString {

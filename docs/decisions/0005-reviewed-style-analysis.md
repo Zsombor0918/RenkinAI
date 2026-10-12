@@ -1,6 +1,7 @@
 # ADR 0005 — bounded references and explicitly reviewed style analysis
 
-Date: October 12, 2026. Status: proposed for owner review in Codex 04.
+Date: October 12, 2026. Status: accepted by owner merge of PR #5 at 16:10:49 UTC
+as `af7bdb104869b0d0dded2acdf020fc030642dcf9`; device/provider acceptance is separate.
 Accepted base: `6aed9e08ee5619c1061481972dc172546c7f5abe`, owner merge of PR #4.
 
 ## Decision and scope

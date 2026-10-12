@@ -326,7 +326,7 @@ class BackupManager(
             revision.copy(analysisEvidenceJson = revision.analysisEvidenceJson?.let {
                 dev.renkinProject.renkin.ai.style.ReviewedAnalysisEvidence.parse(it).copy(needsRevalidation = true).encode()
             })
-        })
+        }, approvals = data.projectAi.approvals.map { it.copy(needsRevalidation = true) })
         // Finalize and verify immutable project files before any DB replacement. Failure here
         // preserves every earlier valid style. An interrupted write leaves only collectible files.
         for (asset in data.projectAi.assets) {
@@ -336,6 +336,7 @@ class BackupManager(
         // Device-local candidates are not imported styles. Invalidate their epoch before
         // replacing identities; keep consumed consent IDs so restoration cannot rebill.
         dev.renkinProject.renkin.ai.style.StyleAnalysisJournal(context).invalidateAll()
+        dev.renkinProject.renkin.ai.trial.StyleTrialJournal(context).invalidateAll()
         watchRepo.replaceAllRules(data.profiles.flatMap { bp ->
             bp.watchRules.map { it.toImport(bp.profile.id) }
         })

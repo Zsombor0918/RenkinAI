@@ -196,7 +196,7 @@ class ProjectAiAnalysisPersistenceTest {
         try {
             var identity = ""
             RenkinPackDatabase.open(context, name).useDatabase { migrated ->
-                assertEquals(20, migrated.openHelper.writableDatabase.version)
+                assertEquals(21, migrated.openHelper.writableDatabase.version)
                 val repo = ProjectAiRepository(migrated, ProjectAssetStore(context)); val style = repo.load(4)
                 assertEquals(StyleRevision(4, 3, 1, "v19 immutable manual", "keep instruction", "USER", 100), style.revision)
                 assertNull(style.revision!!.analysisProfileJson); assertNull(style.revision!!.analysisEvidenceJson)
@@ -211,7 +211,7 @@ class ProjectAiAnalysisPersistenceTest {
                 RenkinPackRepository(db).ensureDefaultProfile()
                 db.openHelper.writableDatabase.query("SELECT identity_hash FROM room_master_table WHERE id=42").use { assertTrue(it.moveToFirst()); assertEquals(identity, it.getString(0)) }
             }
-            val schema = listOf(File("app/schemas"), File("schemas")).map { File(it, "$className/20.json") }.first(File::isFile)
+            val schema = listOf(File("app/schemas"), File("schemas")).map { File(it, "$className/21.json") }.first(File::isFile)
             assertEquals(identity, JSONObject(schema.readText()).getJSONObject("database").getString("identityHash"))
         } finally { context.deleteDatabase(name); context.deleteDatabase(fresh) }
     }

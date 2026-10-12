@@ -115,9 +115,15 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
         homeDialogs = { if (viewModel.whatsNewVisible) WhatsNewDialog(viewModel::dismissWhatsNew) },
         setupData = { mode, page, id, source -> rememberProjectSetupData(viewModel, mode, page, id, source) },
         readSetupContext = viewModel::projectMetadata,
-        stylePanel = { id, mode, source, stamp, back ->
+        stylePanel = { id, mode, source, stamp, back, trials ->
             ProjectStylePanel(id, mode, source, stamp, home.actionsEnabled && id == home.activeProfileId,
-                viewModel.projectStyleBackend, back)
+                viewModel.projectStyleBackend, back, trials)
+        },
+        bindTrialContext = viewModel.projectTrials::bindContext,
+        trialPanel = { id, mode, source, back, refine, editor ->
+            ProjectTrialPanel(id, home.profiles.find { it.id == id }?.name.orEmpty(), mode, source,
+                home.actionsEnabled && id == home.activeProfileId, viewModel.projectTrials, back, refine, editor,
+                appIcon = { key -> ProjectOriginalIcon(viewModel.applicationList.find { it.key == key }?.icon) })
         },
         editor = { navigateHome ->
             MainColumn(viewModel.iconPacks, onNavigateHome = navigateHome,
@@ -126,7 +132,7 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
     )
 }
 
-private enum class ProjectRoute { HOME, SETUP, STYLE, EDITOR }
+private enum class ProjectRoute { HOME, SETUP, STYLE, TRIAL, EDITOR }
 
 /** UI-only routes/forms; profile operations are user callbacks, never restoration effects. */
 @Composable
@@ -145,8 +151,12 @@ internal fun ProjectShell(
     homeDialogs: @Composable () -> Unit = {},
     setupData: @Composable (ProjectSetupMode, ProjectSetupPage, Long?, String?) -> ProjectSetupData = { _, _, _, _ -> ProjectSetupData() },
     readSetupContext: suspend (Long) -> ProjectAiMetadata? = { null },
-    stylePanel: @Composable (Long, ProjectSetupMode, String?, String?, () -> Unit) -> Unit = { _, _, _, _, back ->
+    stylePanel: @Composable (Long, ProjectSetupMode, String?, String?, () -> Unit, () -> Unit) -> Unit = { _, _, _, _, back, _ ->
         TextButton(onClick = back) { Text(stringResource(R.string.projectBackHome)) }
+    },
+    bindTrialContext: (Long, ProjectSetupMode, String?) -> Unit = { _, _, _ -> },
+    trialPanel: @Composable (Long, ProjectSetupMode, String?, () -> Unit, () -> Unit, () -> Unit) -> Unit = { _, _, _, back, _, _ ->
+        TextButton(onClick = back) { Text(stringResource(R.string.setupBack)) }
     },
     editor: @Composable (onNavigateHome: () -> Unit) -> Unit
 ) {
@@ -166,6 +176,7 @@ internal fun ProjectShell(
     var contextRequest by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     val editorState = rememberSaveableStateHolder()
+    androidx.compose.runtime.SideEffect { bindTrialContext(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage) }
 
     LaunchedEffect(operation, state.availability, state.activeProfileId, state.busy) {
         if (operation is ProjectSessionState.Opened) {
@@ -242,12 +253,19 @@ internal fun ProjectShell(
             }
         }
         BackHandler(enabled = !ready) { if (!state.busy) navigateHome() }
+    } else if (route == ProjectRoute.TRIAL) {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            editorState.SaveableStateProvider("trials-$setupProfileId") {
+                trialPanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage,
+                    { route = ProjectRoute.SETUP }, { route = ProjectRoute.STYLE },
+                    { pendingSetup = false; onOpen(setupProfileId ?: state.activeProfileId) })
+            }
+        }
     } else if (route == ProjectRoute.STYLE) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             editorState.SaveableStateProvider("style-$setupProfileId") {
-                stylePanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage, styleStamp) {
-                    route = ProjectRoute.SETUP
-                }
+                stylePanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage, styleStamp,
+                    { route = ProjectRoute.SETUP }, { route = ProjectRoute.TRIAL })
             }
         }
     } else if (route == ProjectRoute.SETUP) {
@@ -265,6 +283,7 @@ internal fun ProjectShell(
                         styleStamp = (data.coverage as? CoverageUiState.Ready)?.snapshot?.let { projectSourceStamp(it.index) }
                         route = ProjectRoute.STYLE
                     },
+                    onTrials = { route = ProjectRoute.TRIAL },
                     onEditor = {
                         pendingSetup = false
                         onOpen(if (setupPage == ProjectSetupPage.TARGETS) setupProfileId ?: state.activeProfileId else state.activeProfileId)

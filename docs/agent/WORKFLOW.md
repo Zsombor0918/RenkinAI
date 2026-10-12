@@ -217,3 +217,18 @@ Final Codex 04 reread on October 12 also reports
 `require_extra_approval_for_unattributed_changes: true`. No author/review status is
 fabricated and no ruleset write occurred. PR #5's latest final-head audit/checks
 determine readiness; owner acceptance and merge remain separate from green CI.
+
+
+## Codex 05 additive verification
+
+PR #5 is owner-merged as af7bdb10 on October 12 at 16:10:49 UTC; its final aceb691c
+checks are historical evidence for the new M5 branch. The runner retains every
+M1–M4 selector and adds five trial-domain/gateway/journal/UI/persistence-session
+groups, followed by the same unfiltered compile/unit/APK command. Genuine schemas
+19/20/21 are retained and a missing current export fails. A new synthetic fault
+case verifies this boundary; fixture schema text is never Android evidence.
+Regression path filters now also include AI, project/transfer data, DB and schema
+changes, so a final HTTP or persistence correction cannot silently skip regression
+evidence. Original CI, governance, hooks and exact required contexts are unchanged.
+Final-head XML/counts/APK plus the single complete audit declaration remain required.
+No live request, main push/merge, ruleset write or independent review is inferred.

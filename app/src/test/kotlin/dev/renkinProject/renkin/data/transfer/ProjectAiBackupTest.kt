@@ -7,6 +7,10 @@ import android.graphics.Color
 import androidx.room.Room
 import dev.renkinProject.renkin.data.*
 import dev.renkinProject.renkin.data.project.*
+import dev.renkinProject.renkin.ai.AiSettings
+import dev.renkinProject.renkin.ai.IconGenerationGateway
+import dev.renkinProject.renkin.ai.IconGenerationOutcome
+import dev.renkinProject.renkin.ai.trial.*
 import dev.renkinProject.renkin.data.watch.WatchDatabase
 import dev.renkinProject.renkin.data.watch.WatchRepository
 import kotlinx.coroutines.runBlocking
@@ -57,6 +61,28 @@ class ProjectAiBackupTest {
         src.saveStyle(id, null, "outline", "project instruction", listOf(asset.hash))
         return asset
     }
+    private suspend fun savedTrial(): Pair<StyleTrialPlan, IconAssetVariant> {
+        saved()
+        val catalog = "a".repeat(64)
+        src.saveSelection(4, 1, ProjectSelection("CREATE", null, null, catalog, listOf("pkg/Main")))
+        val style = src.load(4); val meta = checkNotNull(style.metadata); val journal = StyleTrialJournal(context)
+        val original = projectTestPng(Color.BLUE, 1024)
+        val input = TrialInput("pkg/Main", "App", sha256(original), "launcher:pkg/Main:1")
+        val ctx = TrialContext(4, 1, meta.version, "CREATE", null, null, catalog, sha256(meta.selectionJson.toByteArray()),
+            referenceFingerprint(style.references.map { it.hash }), journal.epoch(4), AiSettings.OPENAI, AiSettings.MODELS.first(), "medium")
+        val plan = StyleTrialPlan(ctx, style.revision!!.specification, style.revision.userInstruction,
+            style.references.map { it.hash }, listOf(input))
+        val gateway = IconGenerationGateway { request ->
+            request.beforeEndpoint(1)
+            IconGenerationOutcome.Generated(projectTestPng(size = 1024), request.requestId, request.provider, 1024, 1024, 1)
+        }
+        StyleTrialCoordinator(journal, gateway, src).submit(plan,
+            style.references.associate { it.hash to src.referenceBytes(4, it.hash) } + (input.originalHash to original), true, { true })
+        val row = src.trialVariants(4).single()
+        val originals = mapOf("pkg/Main" to (input.originalHash to input.origin))
+        src.reviewTrial(ctx, row.id, true, originals.getValue("pkg/Main"), { true }); src.approveTrials(ctx, originals, { true })
+        return plan to row
+    }
     private suspend fun export(profile: Boolean = false): ByteArray = ByteArrayOutputStream().let {
         if (profile) manager(source, sourceWatch).exportProfile(4) { it } else manager(source, sourceWatch).exportBackup { it }
         it.toByteArray()
@@ -80,6 +106,46 @@ class ProjectAiBackupTest {
         assertEquals(before, dst.snapshot())
         assertEquals("Keep", RenkinPackRepository(target).profile(1)!!.name)
         assertTrue(context.cacheDir.listFiles().orEmpty().none { it.name.startsWith("renkin-restore-") })
+    }
+
+    @Test fun trialFullBackupKeepsRawAndOriginalButInvalidatesApprovalAndLocalRequestEpoch() = runBlocking {
+        val (plan, row) = savedTrial(); val before = src.snapshot(); val bytes = export()
+        val zip = entries(bytes)
+        assertEquals(6, JSONObject(String(zip.getValue("manifest.json"))).getInt("format"))
+        assertFalse(zip.keys.any { it.contains("style_trials") || it.contains("credential") })
+        assertTrue(zip.containsKey("project_ai_assets/${ProjectAssetStore.path(4, row.originalHash)}"))
+        manager(target, targetWatch).importBackup { ByteArrayInputStream(bytes) }
+        assertEquals(before.copy(approvals = before.approvals.map { it.copy(needsRevalidation = true) }), dst.snapshot())
+        assertFalse(StyleTrialJournal(context).current(plan))
+        assertArrayEquals(projectTestPng(size = 1024), dst.referenceBytes(4, row.rawAssetHash))
+        assertTrue(dst.acceptedTrials(plan.context, mapOf("pkg/Main" to (row.originalHash to plan.inputs.single().origin)), { true }).isEmpty())
+    }
+
+    @Test fun trialProfileShareRekeysVariantAndApprovalIdsWithoutTransferringConsent() = runBlocking {
+        val (plan, row) = savedTrial(); val bytes = export(profile = true)
+        val result = manager(target, targetWatch).importFile { ByteArrayInputStream(bytes) }
+        val id = checkNotNull(result.importedProfileId)
+        val snap = dst.snapshot().forProfile(id); val imported = snap.variants.single(); val approval = snap.approvals.single()
+        assertNotEquals(row.id, imported.id); assertTrue(approval.needsRevalidation)
+        assertEquals(listOf(imported.id), trialApprovalIds(approval))
+        assertEquals(id, TrialVariantEvidence.parse(imported.trialContextJson!!).context.profileId)
+        assertArrayEquals(projectTestPng(Color.BLUE, 1024), dst.referenceBytes(id, imported.originalHash))
+        assertArrayEquals(projectTestPng(size = 1024), dst.referenceBytes(id, imported.rawAssetHash))
+        assertEquals("ACCEPTED", imported.reviewStatus); assertEquals("NOT_APPLIED", imported.applyStatus)
+        assertTrue(StyleTrialJournal(context).records(id).isEmpty())
+    }
+
+    @Test fun oldFormatFivePayloadTwoRetainsPngHistoryWithoutInventingTrialApproval() = runBlocking {
+        val (_, row) = savedTrial(); val zip = entries(export())
+        val root = JSONObject(String(zip.getValue("data.json")))
+        val ai = root.getJSONObject("projectAi").put("schema", 2); ai.remove("approvals")
+        val variants = ai.getJSONArray("variants"); for (i in 0 until variants.length()) variants.getJSONObject(i).remove("trialContextJson")
+        zip["data.json"] = root.toString().toByteArray()
+        zip["manifest.json"] = JSONObject(String(zip.getValue("manifest.json"))).put("format", 5).toString().toByteArray()
+        manager(target, targetWatch).importBackup { ByteArrayInputStream(archive(zip)) }
+        assertTrue(dst.snapshot().approvals.isEmpty()); assertNull(dst.trialVariants(4).firstOrNull())
+        assertEquals("ACCEPTED", dst.variants(4, "pkg/Main").single().reviewStatus)
+        assertArrayEquals(projectTestPng(size = 1024), dst.referenceBytes(4, row.rawAssetHash))
     }
 
     @Test fun fullBackupRestoresHistoryReferencesVariantsAndSelectionFromActualPngBytes() = runBlocking {

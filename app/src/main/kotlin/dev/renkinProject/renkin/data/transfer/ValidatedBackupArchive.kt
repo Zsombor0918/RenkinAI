@@ -95,6 +95,9 @@ internal class ValidatedBackupArchive private constructor(
                     require(sha256(bytes) == asset.hash && inspectPng(bytes) == (asset.width to asset.height)) {
                         "Project backup image checksum or dimensions are invalid."
                     }
+                    if (data.projectAi.variants.any { it.trialContextJson != null && it.profileId == asset.profileId && it.rawAssetHash == asset.hash }) {
+                        dev.renkinProject.renkin.ai.trial.validateTrialPng(bytes)
+                    }
                 }
                 entries.filterKeys { it.startsWith("uploads/") }.values.forEach {
                     inspectPng(it.readBytes(), MAX_UPLOAD_BYTES, requireVisible = false)

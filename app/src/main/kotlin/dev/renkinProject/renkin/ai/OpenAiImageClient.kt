@@ -36,20 +36,23 @@ class OpenAiImageClient internal constructor(private val client: OkHttpClient, p
         .retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build()
     }
 
-    suspend fun edit(key: String, settings: AiSettings, images: List<ByteArray>): ByteArray =
+    suspend fun edit(key: String, settings: AiSettings, images: List<ByteArray>,
+        promptOverride: String? = null, beforeEndpoint: suspend (Int) -> Unit = {}): ByteArray =
         withContext(Dispatchers.IO) {
-            val request = buildImageEditRequest(key, settings, images).newBuilder().url(endpoint).build()
+            val request = buildImageEditRequest(key, settings, images, promptOverride).newBuilder().url(endpoint).build()
+            beforeEndpoint(1)
             decodeImageResponse(execute(client.newCall(request)))
         }
 }
 
-internal fun buildImageEditRequest(key: String, settings: AiSettings, images: List<ByteArray>): Request {
+internal fun buildImageEditRequest(key: String, settings: AiSettings, images: List<ByteArray>, promptOverride: String? = null): Request {
     settings.validate()
+    require(promptOverride == null || promptOverride.isNotBlank() && promptOverride.length <= 16000)
     require(images.size == settings.referenceNames.size + 1 && images.size in 1..6)
     require(images.all { it.isNotEmpty() && it.size <= 4 * 1024 * 1024 }) { "An input icon is too large." }
     val body = MultipartBody.Builder().setType(MultipartBody.FORM)
         .addFormDataPart("model", settings.model)
-        .addFormDataPart("prompt", iconPrompt(settings.style, images.size - 1, settings.appInstruction))
+        .addFormDataPart("prompt", promptOverride ?: iconPrompt(settings.style, images.size - 1, settings.appInstruction))
         .addFormDataPart("n", "1")
         .addFormDataPart("size", "1024x1024")
         .addFormDataPart("quality", settings.quality)
@@ -59,7 +62,7 @@ internal fun buildImageEditRequest(key: String, settings: AiSettings, images: Li
         body.addFormDataPart("image[]", "input_$index.png", png.toRequestBody("image/png".toMediaType()))
     }
     return Request.Builder().url("https://api.openai.com/v1/images/edits")
-        .header("Authorization", "Bearer $key").post(body.build()).build()
+        .header("Authorization", "Bearer $key").post(body.build().oneShot()).build()
 }
 
 internal suspend fun execute(call: Call): String = suspendCancellableCoroutine { continuation ->

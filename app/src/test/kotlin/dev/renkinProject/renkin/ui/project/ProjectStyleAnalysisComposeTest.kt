@@ -121,7 +121,7 @@ class ProjectStyleAnalysisComposeTest {
                 onOpen = { id -> home = home.copy(activeProfileId = id); operation = ProjectSessionState.Opened(id) },
                 onCreate = { _, _, _ -> false }, onSave = {}, onCancel = {}, onAcknowledge = { operation = ProjectSessionState.Idle }, onRetry = {}, onExit = {},
                 setupData = { _, _, _, _ -> data }, readSetupContext = { records[it]?.metadata },
-                stylePanel = { id, mode, source, stamp, back -> ProjectStylePanel(id, mode, source, stamp, id == home.activeProfileId, backend, back) }
+                stylePanel = { id, mode, source, stamp, back, _ -> ProjectStylePanel(id, mode, source, stamp, id == home.activeProfileId, backend, back) }
             ) { back -> ProjectEditorBackHandler(back) {}; Column { Text("classic editor", Modifier.testTag("analysis-classic-editor")) } }
         } }
     }
