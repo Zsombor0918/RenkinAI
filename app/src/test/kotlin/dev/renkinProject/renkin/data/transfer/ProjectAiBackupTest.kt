@@ -133,6 +133,16 @@ class ProjectAiBackupTest {
         assertArrayEquals(projectTestPng(size = 1024), dst.referenceBytes(id, imported.rawAssetHash))
         assertEquals("ACCEPTED", imported.reviewStatus); assertEquals("NOT_APPLIED", imported.applyStatus)
         assertTrue(StyleTrialJournal(context).records(id).isEmpty())
+        val meta = checkNotNull(dst.metadata(id))
+        val checked = plan.context.copy(profileId = id, metadataVersion = meta.version,
+            selectionHash = sha256(meta.selectionJson.toByteArray()), epoch = StyleTrialJournal(context).epoch(id))
+        val originals = mapOf("pkg/Main" to (imported.originalHash to "launcher:pkg/Main:rechecked-on-import"))
+        assertTrue(dst.acceptedTrials(checked, originals, { true }).isEmpty())
+        dst.reviewTrial(checked, imported.id, true, originals.getValue("pkg/Main"), { true })
+        assertTrue(dst.acceptedTrials(checked, originals, { true }).isEmpty())
+        dst.approveTrials(checked, originals, { true })
+        assertEquals(imported.id, dst.acceptedTrials(checked, originals, { true }).single().variantId)
+        assertTrue(StyleTrialJournal(context).records(id).isEmpty())
     }
 
     @Test fun oldFormatFivePayloadTwoRetainsPngHistoryWithoutInventingTrialApproval() = runBlocking {

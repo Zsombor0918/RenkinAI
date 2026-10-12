@@ -303,3 +303,14 @@ formats remain readable. Full details and limits are in ADR 0006 and HANDOFF.
 New source tests/real KSP export await hosted verification, not yet claimed green.
 M6 gallery/bulk Apply and M7 edit, device/provider acceptance, login/credits/Billing
 and publication remain separate. Legacy AI1/AI2/editor/watch/sign/build/install remain.
+
+
+Explicit local revalidation retains the immutable generation context/original origin
+and records a separate reviewContext/reviewOriginalOrigin in evidence schema v2
+(v1 remains readable). After source/selection/epoch or share changes, identical
+profile/revision/original pixels/ordered refs/provider/model/quality can be rechecked
+and accepted locally, then approved separately, with zero POST. Changed artwork,
+style revision or refs cannot reuse the old PNG. Eligibility and fresh owner/source
+checks still fail closed. Read-only M6 reuse requires this current review proof and
+current approval, never merely an old ACCEPTED status. Historical regeneration may
+prepare a new current-input plan, but always needs new paid confirmation.

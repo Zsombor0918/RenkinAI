@@ -33,7 +33,9 @@ internal fun validateTrialSnapshot(data: ProjectAiSnapshot) {
         trialApprovalIds(row).forEach { id ->
             val v = checkNotNull(variants[id]); require(v.profileId == row.profileId && v.styleRevision == row.styleRevision)
             require(v.requestStatus == "COMPLETED" && v.trialContextJson != null)
-            require(TrialVariantEvidence.parse(v.trialContextJson).context == context)
+            val evidence = TrialVariantEvidence.parse(v.trialContextJson)
+            require(evidence.context.sameArtworkInputs(context))
+            require(row.needsRevalidation || evidence.reviewContext == context)
             require(row.needsRevalidation || v.reviewStatus == "ACCEPTED")
         }
     }
@@ -55,7 +57,8 @@ internal suspend fun ProjectAiRepository.installTrialVariant(plan: StyleTrialPla
     if (existing != null) {
         check(existing.profileId == plan.context.profileId && existing.componentKey == input.key &&
             existing.styleRevision == plan.context.revision && existing.originalHash == input.originalHash &&
-            existing.rawAssetHash == sha256(png) && existing.trialContextJson == evidence)
+            existing.rawAssetHash == sha256(png) && existing.trialContextJson?.let { TrialVariantEvidence.parse(it)
+                .copy(reviewContext = null, reviewOriginalOrigin = null).encode() } == evidence)
         referenceBytesUnlocked(existing.profileId, existing.originalHash)
         referenceBytesUnlocked(existing.profileId, existing.rawAssetHash)
         return@withAssetLease existing
@@ -95,12 +98,13 @@ internal suspend fun ProjectAiRepository.reviewTrial(context: TrialContext, id: 
     require(epochCurrent()); checkTrialContext(context)
     val dao = database.projectAiDao(); val row = checkNotNull(dao.variant(id))
     val evidence = TrialVariantEvidence.parse(checkNotNull(row.trialContextJson))
-    check(row.profileId == context.profileId && evidence.context == context && row.originalHash == original.first &&
-        evidence.originalOrigin == original.second && row.requestStatus == "COMPLETED")
+    check(row.profileId == context.profileId && evidence.context.sameArtworkInputs(context) && row.originalHash == original.first &&
+        row.requestStatus == "COMPLETED")
     validateTrialPng(referenceBytesUnlocked(row.profileId, row.rawAssetHash))
     database.withTransaction {
         require(epochCurrent()); checkTrialContext(context)
-        check(dao.reviewVariant(context.profileId, id, if (accepted) "ACCEPTED" else "REJECTED", System.currentTimeMillis()) == 1)
+        check(dao.reviewVariant(context.profileId, id, if (accepted) "ACCEPTED" else "REJECTED",
+            evidence.copy(reviewContext = context, reviewOriginalOrigin = original.second).encode(), System.currentTimeMillis()) == 1)
         dao.approval(context.profileId, context.revision)?.let { approval ->
             if (!accepted && id in trialApprovalIds(approval)) dao.putApprovals(listOf(approval.copy(needsRevalidation = true)))
         }
@@ -112,16 +116,17 @@ internal suspend fun ProjectAiRepository.approveTrials(context: TrialContext,
     require(epochCurrent()); checkTrialContext(context)
     val dao = database.projectAiDao()
     val current = dao.allVariants().filter { it.profileId == context.profileId && it.trialContextJson?.let { text ->
-        TrialVariantEvidence.parse(text).context == context
+        TrialVariantEvidence.parse(text).let { it.context == context || it.reviewContext == context }
     } == true }
     check(current.isNotEmpty() && current.none { it.reviewStatus == "UNREVIEWED" }) { "Review every successful current trial first." }
-    val accepted = current.filter { it.reviewStatus == "ACCEPTED" }.groupBy { it.componentKey }.values.map {
+    val accepted = current.filter { it.reviewStatus == "ACCEPTED" && it.trialContextJson?.let { text ->
+        TrialVariantEvidence.parse(text).reviewContext == context } == true }.groupBy { it.componentKey }.values.map {
         it.maxWith(compareBy<IconAssetVariant> { v -> v.createdAt }.thenBy { v -> v.id })
     }.sortedBy { it.componentKey }
     check(accepted.isNotEmpty() && accepted.size <= 256) { "Accept at least one current trial." }
     accepted.forEach { row ->
         val e = TrialVariantEvidence.parse(checkNotNull(row.trialContextJson)); val original = originals[row.componentKey]
-        check(original == (row.originalHash to e.originalOrigin)) { "An original icon changed." }
+        check(original == (row.originalHash to e.reviewOriginalOrigin)) { "An original icon changed." }
         validateTrialPng(referenceBytesUnlocked(row.profileId, row.rawAssetHash))
     }
     val row = StyleTrialApproval(context.profileId, context.revision, UUID.randomUUID().toString(), context.encode(),
@@ -141,9 +146,9 @@ internal suspend fun ProjectAiRepository.acceptedTrials(context: TrialContext,
     val values = trialApprovalIds(approval).map { id ->
         val v = dao.variant(id) ?: return@withAssetLease emptyList()
         val e = v.trialContextJson?.let(TrialVariantEvidence::parse) ?: return@withAssetLease emptyList()
-        if (v.profileId != context.profileId || v.styleRevision != context.revision || e.context != context ||
+        if (v.profileId != context.profileId || v.styleRevision != context.revision || !e.context.sameArtworkInputs(context) || e.reviewContext != context ||
             v.reviewStatus != "ACCEPTED" || v.requestStatus != "COMPLETED" ||
-            originals[v.componentKey] != (v.originalHash to e.originalOrigin)) return@withAssetLease emptyList()
+            originals[v.componentKey] != (v.originalHash to e.reviewOriginalOrigin)) return@withAssetLease emptyList()
         validateTrialPng(referenceBytesUnlocked(v.profileId, v.rawAssetHash))
         AcceptedTrialVariant(v.profileId, v.componentKey, v.styleRevision, v.originalHash,
             context.referenceFingerprint, v.rawAssetHash, approval.approvedAt, v.id)

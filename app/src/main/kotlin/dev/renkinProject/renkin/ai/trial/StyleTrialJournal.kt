@@ -116,7 +116,8 @@ internal class StyleTrialJournal(context: Context) {
         if (exists(marker(id, plan.id))) return false
         check(shared.active == null && current(plan)); require(records(id).size < MAX_RECORDS)
         require(plan.inputs.none { exists(consumedFile(it.requestId)) }) { "A trial request UUID is already consumed." }
-        val globalCount = root.listFiles().orEmpty().count { it.name.startsWith("consumed-") && !it.name.endsWith(".bak") && !it.name.endsWith(".new") }
+        val globalCount = root.listFiles().orEmpty().map { it.name.removeSuffix(".bak").removeSuffix(".new") }
+            .filter { it.matches(Regex("consumed-[a-f0-9-]{36}")) }.distinct().size
         require(globalCount + plan.inputs.size <= 8192) { "Device trial request history limit reached." }
         val required = (plan.inputs.map { it.originalHash } + plan.referenceHashes).toSet()
         require(images.keys == required)

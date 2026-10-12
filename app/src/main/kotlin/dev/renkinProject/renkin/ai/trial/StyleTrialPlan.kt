@@ -36,6 +36,9 @@ internal data class TrialContext(val profileId: Long, val revision: Long, val me
         "referenceFingerprint" to referenceFingerprint, "epoch" to epoch, "provider" to provider,
         "model" to model, "quality" to quality) }
     fun encode() = canonicalJson(json())
+    /** Source/selection/epoch changes need human re-review, while actual artwork inputs stay fixed. */
+    fun sameArtworkInputs(other: TrialContext) = profileId == other.profileId && revision == other.revision &&
+        referenceFingerprint == other.referenceFingerprint && provider == other.provider && model == other.model && quality == other.quality
     companion object {
         fun parse(r: JSONObject): TrialContext {
             r.exactKeys(setOf("profileId", "revision", "metadataVersion", "mode", "sourcePackage", "sourceStamp",
@@ -99,22 +102,30 @@ internal data class StyleTrialPlan(val context: TrialContext, val specification:
 
 /** Portable input evidence. Share can rekey the owner, but never transfer paid request rights. */
 internal data class TrialVariantEvidence(val context: TrialContext, val planId: String, val requestId: String,
-    val originalOrigin: String, val referenceHashes: List<String>) {
+    val originalOrigin: String, val referenceHashes: List<String>, val reviewContext: TrialContext? = null,
+    val reviewOriginalOrigin: String? = null) {
     fun encode(): String {
         context.validate(); trialId(planId); trialId(requestId)
         require(originalOrigin.isNotBlank() && originalOrigin.length <= 1000)
         require(referenceFingerprint(referenceHashes) == context.referenceFingerprint)
-        return canonicalJson(json("schema" to 1, "context" to context.json(), "planId" to planId,
-            "requestId" to requestId, "originalOrigin" to originalOrigin, "referenceHashes" to JSONArray(referenceHashes)))
+        require((reviewContext == null) == (reviewOriginalOrigin == null))
+        reviewContext?.let { it.validate(); require(context.sameArtworkInputs(it)) }
+        reviewOriginalOrigin?.let { require(it.isNotBlank() && it.length <= 1000) }
+        return canonicalJson(json("schema" to 2, "context" to context.json(), "planId" to planId,
+            "requestId" to requestId, "originalOrigin" to originalOrigin, "referenceHashes" to JSONArray(referenceHashes),
+            "reviewContext" to reviewContext?.json(), "reviewOriginalOrigin" to reviewOriginalOrigin))
     }
     companion object {
         fun parse(text: String): TrialVariantEvidence {
-            val r = strictObject(text, 16384, 8); require(r.longValue("schema") == 1L)
-            r.exactKeys(setOf("schema", "context", "planId", "requestId", "originalOrigin", "referenceHashes"))
+            val r = strictObject(text, 16384, 8); val schema = r.longValue("schema"); require(schema in 1L..2L)
+            r.exactKeys(setOf("schema", "context", "planId", "requestId", "originalOrigin", "referenceHashes") +
+                if (schema == 2L) setOf("reviewContext", "reviewOriginalOrigin") else emptySet())
             val refs = r.getJSONArray("referenceHashes"); require(refs.length() <= 5)
             return TrialVariantEvidence(TrialContext.parse(r.getJSONObject("context")), r.stringValue("planId"),
                 r.stringValue("requestId"), r.stringValue("originalOrigin"),
-                (0 until refs.length()).map { refs.getString(it) }).also { it.encode() }
+                (0 until refs.length()).map { refs.getString(it) },
+                if (schema == 1L || r.isNull("reviewContext")) null else TrialContext.parse(r.getJSONObject("reviewContext")),
+                if (schema == 1L || r.isNull("reviewOriginalOrigin")) null else r.stringValue("reviewOriginalOrigin")).also { it.encode() }
         }
     }
 }

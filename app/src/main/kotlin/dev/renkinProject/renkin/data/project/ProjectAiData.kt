@@ -118,7 +118,8 @@ data class ProjectAiSnapshot(
         old.variants.map { row -> row.copy(id = ids.getValue(row.id), profileId = newId,
             trialContextJson = row.trialContextJson?.let { text ->
                 dev.renkinProject.renkin.ai.trial.TrialVariantEvidence.parse(text).let {
-                    it.copy(context = it.context.copy(profileId = newId), requestId = ids.getValue(row.id)).encode()
+                    it.copy(context = it.context.copy(profileId = newId), requestId = ids.getValue(row.id),
+                        reviewContext = it.reviewContext?.copy(profileId = newId)).encode()
                 }
             }) },
         old.approvals.map { row -> row.copy(profileId = newId, approvalId = java.util.UUID.randomUUID().toString(),
@@ -148,8 +149,8 @@ interface ProjectAiDao {
     @Query("SELECT * FROM StyleTrialApproval WHERE profileId = :id AND styleRevision = :revision")
     suspend fun approval(id: Long, revision: Long): StyleTrialApproval?
     @Query("SELECT * FROM IconAssetVariant WHERE id = :id") suspend fun variant(id: String): IconAssetVariant?
-    @Query("UPDATE IconAssetVariant SET reviewStatus = :status, updatedAt = :time WHERE id = :id AND profileId = :profileId")
-    suspend fun reviewVariant(profileId: Long, id: String, status: String, time: Long): Int
+    @Query("UPDATE IconAssetVariant SET reviewStatus = :status, trialContextJson = :evidence, updatedAt = :time WHERE id = :id AND profileId = :profileId")
+    suspend fun reviewVariant(profileId: Long, id: String, status: String, evidence: String, time: Long): Int
     @Upsert suspend fun putApprovals(rows: List<StyleTrialApproval>)
     @Upsert suspend fun putMetadata(row: ProjectAiMetadata)
     @Insert suspend fun insertRevisions(rows: List<StyleRevision>)

@@ -44,6 +44,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
     var allowCovered by rememberSaveable(id) { mutableStateOf(false) }
     var dark by rememberSaveable(id) { mutableStateOf(false) }
     var checker by rememberSaveable(id) { mutableStateOf(true) }
+    var recheckId by rememberSaveable(id) { mutableStateOf<String?>(null) }
     val theme = PackageResourceResolver.displayedNightMode
     ObserveCoverageInvalidation(source, observeLauncherChanges = true) { reload++ }
     LaunchedEffect(id, mode, source, reload, theme, available) {
@@ -149,7 +150,9 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
             }
             items(state.variants.sortedWith(compareByDescending<IconAssetVariant> { it.createdAt }.thenBy { it.id }), key = { "variant-${it.id}" }) { v ->
                 val evidence = v.trialContextJson?.let { runCatching { TrialVariantEvidence.parse(it) }.getOrNull() }
-                val current = evidence != null && p != null && evidence.context == p.context
+                val current = evidence != null && p != null && (evidence.context == p.context || evidence.reviewContext == p.context)
+                val eligible = p?.candidates?.any { it.target.key == v.componentKey && it.eligible && (!it.overrideRequired || allowCovered) } == true
+                val recheck = !current && evidence != null && p != null && evidence.context.sameArtworkInputs(p.context) && eligible
                 Column(Modifier.fillMaxWidth().testTag("trial-variant-${v.id}"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(v.componentKey); Text(stringResource(R.string.trialVariantRevision, v.styleRevision, v.reviewStatus))
                     if (!current) Text(stringResource(R.string.trialHistorical), Modifier.testTag("trial-historical-${v.id}"))
@@ -163,19 +166,22 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                         TextButton(onClick = { backend.review(id, v.id, false) }, enabled = enabled && current,
                             modifier = Modifier.heightIn(min = 48.dp).testTag("trial-reject-${v.id}")) { Text(stringResource(R.string.trialReject)) }
                     }
+                    if (recheck) OutlinedButton(onClick = { recheckId = v.id }, enabled = enabled,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("trial-recheck-${v.id}")) {
+                        Text(stringResource(R.string.trialRecheck))
+                    }
                     OutlinedButton(onClick = { backend.prepare(id, listOf(v.componentKey), allowCovered) },
-                        enabled = enabled && current && state.hasKey && refsValid && p?.candidates?.any {
-                            it.target.key == v.componentKey && it.eligible && (!it.overrideRequired || allowCovered)
-                        } == true, modifier = Modifier.heightIn(min = 48.dp).testTag("trial-regenerate-${v.id}")) {
+                        enabled = enabled && state.hasKey && refsValid && eligible,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("trial-regenerate-${v.id}")) {
                         Text(stringResource(R.string.trialRegenerate))
                     }
                 }
             }
             item {
                 OutlinedButton(onClick = { backend.approve(id) }, enabled = enabled && p != null && state.variants.any {
-                    it.reviewStatus == "ACCEPTED" && it.trialContextJson?.let { text -> TrialVariantEvidence.parse(text).context == p.context } == true
+                    it.reviewStatus == "ACCEPTED" && it.trialContextJson?.let { text -> TrialVariantEvidence.parse(text).reviewContext == p.context } == true
                 } && state.variants.none { it.reviewStatus == "UNREVIEWED" && it.trialContextJson?.let { text ->
-                    TrialVariantEvidence.parse(text).context == p.context } == true },
+                    TrialVariantEvidence.parse(text).let { e -> e.context == p.context || e.reviewContext == p.context } } == true },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("trial-approve-style")) {
                     Text(stringResource(R.string.trialApproveStyle))
                 }
@@ -183,6 +189,13 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
             }
         }
     }
+    val recheck = recheckId
+    if (recheck != null) RenkinAlertDialog(onDismissRequest = { recheckId = null },
+        title = { Text(stringResource(R.string.trialRecheckTitle)) },
+        text = { Text(stringResource(R.string.trialRecheckText)) },
+        confirmButton = { TextButton(onClick = { recheckId = null; backend.review(id, recheck, true) }, enabled = enabled,
+            modifier = Modifier.testTag("trial-recheck-confirm")) { Text(stringResource(R.string.trialAccept)) } },
+        dismissButton = { TextButton(onClick = { recheckId = null }, Modifier.testTag("trial-recheck-cancel")) { Text(stringResource(R.string.colorizeCancel)) } })
     val plan = state.plan
     if (plan != null) RenkinAlertDialog(onDismissRequest = { if (!state.network) backend.cancelPreparation(id) },
         title = { Text(stringResource(R.string.trialConsentTitle)) },

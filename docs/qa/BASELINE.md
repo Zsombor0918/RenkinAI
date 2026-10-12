@@ -1,5 +1,21 @@
 # Verification baseline
 
+## Codex 05 first hosted checkpoint — 2920a5d7, test compilation failed
+
+[CI 38285597590](https://github.com/Zsombor0918/RenkinAI/actions/runs/38285597590)
+compiled production successfully, then failed test compilation at
+StyleTrialJournalTest:36: suspend Room read inside a non-suspend fixture callback.
+No Android tests ran, APK skipped. Preserve the durable-before-next-request
+assertion by making the fake observer suspend; no runtime bypass or assertion loss.
+[Regression 38285597542](https://github.com/Zsombor0918/RenkinAI/actions/runs/38285597542)
+artifact11763476310 digest82458f6fc77153e5302ad9b1c89cd255b916d6a9b6988d5de71d404748446855
+was downloaded/verified: summary HEAD2920a5d7, all21 commands exit1/tests0, no borrowed
+XML. Genuine KSP21 was exported and copied byte-for-byte: identity
+8c7a3c8b5b26ad29673ebbd77605838e, SHA256
+11912e933464d86952e3c70ced6ceb2e7506fe3407ac44f3425ebed9a89e0dad, 30159bytes.
+Export alone does not prove migration. The local-review correction and fixed
+fixture require next-head full/filtered Android/APK evidence; no current pass claimed.
+
 ## Codex 05 initial source checkpoint — verification pending
 
 Accepted main is af7bdb104869b0d0dded2acdf020fc030642dcf9, owner merge of PR #5

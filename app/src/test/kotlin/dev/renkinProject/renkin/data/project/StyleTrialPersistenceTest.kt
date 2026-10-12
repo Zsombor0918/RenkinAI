@@ -89,6 +89,22 @@ class StyleTrialPersistenceTest {
             f.repo.referenceBytes(1, row.rawAssetHash), { true })
         assertEquals("ACCEPTED", returned.reviewStatus); assertEquals(1, f.repo.trialVariants(1).size)
     }
+    @Test fun restoredEpochRequiresNewLocalReviewAndApprovalButNeverNewGeneration() = runBlocking {
+        val (p, row) = saved(); accept(p, row); f.repo.approveTrials(p.context, originals(), { true })
+        f.journal.invalidateAll()
+        val current = p.context.copy(epoch = f.journal.epoch(1))
+        assertTrue(f.repo.acceptedTrials(current, originals(), { true }).isEmpty())
+        val origin = "launcher:a/Main:rechecked-version"
+        val checked = originals() + ("a/Main" to (row.originalHash to origin))
+        f.repo.reviewTrial(current, row.id, true, checked.getValue("a/Main"), { true })
+        assertTrue(f.repo.acceptedTrials(current, checked, { true }).isEmpty())
+        f.repo.approveTrials(current, checked, { true })
+        assertEquals(row.id, f.repo.acceptedTrials(current, checked, { true }).single().variantId)
+        val evidence = TrialVariantEvidence.parse(f.repo.trialVariants(1).single().trialContextJson!!)
+        assertEquals(p.context, evidence.context); assertEquals(p.inputs.single().origin, evidence.originalOrigin)
+        assertEquals(current, evidence.reviewContext); assertEquals(origin, evidence.reviewOriginalOrigin)
+        assertEquals(1, f.journal.records(1).size)
+    }
     @Test fun competingRevisionSaveCannotApproveAnOldInput() = runBlocking {
         val (p, row) = saved(); accept(p, row)
         f.repo.saveSelection(1, p.context.metadataVersion, ProjectSelection("CREATE", null, null,

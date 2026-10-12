@@ -110,4 +110,12 @@ class OwnedStyleTrialsTest {
         assertEquals(1, calls); c.cancelPreparation(1); assertEquals(1, f.repo.trialVariants(1).size)
         assertEquals("ACCEPTED", f.repo.trialVariants(1).single().reviewStatus)
     }
+    @Test fun restoredCompletedTrialCanBeExplicitlyRecheckedAndApprovedWithoutAnotherPost() = runBlocking {
+        val c = controller(); generated(c); val row = c.state(1).value.variants.single()
+        c.review(1, row.id, true); idle(c); c.approve(1); assertTrue(idle(c).ready)
+        f.journal.invalidateAll(); loaded(c); assertFalse(c.state(1).value.ready); assertTrue(c.accepted(1).isEmpty())
+        c.review(1, row.id, true); assertNull(idle(c).error); assertFalse(c.state(1).value.ready)
+        c.approve(1); assertTrue(idle(c).ready); assertEquals(row.id, c.accepted(1).single().variantId)
+        assertEquals(1, calls); assertEquals(1, f.repo.trialVariants(1).size)
+    }
 }

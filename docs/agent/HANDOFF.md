@@ -121,3 +121,14 @@ and require their own scope, review and paid confirmation after owner M5 accepta
 Consumed per-item UUIDs also have a separate device-wide AtomicFile ledger (8,192
 markers maximum). Another plan/profile cannot reuse an item UUID; deletion and
 restore retain these markers. Reaching the bound fails closed before a POST.
+
+
+Explicit local revalidation retains the immutable generation context/original origin
+and records a separate reviewContext/reviewOriginalOrigin in evidence schema v2
+(v1 remains readable). After source/selection/epoch or share changes, identical
+profile/revision/original pixels/ordered refs/provider/model/quality can be rechecked
+and accepted locally, then approved separately, with zero POST. Changed artwork,
+style revision or refs cannot reuse the old PNG. Eligibility and fresh owner/source
+checks still fail closed. Read-only M6 reuse requires this current review proof and
+current approval, never merely an old ACCEPTED status. Historical regeneration may
+prepare a new current-input plan, but always needs new paid confirmation.

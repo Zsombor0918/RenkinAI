@@ -921,7 +921,10 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="trialDark">Dark preview</string>
     <string name="trialChecker">Toggle transparency grid</string>
     <string name="trialVariantRevision">Style revision %1$d · Review: %2$s · Not applied</string>
-    <string name="trialHistorical">Historical input or style. The PNG is preserved; this context cannot authorize review, reuse or a new request.</string>
+    <string name="trialHistorical">Historical input or style. The PNG is preserved. Identical artwork inputs need separate local re-review and approval; changed style or original artwork needs a newly confirmed trial.</string>
+    <string name="trialRecheck">Review this saved trial again — no API call</string>
+    <string name="trialRecheckTitle">Review saved artwork for current inputs</string>
+    <string name="trialRecheckText">Review this preserved PNG for the current project and saved style? This only checks the current original artwork, references, source and ownership locally and records your acceptance. It cannot generate, apply or build anything and costs no provider request. If the original pixels or saved style/reference/model inputs changed, the image cannot be reused. A separate common-style approval is still required.</string>
     <string name="trialAccept">Accept this trial</string>
     <string name="trialReject">Not suitable</string>
     <string name="trialRegenerate">Regenerate from original — new paid confirmation</string>

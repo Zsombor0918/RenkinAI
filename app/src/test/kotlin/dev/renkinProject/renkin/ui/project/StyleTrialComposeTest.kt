@@ -82,7 +82,9 @@ class StyleTrialComposeTest {
         }
         override fun release(id: Long) {}
         override fun review(id: Long, variantId: String, accepted: Boolean) {
-            flow.value = flow.value.copy(variants = flow.value.variants.map { if (it.id == variantId) it.copy(reviewStatus = if (accepted) "ACCEPTED" else "REJECTED") else it }, ready = false)
+            flow.value = flow.value.copy(variants = flow.value.variants.map { if (it.id == variantId) it.copy(reviewStatus = if (accepted) "ACCEPTED" else "REJECTED",
+                trialContextJson = TrialVariantEvidence.parse(it.trialContextJson!!).let { e ->
+                    e.copy(reviewContext = base!!.context, reviewOriginalOrigin = e.originalOrigin).encode() }) else it }, ready = false)
         }
         override fun approve(id: Long) { check(flow.value.variants.any { it.reviewStatus == "ACCEPTED" }); flow.value = flow.value.copy(ready = true) }
         override suspend fun preview(id: Long, hash: String) = png
@@ -176,6 +178,18 @@ class StyleTrialComposeTest {
         val b = Backend(preparation(n = 2)); show(b); prepare()
         assertEquals(2, b.flow.value.plan!!.inputs.size); assertEquals(0, b.paidPlans)
         compose.onNodeWithTag("trial-decline").performClick()
+    }
+    @Test fun changedEpochOffersExplicitLocalRecheckAndSeparateApprovalWithoutPaidRequest() {
+        val b = Backend(preparation(n = 1)); show(b); val row = generate(b).single()
+        scroll("trial-accept-${row.id}"); compose.onNodeWithTag("trial-accept-${row.id}").performClick()
+        compose.runOnIdle { b.base = b.base!!.copy(context = b.base!!.context.copy(epoch = "restored:initial")); b.load(1, ProjectSetupMode.CREATE, null) }
+        scroll("trial-recheck-${row.id}"); compose.onNodeWithTag("trial-recheck-${row.id}").performClick()
+        compose.onNodeWithTag("trial-recheck-cancel").performClick(); assertEquals(1, b.paidPlans)
+        scroll("trial-approve-style"); compose.onNodeWithTag("trial-approve-style").assertIsNotEnabled()
+        scroll("trial-recheck-${row.id}"); compose.onNodeWithTag("trial-recheck-${row.id}").performClick()
+        compose.onNodeWithTag("trial-recheck-confirm").performClick()
+        scroll("trial-approve-style"); compose.onNodeWithTag("trial-approve-style").performClick()
+        assertTrue(b.flow.value.ready); assertEquals(1, b.paidPlans); assertEquals(1, b.flow.value.variants.size)
     }
     @Test fun actualShellTargetsStyleRefinementAndExternalEditorPriorityRemainConnected() {
         val b = Backend(preparation(n = 1)); var operation: ProjectSessionState by mutableStateOf(ProjectSessionState.Idle)

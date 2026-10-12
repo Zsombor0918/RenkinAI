@@ -129,6 +129,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     override fun stop(id: Long) { jobs[id]?.cancel() }
     override fun release(id: Long) { if (!flow(id).value.network) { jobs[id]?.cancel(); cancelPreparation(id) } }
     private suspend fun currentOriginals(p: TrialPreparation, keys: List<String>): Map<String, Pair<String, String>> = owner.owned(p.context.profileId) {
+        check(keys.all { key -> p.candidates.any { it.target.key == key && it.eligible } }) { "A trial target is no longer eligible." }
         keys.distinct().associateWith { key -> owner.original(key).let { it.hash to it.origin } }
     }
     override fun review(id: Long, variantId: String, accepted: Boolean) = start(id) {
@@ -140,7 +141,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     override fun approve(id: Long) = start(id) {
         val p = preparation(id)
         val rows = repository.trialVariants(id).filter { it.reviewStatus == "ACCEPTED" &&
-            it.trialContextJson?.let { text -> TrialVariantEvidence.parse(text).context == p.context } == true }
+            it.trialContextJson?.let { text -> TrialVariantEvidence.parse(text).reviewContext == p.context } == true }
         val originals = currentOriginals(p, rows.map { it.componentKey })
         owner.owned(id) { check(matchesRoute(p.context)); repository.approveTrials(p.context, originals, { journal.epoch(id) == p.context.epoch }) }
         flow(id).value = flow(id).value.copy(ready = accepted(id).isNotEmpty()); history(id)

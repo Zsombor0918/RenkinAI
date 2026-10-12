@@ -53,7 +53,7 @@ internal class StyleTrialFixture(root: File) : AutoCloseable {
     }
     suspend fun images(plan: StyleTrialPlan) = plan.inputs.associate { it.originalHash to originals.getValue(it.key).png } +
         plan.referenceHashes.associateWith { repo.referenceBytes(1, it) }
-    fun successful(observe: (IconGenerationRequest) -> Unit = {}) = IconGenerationGateway { request ->
+    fun successful(observe: suspend (IconGenerationRequest) -> Unit = {}) = IconGenerationGateway { request ->
         observe(request); request.beforeEndpoint(1)
         if (request.provider == AiSettings.STABILITY) request.beforeEndpoint(2)
         IconGenerationOutcome.Generated(projectTestPng(Color.WHITE, 1024), request.requestId, request.provider, 1024, 1024,
