@@ -212,3 +212,8 @@ is an ancestor with an identical tree. At the M4 gate the active ruleset still h
 empty bypasses, PR/three required contexts and force/delete protection; approvals=0,
 conversation/last-push/strict=false. The additional profile-form-regressions job is
 required by this task, not yet a saved ruleset context. No administration write occurred.
+
+Final Codex 04 reread on October 12 also reports
+`require_extra_approval_for_unattributed_changes: true`. No author/review status is
+fabricated and no ruleset write occurred. PR #5's latest final-head audit/checks
+determine readiness; owner acceptance and merge remain separate from green CI.

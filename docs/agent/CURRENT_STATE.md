@@ -7,7 +7,10 @@ Its final Android/regression/governance checks passed: 718/718, every isolated
 group and debug APK; this is historical Codex 03 evidence, not fresh Codex 04.
 No independent APPROVED review or physical-device acceptance is inferred.
 Codex 04 starts on `feat/automatic-style-analysis-m4` from this accepted main;
-sampling/analysis/review work is in progress and not yet a verified feature.
+sampling/analysis/review is implemented and offline-verified in open PR #5.
+Code head `47503e5c0fa64a2508cab1e846896524f985f1a3` passed 792/792 tests,
+all retained/new groups and APK. Owner merge and physical/provider acceptance remain
+pending; final documentation-head checks are recorded externally in that PR audit.
 The STYLE route binds the current Create/Extend mode and chosen source as well as
 Profile.id. A proposal from another route context remains historical and cannot
 authorize a POST, Use or Save. Same-source updates retain explicit stale re-review.
@@ -253,8 +256,13 @@ revalidation. Local unreviewed analysis journals/PNGs are excluded from backups,
 Restoring/reusing profile IDs rotates epoch; deleting a profile tombstones evidence.
 A pre-upgrade backup or forward repair is required for v19 recovery.
 
-Offline guard/runner tests: 51/51 locally in 15.308 s. New Android tests are added
-but NOT YET VERIFIED at this work-in-progress checkpoint. Local Gradle distribution
-download failed before configuration; hosted full/isolated Android runs and genuine
-KSP v20 schema still required. No device/provider-quality/account-access check or
-live/billable request occurred. See QA and PR audit for subsequent actual evidence.
+Code head 47503e5c passed Android 38240314705 and regressions 38240314877: 135 XML,
+792/792, zero failures/errors/skips/missing selectors, all 16 groups and actual APK.
+The 503 Retry-After negative control proves two repeatable-body mock POSTs versus
+one production analysis POST; gateway 7/7, actual STYLE UI 12/12 and persistence/
+session 20/20 passed. Genuine v20 identity 7645511f2ebcb036f0f2da33eee84a17 and
+export bytes match committed schema; real v19 indexes/version and migration pass.
+Local guards are 51/51. Local Android still fails before configuration downloading
+Gradle; hosted evidence proves the feature. Device/provider quality/account/cost
+and true process/storage/OEM tests are NOT RUN. Live/billable requests remain zero.
+Final documentation head must receive its own complete checks; see QA and PR audit.

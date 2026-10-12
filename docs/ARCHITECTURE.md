@@ -10,8 +10,10 @@ A guide for developers (and AI assistants) working on this codebase. The app bui
 installable Android icon packs on-device.
 
 Codex 04 source audit: October 12, 2026. Accepted base is owner-merged PR #4
-`6aed9e08ee5619c1061481972dc172546c7f5abe`; feature checks are pending on
-`feat/automatic-style-analysis-m4`. Historical Codex 03 starting main was
+`6aed9e08ee5619c1061481972dc172546c7f5abe`; code head 47503e5c on
+`feat/automatic-style-analysis-m4` is offline-verified: 792 tests, all groups/APK.
+PR #5 owner merge/device acceptance is pending; final-head checks are in its audit.
+Historical Codex 03 starting main was
 `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`, then `feat/project-ai-persistence-m3`.
 Entry map: [INDEX](INDEX.md); implementation/limitations: [CURRENT_STATE](agent/CURRENT_STATE.md).
 Codex 00–03 are owner-merged. Codex 04 adds a separate reviewed style-analysis path;
@@ -692,8 +694,10 @@ Equal completed saves are idempotent, including DB-save-before-journal-mark reco
 Old active style/history remains valid inspiration, never implicit paid permission.
 
 Explicit 19→20 adds only nullable `StyleRevision.analysisProfileJson` and
-`analysisEvidenceJson`; old rows receive NULL. KSP export/physical migration/fresh
-identity/FK checks must pass; no synthetic schema or destructive fallback. Format 5
+`analysisEvidenceJson`; old rows receive NULL. Genuine KSP export, physical v19
+fixture migration, fresh identity and FK checks passed at 47503e5c; v20 identity
+is 7645511f2ebcb036f0f2da33eee84a17. Fixtures reproduce actual exported indexes;
+no synthetic schema or destructive fallback is used. Format 5
 and project payload v2 carry accepted structured profile/evidence plus existing PNG
 history. Formats 1–4/payload v1 remain readable. Sharing rekeys evidence owner and
 requires revalidation; full restore marks evidence for revalidation and rotates the

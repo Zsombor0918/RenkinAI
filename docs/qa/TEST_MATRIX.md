@@ -99,14 +99,15 @@ process-kill, URI permissions, storage exhaustion, Samsung/Flip/One UI/TalkBack,
 SAF/keystore and generated-pack install/update remain NOT RUN.
 
 
-## Codex 04 analysis matrix — Android execution pending
+## Codex 04 analysis matrix — code checkpoint verified, device acceptance pending
 
 Initial executable 53addf96 ran 789 tests with five fixture failures; actual group
-counts and stack diagnoses are in BASELINE. The continuation adds owner/real-STYLE
-same-profile mode/source guards, faithful exported SQLite indexes and checks physical
-v19 after fixture creation. Corrected final-head results are still required.
+counts and stack diagnoses are in BASELINE. Corrected code 47503e5c passed 792/792
+and every isolated group, including same-profile mode/source guards, faithful v19
+indexes/version and one-shot HTTP transmission. Exact closing-head checks belong
+in PR #5; no code/test/schema/build change follows this verified checkpoint.
 
-| Area | Added deterministic evidence to execute | Physical/live boundary |
+| Area | Deterministic evidence passed at 47503e5c | Physical/live boundary |
 | --- | --- | --- |
 | Source references | Three real PNG style families, sorted/diverse 8–12, mixed/duplicate/empty/low-alpha/broken/dynamic, 120 bound, stale/cancel; actual bitmap/vector/adaptive draw and owned-bitmap recycling; existing all-map parser | Installed monochrome/color packs, real themes, source update/uninstall NOT RUN |
 | Schema/composer | Strict duplicate/depth/size/control/range/enum/null/version/palette validation, supported required-key schema, canonical/identity/user-priority escaping | Real model quality/self-assessment is NOT calibrated or tested |
@@ -114,8 +115,10 @@ v19 after fixture creation. Corrected final-head results are still required.
 | Durable request | Consent false/stale zero files/calls, REQUESTING before call, same UUID/concurrent/reopen no resend, uncertain crash/cancel, new retry consent, AtomicFile recovery/marker failure/quota/hash, cleanup/epochs/delete | Real process kill/storage fault requires device trial |
 | STYLE UX | Actual root/dialogs/gestures with offline backend: CREATE/EXTEND, local samples, paid decline/confirm, draft edit/Use/Save, five ordered refs, stale/no-key/empty/error/uncertain, restoration/dark/light/wide/48dp | TalkBack, Samsung/One UI/Theme Park/cover/fold/rotation NOT RUN |
 | Owner/save/restore | Real Room/assets/session guard, no active-on-result/Use, USER vs AUTO evidence, expected version/revision, dirty instruction, profile/catalog/source/epoch conflict; v19 file→v20 and fresh KSP identity; format 5/full/share/rekey and 3/4 legacy | Device install/update, all-store restore interruption and downgrade recovery NOT RUN |
-| Runner/governance | 51/51 Python guards locally, including missing selector/XML, empty/skipped/fail/error/nonzero and forged counts; all original selectors and full suite retained | Synthetic runner XML is never Android proof; final-head Actions pending |
+| Runner/governance | 51/51 Python guards locally; independently counted genuine 135 XML/792 tests, all 16 groups, zero errors/skips/missing selectors; genuine schemas match source | Synthetic fault fixtures are never Android proof; exact final-head audit/Actions belongs in PR #5 |
 
 No old suite was removed/ignored or timeout/idling policy changed. Local Android
-command failed before configuration on network download; new Kotlin tests have not
-yet executed. Final verified results must replace this pending label in QA/PR audit.
+failed before configuration at download; hosted native/Room/MockWebServer execution
+is verified. Final documentation head must independently pass all original/new
+groups, complete suite/APK and governance before the PR is ready. Device/live gaps
+above remain NOT RUN; green CI is not owner or Play release approval.

@@ -1,5 +1,48 @@
 # Verification baseline
 
+## Codex 04 verified code checkpoint — 47503e5c
+
+Code head `47503e5c0fa64a2508cab1e846896524f985f1a3` passed
+[Android 38240314705](https://github.com/Zsombor0918/RenkinAI/actions/runs/38240314705)
+and [regressions 38240314877](https://github.com/Zsombor0918/RenkinAI/actions/runs/38240314877).
+Independently downloaded artifact **11742147999**: summary HEAD matches, **135 XML,
+792/792 tests, zero failures/errors/skips**, every selector present and all exits zero.
+The unfiltered compileDebugKotlin/testDebugUnitTest/assembleDebug command passed after
+the isolated groups. Original Android CI independently built APK artifact **11742383649**.
+
+| Actual group | Passed tests |
+| --- | --- |
+| Original creation / ingress / together / shared form | 1 / 1 / 2 / 3 |
+| Create/Extend / coverage | 10 / 28 |
+| Project style/selection UI / data | 12 / 31 |
+| Generation gateway and retained legacy AI | 31 |
+| Reference sampler / schema + composer | 11 / 14 |
+| Analysis gateway / journal | 7 / 10 |
+| Actual analysis STYLE UI / persistence + session | 12 / 20 |
+| Complete unfiltered suite | 792 |
+
+The source-proven 503 Retry-After: 0 negative control passed both isolated and full:
+the repeatable-body control sends two mock POSTs; the actual one-shot adapter sends
+one and returns UNCERTAIN. This is not a live provider/billing trial. The three source
+families, route binding, durable result/uncertainty, real v19 fixture with exported
+indexes/version, full/share format 5 and legacy 3/4 regressions passed.
+
+KSP exports are byte-identical to source: v19 SHA256
+6c93a2fe875ad2e64482d68dcb72f5c0e1d79892a12f5481145c93440bdb8452; v20
+10410ffa2c99a0718ffb2552f2194280d00fe816e88af5e0ed9a667780abd8f8,
+identity 7645511f2ebcb036f0f2da33eee84a17. Local Python guards passed **51/51 in
+13.245 s** on this head; range docs/conventions and staged hooks passed. Local Gradle
+still fails before configuration at download (Network is unreachable). Hosted runs
+provide Android evidence, not a claimed local build.
+
+Closing documentation changes no Kotlin/test/schema/build files. Its own fresh exact
+SHA, all four contexts, XML/artifact results and single audit declaration must be
+verified and recorded in [PR #5](https://github.com/Zsombor0918/RenkinAI/pull/5),
+avoiding a self-hash cycle in this file. Do not substitute this prior code head for
+that final check. Earlier failures remain below, explicitly head-specific history.
+Physical devices, account/model quality/cost, true process/storage faults, SAF/signing/
+install, TalkBack and One UI/Theme Park/Flip/fold remain **NOT RUN**. Live requests=0.
+
 ## Codex 04 continuation — failed initial hosted head
 
 Resumed PR #5 on October 12 from `420d0b879ff65db260b70d6713ffbf9699a294b6`.

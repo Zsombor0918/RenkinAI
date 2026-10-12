@@ -4,6 +4,9 @@ Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 Current facts come from the checked-out source; inherited prose is not a substitute.
 The Codex 00 baseline is `main` at `eb4daa5de82fab54e115363c073eb8981f2203d6`
 (verified October 11, 2026). Commit-specific validation is recorded separately.
+Codex 00–03 are owner-merged. Codex 04 code is offline-verified in open PR #5;
+CURRENT_STATE and HANDOFF distinguish its 792-test checkpoint, exact final PR-head
+gates and pending owner/device/provider acceptance. Codex 05–07 remain planned.
 
 | Document | Responsibility |
 | --- | --- |

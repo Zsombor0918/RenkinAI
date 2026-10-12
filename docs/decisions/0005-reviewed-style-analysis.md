@@ -82,7 +82,7 @@ Codex 05 requires a fresh, independent paid confirmation for trial images.
 Official [model capabilities](https://developers.openai.com/api/docs/models/gpt-5.4-mini),
 [vision input](https://developers.openai.com/api/docs/guides/images-vision),
 [strict structured text](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses),
-[Responses parameters](https://developers.openai.com/api/reference/cli/resources/responses/methods/create)
+[Responses parameters](https://developers.openai.com/api/reference/python/resources/responses/methods/create)
 and [response output migration](https://developers.openai.com/api/docs/guides/migrate-to-responses)
 were read. Model gpt-5.4-mini supports image input/structured output; the port uses
 text.format, low-detail PNG data URLs, max_output_tokens and explicit store false.
