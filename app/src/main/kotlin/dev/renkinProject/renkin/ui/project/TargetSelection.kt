@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -34,6 +35,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.renkinProject.renkin.R
+import dev.renkinProject.renkin.data.project.ProjectSelection
 import dev.renkinProject.renkin.apk.CoverageEntry
 import dev.renkinProject.renkin.apk.CoverageReason
 import dev.renkinProject.renkin.apk.LocalIconState
@@ -43,6 +45,8 @@ import dev.renkinProject.renkin.apk.uniqueCoverageTargets
 import dev.renkinProject.renkin.drawable.toSafeBitmapOrNull
 import dev.renkinProject.renkin.ui.CenteredFullscreenContent
 import dev.renkinProject.renkin.ui.WavyLoadingBar
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun ProjectOriginalIcon(drawable: Drawable?) {
@@ -54,20 +58,27 @@ internal fun ProjectOriginalIcon(drawable: Drawable?) {
 internal fun TargetSelection(
     mode: ProjectSetupMode, profileId: Long, profileName: String, source: String?,
     data: ProjectSetupData, ready: Boolean, onBack: () -> Unit,
-    onChangeSource: () -> Unit, onEditor: () -> Unit
+    onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selected by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
     var missingOnly by rememberSaveable { mutableStateOf(mode == ProjectSetupMode.EXTEND) }
     var selectedStamp by rememberSaveable { mutableStateOf("") }
+    var selectionBusy by remember { mutableStateOf(false) }
+    var selectionError by remember { mutableStateOf(false) }
+    var selectionSaved by remember { mutableStateOf(false) }
+    var invalidated by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val targets = uniqueCoverageTargets(data.targets)
     val snapshot = (data.coverage as? CoverageUiState.Ready)?.snapshot?.takeIf {
         it.profileId == profileId && it.index.stamp.packageName == source && it.entries.map { e -> e.target } == targets
     }
-    val stamp = snapshot?.index?.stamp?.toString()
+    val catalogStamp = projectCatalogStamp(targets)
+    val sourceStamp = snapshot?.index?.let { projectSourceStamp(it) }
+    val stamp = if (mode == ProjectSetupMode.CREATE) catalogStamp else sourceStamp?.let { "$it:$catalogStamp" }
     LaunchedEffect(stamp) {
         if (stamp != null) {
-            if (selectedStamp.isNotEmpty() && selectedStamp != stamp) selected = arrayListOf()
+            if (selectedStamp.isNotEmpty() && selectedStamp != stamp) { selected = arrayListOf(); invalidated = true; selectionSaved = false }
             selectedStamp = stamp
         }
     }
@@ -77,6 +88,13 @@ internal fun TargetSelection(
     }
     val validSelected = selected.filter { key -> targets.any { it.key == key && it.selectable } }.toSet()
     val coverageReady = mode == ProjectSetupMode.CREATE || snapshot != null
+    val savedSelection = remember(data.savedMetadata?.selectionJson) {
+        runCatching { ProjectSelection.decode(data.savedMetadata?.selectionJson.orEmpty()) }.getOrNull()
+    }
+    val safeKeys = targets.filter { target -> target.selectable && (mode == ProjectSetupMode.CREATE ||
+        byKey[target.key]?.source in setOf(SourceCoverage.RESOLVABLE, SourceCoverage.UNMAPPED, SourceCoverage.DECLARED_BROKEN)) }.map { it.key }.toSet()
+    val persistReady = ready && !data.metadataLoading && !data.metadataFailed && !selectionBusy && coverageReady &&
+        (mode == ProjectSetupMode.CREATE || (snapshot?.index?.state == dev.renkinProject.renkin.apk.CoverageIndexState.READY && snapshot.index.stamp.versionCode != null))
     CenteredFullscreenContent {
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.testTag("project-targets")) {
@@ -85,7 +103,43 @@ internal fun TargetSelection(
                 Text(profileName, style = MaterialTheme.typography.titleLarge)
                 Text(stringResource(R.string.projectIdentity, profileId))
                 Text(stringResource(R.string.setupPreparationOnly))
-                Text(stringResource(R.string.setupSelectionTransient))
+                Text(stringResource(R.string.setupSelectionDurable))
+                if (data.launcherInventoryChanged) Text(stringResource(R.string.setupLauncherChanged),
+                    Modifier.testTag("setup-launcher-changed"))
+                OutlinedButton(onClick = onStyle, enabled = ready && !selectionBusy,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-project-style")) {
+                    Text(stringResource(R.string.projectStyleTitle))
+                }
+                if (savedSelection != null) {
+                    val current = savedSelection.isCurrent(mode.name, source, sourceStamp, catalogStamp, safeKeys)
+                    Text(stringResource(if (current) R.string.setupSavedSelectionReview else R.string.setupSavedSelectionStale),
+                        Modifier.testTag("setup-saved-selection"))
+                    OutlinedButton(onClick = {
+                        selected = ArrayList(savedSelection.componentKeys.filter { it in safeKeys })
+                        invalidated = false
+                        selectionSaved = false
+                    }, enabled = persistReady, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-revalidate-selection")) {
+                        Text(stringResource(R.string.setupReviewSavedTargets))
+                    }
+                }
+                if (invalidated) Text(stringResource(R.string.setupSavedSelectionStale))
+                if (selectionError || data.metadataFailed) Text(stringResource(R.string.setupSelectionSaveError), Modifier.testTag("setup-selection-error"))
+                if (selectionSaved) Text(stringResource(R.string.setupSelectionSaved), Modifier.testTag("setup-selection-saved"))
+                OutlinedButton(onClick = {
+                    if (!persistReady) return@OutlinedButton
+                    selectionBusy = true
+                    val version = data.savedMetadata?.version ?: 0
+                    val selection = ProjectSelection(mode.name, source, sourceStamp, catalogStamp, validSelected.sorted())
+                    scope.launch {
+                        try { data.onSaveSelection(version, selection); selectionSaved = true; selectionError = false; invalidated = false }
+                        catch (cancel: CancellationException) { throw cancel }
+                        catch (_: Exception) { selectionError = true; selectionSaved = false }
+                        finally { selectionBusy = false }
+                    }
+                }, enabled = persistReady && validSelected.all { it in safeKeys },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-save-selection")) {
+                    Text(stringResource(R.string.setupSaveSelection))
+                }
                 OutlinedButton(onClick = onEditor, enabled = ready,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-editor")) {
                     Text(stringResource(R.string.projectClassicEditor))
@@ -133,10 +187,11 @@ internal fun TargetSelection(
                         selected = ArrayList(targets.filter {
                             if (mode == ProjectSetupMode.CREATE) it.selectable else byKey[it.key]?.actionable == true
                         }.map { it.key })
+                        selectionSaved = false
                     }, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-select-all")) {
                         Text(stringResource(if (mode == ProjectSetupMode.CREATE) R.string.setupSelectAll else R.string.setupSelectMissing))
                     }
-                    TextButton(onClick = { selected = arrayListOf() }, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-clear")) {
+                    TextButton(onClick = { selected = arrayListOf(); selectionSaved = false }, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-clear")) {
                         Text(stringResource(R.string.setupClear))
                     }
                     Text(stringResource(R.string.setupSelectedCounts, validSelected.size, targets.size), Modifier.testTag("setup-selection-count"))
@@ -151,6 +206,7 @@ internal fun TargetSelection(
                     Column(Modifier.fillMaxWidth().heightIn(min = 48.dp)
                         .toggleable(value = target.key in validSelected, enabled = target.selectable, role = Role.Checkbox) {
                             selected = ArrayList(if (it) validSelected + target.key else validSelected - target.key)
+                            selectionSaved = false
                         }.testTag("setup-target-${target.key}"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             data.appIcon(target.key)

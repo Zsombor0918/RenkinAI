@@ -2,6 +2,8 @@ package dev.renkinProject.renkin.data.transfer
 
 import dev.renkinProject.renkin.data.DbApplication
 import dev.renkinProject.renkin.data.Profile
+import dev.renkinProject.renkin.data.project.ProjectAiCodec
+import dev.renkinProject.renkin.data.project.ProjectAiSnapshot
 import dev.renkinProject.renkin.data.watch.AppComponent
 import org.json.JSONArray
 import org.json.JSONObject
@@ -22,7 +24,8 @@ data class BackupData(
     // rather than a shared profile — and older archives simply carry none.
     val colorPresets: List<BackupColorPreset> = emptyList(),
     // Modifier recipes are device-wide too. Optional keeps archives from older builds readable.
-    val modifierPresets: List<BackupModifierPreset> = emptyList()
+    val modifierPresets: List<BackupModifierPreset> = emptyList(),
+    val projectAi: ProjectAiSnapshot = ProjectAiSnapshot()
 )
 
 /** A saved colour. Ids are not carried: import inserts fresh rows. */
@@ -115,7 +118,7 @@ data class BackupPref(val tag: String, val value: Any) {
  */
 object BackupCodec {
     // Version 3 preserves watch baselines and pending completed suggestions.
-    const val FORMAT_VERSION = 3
+    const val FORMAT_VERSION = 4
 
     fun encode(data: BackupData): String {
         val root = JSONObject()
@@ -247,6 +250,7 @@ object BackupCodec {
             )
         }
         root.put("modifierPresets", modifierPresets)
+        root.put("projectAi", ProjectAiCodec.encode(data.projectAi))
 
         return root.toString()
     }
@@ -426,6 +430,7 @@ object BackupCodec {
             }
         }
 
-        return BackupData(profiles, prefs, packLabels, colorPresets, modifierPresets)
+        return BackupData(profiles, prefs, packLabels, colorPresets, modifierPresets,
+            ProjectAiCodec.decode(root.optJSONObject("projectAi")))
     }
 }

@@ -21,6 +21,15 @@ CASES = {
     "coverage-domain": ["dev.renkinProject.renkin.apk.IconCoverageAnalyzerTest",
                         "dev.renkinProject.renkin.apk.CoveragePreviewTest",
                         "dev.renkinProject.renkin.packages.CoverageAppFilterTest"],
+    "project-style-ui": [PACKAGE + "ProjectStyleComposeTest", PACKAGE + "ProjectSelectionComposeTest"],
+    "project-data": ["dev.renkinProject.renkin.data.project.ProjectAiPersistenceTest",
+                     "dev.renkinProject.renkin.data.project.ProjectAiMigrationTest",
+                     "dev.renkinProject.renkin.data.transfer.ProjectAiBackupTest",
+                     PACKAGE + "ProjectPreparationTest"],
+    "generation-gateway": ["dev.renkinProject.renkin.ai.IconGenerationGatewayTest",
+                           "dev.renkinProject.renkin.ai.AiImagePipelineTest",
+                           "dev.renkinProject.renkin.ai.AiPersistenceTest",
+                           "dev.renkinProject.renkin.ai.AiBatchRunnerTest"],
     "full-suite": [],
 }
 
@@ -61,6 +70,13 @@ def main():
         summary["cases"][name] = {"exit": result.returncode, "passed": passed, "missing_selectors": missing, **counts}
         failed |= not passed
         print(f"{name}: {summary['cases'][name]}", flush=True)
+    # Retain Room's real KSP export; never synthesize or hand-edit identity/schema JSON.
+    schema = ROOT / "app/schemas/dev.renkinProject.renkin.data.RenkinPackDatabase/19.json"
+    summary["room_schema_19_exported"] = schema.is_file()
+    if schema.is_file():
+        shutil.copytree(ROOT / "app/schemas", OUTPUT / "schemas", dirs_exist_ok=True)
+    else:
+        failed = True
     (OUTPUT / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     return int(failed)
 

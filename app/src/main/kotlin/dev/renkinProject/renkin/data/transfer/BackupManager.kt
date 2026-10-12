@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import androidx.room.withTransaction
 import dev.renkinProject.renkin.BuildConfig
 import dev.renkinProject.renkin.apk.IconPackBuilder
 import dev.renkinProject.renkin.apk.PackKeystore
@@ -26,6 +27,8 @@ import dev.renkinProject.renkin.data.ModifierPreset
 import dev.renkinProject.renkin.data.PackVerdict
 import dev.renkinProject.renkin.data.RenkinPackRepository
 import dev.renkinProject.renkin.data.UploadedImageStore
+import dev.renkinProject.renkin.data.project.ProjectAiRepository
+import dev.renkinProject.renkin.data.project.ProjectAssetStore
 import dev.renkinProject.renkin.data.snapshotProfilePrefs
 import dev.renkinProject.renkin.data.getPreferencesAfterPendingWrites
 import dev.renkinProject.renkin.data.watch.AppComponent
@@ -47,7 +50,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 /**
@@ -62,7 +64,9 @@ import java.util.zip.ZipOutputStream
  *    that pack is installed there — but because the pixels ride along, a pack that later
  *    disappears from the store keeps working (its verdict flips to unlisted and unlocks).
  *
- * Import is all-or-nothing: the file is fully parsed BEFORE any store is touched. Whether
+ * Archives are fully staged and validated BEFORE any store is touched. Profile/icon/project
+ * rows commit together; preferences, watch, gallery and signing remain separate stores and
+ * are not a cross-store transaction. Whether
  * imported icons are usable is decided on the importing device every time they load
  * (PackVerdictManager) — verdicts inside the file are never trusted. After an import the
  * caller reloads the in-memory state and kicks off verdict verification.
@@ -77,6 +81,7 @@ class BackupManager(
     constructor(context: Context) : this(context, RenkinPackRepository(context), WatchRepository(context))
 
     private val appManager by lazy { ApplicationManager(context) }
+    private val projectAi by lazy { ProjectAiRepository(packRepo.database, ProjectAssetStore(context)) }
 
     enum class ImportKind { BACKUP, PROFILE }
 
@@ -165,12 +170,20 @@ class BackupManager(
                     it.createdAt,
                     it.lastUsedAt
                 )
-            }
+            },
+            projectAi = projectAi.snapshot()
         )
+
+        ProjectAiRepository.validateSnapshot(data.projectAi, data.profiles.map { it.profile.id }.toSet())
 
         ZipOutputStream(open().buffered()).use { zip ->
             zip.putTextEntry(MANIFEST_ENTRY, manifestJson(KIND_BACKUP))
             zip.putTextEntry(DATA_ENTRY, BackupCodec.encode(data))
+            for (asset in data.projectAi.assets) {
+                zip.putNextEntry(ZipEntry("project_ai_assets/${asset.relativePath}"))
+                zip.write(projectAi.files.read(asset))
+                zip.closeEntry()
+            }
             context.filesDir.resolve(IconPackBuilder.KEYSTORE_FILE_NAME)
                 .takeIf { it.exists() }
                 ?.let { zip.putFileEntry(KEYSTORE_ENTRY, it) }
@@ -220,12 +233,18 @@ class BackupManager(
         val data = BackupData(
             profiles = listOf(BackupProfile(profile, exportIcons, rules)),
             prefs = emptyMap(),
-            packLabels = packLabelsFor(sourcePacks)
+            packLabels = packLabelsFor(sourcePacks),
+            projectAi = projectAi.snapshot().forProfile(profileId)
         )
 
         ZipOutputStream(open().buffered()).use { zip ->
             zip.putTextEntry(MANIFEST_ENTRY, manifestJson(KIND_PROFILE))
             zip.putTextEntry(DATA_ENTRY, BackupCodec.encode(data))
+            for (asset in data.projectAi.assets) {
+                zip.putNextEntry(ZipEntry("project_ai_assets/${asset.relativePath}"))
+                zip.write(projectAi.files.read(asset))
+                zip.closeEntry()
+            }
         }
     }
 
@@ -243,11 +262,11 @@ class BackupManager(
     }
 
     suspend fun inspectFile(open: () -> InputStream): ImportInspection = withContext(Dispatchers.IO) {
-        val archive = readArchive(open)
+        readArchive(open).use { archive ->
         val manifest = archive.manifest
         val data = archive.data
         val kind = kindOf(manifest)
-        if (kind == ImportKind.PROFILE) return@withContext ImportInspection(kind)
+        if (kind == ImportKind.PROFILE) return@use ImportInspection(kind)
         requireValidBackup(data)
 
         val rules = data.profiles.flatMap { it.watchRules }
@@ -263,6 +282,7 @@ class BackupManager(
                 uploadedImages = archive.uploadedImages
             )
         )
+        }
     }
 
     suspend fun importFile(uri: Uri): ImportResult = importFile {
@@ -271,10 +291,11 @@ class BackupManager(
 
     /** Dispatches on the file's kind: full backups replace, shared profiles add. */
     suspend fun importFile(open: () -> InputStream): ImportResult = withContext(Dispatchers.IO) {
-        val archive = readArchive(open)
+        readArchive(open).use { archive ->
         when (kindOf(archive.manifest)) {
-            ImportKind.BACKUP -> restoreBackup(archive.data, open)
-            ImportKind.PROFILE -> importProfile(archive.data)
+            ImportKind.BACKUP -> restoreBackup(archive)
+            ImportKind.PROFILE -> importProfile(archive)
+        }
         }
     }
 
@@ -283,42 +304,14 @@ class BackupManager(
     }
 
     suspend fun importBackup(open: () -> InputStream): ImportResult = withContext(Dispatchers.IO) {
-        val archive = readArchive(open)
+        readArchive(open).use { archive ->
         if (kindOf(archive.manifest) != ImportKind.BACKUP) throw IOException("Not a full-backup file")
-        restoreBackup(archive.data, open)
+        restoreBackup(archive)
+        }
     }
 
     /** Pass 1 of an import: read and fully validate before touching anything on the device. */
-    private fun readArchive(open: () -> InputStream): ArchiveContents {
-        var manifest: JSONObject? = null
-        var dataJson: String? = null
-        var uploadedImages = 0
-        ZipInputStream(open().buffered()).use { zip ->
-            var entry = zip.nextEntry
-            while (entry != null) {
-                when (entry.name) {
-                    MANIFEST_ENTRY -> manifest = JSONObject(zip.readEntryText())
-                    DATA_ENTRY -> dataJson = zip.readEntryText()
-                }
-                if (entry.name.startsWith("$UPLOADS_DIR/") && entry.name.endsWith(".png")) {
-                    uploadedImages++
-                }
-                entry = zip.nextEntry
-            }
-        }
-        val meta = manifest ?: throw IOException("Not a Renkin file (no manifest)")
-        if (meta.optInt("format", Int.MAX_VALUE) > BackupCodec.FORMAT_VERSION) {
-            throw IOException("File was made by a newer app version")
-        }
-        val data = BackupCodec.decode(dataJson ?: throw IOException("File has no data entry"))
-        return ArchiveContents(meta, data, uploadedImages)
-    }
-
-    private data class ArchiveContents(
-        val manifest: JSONObject,
-        val data: BackupData,
-        val uploadedImages: Int
-    )
+    private fun readArchive(open: () -> InputStream): ValidatedBackupArchive = ValidatedBackupArchive.read(context, open)
 
     private fun kindOf(manifest: JSONObject): ImportKind = when (manifest.optString("kind")) {
         KIND_BACKUP -> ImportKind.BACKUP
@@ -326,13 +319,15 @@ class BackupManager(
         else -> throw IOException("Unknown file kind")
     }
 
-    private suspend fun restoreBackup(data: BackupData, open: () -> InputStream): ImportResult {
+    private suspend fun restoreBackup(archive: ValidatedBackupArchive): ImportResult = projectAi.withAssetLease {
+        val data = archive.data
         requireValidBackup(data)
-
-        packRepo.replaceEverything(
-            data.profiles.map { it.profile },
-            data.profiles.flatMap { it.icons }
-        )
+        // Finalize and verify immutable project files before any DB replacement. Failure here
+        // preserves every earlier valid style. An interrupted write leaves only collectible files.
+        for (asset in data.projectAi.assets) {
+            projectAi.files.install(asset.profileId,
+                archive.entries.getValue("project_ai_assets/${asset.relativePath}").readBytes(), asset.source, restoring = true)
+        }
         watchRepo.replaceAllRules(data.profiles.flatMap { bp ->
             bp.watchRules.map { it.toImport(bp.profile.id) }
         })
@@ -367,24 +362,19 @@ class BackupManager(
         uploadsDir.listFiles()?.forEach { it.delete() }
         var keystoreRestored = false
         var passwordRestored = false
-        ZipInputStream(open().buffered()).use { zip ->
-            var entry = zip.nextEntry
-            while (entry != null) {
+        for ((name, file) in archive.entries) {
                 when {
-                    entry.name == KEYSTORE_ENTRY -> {
-                        writeEntryTo(zip, context.filesDir.resolve(IconPackBuilder.KEYSTORE_FILE_NAME))
+                    name == KEYSTORE_ENTRY -> {
+                        file.inputStream().use { writeEntryTo(it, context.filesDir.resolve(IconPackBuilder.KEYSTORE_FILE_NAME)) }
                         keystoreRestored = true
                     }
-                    entry.name == KEYSTORE_PASSWORD_ENTRY -> {
-                        writeEntryTo(zip, PackKeystore.passwordFile(context.filesDir))
+                    name == KEYSTORE_PASSWORD_ENTRY -> {
+                        file.inputStream().use { writeEntryTo(it, PackKeystore.passwordFile(context.filesDir)) }
                         passwordRestored = true
                     }
-                    entry.name.startsWith("$UPLOADS_DIR/") && entry.name.endsWith(".png") ->
-                        // Only the file name is trusted, never the entry's path (zip-slip).
-                        writeEntryTo(zip, File(uploadsDir, File(entry.name).name))
+                    name.startsWith("$UPLOADS_DIR/") ->
+                        file.inputStream().use { writeEntryTo(it, File(uploadsDir, File(name).name)) }
                 }
-                entry = zip.nextEntry
-            }
         }
         // A restored keystore without a password in the backup is a legacy one (opens with
         // the built-in constant) — a stale random password left behind would lock it out.
@@ -393,7 +383,11 @@ class BackupManager(
             PackKeystore.passwordFile(context.filesDir).delete()
         }
 
-        return ImportResult(ImportKind.BACKUP, data.profiles.size, data.profiles.sumOf { it.icons.size })
+        // Last fallible step: profiles/icons and project metadata replace in ONE Room
+        // transaction. Legacy watch/prefs/gallery remain separate stores, not cross-store ACID.
+        packRepo.replaceEverything(data.profiles.map { it.profile }, data.profiles.flatMap { it.icons }, data.projectAi)
+
+        ImportResult(ImportKind.BACKUP, data.profiles.size, data.profiles.sumOf { it.icons.size })
     }
 
     private fun requireValidBackup(data: BackupData) {
@@ -403,20 +397,32 @@ class BackupManager(
     }
 
     /** A shared profile always lands as a NEW profile — imports never overwrite anything. */
-    private suspend fun importProfile(data: BackupData): ImportResult {
+    private suspend fun importProfile(archive: ValidatedBackupArchive): ImportResult = projectAi.withAssetLease {
+        val data = archive.data
         val bp = data.profiles.firstOrNull() ?: throw IOException("File contains no profile")
         // A numbered suffix keeps repeated imports of the same share tellable apart.
-        val name = uniqueProfileName(bp.profile.name, packRepo.profiles().map { it.name }.toSet())
-        val newId = packRepo.createProfile(
+        val newId = packRepo.database.withTransaction {
+        // Use the existing DAO on Room's transaction dispatcher; createProfile's legacy
+        // Default dispatcher cannot inherit this suspending transaction safely.
+        val name = uniqueProfileName(bp.profile.name, packRepo.database.profileDao().getAll().map { it.name }.toSet())
+        val createdId = packRepo.database.profileDao().insert(
             // Fresh identity (the id also names the built pack's package) and fresh flags:
             // the icons are saved-but-not-built, and the missing-pack dialog choice is local.
             bp.profile.copy(id = 0, name = name, hasUnbuiltChanges = true, hideMissingPackWarning = false)
         )
-        packRepo.replaceAll(newId, bp.icons.map { it.copy(profileId = newId) })
+        val rekeyed = data.projectAi.rekey(bp.profile.id, createdId)
+        for (asset in rekeyed.assets) {
+            projectAi.files.install(createdId, archive.entries.getValue(
+                "project_ai_assets/${ProjectAssetStore.path(bp.profile.id, asset.hash)}").readBytes(), asset.source, restoring = true)
+        }
+        packRepo.replaceAll(createdId, bp.icons.map { it.copy(profileId = createdId) })
+        ProjectAiRepository.insertSnapshot(packRepo.database, rekeyed)
+        createdId
+        }
         watchRepo.insertRules(bp.watchRules.map { it.toImport(newId) })
         WatchChecker(context, iconPackCatalog, watchRepo).initializeMissingBaselines()
         storePackLabels(data.packLabels)
-        return ImportResult(ImportKind.PROFILE, 1, bp.icons.size, importedProfileId = newId)
+        ImportResult(ImportKind.PROFILE, 1, bp.icons.size, importedProfileId = newId)
     }
 
     private fun uniqueProfileName(base: String, existing: Set<String>): String {
@@ -595,8 +601,6 @@ private fun ZipOutputStream.putFileEntry(name: String, file: File) {
     closeEntry()
 }
 
-/** Reads the CURRENT zip entry (ZipInputStream ends the stream at each entry boundary). */
-private fun ZipInputStream.readEntryText(): String = readBytes().toString(Charsets.UTF_8)
 
 /**
  * Writes the current zip entry to [target] via a temporary file, so a failure part-way (a full
@@ -608,16 +612,11 @@ private fun ZipInputStream.readEntryText(): String = readBytes().toString(Charse
  * preferences and the uploads gallery are still replaced in stages and a failure mid-restore
  * leaves a partially restored app.
  */
-private fun writeEntryTo(zip: ZipInputStream, target: File) {
+private fun writeEntryTo(source: InputStream, target: File) {
     val temp = File(target.parentFile, "${target.name}.tmp")
     try {
-        temp.outputStream().use { zip.copyTo(it) }
-        if (!temp.renameTo(target)) {
-            // Rename can fail if the target is held open; fall back to replacing in place.
-            temp.inputStream().use { source ->
-                target.outputStream().use { source.copyTo(it) }
-            }
-        }
+        java.io.FileOutputStream(temp).use { output -> source.copyTo(output); output.flush(); output.fd.sync() }
+        check(temp.renameTo(target)) { "Could not finalize restored file." }
     } finally {
         temp.delete()
     }

@@ -1,6 +1,9 @@
 # Regression and test matrix
 
-Current checkpoint is Codex 02; Codex 00/01 results below are historical. M2 source head a8b3e4b2 passed 669/669, 10 UI and 28 coverage fixtures; exact-head final checks are in PR #3.
+Current checkpoint is Codex 03. Head 06e71532 passed 718/718 and all filtered
+groups/APK including legacy gallery compatibility. The final documentation/probe-
+removal head is verified separately in PR #4's audit.
+Codex 00/01/02 sections below remain historical, including M2's 669/669 baseline.
 A test class existing in source is not a passed run.
 Results and environment belong in [BASELINE](BASELINE.md) and each PR audit.
 
@@ -60,3 +63,37 @@ Fresh M2 counts/SHA/artifacts were independently verified in BASELINE: 669 full,
 10 new UI and 28 coverage fixtures, no skips; final documentation-head checks must
 remain green in PR #3. Test source alone is never passing evidence. No physical scenario or live
 provider test ran, and the main review/conversation/strict gaps remain owner work.
+
+
+## Codex 03 project persistence/gateway regression matrix
+
+| Area | Automated evidence required on feature head | Device status |
+| --- | --- | --- |
+| v18→v19, fresh/reopen/default/duplicate profiles | Real exported-v18 SQLite fixture with icon/base/source/custom/lock/build/preset rows, current identity equivalence and FK validation | NOT RUN: physical update/downgrade recovery |
+| Style save and ownership | Immutable ordered revisions, equal/concurrent saves, stale/cancelled writes, queued session-owner change, invalid schema/owner rejection | NOT RUN: process kill during disk/DB save |
+| PNG lifecycle | Signature/CRC/truncation/empty/size/path/symlink/hash/missing tests, Upload deletion, history/variant pins, explicit orphan/temp GC | NOT RUN: storage exhaustion/URI providers |
+| Full backup / shares | Verified embedded PNG/history/variants/selection, old full clear, new-owner rekey, ZIP duplicates/paths/bounds/checksums, failure keeps previous style, credential exclusion | NOT RUN: SAF restore/device signing update |
+| Project UI | Actual panel input/import/reorder/Save/completion/failure/Back/Cancel/restoration/ingress/isolation and explicit global-copy action; target revalidation | NOT RUN: light/dark TalkBack/Flip/fold/rotation |
+| Image gateway | Real existing-client MockWebServer original/ref order 0–5, Stability two requests, invalid input/credentials, error/timeout/cancel no retry, fake counts | NO live/paid API testing authorized |
+| Legacy M1/M2/AI1/AI2 | Preserve original isolated/combined/form/create-extend/domain suites and unfiltered Android suite/APK | Existing manual editor/global/watch/share/backup/build/install matrix remains NOT RUN |
+
+All Android execution is hosted; local Gradle download is blocked. 06e71532 passed
+718/718, project UI 12/12, data/session 31/31, gateway/legacy 31/31 and all retained
+M1/M2 selectors. Final documentation/probe-removal evidence must match the final PR
+head; see BASELINE and its audit. New PNG references may be opaque; gateway output must still be square, visible and transparent. No fake coverage, automatic approval or price/cost consent is tested or claimed.
+
+## Corrected regression boundaries
+
+Strict persistence disables allowMainThreadQueries. Asset lease/queued GC, failed
+grouped imports retaining prior/unrelated files, explicit removed/imported-draft
+cleanup after restoration and fresh launcher/source Save validation passed in the
+30-case group at 88933c95. Default source-only M2 broadcast assertions and explicit
+launcher opt-in/disposal both passed. Real target Save retains version/completion/
+exact-key/restoration assertions with correctly typed Long fake metadata.version.
+No layout, clock, timeout, idle rule, test or original selector was weakened.
+
+The added format-3 large and transparent gallery PNG byte-for-byte restore test
+separately rejects those images as project references, with oversized gallery ZIP
+negative coverage. It passed at 06e71532 in the nine-case ProjectAiBackupTest. Physical
+process-kill, URI permissions, storage exhaustion, Samsung/Flip/One UI/TalkBack,
+SAF/keystore and generated-pack install/update remain NOT RUN.

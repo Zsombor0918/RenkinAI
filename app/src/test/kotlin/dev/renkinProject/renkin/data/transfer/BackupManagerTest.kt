@@ -30,6 +30,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
@@ -41,6 +42,7 @@ import java.io.ByteArrayOutputStream
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [33])
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class BackupManagerTest {
 
     private lateinit var context: Context
@@ -227,7 +229,10 @@ class BackupManagerTest {
         )
         val existingUploads = UploadedImageStore.list(context).size
         val upload = UploadedImageStore.directory(context).resolve("preview-test.png")
-        upload.writeBytes(byteArrayOf(1, 2, 3))
+        val reference = android.graphics.Bitmap.createBitmap(32, 32, android.graphics.Bitmap.Config.ARGB_8888)
+        reference.eraseColor(android.graphics.Color.WHITE)
+        upload.outputStream().use { reference.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+        reference.recycle()
         try {
             val out = ByteArrayOutputStream()
             BackupManager(context, packRepo, watchRepo).exportBackup { out }

@@ -12,6 +12,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -24,16 +26,19 @@ import kotlin.coroutines.resumeWithException
 internal const val MAX_AI_RESPONSE_BYTES = 16 * 1024 * 1024
 
 @Singleton
-class OpenAiImageClient @Inject constructor() {
+class OpenAiImageClient internal constructor(private val client: OkHttpClient, private val endpoint: HttpUrl) {
+    @Inject constructor() : this(defaultClient(), "https://api.openai.com/v1/images/edits".toHttpUrl())
     // No logging interceptor, redirects or automatic retries of a potentially billable POST.
-    private val client = OkHttpClient.Builder()
+    companion object {
+    private fun defaultClient() = OkHttpClient.Builder()
         .connectTimeout(25, TimeUnit.SECONDS).readTimeout(240, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS).callTimeout(240, TimeUnit.SECONDS)
         .retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build()
+    }
 
     suspend fun edit(key: String, settings: AiSettings, images: List<ByteArray>): ByteArray =
         withContext(Dispatchers.IO) {
-            val request = buildImageEditRequest(key, settings, images)
+            val request = buildImageEditRequest(key, settings, images).newBuilder().url(endpoint).build()
             decodeImageResponse(execute(client.newCall(request)))
         }
 }

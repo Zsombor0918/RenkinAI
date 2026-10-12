@@ -14,6 +14,11 @@ import dev.renkinProject.renkin.apk.ApplicationProvider
 import dev.renkinProject.renkin.apk.ProfileManager
 import dev.renkinProject.renkin.apk.RenkinPackStore
 import dev.renkinProject.renkin.data.RenkinPackRepository
+import dev.renkinProject.renkin.data.RenkinPackDatabase
+import dev.renkinProject.renkin.data.project.ProjectAiRepository
+import dev.renkinProject.renkin.data.project.ProjectAssetStore
+import dev.renkinProject.renkin.ai.ClientIconGenerationGateway
+import dev.renkinProject.renkin.ai.IconGenerationGateway
 import dev.renkinProject.renkin.data.transfer.BackupManager
 import dev.renkinProject.renkin.data.watch.WatchRepository
 import dev.renkinProject.renkin.packages.ApplicationManager
@@ -29,6 +34,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    @Provides @Singleton
+    fun provideProjectAiRepository(@ApplicationContext context: Context): ProjectAiRepository =
+        ProjectAiRepository(RenkinPackDatabase.get(context), ProjectAssetStore(context))
+
+    @Provides @Singleton
+    fun provideIconGenerationGateway(adapter: ClientIconGenerationGateway): IconGenerationGateway = adapter
 
     @Provides
     @Singleton

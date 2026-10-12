@@ -9,10 +9,10 @@
 A guide for developers (and AI assistants) working on this codebase. The app builds
 installable Android icon packs on-device.
 
-Codex 02 current-source audit: October 11, 2026, owner-merged main
-`73a15e2210cb55cf003e60ebc2033130ee7a9e58`, then `feat/create-extend-coverage-m2`.
+Codex 03 current-source audit: October 11, 2026, owner-merged main
+`aefeb1b69e7757c757c60ac2f00ce2125893e1e6`, then `feat/project-ai-persistence-m3`.
 Entry map: [INDEX](INDEX.md); implementation/limitations: [CURRENT_STATE](agent/CURRENT_STATE.md).
-Codex 00/01 are owner-merged. Codex 02 adds only preparation routes and read-only source inspection described below.
+Codex 00/01/02 are owner-merged. Codex 03 adds project persistence and a future-workflow gateway, while keeping legacy editor/AI/build paths.
 
 ## Naming — read this first
 
@@ -225,7 +225,7 @@ session; provider, build/sign/install and result contracts are unchanged.
 - **DataStore Preferences** (`data/DataPreferences.kt`) — all settings. Typed accessors:
   Composable `DataStore.getXValue()` for reading in composition; `Preferences.getXValue()`
   for reading a captured snapshot off the main thread.
-- **Room — `RenkinPackDatabase`** (file `"renkinPack"`, v18) — profiles + rendered and base icons
+- **Room — `RenkinPackDatabase`** (file `"renkinPack"`, v19) — profiles + rendered and base icons
   of the last built/saved pack per profile. `isCustomIcon` marks hand-picked vs refresh-generated
   rows; `isLegacyIcon` records pre-classification uncertainty without guessing the origin. In the
   Global options UI, only unsaved refresh output is Generated; saved/built non-custom rows are
@@ -363,7 +363,8 @@ foreground/background when recolouring changed them. Reopening the per-app edito
 restores both the adaptive type and its highlighted editing controls, and Original can restore
 the source layers without the source pack being installed. Version 1 layered payloads remain
 readable. `XmlNodeParser` validates the format before ordinary vector or inset decoding. Room
-stays at v18 because no columns or relational meaning change. Backup
+did not change for that adaptive payload feature; it now moves to v19 for the
+additive project tables below. Backup
 format 2 prevents older importers from silently losing this new drawable type; format 1
 archives remain readable. Already-flattened saved icons cannot recover their missing layers:
 the user must select their source again.
@@ -411,10 +412,10 @@ Renkin cannot reproduce that launcher-only selection through the standard resour
 
 ## Create/Extend preparation (Codex 02)
 
-The existing root now has HOME / SETUP / EDITOR routes. SETUP owns mode, source,
-profile choice and transient search/selection primitives under profile/source/mode
-saveable keys; the existing Activity VM and ProjectSessionController still own all
-profile operations. No new session, database, Navigation dependency or builder.
+The M2 root introduced HOME / SETUP / EDITOR routes; M3 adds STYLE. SETUP owns mode, source,
+profile choice and search/selection drafts under profile/source/mode saveable keys;
+explicit Save persists the preparation snapshot in the existing DB; the existing Activity VM and ProjectSessionController still own all
+profile operations. No second session, database, Navigation dependency or builder.
 
 ```mermaid
 stateDiagram-v2
@@ -465,3 +466,111 @@ Manual override is explicit and does not send requests. InstalledAppCatalog reco
 user uncertainty during its existing scan before deduplication; Room identity remains
 package/activity, so ambiguous/non-current-user entries are disabled. See
 [ADR 0003](decisions/0003-read-only-source-coverage.md) for alternatives and limits.
+
+
+## Project AI persistence and gateway (Codex 03)
+
+```mermaid
+flowchart TD
+    P["Existing Profile.id"] --> M["ProjectAiMetadata: active revision and selection"]
+    P --> S["Immutable StyleRevision history"]
+    M --> S
+    S --> R["Ordered StyleReference links"]
+    R --> A["Profile-owned immutable PNG assets"]
+    S --> V["IconAssetVariant: request / review / apply"]
+    V --> A
+    M -. "revalidate + future explicit cost consent" .-> F["Future GenerationPlan; not implemented"]
+    L["Global AiSettingsStore"] --> Q["Existing AI1 / AI2 service"]
+    Q --> C["Existing image clients"]
+    G["New IconGenerationGateway adapter"] --> C
+    C --> K["Existing AiCredentialStore"]
+```
+
+The singleton ProjectAiRepository shares RenkinPackDatabase; MainViewModel retains
+its one ApplicationProvider/session. Metadata is keyed by Profile.id, never name or
+a parallel project ID. Five additive tables in migration 18→19 preserve every old
+row: ProjectAiMetadata, StyleRevision, ReferenceAsset, StyleReference and IconAssetVariant.
+The revision/profile and asset-owner foreign keys prevent cross-owner association;
+profile deletion cascades history/variants/links/assets. Asset references defer
+constraint checks until transaction end so profile cascades can finish in any order.
+KSP owns schema export/identity; no destructive fallback or handwritten schema JSON.
+
+`withProjectOwner` evaluates captured ID/readiness after acquiring the same existing
+profileSessionOperations mutex as profile/icon operations. Save validates existing
+asset ownership and hashes, then checks expected active revision in a Room transaction.
+Equal payloads are idempotent; changed payloads insert a new immutable revision and
+ordered links, then update the sole active pointer. Selection writes instead check
+metadata.version, current launcher/local/lock snapshot and current source index.
+Neither operation saves profilikon edits, writes primary-source/global AI preferences,
+refreshes icons or starts generation. Reference imports are local URI→bounded PNG
+copies; global style copy is explicit and never a migration/default for all projects.
+
+STYLE uses the existing root and profile-keyed SaveableStateHolder. Only text, IDs
+and ordered hashes are saveable. Ready→dirty→saving→saved/error transitions run from
+user callbacks; restoration only loads and never submits. Save/import controls block
+synchronous duplicate clicks; leaving cancels the screen coroutine, and any completed
+equal save can be recovered idempotently. Back asks before explicit draft discard;
+external watch/share/editor attention retains the draft under its original profile.
+The classic editor's stable launcher registration and nested Back priority are unchanged.
+
+Assets have validated relative paths and content hashes, 4 MiB and 4096 px bounds,
+CRC/decode/visible-artwork checks and a 64 MiB profile quota. Store temps flush/fsync
+and atomically rename before DB insertion. A canceled/failed insert may leave an
+unreferenced immutable file; explicit locked GC can collect it. Pending import rows,
+active/history links and variants remain pinned. Explicit discard removes only
+unlinked rows. No startup GC touches Upload or noBackup data. Cross-filesystem/Room
+atomicity is not claimed; any saved revision must already have finalized valid files.
+
+Backup format 4 extends the existing full/share ZIP. Full archives include every new
+record and PNG. Shares include their profile's history/assets/variants and remap ID,
+file paths and variant IDs in the profile transaction; selection requires revalidation.
+Versions 1–3 remain readable and absent project data means empty, not inherited style.
+ValidatedBackupArchive stages one bounded input (10,000 entries, 512 MiB total;
+128 MiB data.json, 4 MiB PNG, bounded manifest/key entries), rejects duplicates,
+unlisted paths/assets, unsafe owners/checksums/PNGs/versions before any writes.
+The URI is not reopened for a changed second pass. Project PNGs install first; the
+final fallible step replaces profiles/icons/project rows in one DB transaction.
+Earlier failed validation/install/transaction preserves previous project rows; legacy
+watch DB, preferences, presets, gallery and keystore stages are not a distributed
+transaction. A validated explicit restore may repair a corrupted same-hash file;
+transient restore storage allows two profile quotas. Signing identities are unchanged.
+
+The gateway port contains original PNG, ordered 0–5 references, explicit style/app
+instruction, provider/model/quality, correlation UUID and optional profile/revision.
+Its real adapter calls existing clients with credentials resolved outside UI/Room/
+archives. Internal endpoint/client seams support MockWebServer only; injected default
+URLs, bodies, timeouts, redirects/retries and legacy service APIs remain. OpenAI is
+one edit POST; Stability accepts one reference and makes style/background POSTs.
+Responses are checked and normalized to transparent 1024 PNG; metadata reports only
+known provider/request/dimensions/call count. Invalid input/credentials fail before
+submission; any post-submission error is Uncertain, cancellation propagates a typed
+CancellationException with billing uncertainty. No retry or pricing estimate.
+Legacy AI1/AI2 do not delegate to this port yet; their journals/quick apply remain.
+[ADR 0004](decisions/0004-project-ai-persistence.md) records the durable contract.
+
+### Codex 03 IO and fresh-context corrections
+
+ProjectAiRepository's per-DB asset lease runs file/synchronous ProfileDao accesses
+on IO and serializes restore/share import with explicit GC. Share import inserts
+its new Profile through the existing DAO on the suspending Room transaction thread,
+without the legacy createProfile Default dispatcher escape. Profile/icon/project
+rows commit together; earlier immutable files are collectible after rollback.
+Grouped reference imports insert after all copies succeed; failures/cancellation
+release only newly imported unlinked rows, retaining pre-existing/history pins.
+Explicit UI removal and saved draft-import hashes cover discard/recreation.
+
+InstalledAppCatalog exposes a fresh identity-only read without icons or catalog
+mutation. Preparation intersects that identity with loaded local/lock state; new
+entries have UNKNOWN local state and cannot be selected until catalog reload.
+Resume/package changes and explicit Save revalidate identities. Source Save reads
+the selected pack's fresh index, including the same version/update/revision/theme/
+mapping fingerprint used by explicit rescan. No refreshIcons, primary-source
+write, watcher service or generation is invoked.
+
+Failed-import file cleanup is candidate-scoped, never a global GC authorization:
+only newly finalized hash paths without any retained row can be removed. Source-only
+package observation remains the default; composed preparation opts into all launcher
+changes, and disposal removes its receiver. Legacy gallery entries use a separate
+20 MiB bound and may be transparent; project references keep the 4 MiB visible-art
+rule. Both still require bounded genuine PNG/CRC/decode validation. Runtime upload,
+legacy AI, signing and icon-session contracts are unchanged.

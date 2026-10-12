@@ -238,3 +238,101 @@ baseline and before the post-disposal broadcast; retain all exact count assertio
 This is deterministic lifecycle synchronization, no sleep/timeout/idling bypass.
 Local 45 guards passed again in 7.556 s; range guards PASS. New QA-path workflow trigger
 keeps final evidence commits covered by the full retained regression runner.
+
+
+## Codex 03 initial verification checkpoint
+
+Fresh base: owner-merged aefeb1b69e7757c757c60ac2f00ce2125893e1e6 (PR #3 head e8e04c43, identical tree). Codex 02 final-head build/regressions/governance were reread at merge; prior 669/669 is baseline only. Codex 03 branch feat/project-ai-persistence-m3: 45 local governance tests passed in 17.344 s. Local full Gradle command failed before configuration at distribution download (Network is unreachable); no SDK/device or successful local Android execution. Initial source diff/runner Python syntax checks passed. New feature tests and generated Room v19 export require hosted verification, not inferred success. PR remains BLOCKED while pending.
+
+The retained runner adds ProjectStyleComposeTest/ProjectSelectionComposeTest, ProjectAiPersistenceTest/ProjectAiMigrationTest/ProjectAiBackupTest/ProjectPreparationTest and IconGenerationGatewayTest plus legacy AI pipeline/persistence/batch selectors. All original isolated/together/shared-form and M2 groups remain. The complete unfiltered suite and actual debug APK still run. Only real XML/summary/generated-schema artifacts at the final feature SHA can close this checkpoint.
+
+
+Local pre-publication verification: the staged documentation guard passed 43 changed paths. The full governance suite passed again, 45/45 in 18.348 s. No Android execution succeeded locally.
+
+## Codex 03 first hosted failure and correction checkpoint
+
+- Head `ea5f4032228c2aab5ee9c954e722bb10020a6962`, [Android run 38174665908](https://github.com/Zsombor0918/RenkinAI/actions/runs/38174665908): Compile PASS, unit FAIL, APK SKIPPED.
+- [Regression run 38174665913](https://github.com/Zsombor0918/RenkinAI/actions/runs/38174665913), artifact 11715826463: independently counted 127 JUnit XML, 710 tests, 8 failures, 0 errors, 0 skipped. Isolated creation 1/1, ingress 1/1, both 2/2, shared form 3/3, Create/Extend 10/10, coverage 28/28, gateway/legacy 31/31 PASS; new UI 7/10 and data 23/25, full 702/710 FAIL.
+- Failure boundaries: ProfileDao main-thread read (one migration case); createProfile's Default dispatcher escaping an enclosing suspending Room transaction (three share cases); legacy graphics produces invalid PNG fixture (one inspection case); exact-versus-substring assertions (two selection cases); reading state before launched Save completes (one selection case). No new AppNotIdleException occurred.
+- The genuine KSP schema 19 was exported despite test failure; identity `7e4b1aec61364b15b862957ac574c8b7`, SHA256 `6c93a2fe875ad2e64482d68dcb72f5c0e1d79892a12f5481145c93440bdb8452`. Source JSON copied byte-for-byte from artifact, never synthesized.
+- Correction local governance 45/45 PASS in 24.813 s; `git diff --check` PASS. Android correction suites/APK pending hosted CI; local Network is unreachable remains. Physical devices and live provider requests NOT RUN.
+
+Codex 03 c06d225a follow-up: compile PASS; 716 tests, three failures; APK SKIPPED
+([Android 38175713388](https://github.com/Zsombor0918/RenkinAI/actions/runs/38175713388),
+artifact 11715578079). Import-error cleanup must be candidate-scoped, not global
+GC; the unchanged source-only M2 observer contract must stay default, while
+launcher preparation opts into all package events only on its screen. Those two
+corrections and opt-in/disposal coverage are now added. The one remaining real
+selection Save interaction is being diagnosed with enabled/displayed assertions
+and semantics/callback evidence; no claim of follow-up Android success yet.
+See [cleanup correction record](../changes/2026-10-11-project-cleanup-regression-boundaries.md).
+
+## Selection Save narrow diagnosis
+
+On 02c23aa5, independent regression run 38176212110 passed all retained original
+selectors, data 30/30 and gateway/legacy 31/31. Full XML counted 717 with one failure,
+zero errors/skips. Semantics showed enabled/displayed Save, selected=1, error node,
+and fake saves=0/metadata=null: the fake's initial version equality check is the
+remaining narrow boundary. Its default is now explicitly Long with old-comparison
+diagnostics pending verification; runtime does not change. Separate Android run
+38176212112 attempt 1 failed 490 fixture initializations because repo1 Maven returned
+404 for the SDK 33 instrumented POM checksum; same-head failed job was rerun.
+Offline fixture credentials are generated in memory, not hardcoded. Local guards
+45/45 passed in 21.989 s. This next-head test correction is not yet proven successful.
+
+Legacy gallery compatibility: existing sampled uploads can exceed four MiB or be
+fully transparent. Gallery archive entries therefore allow twenty MiB and genuine
+PNG signature/CRC/end/dimension/decode validation without the project-reference
+visible-artwork rule. Project references retain four MiB and reject empty artwork.
+The real format-3 large/transparent PNG regression is pending hosted verification;
+legacy upload/render code and credentials/signing contracts remain unchanged.
+
+## First complete Codex 03 technical success — 88933c95
+
+[Android 38176787953](https://github.com/Zsombor0918/RenkinAI/actions/runs/38176787953)
+and [regressions 38176787903](https://github.com/Zsombor0918/RenkinAI/actions/runs/38176787903)
+on `88933c95ce6841747b61914ef44fdd20c60c398c` succeeded including compile and
+assembleDebug. Artifact 11716765047 summary/XML: 717 tests, zero failures/errors/skips;
+original creation 1, ingress 1, both 2, shared form 3, Create/Extend 10, coverage 28,
+new UI 12, data/session 30, gateway/legacy 31 all passed with exit 0 and no missing
+selectors. The archived system output proves the prior fake equality expression
+returned false for initial version 0, while explicit Long expected version produced
+saves=1, metadata.version=1 and exact pkg/Main. This is a fake numeric-comparison
+contract error; enabled/displayed real Save and UI error semantics excluded layout/
+idling. Temporary diagnostic prints are now removed with all assertions retained.
+Subsequent legacy-gallery regression/probe removal needs final-head evidence.
+Physical devices and paid APIs NOT RUN; audit remains BLOCKED until next-head gates.
+
+## Legacy-compatible complete checkpoint — 06e71532
+
+[Android 38177165898](https://github.com/Zsombor0918/RenkinAI/actions/runs/38177165898)
+and [regressions 38177165977](https://github.com/Zsombor0918/RenkinAI/actions/runs/38177165977)
+on `06e715323f4358cbb08abf8766e56b64547924ea` both succeeded: compile, full unit
+suite, assembleDebug and debug upload. APK artifact 11716760691 belongs to that SHA.
+Downloaded regression artifact 11716575779 independently counted **127 full-suite
+JUnit XML, 718 tests, zero failures/errors/skips**. All filters have exit 0 and no
+missing selectors: creation 1/1, ingress 1/1, both 2/2, shared form 3/3, Create/Extend
+10/10, coverage domain 28/28, project UI 12/12, data/session 31/31, gateway/legacy 31/31.
+ProjectAiBackupTest's nine cases include genuine format-3 larger-than-four-MiB and
+transparent gallery PNGs restored byte-for-byte, independently rejected as project
+references. Strict project limits remain intact. KSP v19 export SHA256 is unchanged:
+`6c93a2fe875ad2e64482d68dcb72f5c0e1d79892a12f5481145c93440bdb8452`.
+
+Local governance rerun: 45/45 in 16.053 s on Linux/Python 3.12.14. The local full
+Gradle command remains blocked at distribution download by Network is unreachable;
+it is not local Android success. Diagnostics are removed in the final checkpoint
+commit; its own fresh exact-head runs and governance are recorded in PR #4 after
+publication. No earlier-head result proves that final commit. Physical devices,
+real URI providers, storage-full/kill, upgrade/SAF/keystore/generated-pack update/
+install, TalkBack and Samsung/Flip/One UI/Theme Park remain **NOT RUN**. No live paid
+API call or release occurred. Earlier failed checkpoints above remain evidence;
+the initial Save scheduling hypothesis was superseded by the measured fake numeric
+comparison, not by a runtime interaction change.
+
+Final documentation consistency check: the ADR's compatibility paragraph now
+references the actual 06e71532 hosted success above instead of leaving its earlier
+pending-verification sentence as a current claim. No runtime or test assertion
+changes. Local governance at 68c05698 passed 45/45 in 18.300 s, commit range passed
+six subjects, docs range passed 51 changed paths. Its governance job 114583693727
+passed all 45 guard tests and rejected only the deliberately still-BLOCKED PR audit.
+Subsequent final documentation commit verification is recorded in that PR audit.

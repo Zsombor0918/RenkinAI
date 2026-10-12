@@ -14,6 +14,7 @@ import androidx.room.RoomDatabase
 import androidx.room.Update
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import dev.renkinProject.renkin.data.project.*
 
 /** The always-present default profile: undeletable, builds the base Renkin pack package. */
 const val DEFAULT_PROFILE_ID = 1L
@@ -308,9 +309,14 @@ interface ProfileDao {
         PackVerdict::class,
         ColorPreset::class,
         BuiltIcon::class,
-        ModifierPreset::class
+        ModifierPreset::class,
+        ProjectAiMetadata::class,
+        StyleRevision::class,
+        ReferenceAsset::class,
+        StyleReference::class,
+        IconAssetVariant::class
     ],
-    version = 18
+    version = 19
 )
 abstract class RenkinPackDatabase : RoomDatabase() {
     abstract fun renkinPackDao(): RenkinPackDao
@@ -319,6 +325,7 @@ abstract class RenkinPackDatabase : RoomDatabase() {
     abstract fun colorPresetDao(): ColorPresetDao
     abstract fun modifierPresetDao(): ModifierPresetDao
     abstract fun builtIconDao(): BuiltIconDao
+    abstract fun projectAiDao(): ProjectAiDao
 
     companion object {
         @Volatile
@@ -540,6 +547,10 @@ abstract class RenkinPackDatabase : RoomDatabase() {
             }
         }
 
+        internal val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(db: SupportSQLiteDatabase) = ProjectAiSchema.create(db)
+        }
+
         internal val ALL_MIGRATIONS = arrayOf(
             MIGRATION_1_2,
             MIGRATION_2_3,
@@ -557,7 +568,8 @@ abstract class RenkinPackDatabase : RoomDatabase() {
             MIGRATION_14_15,
             MIGRATION_15_16,
             MIGRATION_16_17,
-            MIGRATION_17_18
+            MIGRATION_17_18,
+            MIGRATION_18_19
         )
 
         private fun insertDefaultProfile(db: SupportSQLiteDatabase) {
