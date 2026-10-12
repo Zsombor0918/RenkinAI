@@ -101,6 +101,11 @@ SAF/keystore and generated-pack install/update remain NOT RUN.
 
 ## Codex 04 analysis matrix — Android execution pending
 
+Initial executable 53addf96 ran 789 tests with five fixture failures; actual group
+counts and stack diagnoses are in BASELINE. The continuation adds owner/real-STYLE
+same-profile mode/source guards, faithful exported SQLite indexes and checks physical
+v19 after fixture creation. Corrected final-head results are still required.
+
 | Area | Added deterministic evidence to execute | Physical/live boundary |
 | --- | --- | --- |
 | Source references | Three real PNG style families, sorted/diverse 8–12, mixed/duplicate/empty/low-alpha/broken/dynamic, 120 bound, stale/cancel; actual bitmap/vector/adaptive draw and owned-bitmap recycling; existing all-map parser | Installed monochrome/color packs, real themes, source update/uninstall NOT RUN |

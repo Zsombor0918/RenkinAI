@@ -8,6 +8,9 @@ group and debug APK; this is historical Codex 03 evidence, not fresh Codex 04.
 No independent APPROVED review or physical-device acceptance is inferred.
 Codex 04 starts on `feat/automatic-style-analysis-m4` from this accepted main;
 sampling/analysis/review work is in progress and not yet a verified feature.
+The STYLE route binds the current Create/Extend mode and chosen source as well as
+Profile.id. A proposal from another route context remains historical and cannot
+authorize a POST, Use or Save. Same-source updates retain explicit stale re-review.
 669/669 belongs to Codex 02. The accepted baseline uses Room v19 with an
 additive v18 migration. Manifest, dependencies, identities, signing/install and
 original Android CI remain unchanged. See [QA](../qa/BASELINE.md).

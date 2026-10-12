@@ -199,7 +199,7 @@ class ProjectStyleComposeTest {
     @Test fun extendPanelUsesSavedSourceContextAndExplicitGlobalCopyWithoutGenerating() {
         records[1] = SavedProjectStyle(ProjectAiMetadata(1, "EXTEND", "pack.source", "stamp"), null, emptyList())
         compose.setContent { Content() }; open()
-        compose.onNodeWithText("Source inspiration: pack.source. Automatic style recognition is not available yet.").assertIsDisplayed()
+        compose.onNodeWithText("Source inspiration: pack.source. Optional analysis uses separately confirmed reference images.").assertIsDisplayed()
         scroll("project-style-copy-global"); compose.onNodeWithTag("project-style-copy-global").performClick()
         scroll("project-style-description"); compose.onNodeWithTag("project-style-description").assertTextContains("copied global")
         assertEquals(0, saves); assertEquals(0, calls)

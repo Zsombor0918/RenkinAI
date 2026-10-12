@@ -145,6 +145,31 @@ class OwnedStyleAnalysisTest {
     }
     private var sourceOverride: CoverageSourceReader? = null
 
+    @Test fun sameProfileModeOrChosenSourceChangeBlocksConsentUseAndSave() = runBlocking {
+        val controller = newController()
+        val prepared = prepare(controller, extend = true)
+        controller.bindContext(1, ProjectSetupMode.EXTEND, "other.pack")
+        controller.submit(1, prepared.requestId)
+        controller.state(1).first { !it.busy }
+        assertEquals(0, calls)
+        assertFalse(File(temporary.root, "style_analysis").exists())
+
+        val record = result(controller, extend = true)
+        val used = controller.use(1, record.requestId, record.hashes.take(5), false)
+        controller.bindContext(1, ProjectSetupMode.CREATE, null)
+        controller.refresh(1)
+        assertEquals(AnalysisValidity.PREPARATION_CHANGED, controller.state(1).value.validity)
+        assertTrue(runCatching { controller.use(1, record.requestId, emptyList(), true) }.isFailure)
+        assertTrue(runCatching { controller.save(1, null, draft(used)) }.isFailure)
+
+        controller.bindContext(1, ProjectSetupMode.EXTEND, "other.pack")
+        assertTrue(runCatching { controller.use(1, record.requestId, emptyList(), true) }.isFailure)
+        assertTrue(runCatching { controller.save(1, null, draft(used), ProjectSetupMode.EXTEND, "other.pack") }.isFailure)
+        assertNull(repo.load(1).revision)
+        assertEquals(AnalysisStatus.RESULT_SAVED, journal.read(1, record.requestId)!!.status)
+        assertEquals(1, calls)
+    }
+
     @Test fun restoreEpochBlocksCandidatesEvenWhenProfileAndMetadataIdsMatch() = runBlocking {
         val controller = newController(); val record = result(controller); val used = controller.use(1, record.requestId, record.hashes, false)
         journal.invalidateAll(); controller.refresh(1)

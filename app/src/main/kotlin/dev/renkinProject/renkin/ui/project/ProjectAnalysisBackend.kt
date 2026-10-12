@@ -7,6 +7,8 @@ import dev.renkinProject.renkin.ai.style.StyleAnalysisRequest
 import kotlinx.coroutines.flow.StateFlow
 
 internal enum class AnalysisValidity { CURRENT, SOURCE_STALE, PREPARATION_CHANGED, RESTORED, WRONG_PROFILE }
+internal fun AnalysisContext.matchesRoute(mode: ProjectSetupMode, source: String?) =
+    this.mode == mode.name && sourcePackage == source
 internal data class ProjectAnalysisState(val busy: Boolean = false, val network: Boolean = false, val preparation: StyleAnalysisRequest? = null,
     val samples: ReferenceSamples? = null, val record: AnalysisRecord? = null,
     val validity: AnalysisValidity = AnalysisValidity.CURRENT, val hasKey: Boolean = false, val error: String? = null,
@@ -21,6 +23,7 @@ internal data class AnalyzedDraft(val specification: String, val hashes: List<St
 /** UI declares consent through submit; prepare/refresh/reopen never submit. VM owns jobs. */
 internal interface ProjectAnalysisBackend {
     fun state(id: Long): StateFlow<ProjectAnalysisState>
+    fun bindContext(id: Long, mode: ProjectSetupMode, source: String?) {}
     fun prepare(id: Long, mode: ProjectSetupMode, source: String?, setupStamp: String?,
         expected: Long?, draft: ProjectStyleDraft)
     fun submit(id: Long, requestId: String)

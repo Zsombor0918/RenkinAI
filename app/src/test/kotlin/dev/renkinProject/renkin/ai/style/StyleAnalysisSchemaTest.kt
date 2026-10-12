@@ -33,7 +33,10 @@ class StyleAnalysisSchemaTest {
     @Test fun missingExtraNullAndCoercedPropertiesAreRejected() {
         reject(JSONObject(analysisFixtureStyle().encode()).apply { remove("stroke") }.toString())
         reject(changed("extra", true)); reject(changed("stroke", null)); reject(changed("mixedStyleWarning", "false"))
-        reject(changed("schemaVersion", "1")); reject(changed("schemaVersion", 1.0)); reject(changed("schemaVersion", 2))
+        reject(changed("schemaVersion", "1"))
+        // JSONObject serializes 1.0 as 1; retain the actual floating-point wire token.
+        reject(analysisFixtureStyle().encode().replace("\"schemaVersion\":1", "\"schemaVersion\":1.0"))
+        reject(changed("schemaVersion", 2))
     }
     @Test fun unsupportedCategoriesAndInventedConfidenceAreRejected() {
         listOf("archetype", "backgroundMode", "stroke", "cornerTreatment", "opticalPadding", "detailLevel", "selfAssessment")

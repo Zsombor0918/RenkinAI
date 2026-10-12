@@ -231,7 +231,7 @@ class MainViewModel @Inject constructor(
         }
         override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft,
             mode: ProjectSetupMode, source: String?, stamp: String?) =
-            if (draft.analysisRequestId != null) projectAnalysis.save(id, expected, draft)
+            if (draft.analysisRequestId != null) projectAnalysis.save(id, expected, draft, mode, source)
             else projectOperation(id) { projectAiRepository.saveStyle(id, expected, draft.specification, draft.instruction, draft.hashes,
                 mode.name, source, stamp) }
     }

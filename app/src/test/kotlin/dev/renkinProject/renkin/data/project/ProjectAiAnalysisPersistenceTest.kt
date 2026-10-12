@@ -180,8 +180,18 @@ class ProjectAiAnalysisPersistenceTest {
             old.execSQL("INSERT INTO StyleReference VALUES (4, 3, 0, ?)", arrayOf(asset.hash))
             old.execSQL("INSERT INTO IconAssetVariant VALUES ('legacy-variant', 4, 'pkg/Main', 3, ?, ?, NULL, 'GENERATED', 'COMPLETED', 'UNREVIEWED', 'NOT_APPLIED', 101, 102)", arrayOf(asset.hash, asset.hash))
             old.execSQL("INSERT INTO BuiltIcon VALUES (4, 'pkg', 'Main', 'build-hash')")
-            assertEquals(19, old.version)
             old.query("PRAGMA table_info(StyleRevision)").use { assertEquals(7, it.count) }
+        }
+        // SQLiteOpenHelper sets user_version after onCreate/population returns.
+        context.openOrCreateDatabase(name, Context.MODE_PRIVATE, null).use { old ->
+            assertEquals(19, old.version)
+            old.rawQuery("PRAGMA index_list(StyleReference)", null).use { indexes ->
+                var found = false
+                while (indexes.moveToNext()) {
+                    if (indexes.getString(indexes.getColumnIndexOrThrow("name")) == "index_StyleReference_profileId_assetHash") found = true
+                }
+                assertTrue("The v19 fixture must contain its actual exported index", found)
+            }
         }
         try {
             var identity = ""

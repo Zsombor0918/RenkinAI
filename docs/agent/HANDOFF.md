@@ -28,6 +28,13 @@ import). Correct these fixtures plus the known compiled-vector resource contract
 then inspect genuine full/filtered XML and KSP v20. No passing result is inferred
 from fixing compilation. See the continuation ledger in BASELINE.
 
+Continuation head 53addf96 compiled tests and ran 789 with five failures; see the
+downloaded-report diagnosis in BASELINE. The next correction restores all exported
+fixture indexes, checks SQLite user_version after onCreate returns, retains a real
+floating-point JSON token and exact UI source/count expectations. Route mode/source
+is now bound before refresh and checked at paid confirmation, Use and guarded Save;
+new same-profile route regression tests must pass before acceptance.
+
 - Local governance/runner guards: 51/51, 15.308 s, exit 0. Six injected runner tests
   are synthetic evidence of failure propagation, not Android/Room proof.
 - Local full Android command FAILED before configuration: Gradle 8.11.1 distribution

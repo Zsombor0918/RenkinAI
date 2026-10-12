@@ -624,6 +624,10 @@ StyleAnalysisRequest carries local profile/mode/source identities, two source st
 selection/catalog hashes and storage epoch. Prompt hash, ordered sample hashes,
 model/detail/schema/renderer algorithm/report form a deterministic fingerprint.
 Edited draft text/refs disable the previous preparation until explicitly prepared again.
+The displayed mode/source is bound separately from saved metadata. Changing from
+Create to Extend or choosing another pack under the same profile invalidates frozen
+consent and proposal use. UI and owner-guarded Save both enforce this route identity;
+ordinary updates of the same source still require the existing explicit stale review.
 
 OpenAiStyleAnalysisGateway is independent of IconGenerationGateway. Official contracts
 checked October 12, 2026 support `gpt-5.4-mini` image input/structured text in

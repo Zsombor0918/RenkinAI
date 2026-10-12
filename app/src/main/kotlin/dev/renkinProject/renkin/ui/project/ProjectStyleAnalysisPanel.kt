@@ -42,7 +42,8 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
     val theme = PackageResourceResolver.displayedNightMode
     var readError by remember(id) { mutableStateOf(false) }
     ObserveCoverageInvalidation(source) { invalidation++ }
-    LaunchedEffect(id, source, invalidation, theme) {
+    LaunchedEffect(id, mode, source, invalidation, theme) {
+        backend.bindContext(id, mode, source)
         try { backend.refresh(id); readError = false } catch (cancel: CancellationException) { throw cancel }
         catch (_: Exception) { readError = true }
     }
@@ -86,13 +87,15 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
             }
         }
         val prepared = state.preparation
-        val matchesDraft = prepared != null && state.preparedDraftHash == analysisDraftHash(draft)
+        val matchesDraft = prepared != null && prepared.context.matchesRoute(mode, source) &&
+            state.preparedDraftHash == analysisDraftHash(draft)
         if (prepared != null && !matchesDraft) Text(stringResource(R.string.styleAnalysisDraftChanged))
         OutlinedButton(onClick = { if (prepared != null) { confirmedId = prepared.requestId; confirm = true } },
             enabled = enabled && !state.busy && matchesDraft && state.hasKey,
             modifier = Modifier.heightIn(min = 48.dp).testTag("style-analysis-start")) { Text(stringResource(R.string.styleAnalysisStart)) }
         val record = state.record
         if (record != null) {
+            val validity = if (record.context?.matchesRoute(mode, source) == true) state.validity else AnalysisValidity.PREPARATION_CHANGED
             Text(stringResource(R.string.styleAnalysisRequestStatus, record.status.name), Modifier.testTag("style-analysis-request-status"))
             if (record.status == AnalysisStatus.UNCERTAIN || record.status == AnalysisStatus.PREPARED || record.status == AnalysisStatus.REQUESTING) {
                 Text(stringResource(R.string.styleAnalysisUncertain), Modifier.testTag("style-analysis-uncertain"))
@@ -103,7 +106,7 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                 "Refused" -> R.string.styleAnalysisRefused
                 else -> R.string.styleAnalysisFailed
             }), Modifier.testTag("style-analysis-failed"))
-            if (state.validity != AnalysisValidity.CURRENT) Text(stringResource(R.string.styleAnalysisStale), Modifier.testTag("style-analysis-stale"))
+            if (validity != AnalysisValidity.CURRENT) Text(stringResource(R.string.styleAnalysisStale), Modifier.testTag("style-analysis-stale"))
             record.style?.let { style ->
                 Text(style.shortStyleDescription, Modifier.testTag("style-analysis-suggestion"))
                 Text(stringResource(R.string.styleAnalysisSummary, style.archetype.name, style.backgroundMode.name,
@@ -140,7 +143,7 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                     }
                 }
                 OutlinedButton(onClick = { useConfirm = true }, enabled = enabled && !using &&
-                    state.validity in setOf(AnalysisValidity.CURRENT, AnalysisValidity.SOURCE_STALE),
+                    validity in setOf(AnalysisValidity.CURRENT, AnalysisValidity.SOURCE_STALE),
                     modifier = Modifier.heightIn(min = 48.dp).testTag("style-analysis-use")) { Text(stringResource(R.string.styleAnalysisUseDraft)) }
                 Text(stringResource(R.string.styleAnalysisSaveSeparately))
                 TextButton(onClick = {
@@ -156,13 +159,13 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                 if (useConfirm) RenkinAlertDialog(onDismissRequest = { useConfirm = false },
                     title = { Text(stringResource(R.string.styleAnalysisReviewTitle)) },
                     text = { Text(stringResource(when {
-                        state.validity == AnalysisValidity.SOURCE_STALE -> R.string.styleAnalysisUseStaleText
+                        validity == AnalysisValidity.SOURCE_STALE -> R.string.styleAnalysisUseStaleText
                         dirty -> R.string.styleAnalysisReplaceDirtyText
                         else -> R.string.styleAnalysisUseText
                     })) },
                     confirmButton = { TextButton(onClick = {
-                        if (!using) {
-                            val staleAccepted = state.validity == AnalysisValidity.SOURCE_STALE
+                        if (enabled && !using && validity in setOf(AnalysisValidity.CURRENT, AnalysisValidity.SOURCE_STALE)) {
+                            val staleAccepted = validity == AnalysisValidity.SOURCE_STALE
                             using = true; onBusy(true); useConfirm = false
                             scope.launch {
                                 try { onUse(backend.use(id, record.requestId, selected, staleAccepted), staleAccepted); useError = false }
@@ -171,7 +174,8 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                                 finally { using = false; onBusy(false) }
                             }
                         }
-                    }, modifier = Modifier.testTag("style-analysis-confirm-use")) { Text(stringResource(R.string.styleAnalysisUseDraft)) } },
+                    }, enabled = enabled && !using && validity in setOf(AnalysisValidity.CURRENT, AnalysisValidity.SOURCE_STALE),
+                        modifier = Modifier.testTag("style-analysis-confirm-use")) { Text(stringResource(R.string.styleAnalysisUseDraft)) } },
                     dismissButton = { TextButton(onClick = { useConfirm = false }, modifier = Modifier.testTag("style-analysis-keep-draft")) {
                         Text(stringResource(R.string.colorizeCancel))
                     } })
@@ -181,6 +185,7 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
     if (confirm) {
         val request = state.preparation
         val validConfirmation = request != null && request.requestId == confirmedId &&
+            request.context.matchesRoute(mode, source) &&
             state.preparedDraftHash == analysisDraftHash(draft) && !state.busy && enabled && state.hasKey
         RenkinAlertDialog(onDismissRequest = { confirm = false }, title = { Text(stringResource(R.string.styleAnalysisConsentTitle)) },
             text = { Text(stringResource(R.string.styleAnalysisConsentText, source ?: stringResource(R.string.styleAnalysisOwnSource),

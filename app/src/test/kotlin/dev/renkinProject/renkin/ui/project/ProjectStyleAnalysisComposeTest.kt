@@ -176,7 +176,8 @@ class ProjectStyleAnalysisComposeTest {
     }
     @Test fun extendShowsTwelveLocalSamplesAndAdvancedLimitsAndOrdersFiveGenerationRefs() {
         compose.setContent { Content() }; open(extend = true); click("style-analysis-prepare")
-        scroll("style-analysis-sample-count"); compose.onNodeWithTag("style-analysis-sample-count").assertTextContains("12 samples selected")
+        scroll("style-analysis-sample-count"); compose.onNodeWithTag("style-analysis-sample-count").assertTextEquals(
+            "12 samples selected; 12 candidates examined, 0 duplicates, 0 unsupported, 0 broken or empty.")
         assertEquals(0, posts); confirm(); complete(); click("style-analysis-advanced")
         scroll("style-analysis-reference-5"); compose.onNodeWithTag("style-analysis-reference-5").assertIsOff().performClick().assertIsOff()
         click("style-analysis-first-4"); click("style-analysis-use"); compose.onNodeWithTag("style-analysis-confirm-use").performClick()
@@ -210,6 +211,27 @@ class ProjectStyleAnalysisComposeTest {
         failSave = true; click("project-style-save"); scroll("project-style-error"); compose.onNodeWithTag("project-style-error").assertIsDisplayed()
         scroll("project-style-description"); compose.onNodeWithTag("project-style-description").assertTextContains("keep this draft")
         assertEquals(0, saves); assertEquals(0, posts)
+    }
+    @Test fun sameProfileCandidateFromDifferentModeOrSourceCannotBeConfirmedOrUsed() {
+        compose.setContent { Content() }; open(extend = true); click("style-analysis-prepare")
+        lateinit var frozen: StyleAnalysisRequest
+        compose.runOnIdle {
+            frozen = checkNotNull(state.value.preparation)
+            val other = frozen.context.copy(sourcePackage = "other.pack", sourceIdentity = frozen.context.sourceIdentity!!.copy(packageName = "other.pack"))
+            state.value = state.value.copy(preparation = frozen.copy(context = other))
+        }
+        scroll("style-analysis-start"); compose.onNodeWithTag("style-analysis-start").assertIsNotEnabled()
+        assertEquals(0, posts)
+        compose.runOnIdle { state.value = state.value.copy(preparation = frozen) }
+        confirm(); complete()
+        for (context in listOf(
+            frozen.context.copy(mode = "CREATE", sourcePackage = null, setupStamp = null, referenceStamp = null, sourceIdentity = null),
+            frozen.context.copy(sourcePackage = "other.pack", sourceIdentity = frozen.context.sourceIdentity!!.copy(packageName = "other.pack")))) {
+            compose.runOnIdle { state.value = state.value.copy(record = record(frozen.copy(context = context), AnalysisStatus.RESULT_SAVED)) }
+            scroll("style-analysis-stale"); compose.onNodeWithTag("style-analysis-stale").assertIsDisplayed()
+            scroll("style-analysis-use"); compose.onNodeWithTag("style-analysis-use").assertIsNotEnabled()
+        }
+        assertEquals(1, posts); assertEquals(0, uses); assertEquals(0, saves); assertNull(records[1])
     }
     @Test @Config(qualifiers = "w840dp-h1000dp")
     fun wideStyleDarkLightRestorationRetainsAccessibleFortyEightDpActionsWithoutRequests() {

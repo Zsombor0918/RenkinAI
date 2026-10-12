@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
+import java.util.concurrent.ConcurrentHashMap
 
 /** Existing VM supplies its mutex and provider reads; this object owns no session/database. */
 internal interface AnalysisSessionOwner {
@@ -29,7 +30,12 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
     private val owner: AnalysisSessionOwner) : ProjectAnalysisBackend {
     private val states = mutableMapOf<Long, MutableStateFlow<ProjectAnalysisState>>()
     private val jobs = mutableMapOf<Long, Job>()
+    private val routes = ConcurrentHashMap<Long, Pair<ProjectSetupMode, String?>>()
     override fun state(id: Long): StateFlow<ProjectAnalysisState> = flow(id)
+    override fun bindContext(id: Long, mode: ProjectSetupMode, source: String?) { routes[id] = mode to source }
+    private fun matchesRoute(context: AnalysisContext) = routes[context.profileId]?.let {
+        context.matchesRoute(it.first, it.second)
+    } ?: true
     private fun flow(id: Long) = states.getOrPut(id) { MutableStateFlow(ProjectAnalysisState()) }
     private fun start(id: Long, network: Boolean = false, action: suspend () -> Unit) {
         if (flow(id).value.busy) return
@@ -48,6 +54,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         }
     }
     override fun prepare(id: Long, mode: ProjectSetupMode, source: String?, setupStamp: String?, expected: Long?, draft: ProjectStyleDraft) {
+        bindContext(id, mode, source)
         start(id) {
             val samples = if (mode == ProjectSetupMode.EXTEND) {
                 require(!source.isNullOrBlank() && setupStamp != null)
@@ -102,7 +109,8 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
     }
     private suspend fun validity(context: AnalysisContext): AnalysisValidity = try {
         owner.owned(context.profileId) {
-            if (withContext(Dispatchers.IO) { journal.epoch(context.profileId) } != context.storageEpoch) AnalysisValidity.RESTORED
+            if (!matchesRoute(context)) AnalysisValidity.PREPARATION_CHANGED
+            else if (withContext(Dispatchers.IO) { journal.epoch(context.profileId) } != context.storageEpoch) AnalysisValidity.RESTORED
             else {
                 val current = repository.load(context.profileId)
                 if ((current.metadata?.version ?: 0L) != context.metadataVersion || current.revision?.revision != context.baseRevision ||
@@ -131,6 +139,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         require(hashes.size <= 5 && hashes.distinct().size == hashes.size && hashes.all { it in record.hashes })
         val reviewedStamp = if (record.context.mode == "EXTEND") projectSourceStamp(owner.reader(checkNotNull(record.context.sourcePackage), true).index) else null
         val imported = owner.owned(id) {
+            check(matchesRoute(record.context)) { "Style setup changed; prepare a new suggestion." }
             check(withContext(Dispatchers.IO) { journal.epoch(id) } == record.context.storageEpoch)
             val sources = hashes.map { hash -> { ByteArrayInputStream(journal.image(id, hash)) } }
             repository.importReferences(id, sources)
@@ -143,9 +152,13 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
     }
 
     /** Style Save still enters the existing session mutex; no network or icon operation. */
-    suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft): SavedProjectStyle = owner.owned(id) {
+    suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft,
+        mode: ProjectSetupMode? = null, source: String? = null): SavedProjectStyle = owner.owned(id) {
         val record = withContext(Dispatchers.IO) { checkNotNull(journal.read(id, checkNotNull(draft.analysisRequestId))) }
         check(record.context != null && record.context.profileId == id && record.status in setOf(AnalysisStatus.RESULT_SAVED, AnalysisStatus.REVIEWED))
+        check(matchesRoute(record.context) && (mode == null || record.context.matchesRoute(mode, source))) {
+            "Style setup changed; prepare a new suggestion."
+        }
         check(withContext(Dispatchers.IO) { journal.epoch(id) } == record.context.storageEpoch)
         val current = repository.load(id)
         val revision = current.revision

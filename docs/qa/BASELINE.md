@@ -18,6 +18,8 @@ unreachable before configuration; hosted reruns must establish actual test resul
 
 ## Codex 04 starting checkpoint — October 12, 2026
 
+The continuation after test compilation repair is recorded separately below.
+
 Fresh accepted main 6aed9e08ee5619c1061481972dc172546c7f5abe, owner-merged PR #4
 at 04:45:50 UTC. Source a73c1e02 is an ancestor with identical tree. Its historical
 final Android 38177949323, regressions 38177949324 and governance 38178529351 are
@@ -39,6 +41,36 @@ Their XML/schema stand-ins are synthetic runner tests, never Room/Android eviden
 New Kotlin tests and exported v20 are pending hosted execution. Existing M1/M2/M3
 selectors remain; no ignored tests, idling bypass or enlarged timeout. Local
 Gradle/SDK/network limitation above is unchanged; device/provider/live requests NOT RUN.
+
+## Codex 04 executable continuation — 53addf96
+
+[Android 38236937112](https://github.com/Zsombor0918/RenkinAI/actions/runs/38236937112)
+on `53addf96b0e2a49c1c98b527b1e6793f2c93931c` compiled production and tests,
+then ran **789 tests, five failures**, APK skipped. Downloaded and inspected artifact
+11741057628 (HTML report ZIP SHA256 bd2c61c6deb008bece75034695f8b01254390459813a70e3f0cbb7f6b5b3052a).
+The v19 exported-schema helper omitted indexes, causing Room's StyleReference index
+validation to fail; real historical fixtures must create every exported index.
+The new migration assertion observed user_version inside onCreate, before the framework
+sets it. Verify the physical file after creation. JSONObject normalized the test's
+Double 1.0 to integer 1 before parsing; retain literal 1.0 on the wire for rejection.
+The new sample assertion requested exact text for a fragment, while the old source
+label still expected recognition unavailable. Preserve full counter/source assertions
+against actual behavior. No production migration failure is established by those
+incomplete fixtures. Local Python guards passed 51/51 in 13.188 s; staged hooks passed.
+Fresh corrected Android execution is required; no test or original selector is removed.
+
+Downloaded regression artifact 11741377662 from run 38236937109 independently totals
+135 XML / 789 tests / five failures / zero errors or skips; summary HEAD matches
+53addf96 and every selector exists. Sampler 11/11, gateway 6/6, journal 10/10,
+original creation/ingress/both/form 1/1, 1/1, 2/2, 3/3, Create/Extend 10/10,
+coverage 28/28, project data 31/31 and gateway/legacy 31/31 passed. Style UI 11/12,
+schema/composer 13/14, analysis UI 10/11 and persistence/session 18/19 failed.
+Genuine KSP v20 identity is `7645511f2ebcb036f0f2da33eee84a17`; copied export SHA256
+`10410ffa2c99a0718ffb2552f2194280d00fe816e88af5e0ed9a667780abd8f8`.
+Sampler measured deterministic pairs: outline examined 18/valid 14/chosen 12/duplicates 4,
+103 ms; solid 18/11/11/7, 104 ms; detailed 18/17/12/1, 81 ms. Each homogeneous
+fixture reported mixed=false; the separate mixed fixture passed. Timings are hosted
+native fixture measurements, not phone/OEM performance guarantees.
 
 ## Codex 02 — verified implementation checkpoint
 
