@@ -6,7 +6,7 @@ at 16:10:49 UTC; source `aceb691c6429e0f7cd86be75d3da5d0df087f149`.
 
 ## Fact register and scope
 
-The current source already owns immutable StyleRevision, ordered references,
+At the accepted M4 baseline, source owns immutable StyleRevision, ordered references,
 ReferenceAsset and IconAssetVariant in the existing Room v20. Its image gateway
 does not persist consent/results or approve styles. M4 consent only authorizes
 structured analysis. Legacy global AI1/AI2 and the real editor/build/install remain.
@@ -58,8 +58,9 @@ without generation or Apply. Approval does not authorize future paid requests.
 Full/share format 6/project payload v3 carries originals, RAW variants, evidence
 and approval history. Share remaps profile/variant IDs and marks approval stale;
 full restore rotates trial epochs and marks restored approvals for revalidation.
-Legacy formats and existing gallery remain readable. Journals/credentials/signing
-rights are excluded; profile deletion tombstones consumed IDs. Asset leases, FK
+Legacy formats and existing gallery remain readable. The new trial payload excludes
+journals/credentials and adds no signing material; existing full-backup pack-keystore
+behavior is unchanged. Profile deletion tombstones consumed IDs. Asset leases, FK
 ownership, history/variant pins and targeted GC remain authoritative.
 
 ## Alternatives and consequences

@@ -14,7 +14,7 @@ Codex 04 source audit: October 12, 2026. Accepted base is owner-merged PR #4
 `feat/automatic-style-analysis-m4` is offline-verified: 792 tests, all groups/APK.
 Owner merged #5 as af7bdb10 at 16:10:49 UTC on October 12. Final aceb691c
 passed its own complete checks; provider/device acceptance is separate. M5 source
-starts from that accepted main and awaits new hosted verification.
+starts exclusively from that accepted main; head-specific evidence is in QA and PR #6.
 Historical Codex 03 starting main was
 `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`, then `feat/project-ai-persistence-m3`.
 Entry map: [INDEX](INDEX.md); implementation/limitations: [CURRENT_STATE](agent/CURRENT_STATE.md).
@@ -724,7 +724,8 @@ priority and profile Save/Cancel. No second VM, Room database or navigation fram
 
 TrialContext freezes profile/revision/version/mode/source/index/catalog/selection,
 ordered reference fingerprint, provider/model/quality and separate trial epoch.
-StyleTrialPlan adds exact saved description/instruction, 1–3 real original hash+origin
+StyleTrialPlan adds exact saved description/instruction and their style fingerprint,
+1–3 real original hash+origin
 and unique item/plan UUIDs. A zero eligible selection creates no plan. Unknown/dynamic/
 work-user/locked/protected local entries fail closed; covered overrides are explicit.
 Stable sorted first/middle/last suggestions avoid ranking every phone icon at API
@@ -764,7 +765,8 @@ staging, <=4 MiB original/ref snapshots and <=8 MiB normalized RAW staging. Requ
 and one counter per real endpoint precede enqueue. One-shot multipart wrapping
 retains bytes/type/length and forbids pinned OkHttp's 503 Retry-After:0 follow-up,
 besides disabled redirects/retries. Serial confirmation consumes each UUID once;
-Stop/recreation/cold recovery never resumes a paid endpoint. M4 and AI2 journals stay
+Stop and cold recovery never replay a paid endpoint. The existing VM job may
+continue already confirmed work through Activity recreation. M4 and AI2 journals stay
 separate. Existing AI1/AI2 receive the narrow shared-client one-shot correction only.
 
 Result staging precedes original+RAW project installs and one transactional asset/
@@ -787,8 +789,9 @@ Format 6/payload v3 exports completed original/RAW/variant/approval history; sha
 remaps IDs/owners and makes approval stale, full restore marks revalidation and
 invalidates local request epochs. Legacy formats/payloads keep old pixels without
 inferred trial approval. Backup validators check PNG chunks/CRC/hash/ownership and
-actual alpha/nonempty 1024 RAW before mutation. Journals, credentials and signing
-rights do not travel. Existing asset lease/FKs/pins and separate legacy stores stay.
+actual alpha/nonempty 1024 RAW before mutation. The new trial payload excludes journals/credentials and adds no signing material;
+existing full-backup pack-keystore behavior remains unchanged. Asset lease/FKs/pins
+and separate legacy stores stay.
 A populated v21 cannot be downgraded to v20: forward repair or explicit compatible
 pre-upgrade backup recovery, with the same app/pack signing identities, is required.
 
@@ -796,8 +799,8 @@ OwnedStyleTrials.accepted supplies M6 read-only AcceptedTrialVariant only after
 fresh source/selection/catalog/revision/refs/configuration/original hash+origin/epoch
 verification and actual accepted approval+PNG checks. It submits/applies nothing;
 M6 must validate identical inputs again before reusing bytes. M6 gallery/bulk Apply,
-new batch permission and M7 edit remain unimplemented. All new automated evidence
-is pending in [QA](qa/BASELINE.md); device/provider quality and actual cost are untested.
+new batch permission and M7 edit remain unimplemented. Head-specific automated evidence
+is recorded in [QA](qa/BASELINE.md) and PR #6; device/provider quality and actual cost are untested.
 
 Consumed per-item UUIDs also have a separate device-wide AtomicFile ledger (8,192
 markers maximum). Another plan/profile cannot reuse an item UUID; deletion and

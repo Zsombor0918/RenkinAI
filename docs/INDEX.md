@@ -6,8 +6,9 @@ The Codex 00 baseline is `main` at `eb4daa5de82fab54e115363c073eb8981f2203d6`
 (verified October 11, 2026). Commit-specific validation is recorded separately.
 Codex 00–04 are owner-merged. PR #5 was merged as af7bdb10 at 16:10:49 UTC
 on October 12; its final aceb691c checks passed independently. Codex 05 trial
-source is implemented on a new branch, awaiting fresh verification and owner
-acceptance. Codex 06/07 remain planned; device/provider acceptance is separate.
+is implemented in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), with
+verified code checkpoint 0df78ef8/856 tests and final-head checks in the PR audit.
+Owner review/merge is pending. Codex 06/07 remain planned; device/provider acceptance is separate.
 
 | Document | Responsibility |
 | --- | --- |

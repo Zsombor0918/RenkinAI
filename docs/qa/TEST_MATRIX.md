@@ -125,9 +125,9 @@ groups, complete suite/APK and governance before the PR is ready. Device/live ga
 above remain NOT RUN; green CI is not owner or Play release approval.
 
 
-## Codex 05 trials — source fixtures, execution pending
+## Codex 05 trials — verified code checkpoint, device acceptance pending
 
-| Area | New evidence required on actual final M5 HEAD | Physical/live status |
+| Area | Automated coverage passed on0df78ef8 | Physical/live status |
 | --- | --- | --- |
 | Selection/frozen inputs | StyleTrialTargetSelectorTest/StyleTrialPlanTest: Create/Extend 0–3/many, covered override, unknown/work/lock/local protections, duplicate/tie/manual, vector/adaptive/empty/broken originals, strict plan and composer bounds | Actual launcher/source/theme updates NOT RUN |
 | Real client/no-replay | StyleTrialGatewayTest plus unchanged legacy gateway/AI suites: original/ref order, alpha/count/config/privacy, unsafe 503 control vs one-shot OpenAI/both Stability, invalid first step, 307/308/auth/404/429/5xx/malformed/timeout/cancel | Account/model quality/cost NOT RUN; zero live requests |
@@ -136,7 +136,15 @@ above remain NOT RUN; green CI is not owner or Play release approval.
 | Room/history/backup | StyleTrialPersistenceTest/StyleTrialMigrationTest and added ProjectAiBackupTest cases: original+RAW durable/pinned, review/approval/reuse, stale/corrupt/competing, genuine physical v20→v21/fresh, format6/payload3/full/share/rekey/legacy5 | Upgrade/SAF/signing/install/update NOT RUN |
 | Full acceptance | All original groups, five additive M5 groups, unfiltered compile/unit/debug APK, actual XML and KSP19/20/21 plus Python guards/conventions/docs on one final SHA | Owner acceptance and merge remain separate |
 
-The historical 792/792 does not prove these new cases. No old assertion/selector
-is removed or ignored; old migration identity assertions now target genuine v21
-while new tests retain the actual v20 exported starting file. Exact observed results
-will be recorded in BASELINE and the PR audit, without substituting synthetic XML.
+Code0df78ef8 passed143 XML/856 tests/zero failure/error/skip, all21 commands and
+selectors: M5 domain10/gateway8/journal12/UI12/persistence-session19, plus backup3
+within retained project-data34. Populated deletion preserves valid redacted OpenAI/
+Stability records, real counters, consumed UUIDs and other-owner files. Native
+multipart factory/whole-body one-shot, numerical revision/style text alias rejection,
+safe model/account errors and32,000-character prompt bounds passed.
+
+No old assertion/selector is removed/ignored; migration assertions use genuine21
+with real18/19/20 starting fixtures. KSP19/20/21 bytes match source. Exact final
+closing-head full/filtered/schema/APK/governance checks belong to PR #6 before
+readiness; the ancestor's856 result cannot substitute for them. Physical/live
+scenarios remain NOT RUN and CI is not owner/release acceptance.

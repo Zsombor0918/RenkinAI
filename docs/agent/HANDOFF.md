@@ -1,4 +1,4 @@
-# Agent handoff — Codex 05 style-trial source, verification pending
+# Agent handoff — Codex 05 style trials, owner acceptance pending
 
 ## Accepted baseline and scope
 
@@ -75,8 +75,8 @@ an approved variant makes readiness stale. New revision/source/selection/refs/or
 epoch cannot inherit approval; historical material remains readable.
 
 Existing Room v21 adds only nullable variant trialContextJson and StyleTrialApproval
-through explicit 20→21. Genuine KSP export and physical v20/fresh identity tests are
-required. Format 6/project payload v3 carries original+RAW/history/evidence/approvals;
+through explicit 20→21. Genuine KSP export and physical SQLite v20/fresh identity tests passed on 0df78ef8;
+physical-device upgrade remains untested. Format 6/project payload v3 carries original+RAW/history/evidence/approvals;
 full restore marks approvals for revalidation, share remaps owner+variant IDs and
 marks stale. Old payload 1/2 and format 1–5 still load without fabricated approval.
 Trial RAW backup validation requires actual transparent, nonempty 1024 PNG, as well
@@ -86,22 +86,32 @@ compatible pre-upgrade full-backup recovery with unchanged app/pack signing keys
 
 ## Verification and remaining acceptance
 
-Fresh local baseline guards: 51/51 in 6.981 s. Initial expanded runner guards:
-52/52 in 8.458 s; synthetic XML/schema fixtures are not Android evidence. Local full
-Gradle failed before configuration downloading 8.11.1 (Network is unreachable).
-New Kotlin/Compose/HTTP/Room/backup suites and KSP v21 await hosted execution.
-Every original selector remains, five M5 groups are added, and unfiltered
-compileDebugKotlin/testDebugUnitTest/assembleDebug still runs last. Genuine schemas
-19/20/21, positive XML/testcase counts, zero failures/errors/skips and final HEAD
-must all be verified. Required contexts remain build/commit-conventions/
-documentation-audit, plus task-required profile-form-regressions. Do not call the
-historical 792 result an M5 pass. No main push, merge, ruleset write or release.
+Verified implementation head 0df78ef8 passed Android 38293199741 and
+regressions 38293200475. Independently downloaded artifact 11767029451: exact HEAD,
+verified ZIP digest,143 XML/856 tests/zero failures/errors/skips. All21 commands and
+original/new selectors passed; M5 domain10/gateway8/journal12/UI12/persistence-session19.
+Original CI APK 11767123455 is genuine; KSP19/20/21 bytes match source, with v21 identity
+8c7a3c8b5b26ad29673ebbd77605838e. Populated OpenAI/Stability deletion passes with
+real endpoint counts, redaction, zero replay and other-owner isolation. Full/shared/
+legacy backup, file→Room split faults and current local re-review also passed.
+
+Local correction Python 52 guards passed in 7.704 s; hooks/range checks pass. Local
+Gradle failed before configuration downloading 8.11.1 (Network is unreachable);
+hosted Linux/JDK17/native Robolectric/Room/MockWebServer provide Android evidence.
+Closing documentation changes no runtime/test/schema/build file. The exact final
+SHA, fresh full/filtered XML, genuine schemas/APK and four latest contexts are
+recorded in PR #6 after commit; do not substitute this ancestor's result for them.
+Required ruleset contexts remain build/commit-conventions/documentation-audit,
+plus task-required profile-form-regressions. Ruleset 24877351 active, empty bypasses,
+force/delete prohibited, approvals 0 and conversation/last-push/strict false remain
+unchanged. No main push, merge, rule write, release or live API call occurs.
 
 NOT RUN: physical device/emulator/Flip8/One UI/Theme Park, URI/storage-full/actual
 process kill, real upgrade/restore/install/update/signing/TalkBack/hinge/OEM,
 provider account/model quality/recognizability/exact billing. Zero live requests.
-Before ready-for-review, repair measured failures without deleting/ignoring tests,
-weakening idling/timeouts/selectors or fabricating owner/reviewer acceptance.
+Final-head build/regressions/governance and artifact verification are recorded in
+PR #6 before readiness. No tests/selectors/idling/timeouts are weakened, and owner
+review/merge remains an explicit decision; no APPROVED review is fabricated.
 
 ## M6 read-only reuse and next boundary
 

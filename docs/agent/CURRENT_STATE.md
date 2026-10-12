@@ -1,27 +1,20 @@
 # Current implementation
 
-Historical Codex 03: owner Zsombor0918 merged PR #4 at 04:45:50 UTC as main
-`6aed9e08ee5619c1061481972dc172546c7f5abe`. Accepted feature head
-`a73c1e026903b97f2964139e5831246ba465bd30` is an ancestor with identical tree.
-Its final Android/regression/governance checks passed: 718/718, every isolated
-group and debug APK; this is historical Codex 03 evidence, not fresh Codex 04.
-No independent APPROVED review or physical-device acceptance is inferred.
-Owner merged PR #5 on October 12 at 16:10:49 UTC as current accepted main
-`af7bdb104869b0d0dded2acdf020fc030642dcf9`, source `aceb691c`.
-All #1–#5 merges were reread. Final M4 Android/regressions passed 792/792, all
-16 groups, schema 19/20 and APK, plus four latest contexts and 51 local guards.
-These are historical M4 results, not M5 proof. Codex 05 starts exclusively from
-that main on `feat/style-trials-m5`; its source implementation is described below
-and awaits hosted Android/schema/Compose verification and owner acceptance.
-Code head `47503e5c0fa64a2508cab1e846896524f985f1a3` passed 792/792 tests,
-all retained/new groups and APK. The accepted closing head aceb691c received its
-own complete checks in PR #5. Physical/provider acceptance remains untested.
-The STYLE route binds the current Create/Extend mode and chosen source as well as
-Profile.id. A proposal from another route context remains historical and cannot
-authorize a POST, Use or Save. Same-source updates retain explicit stale re-review.
-669/669 belongs to Codex 02. M5 source adds Room v21 through an additive v20 migration.
-Manifest, dependencies, identities, signing/install and
-original Android CI remain unchanged. See [QA](../qa/BASELINE.md).
+Accepted main is `af7bdb104869b0d0dded2acdf020fc030642dcf9`, owner merge of
+[PR #5](https://github.com/Zsombor0918/RenkinAI/pull/5) on October 12, 2026 at
+16:10:49 UTC. M4 source aceb691c passed its own 792 tests, all 16 commands,
+schemas 19/20 and APK before merge; these remain historical M4 evidence.
+All five earlier merges were reread. No independent APPROVED review or physical
+acceptance is inferred.
+
+Codex 05 is implemented on `feat/style-trials-m5` in
+[PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6). Head-specific automated
+evidence is in [QA](../qa/BASELINE.md), with the exact final SHA/checks in the PR
+audit. Owner review/merge and device/provider acceptance remain separate.
+Room v21 adds trial evidence/approval through explicit 20→21; original manifest,
+dependencies, identities, signing/install and Android CI stay unchanged. STYLE and
+TRIAL bind the current Create/Extend mode, source and profile. Review and reuse require fresh current proof; historical decisions never grant
+new paid permission.
 
 The M1 Robolectric 4.14.1 WRAP_CONTENT dialog-width correction remains in the
 compatible native SDK 33 / 320dp form harness; original identifiers, interactions
@@ -271,64 +264,59 @@ export bytes match committed schema; real v19 indexes/version and migration pass
 Local guards are 51/51. Local Android still fails before configuration downloading
 Gradle; hosted evidence proves the feature. Device/provider quality/account/cost
 and true process/storage/OEM tests are NOT RUN. Live/billable requests remain zero.
-Final documentation head must receive its own complete checks; see QA and PR audit.
+Accepted closing head aceb691c received its own checks before the #5 owner merge.
 
 
-## Codex 05 style-trial source — verification pending
+## Codex 05 style-trial implementation — owner acceptance pending
 
-TARGETS and clean saved STYLE now open TRIAL. The existing VM/session owns local
-current selection/source/style/ref validation, 0–3 real distinct targets and frozen
-1024 original snapshots. Stable component-key spread is only a suggestion; covered
-overrides are explicit and lock/work-user/unknown/protected local state stays closed.
-A new separate cost confirmation displays N generations/up to 2N Stability endpoints
-and actual inputs; no screen entry or M4 consent submits a request. No exact price
-or account access is inferred. The original first image and ordered owned refs remain.
+TARGETS and clean saved STYLE open TRIAL in the existing VM/session. Create/Extend
+select 0–3 distinct current targets, with deterministic suggestions and manual
+selection. Covered overrides are explicit; locked, dynamic, ambiguous/work-user,
+unknown and protected local entries stay closed. Only chosen real originals are
+rendered at 1024px. The frozen input includes original hash/origin, exact saved style
+text plus separate instruction hash, immutable revision, ordered 0–5 owned refs,
+provider/model/quality, source/catalog/selection, metadata version and storage epoch.
+Numerical revision IDs alone cannot establish identical restored style contents.
 
-The separate noBackup AtomicFile journal persists consumed plan, request/endpoint
-markers and result staging; both image clients now use one-shot multipart bodies.
-Serial Stop/cold recovery does not replay sent/uncertain work. Local PNG→asset→Room→
-marker repair saves original and RAW in existing project assets, never profile icons.
-The 4 MiB project cap stays; blocked saves retain bounded staging and visible errors.
+Separate paid consent displays actual inputs and N generations/OpenAI N or Stability
+up to 2N endpoints. Stability needs exactly one ref and uses fixed endpoints. The
+32,000-character composed-prompt ceiling is checked before consent. Missing keys or
+stale inputs prevent submission; typed provider/account errors have safe messages.
+Opening/resume, M4 consent, Save, review and approval never submit automatically.
+No exact price, account availability, model quality or calibrated complexity is claimed.
 
-Original/generated 48dp launcher and large previews use sampled bitmaps, real alpha/
-checkerboard and light/dark context. Accept/Reject is explicit; regeneration is a new
-plan/consent preserving history. Refinement returns to the existing style panel and
-saves a new immutable revision with zero AI calls. Separate StyleTrialApproval in
-Room v21 binds the current context and accepted IDs. Old/changed/restored decisions
-remain history, never inferred readiness. M6's read-only accepted port validates exact
-inputs and bytes with no generation/apply. Format 6/payload v3 includes valuable
-original/RAW/approval history, share rekeys and restore stales approval/epochs; old
-formats remain readable. Full details and limits are in ADR 0006 and HANDOFF.
+A bounded, separate noBackup AtomicFile journal consumes plan/item UUIDs, records
+REQUESTING and each actual endpoint before enqueue, then atomic PNG staging before
+owned original/RAW files and the Room variant. Native multipart factories remain;
+actual transports use a whole-body one-shot wrapper preserving bytes/type/length.
+Serial Stop/cold recovery never replays sent work. File/DB/marker repair is local
+and idempotent, preserving explicit reviews. Storage errors keep bounded staging
+and visible failure; the 4 MiB project-asset cap remains. No trial writes profile icons.
 
-New source tests/real KSP export await hosted verification, not yet claimed green.
-M6 gallery/bulk Apply and M7 edit, device/provider acceptance, login/credits/Billing
-and publication remain separate. Legacy AI1/AI2/editor/watch/sign/build/install remain.
+Original/generated 48dp and large sampled previews preserve alpha/checkerboard and
+light/dark backgrounds. Accept/Reject reviews one image; separate StyleTrialApproval
+binds exact accepted IDs/context/time to the immutable revision. Regenerate always
+makes a new paid plan from the original and retains old PNGs. Refine returns to the
+existing STYLE panel: local edits/save make a new revision with zero AI calls.
 
+Evidence keeps immutable generation context/origin and separate current
+reviewContext/reviewOriginalOrigin. After source/selection/epoch/share changes,
+identical artwork/style-text/revision/refs/provider configuration may be explicitly
+rechecked and accepted locally, then approved separately with zero POST. Unknown
+historical style hashes stay viewable and cannot authorize requests/reuse. Historical
+cards display their actual producer configuration. Changed artwork inputs require
+new paid generation; old ACCEPTED alone never grants readiness.
 
-Explicit local revalidation retains the immutable generation context/original origin
-and records a separate reviewContext/reviewOriginalOrigin in evidence schema v2
-(v1 remains readable). After source/selection/epoch or share changes, identical
-profile/revision/original pixels/ordered refs/provider/model/quality can be rechecked
-and accepted locally, then approved separately, with zero POST. Changed artwork,
-style revision or refs cannot reuse the old PNG. Eligibility and fresh owner/source
-checks still fail closed. Read-only M6 reuse requires this current review proof and
-current approval, never merely an old ACCEPTED status. Historical regeneration may
-prepare a new current-input plan, but always needs new paid confirmation.
+Room v21 / format 6 / payload v3 carries original/RAW/history/approval. Share rekeys owners and
+variant IDs; full restore rotates local request epochs and stales approval. Legacy
+formats/payloads remain readable. Variants pin originals and RAW through GC. Deletion
+writes valid redacted text fingerprints; Stability retains an all-zero sentinel ref
+so its real provider/two endpoint counters stay readable. Rotated epoch,
+prepared=false, missing PNGs and device-wide consumed IDs prevent deleted-plan replay;
+other owners' records/assets remain. Details/limits are in ADR0006 and HANDOFF.
 
-
-The current input also hashes the actual saved specification plus separate user
-instruction. Reused numerical profile/revision IDs after restore cannot imply
-identical style text. Unknown historical style hashes remain viewable and cannot
-authorize a new request/reuse. Result insertion checks the saved text and ordered
-refs again under the asset lease. A 32,000-character composed-prompt ceiling keeps
-quoted maximum-length saved inputs intact and is validated before cost consent.
-Native multipart factories remain compatible; only actual network requests receive
-the whole-body one-shot wrapper (pinned4.12 does not propagate child flags).
-Provider model/account failures use safe typed categories with no raw server text,
-no automatic fallback/retry. Historical cards display their actual producer options.
-
-Profile deletion writes schema-valid redacted tombstones: the style fingerprint
-matches the redacted text, and Stability retains one all-zero sentinel reference
-hash so its real provider and two endpoint counters remain readable. Prepared=false,
-rotated epoch, missing images and retained device-wide consumed item IDs prohibit
-replay under the old or another owner. Other profiles' records/assets stay intact.
+The M6 read-only accepted port freshly checks exact inputs, current local review,
+approval and PNG bytes without generation or Apply. M6 gallery/bulk Apply and M7
+edit, backend/login/credits/Billing/publication remain separate. Head-specific tests
+and final gates are recorded in QA and PR #6; device/provider acceptance is NOT RUN.
+Legacy editor/AI1/AI2/watch/build/sign/install remain available.

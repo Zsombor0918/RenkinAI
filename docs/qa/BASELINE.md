@@ -1,5 +1,49 @@
 # Verification baseline
 
+## Codex 05 verified implementation — 0df78ef8, owner acceptance pending
+
+Code head `0df78ef8e8a8af7ef0119cb43c7fb3a50d48e157` passed
+[Android38293199741](https://github.com/Zsombor0918/RenkinAI/actions/runs/38293199741)
+and [regressions38293200475](https://github.com/Zsombor0918/RenkinAI/actions/runs/38293200475).
+Downloaded artifact11767029451: verified ZIP SHA256
+12b773071752038cb3dae2362d4b0e82ed3e2b1dc3cd2bb052610dcfacaecfc0, exact
+HEAD and independently counted143 XML / **856/856 tests**, zero failures/errors/skips.
+All21 commands exit0, every original/new selector occurs, no malformed report.
+The populated OpenAI/Stability deletion test passes isolated and unfiltered.
+Original CI independently built APK artifact11767123455; ZIP digest
+fe59ce41977ee76054213748391e2fd698f17f5e328032b2025ba4966b568b43.
+
+| Actual group | Passed tests |
+| --- | --- |
+| Original creation / ingress / both / shared form | 1 / 1 / 2 / 3 |
+| Create/Extend / coverage | 10 / 28 |
+| Project style/selection UI / data, including full/share/legacy backup | 12 / 34 |
+| Generation gateway and retained AI1/AI2 | 31 |
+| Reference sampler / schema + composer | 11 / 14 |
+| Analysis gateway / journal / STYLE UI / persistence-session | 7 / 10 / 12 / 20 |
+| Trial selector + frozen plan / real client gateway | 10 / 8 |
+| Trial journal / actual TRIAL UI / Room migration + ownership-session | 12 / 12 / 19 |
+| Complete unfiltered compileDebugKotlin/testDebugUnitTest/assembleDebug | 856 |
+
+Genuine KSP19/20/21 bytes match source. V21 identity
+8c7a3c8b5b26ad29673ebbd77605838e,30159bytes,SHA256
+11912e933464d86952e3c70ced6ceb2e7506fe3407ac44f3425ebed9a89e0dad.
+V19/v20 hashes remain6c93a2fe875ad2e64482d68dcb72f5c0e1d79892a12f5481145c93440bdb8452
+and10410ffa2c99a0718ffb2552f2194280d00fe816e88af5e0ed9a667780abd8f8.
+Local correction Python guards52/52 in7.704s; hooks/range checks pass.
+Hosted Linux/JDK17/SDK native Robolectric/Room/MockWebServer provide Android proof;
+local Gradle failed before configuration at download (Network is unreachable).
+
+The closing documentation changes no runtime/test/schema/build path. Its own
+exact final SHA, all four contexts, fresh XML/schema/APK artifacts and single audit
+declaration are recorded in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6)
+before readiness; this ancestor's856 result cannot substitute for that check.
+Main stays af7bdb10, ruleset24877351 active/no bypass/three required contexts;
+approvals0 and conversation/last-push/strict false, unchanged. Owner review/merge,
+device/emulator/Samsung/TalkBack/real storage/kill/upgrade/SAF/signing/install,
+provider quality/account/exact billing are NOT RUN. Live/billable requests=0.
+Earlier failed and successful checkpoints below retain their original outcomes.
+
 ## Codex 05 verified code checkpoint — d61c2f91
 
 [Android38291847276](https://github.com/Zsombor0918/RenkinAI/actions/runs/38291847276)
@@ -57,7 +101,7 @@ XML. Genuine KSP21 was exported and copied byte-for-byte: identity
 Export alone does not prove migration. The local-review correction and fixed
 fixture require next-head full/filtered Android/APK evidence; no current pass claimed.
 
-## Codex 05 initial source checkpoint — verification pending
+## Codex 05 initial source checkpoint — historical unverified starting state
 
 Accepted main is af7bdb104869b0d0dded2acdf020fc030642dcf9, owner merge of PR #5
 at 16:10:49 UTC on October 12. All #1–#5 merges were reread. M4 final aceb691c

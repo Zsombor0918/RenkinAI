@@ -13,9 +13,10 @@ and offers separate Create/Extend target preparation with read-only, mapped-and-
 source coverage. Search/select targets, save project style text and references locally,
 or explicitly confirm optional reviewed AI style analysis in Style Setup. The new
 Style Trials source prepares up to three separately confirmed icons, preserves
-original/RAW history and explicit style approval without Apply or batch. Verification
-and owner acceptance are pending; public backend/credits remain future work. Device/provider acceptance
-is tracked separately in the current-state and QA documents.
+original/RAW history and explicit style approval without Apply or batch. The tested
+implementation is in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), awaiting
+owner review/merge. Public backend/credits remain future work. Device/provider
+acceptance is tracked separately in the current-state and QA documents.
 
 The overview, screenshots and release badges below originate from **upstream
 Renkin**, not a published RenkinAI release. Fork builds come from this repository's
