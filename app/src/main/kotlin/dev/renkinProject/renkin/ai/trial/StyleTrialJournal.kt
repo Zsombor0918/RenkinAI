@@ -210,9 +210,13 @@ internal class StyleTrialJournal(context: Context) {
     fun invalidateProfile(id: Long) = synchronized(shared.lock) {
         writeBytes(safe(File(profile(id), "epoch")), UUID.randomUUID().toString().toByteArray())
         records(id).forEach { r ->
+            // Keep the actual provider/endpoint count, but no deleted artwork or text.
+            // Stability's strict plan schema still needs one non-identifying reference.
+            val refs = if (r.plan.context.provider == dev.renkinProject.renkin.ai.AiSettings.STABILITY)
+                listOf("0".repeat(64)) else emptyList()
             val c = r.plan.context.copy(mode = "CREATE", sourcePackage = null, sourceStamp = null,
-                referenceFingerprint = referenceFingerprint(emptyList()))
-            val deleted = r.plan.copy(context = c, specification = "deleted project", instruction = "", referenceHashes = emptyList(),
+                referenceFingerprint = referenceFingerprint(refs), styleFingerprint = styleFingerprint("deleted project", ""))
+            val deleted = r.plan.copy(context = c, specification = "deleted project", instruction = "", referenceHashes = refs,
                 inputs = r.plan.inputs.mapIndexed { i, input -> input.copy(key = "deleted/target$i", name = "", originalHash = "0".repeat(64), origin = "deleted") })
             write(r.copy(plan = deleted, prepared = false, items = r.items.map { it.copy(status =
                 if (it.endpointCalls > 0) TrialStatus.UNCERTAIN else TrialStatus.SKIPPED, resultHash = null, reason = "profile_deleted") }))

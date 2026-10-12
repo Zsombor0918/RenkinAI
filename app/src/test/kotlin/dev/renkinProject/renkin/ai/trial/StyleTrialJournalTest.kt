@@ -142,4 +142,42 @@ class StyleTrialJournalTest {
         assertEquals(1, calls); assertTrue(f.repo.trialVariants(1).isEmpty())
         assertEquals(TrialStatus.PNG_SAVED, f.journal.read(1, p.id)!!.items.single().status)
     }
+    @Test fun deletingPopulatedOpenAiAndStabilityJournalsRedactsInputsButRetainsConsumedIdsAndOtherOwner() = runBlocking {
+        f.initialize(mode = "EXTEND", refs = 1)
+        val plans = listOf(f.plan(listOf("a/Main")), f.plan(listOf("a/Main"), AiSettings.STABILITY))
+        for (p in plans) {
+            assertTrue(f.journal.claim(p, f.images(p))); f.journal.begin(p, p.inputs.single().requestId)
+            f.journal.endpoint(p, p.inputs.single().requestId, 1)
+            if (p.context.provider == AiSettings.STABILITY) f.journal.endpoint(p, p.inputs.single().requestId, 2)
+            f.journal.stage(p, p.inputs.single().requestId, projectTestPng(size = 1024)); f.journal.release(p)
+        }
+        val other = plans.first().copy(context = plans.first().context.copy(profileId = 2, epoch = f.journal.epoch(2)),
+            id = java.util.UUID.randomUUID().toString(), inputs = plans.first().inputs.map { it.copy(requestId = java.util.UUID.randomUUID().toString()) })
+        assertTrue(f.journal.claim(other, f.images(plans.first()))); f.journal.release(other)
+        val priorOther = f.journal.read(2, other.id)
+        f.journal.invalidateProfile(1)
+        val reopened = StyleTrialJournal(f.context)
+        for (p in plans) {
+            assertFalse(reopened.current(p))
+            val deleted = reopened.read(1, p.id)!!
+            assertFalse(deleted.prepared); assertEquals(p.context.provider, deleted.plan.context.provider)
+            assertEquals(if (p.context.provider == AiSettings.STABILITY) 2 else 1, deleted.items.single().endpointCalls)
+            assertEquals(TrialStatus.UNCERTAIN, deleted.items.single().status)
+            assertEquals("profile_deleted", deleted.items.single().reason); assertNull(deleted.items.single().resultHash)
+            assertEquals("deleted project", deleted.plan.specification); assertEquals("", deleted.plan.instruction)
+            assertNull(deleted.plan.context.sourcePackage); assertNull(deleted.plan.context.sourceStamp)
+            assertTrue(deleted.plan.referenceHashes.all { it == "0".repeat(64) })
+            assertEquals("0".repeat(64), deleted.plan.inputs.single().originalHash)
+            assertEquals("", deleted.plan.inputs.single().name); assertEquals("deleted", deleted.plan.inputs.single().origin)
+            val reused = p.copy(context = p.context.copy(profileId = 2, epoch = reopened.epoch(2)), id = java.util.UUID.randomUUID().toString())
+            assertTrue(runCatching { reopened.claim(reused, f.images(p)) }.isFailure)
+        }
+        assertFalse(File(f.context.noBackupFilesDir, "style_trials/1/images").exists())
+        assertFalse(File(f.context.noBackupFilesDir, "style_trials/1/results").exists())
+        assertEquals(priorOther, reopened.read(2, other.id))
+        assertTrue(File(f.context.noBackupFilesDir, "style_trials/2/images").listFiles().orEmpty().isNotEmpty())
+        var calls = 0
+        StyleTrialCoordinator(reopened, f.successful { calls++ }, f.repo).recover(1)
+        assertEquals(0, calls); assertTrue(f.repo.trialVariants(1).isEmpty())
+    }
 }

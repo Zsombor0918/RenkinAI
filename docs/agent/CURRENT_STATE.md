@@ -326,3 +326,9 @@ Native multipart factories remain compatible; only actual network requests recei
 the whole-body one-shot wrapper (pinned4.12 does not propagate child flags).
 Provider model/account failures use safe typed categories with no raw server text,
 no automatic fallback/retry. Historical cards display their actual producer options.
+
+Profile deletion writes schema-valid redacted tombstones: the style fingerprint
+matches the redacted text, and Stability retains one all-zero sentinel reference
+hash so its real provider and two endpoint counters remain readable. Prepared=false,
+rotated epoch, missing images and retained device-wide consumed item IDs prohibit
+replay under the old or another owner. Other profiles' records/assets stay intact.

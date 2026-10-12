@@ -1,5 +1,25 @@
 # Verification baseline
 
+## Codex 05 verified code checkpoint — d61c2f91
+
+[Android38291847276](https://github.com/Zsombor0918/RenkinAI/actions/runs/38291847276)
+and [regressions38291847281](https://github.com/Zsombor0918/RenkinAI/actions/runs/38291847281)
+passed. Independently downloaded artifact11766448252: ZIP SHA256
+99eb2fa8476e7e480d9b0aaf87cb57108df674a7b58d0d994465cecf1e8bd491, exact
+HEAD,143 XML /855 tests /zero failures/errors/skips. All21 commands and selectors
+passed: retained original1/1/2/3, Create/Extend10, coverage28, project UI12/data34,
+gateway/legacy31, sampler11, composer14, analysis gateway7/journal10/UI12/session20;
+M5 domain10/gateway8/journal11/UI12/persistence-session19. The last unfiltered
+compile/unit/APK command passed; original CI APK artifact11766302772 is present.
+Genuine KSP19/20/21 exports are byte-identical to source;21 identity
+8c7a3c8b5b26ad29673ebbd77605838e, SHA25611912e933464d86952e3c70ced6ceb2e7506fe3407ac44f3425ebed9a89e0dad.
+
+Final source review then found populated journal deletion rejected its redacted
+style with an old fingerprint and Stability's emptied references. The correction
+keeps strict schema/counters and adds one genuine reopen/redaction/no-replay/other-
+owner test. Its next-head verification is required;855 is not the new test's result.
+Fresh correction Python guards52/52 in7.704s. Device/live NOT RUN, requests=0.
+
 ## Codex 05 executable checkpoint — dd855e74, two retained regressions
 
 [CI38287235362](https://github.com/Zsombor0918/RenkinAI/actions/runs/38287235362)
