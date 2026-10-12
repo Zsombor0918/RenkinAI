@@ -10,8 +10,10 @@ latest transfer: [handoff](docs/agent/HANDOFF.md). AI needs internet access and 
 user-entered provider key; ordinary icon editing and pack assembly remain local.
 The unreleased Projects home lists real Renkin profiles, creates a separate profile
 and offers separate Create/Extend target preparation with read-only, mapped-and-drawn
-source coverage. Search/select targets, then use the full classic editor. Automatic AI
-style recognition, durable project plans and public backend/credits remain future work.
+source coverage. Search/select targets, save project style text and references locally,
+or explicitly confirm optional reviewed AI style analysis in Style Setup. Trial-icon
+generation and public backend/credits remain future work; device/provider acceptance
+is tracked separately in the current-state and QA documents.
 
 The overview, screenshots and release badges below originate from **upstream
 Renkin**, not a published RenkinAI release. Fork builds come from this repository's

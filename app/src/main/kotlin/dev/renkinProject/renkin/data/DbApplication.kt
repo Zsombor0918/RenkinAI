@@ -316,7 +316,7 @@ interface ProfileDao {
         StyleReference::class,
         IconAssetVariant::class
     ],
-    version = 19
+    version = 20
 )
 abstract class RenkinPackDatabase : RoomDatabase() {
     abstract fun renkinPackDao(): RenkinPackDao
@@ -551,6 +551,13 @@ abstract class RenkinPackDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) = ProjectAiSchema.create(db)
         }
 
+        internal val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `StyleRevision` ADD COLUMN `analysisProfileJson` TEXT")
+                db.execSQL("ALTER TABLE `StyleRevision` ADD COLUMN `analysisEvidenceJson` TEXT")
+            }
+        }
+
         internal val ALL_MIGRATIONS = arrayOf(
             MIGRATION_1_2,
             MIGRATION_2_3,
@@ -569,7 +576,8 @@ abstract class RenkinPackDatabase : RoomDatabase() {
             MIGRATION_15_16,
             MIGRATION_16_17,
             MIGRATION_17_18,
-            MIGRATION_18_19
+            MIGRATION_18_19,
+            MIGRATION_19_20
         )
 
         private fun insertDefaultProfile(db: SupportSQLiteDatabase) {

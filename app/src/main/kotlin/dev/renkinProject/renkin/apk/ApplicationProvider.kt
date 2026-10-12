@@ -132,6 +132,8 @@ class ApplicationProvider internal constructor(
     }
     internal suspend fun coverageReader(packageName: String, rescan: Boolean): CoverageSourceReader =
         iconPackRepo.coverageReader(packageName, rescan)
+    internal suspend fun referenceReader(packageName: String): CoverageSourceReader =
+        iconPackRepo.coverageReader(packageName, rescan = true, allMappings = true)
     // Icon-pack data (packs, app-filter elements, calendar icons) lives in
     // IconPackRepository; iconPacks / iconPackLoaded delegate to it so existing UI reads
     // stay reactive (the repo backs them with Compose state).

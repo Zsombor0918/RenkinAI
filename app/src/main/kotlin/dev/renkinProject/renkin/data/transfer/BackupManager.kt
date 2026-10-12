@@ -322,12 +322,20 @@ class BackupManager(
     private suspend fun restoreBackup(archive: ValidatedBackupArchive): ImportResult = projectAi.withAssetLease {
         val data = archive.data
         requireValidBackup(data)
+        val restoredAi = data.projectAi.copy(revisions = data.projectAi.revisions.map { revision ->
+            revision.copy(analysisEvidenceJson = revision.analysisEvidenceJson?.let {
+                dev.renkinProject.renkin.ai.style.ReviewedAnalysisEvidence.parse(it).copy(needsRevalidation = true).encode()
+            })
+        })
         // Finalize and verify immutable project files before any DB replacement. Failure here
         // preserves every earlier valid style. An interrupted write leaves only collectible files.
         for (asset in data.projectAi.assets) {
             projectAi.files.install(asset.profileId,
                 archive.entries.getValue("project_ai_assets/${asset.relativePath}").readBytes(), asset.source, restoring = true)
         }
+        // Device-local candidates are not imported styles. Invalidate their epoch before
+        // replacing identities; keep consumed consent IDs so restoration cannot rebill.
+        dev.renkinProject.renkin.ai.style.StyleAnalysisJournal(context).invalidateAll()
         watchRepo.replaceAllRules(data.profiles.flatMap { bp ->
             bp.watchRules.map { it.toImport(bp.profile.id) }
         })
@@ -385,7 +393,7 @@ class BackupManager(
 
         // Last fallible step: profiles/icons and project metadata replace in ONE Room
         // transaction. Legacy watch/prefs/gallery remain separate stores, not cross-store ACID.
-        packRepo.replaceEverything(data.profiles.map { it.profile }, data.profiles.flatMap { it.icons }, data.projectAi)
+        packRepo.replaceEverything(data.profiles.map { it.profile }, data.profiles.flatMap { it.icons }, restoredAi)
 
         ImportResult(ImportKind.BACKUP, data.profiles.size, data.profiles.sumOf { it.icons.size })
     }

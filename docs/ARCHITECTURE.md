@@ -9,10 +9,16 @@
 A guide for developers (and AI assistants) working on this codebase. The app builds
 installable Android icon packs on-device.
 
-Codex 03 current-source audit: October 11, 2026, owner-merged main
+Codex 04 source audit: October 12, 2026. Accepted base is owner-merged PR #4
+`6aed9e08ee5619c1061481972dc172546c7f5abe`; code head 47503e5c on
+`feat/automatic-style-analysis-m4` is offline-verified: 792 tests, all groups/APK.
+PR #5 owner merge/device acceptance is pending; final-head checks are in its audit.
+Historical Codex 03 starting main was
 `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`, then `feat/project-ai-persistence-m3`.
 Entry map: [INDEX](INDEX.md); implementation/limitations: [CURRENT_STATE](agent/CURRENT_STATE.md).
-Codex 00/01/02 are owner-merged. Codex 03 adds project persistence and a future-workflow gateway, while keeping legacy editor/AI/build paths.
+Codex 00–03 are owner-merged. Codex 04 adds a separate reviewed style-analysis path;
+legacy editor/AI/build paths remain. Fresh feature evidence belongs in QA, not this
+source description.
 
 ## Naming — read this first
 
@@ -225,7 +231,7 @@ session; provider, build/sign/install and result contracts are unchanged.
 - **DataStore Preferences** (`data/DataPreferences.kt`) — all settings. Typed accessors:
   Composable `DataStore.getXValue()` for reading in composition; `Preferences.getXValue()`
   for reading a captured snapshot off the main thread.
-- **Room — `RenkinPackDatabase`** (file `"renkinPack"`, v19) — profiles + rendered and base icons
+- **Room — `RenkinPackDatabase`** (file `"renkinPack"`, v20) — profiles + rendered and base icons
   of the last built/saved pack per profile. `isCustomIcon` marks hand-picked vs refresh-generated
   rows; `isLegacyIcon` records pre-classification uncertainty without guessing the origin. In the
   Global options UI, only unsaved refresh output is Generated; saved/built non-custom rows are
@@ -363,7 +369,7 @@ foreground/background when recolouring changed them. Reopening the per-app edito
 restores both the adaptive type and its highlighted editing controls, and Original can restore
 the source layers without the source pack being installed. Version 1 layered payloads remain
 readable. `XmlNodeParser` validates the format before ordinary vector or inset decoding. Room
-did not change for that adaptive payload feature; it now moves to v19 for the
+did not change for that adaptive payload feature; Codex 03 moved to v19 for the
 additive project tables below. Backup
 format 2 prevents older importers from silently losing this new drawable type; format 1
 archives remain readable. Already-flattened saved icons cannot recover their missing layers:
@@ -574,3 +580,132 @@ changes, and disposal removes its receiver. Legacy gallery entries use a separat
 20 MiB bound and may be transparent; project references keep the 4 MiB visible-art
 rule. Both still require bounded genuine PNG/CRC/decode validation. Runtime upload,
 legacy AI, signing and icon-session contracts are unchanged.
+
+
+## Reviewed style analysis (Codex 04)
+
+[ADR 0005](decisions/0005-reviewed-style-analysis.md) records the narrow ownership,
+journal and migration decisions. MainViewModel injects StyleAnalysisServices, which
+reuses AiCredentialStore and owns no second provider, ViewModel or database. Its
+OwnedStyleAnalysis controller launches jobs in the existing viewModelScope and enters
+`profileSessionOperations` through `projectOperation` for imports/revision writes.
+HOME/SETUP/STYLE/EDITOR routes, stable editor launchers, ingress/Back, classic modifiers,
+AI1/AI2 and pack building/signing/installing are unchanged.
+
+### Local references and bounded evidence
+
+ApplicationManager's existing appfilter parser has an explicit `allMappings` option
+for analysis only (20,000 mapping safety cap); default installed-component filtering,
+last-valid duplicate and legacy raw elements retain their contract. The reference
+reader resolves exactly those drawable names, never fallback-rendered target icons.
+It checks package/version/update time, coverage index revision and displayed night
+variant before/after rendering. Material You-advertised sources, calendar/clock keys,
+animated/state/level/layer drawables are excluded or counted unsupported. Current
+night variants are explicitly stamped, not promised representative of other themes.
+
+ReferenceSampler sorts all source mappings, uniformly covers at most 120 candidates,
+validates the existing 96px probe and a separately owned static 256px software PNG,
+and drops corrupt/empty/low-alpha, exact-SHA or near-perceptual duplicates. 64px
+features measure alpha occupancy/bounds, padding, brightness/saturation/contrast,
+quantized palette, edges and center occupancy; outline is a heuristic, not measured
+stroke width or recognition confidence. A medoid plus greedy farthest-first with
+source/hash tie-breaks selects at most 12. The report records actual examined/valid/
+duplicate/unsupported/broken counts and low-sample/mixed warnings. Zero samples
+cannot produce an analysis request. CREATE uses up to five owned manual PNGs, no pack.
+
+CPU work runs off Main; every owned bitmap recycles on success/failure. Provider
+images are <=256px, <=384 KiB each and <=4 MiB per request. Compose holds small
+64px previews with disposal cleanup. Transient prepared bytes are bounded; leaving
+releases previews/preparation, while an already confirmed VM-owned request continues
+into its durable journal. No bitmap or image byte array is in saved instance state.
+
+### Frozen input, structured response and paid boundary
+
+StyleAnalysisRequest carries local profile/mode/source identities, two source stamps
+(setup subset versus all reference mappings), metadata version, active revision,
+selection/catalog hashes and storage epoch. Prompt hash, ordered sample hashes,
+model/detail/schema/renderer algorithm/report form a deterministic fingerprint.
+Edited draft text/refs disable the previous preparation until explicitly prepared again.
+The displayed mode/source is bound separately from saved metadata. Changing from
+Create to Extend or choosing another pack under the same profile invalidates frozen
+consent and proposal use. UI and owner-guarded Save both enforce this route identity;
+ordinary updates of the same source still require the existing explicit stale review.
+
+OpenAiStyleAnalysisGateway is independent of IconGenerationGateway. Official contracts
+checked October 12, 2026 support `gpt-5.4-mini` image input/structured text in
+`POST https://api.openai.com/v1/responses`. The body uses ordered input_text/input_image
+PNG data URLs, low detail, `store:false`, stream false, 4096 max output tokens, no tools
+and strict `text.format` json_schema. Credentials stay in the bearer header; profile/
+source package/inventory/path/fingerprint never enter the body. Only explicitly
+supplied style text and thumbnails are transmitted. Account access/quality/cost are
+unverified; no fake price estimate. UI consent names source, N, model, one paid
+request, upload/licensing/privacy and uncertainty. Default HTTP bounds are 20s connect,
+30s write and 90s read/call; retries/redirects/logging are disabled.
+The analysis RequestBody additionally reports isOneShot=true. Pinned OkHttp 4.12.0
+otherwise retries a 503 with Retry-After: 0 despite retryOnConnectionFailure=false.
+The mock negative control demonstrates that follow-up; the production body must
+return UNCERTAIN after the single submitted POST instead. Legacy image clients stay.
+
+Output items are scanned by type (reasoning need not be first/last); refusal/incomplete/
+unknown tool content/malformed UTF-8/oversize output fail safely. Response bound is
+128 KiB; strict duplicate-key/depth/token parsing precedes StyleProfileV1 validation.
+The supported schema uses required properties/additionalProperties false and coarse
+unknown-capable enums; secondary Kotlin checks apply 800-char description, 160-char
+notes, six-entry lists/palette, ARGB syntax/control characters and canonical encoding.
+SelfAssessment is explicitly uncalibrated, never a percentage. PromptComposer keeps
+fixed escaping/order, original app identity/transparent PNG and separate 2000-char
+project/app instructions; user-reviewed corrections take stylistic priority. Legacy
+global iconPrompt is not rewritten. No new image-generation consumer exists.
+
+### Durable state and explicit review
+
+```mermaid
+flowchart TD
+    L["Local preparation: no POST/files"] --> C["Explicit frozen-input cost consent"]
+    C --> P["Atomic PREPARED: consumed UUID + PNGs"]
+    P --> Q["Atomic REQUESTING, then at most one POST"]
+    Q --> R["Validated RESULT_SAVED before UI completion"]
+    Q --> U["UNCERTAIN on crash, cancel or timeout"]
+    Q --> F["FAILED on rejection/invalid output"]
+    R --> D["Use: protected draft only"]
+    D --> S["Explicit Save under owner/version/source guards"]
+    S --> V["Immutable revision + REVIEWED marker"]
+    U -. "new consent + new UUID only" .-> C
+```
+
+`noBackupFilesDir/style_analysis/<profileId>/request-<UUID>.json` AtomicFile records
+canonical input/context/result hashes, validated JSON, statuses, response ID, observed
+usage and billing certainty. Hash-addressed PNGs in its `images/` directory are <=8 MiB
+per profile; <=512 bounded 64 KiB consumed records remain to prevent replay. Shared
+path locks coordinate separately constructed restore/deletion helpers. A cold PREPARED/
+REQUESTING record becomes uncertain; reopening never calls a provider. A new retry
+requires new human consent/UUID. Marker failure forbids submission. Corrupt records
+fail closed. Durable result precedes review publication. Explicit discard/review drops
+unpinned staging PNGs while retaining consumed markers. Device-local unreviewed
+candidates/images are deliberately not backed up: only this device can recover them.
+
+Use imports <=5 chosen PNGs through the existing project-asset lease into a protected
+draft; separate userInstruction survives. Save checks owner, epoch, expected revision,
+metadata version, selection/catalog and current source. Only source-only staleness
+allows explicit re-review, frozen again against a later change. Wrong profile, restored
+data or changed preparation cannot apply the candidate. Unedited canonical spec uses
+AUTO_ANALYSIS; any changed spec/manual-added ref uses USER with analysis evidence.
+Equal completed saves are idempotent, including DB-save-before-journal-mark recovery.
+Old active style/history remains valid inspiration, never implicit paid permission.
+
+Explicit 19→20 adds only nullable `StyleRevision.analysisProfileJson` and
+`analysisEvidenceJson`; old rows receive NULL. Genuine KSP export, physical v19
+fixture migration, fresh identity and FK checks passed at 47503e5c; v20 identity
+is 7645511f2ebcb036f0f2da33eee84a17. Fixtures reproduce actual exported indexes;
+no synthetic schema or destructive fallback is used. Format 5
+and project payload v2 carry accepted structured profile/evidence plus existing PNG
+history. Formats 1–4/payload v1 remain readable. Sharing rekeys evidence owner and
+requires revalidation; full restore marks evidence for revalidation and rotates the
+local candidate epoch before the existing final DB replacement. Candidate UUIDs
+remain consumed even if the same profile ID is restored. Actual profile deletion
+tombstones its local journal/epoch; immutable project assets retain existing FK/GC pins.
+
+Restore still spans separate legacy stores and is not distributed ACID. v19 APKs
+cannot open v20; use forward repair or deliberate pre-upgrade backup recovery, never
+a claimed in-place downgrade. Codex 05 must independently revalidate selected targets,
+source and 0–5 owned refs, and require fresh paid consent for trial images.

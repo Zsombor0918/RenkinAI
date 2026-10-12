@@ -32,6 +32,9 @@ internal fun createDatabaseFromExportedSchema(
                     schema.getJSONArray("entities").forEachObject { entity ->
                         val tableName = entity.getString("tableName")
                         db.execSQL(entity.getString("createSql").replace("${'$'}{TABLE_NAME}", tableName))
+                        entity.getJSONArray("indices").forEachObject { index ->
+                            db.execSQL(index.getString("createSql").replace("${'$'}{TABLE_NAME}", tableName))
+                        }
                     }
                     schema.getJSONArray("views").forEachObject { view ->
                         db.execSQL(view.getString("createSql"))

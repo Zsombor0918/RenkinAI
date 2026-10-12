@@ -43,6 +43,8 @@ internal interface CoverageSourceReader {
     val index: CoverageIndex
     fun isCurrent(): Boolean
     suspend fun canRender(drawableName: String): Boolean
+    val stableReferences: Boolean get() = true
+    suspend fun referencePng(drawableName: String): ByteArray? = null
 }
 
 internal data class CoverageEntry(

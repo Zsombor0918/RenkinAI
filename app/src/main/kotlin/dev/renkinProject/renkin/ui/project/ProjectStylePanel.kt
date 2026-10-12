@@ -32,8 +32,11 @@ import dev.renkinProject.renkin.ui.RenkinAlertDialog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-internal data class ProjectStyleDraft(val specification: String, val instruction: String, val hashes: List<String>)
+internal data class ProjectStyleDraft(val specification: String, val instruction: String, val hashes: List<String>,
+    val analysisRequestId: String? = null, val analysisReviewedAt: Long? = null, val allowStaleSource: Boolean = false,
+    val analysisReviewedSourceStamp: String? = null)
 internal interface ProjectStyleBackend {
+    val analysis: ProjectAnalysisBackend? get() = null
     suspend fun load(id: Long): SavedProjectStyle
     suspend fun importReference(id: Long, uri: Uri): ReferenceAsset
     suspend fun referencePreview(id: Long, hash: String): ByteArray? = null
@@ -58,15 +61,22 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
     var savedHashes by rememberSaveable(id) { mutableStateOf(arrayListOf<String>()) }
     // Keep removed/replaced draft imports too, so explicit discard can release them.
     var importedHashes by rememberSaveable(id) { mutableStateOf(arrayListOf<String>()) }
+    var analysisRequestId by rememberSaveable(id) { mutableStateOf<String?>(null) }
+    var analysisReviewedAt by rememberSaveable(id) { mutableStateOf<Long?>(null) }
+    var analysisStaleAccepted by rememberSaveable(id) { mutableStateOf(false) }
+    var analysisReviewedSourceStamp by rememberSaveable(id) { mutableStateOf<String?>(null) }
     var loaded by remember(id) { mutableStateOf(false) }
     var busy by remember(id) { mutableStateOf(false) }
+    var advanced by rememberSaveable(id) { mutableStateOf(false) }
     var error by remember(id) { mutableStateOf<String?>(null) }
     var reload by remember(id) { mutableIntStateOf(0) }
     var discardOpen by rememberSaveable(id) { mutableStateOf(false) }
     var reloadAfterDiscard by rememberSaveable(id) { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val analysis = backend.analysis
+    val analysisState = if (analysis != null) analysis.state(id).collectAsState().value else ProjectAnalysisState()
     val dirty = specification != savedSpecification || instruction != savedInstruction || hashes != savedHashes
-    val enabled = available && loaded && !busy
+    val enabled = available && loaded && !busy && !analysisState.busy
     fun applySaved(saved: SavedProjectStyle) {
         specification = saved.revision?.specification.orEmpty()
         instruction = saved.revision?.userInstruction.orEmpty()
@@ -75,6 +85,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
         savedInstruction = instruction
         savedHashes = ArrayList(hashes)
         expectedRevision = saved.revision?.revision
+        analysisRequestId = null; analysisReviewedAt = null; analysisStaleAccepted = false; analysisReviewedSourceStamp = null
         initialized = true
     }
     LaunchedEffect(id, reload) {
@@ -113,6 +124,8 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                 Text(stringResource(R.string.projectStyleLocalOnly))
                 if (mode == ProjectSetupMode.EXTEND) Text(stringResource(R.string.projectStyleSource, source.orEmpty()))
                 Text(stringResource(when {
+                    analysisState.network -> R.string.styleAnalysisRunning
+                    analysisState.busy -> R.string.styleAnalysisPreparing
                     busy -> R.string.projectStyleSaving
                     !loaded -> R.string.projectInitializing
                     dirty -> R.string.projectStyleDirty
@@ -131,6 +144,26 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     }
                 }
             }
+            if (analysis != null) item {
+                ProjectStyleAnalysisPanel(id, mode, source, stamp, enabled, analysis,
+                    expectedRevision, ProjectStyleDraft(specification, instruction, hashes.toList()), dirty,
+                    advanced, { advanced = it }, { busy = it },
+                    onUse = { draft, stale ->
+                        specification = draft.specification
+                        hashes = ArrayList(draft.hashes)
+                        importedHashes = ArrayList((importedHashes + draft.hashes).distinct())
+                        analysisRequestId = draft.requestId; analysisReviewedAt = draft.reviewedAt
+                        analysisStaleAccepted = stale; analysisReviewedSourceStamp = draft.reviewedSourceStamp
+                        // Separate userInstruction is intentionally never overwritten by analysis.
+                    })
+            }
+            if (analysis != null && analysisState.record?.status != dev.renkinProject.renkin.ai.style.AnalysisStatus.RESULT_SAVED) item {
+                OutlinedButton(onClick = { advanced = !advanced }, enabled = !busy,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-advanced")) {
+                    Text(stringResource(R.string.styleAnalysisAdvanced))
+                }
+            }
+            if (analysis == null || advanced) {
             item {
                 OutlinedTextField(specification, { specification = it }, enabled = enabled,
                     label = { Text(stringResource(R.string.projectStyleDescription)) },
@@ -148,6 +181,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                             specification = draft.specification
                             instruction = draft.instruction
                             hashes = ArrayList(draft.hashes)
+                            analysisRequestId = null; analysisReviewedAt = null; analysisStaleAccepted = false
                             error = null
                         } catch (cancel: CancellationException) { throw cancel }
                         catch (_: Exception) { error = "import" }
@@ -196,11 +230,13 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     }
                 }
             }
+            }
             item {
                 OutlinedButton(onClick = {
                     if (!enabled) return@OutlinedButton
                     busy = true
-                    val draft = ProjectStyleDraft(specification, instruction, hashes.toList())
+                    val draft = ProjectStyleDraft(specification, instruction, hashes.toList(), analysisRequestId,
+                        analysisReviewedAt, analysisStaleAccepted, analysisReviewedSourceStamp)
                     val revision = expectedRevision
                     scope.launch {
                         try {

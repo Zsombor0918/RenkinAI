@@ -37,7 +37,9 @@ data class StyleRevision(
     val specification: String,
     val userInstruction: String = "",
     val origin: String = "USER",
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val analysisProfileJson: String? = null,
+    val analysisEvidenceJson: String? = null
 )
 
 /** Files are immutable, addressed by content, and owned by one profile (no shared deletion). */
@@ -103,7 +105,10 @@ data class ProjectAiSnapshot(
     fun rekey(oldId: Long, newId: Long) = forProfile(oldId).let { old -> ProjectAiSnapshot(
         old.metadata.map { it.copy(profileId = newId, sourceStamp = null,
             selectionJson = ProjectSelection.decode(it.selectionJson)?.copy(sourceStamp = null, needsRevalidation = true)?.encode().orEmpty()) },
-        old.revisions.map { it.copy(profileId = newId) },
+        old.revisions.map { it.copy(profileId = newId,
+            analysisEvidenceJson = it.analysisEvidenceJson?.let { evidence ->
+                dev.renkinProject.renkin.ai.style.ReviewedAnalysisEvidence.parse(evidence).rekey(newId).encode()
+            }) },
         old.assets.map { it.copy(profileId = newId, relativePath = ProjectAssetStore.path(newId, it.hash)) },
         old.references.map { it.copy(profileId = newId) },
         old.variants.map { it.copy(id = java.util.UUID.randomUUID().toString(), profileId = newId) }

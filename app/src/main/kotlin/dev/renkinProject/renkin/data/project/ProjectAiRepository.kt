@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.util.WeakHashMap
+import dev.renkinProject.renkin.ai.style.ReviewedAnalysisEvidence
 
 data class SavedProjectStyle(val metadata: ProjectAiMetadata?, val revision: StyleRevision?, val references: List<ReferenceAsset>)
 
@@ -89,10 +90,26 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
      * The DB transaction supplies optimistic revision protection for independent writers. */
     suspend fun saveStyle(id: Long, expectedRevision: Long?, specification: String,
         userInstruction: String, orderedHashes: List<String>, mode: String? = null,
-        source: String? = null, sourceStamp: String? = null): SavedProjectStyle = withAssetLease {
+        source: String? = null, sourceStamp: String? = null): SavedProjectStyle =
+        saveRevision(id, expectedRevision, specification, userInstruction, orderedHashes, mode, source, sourceStamp)
+
+    internal suspend fun saveAnalyzedStyle(id: Long, expectedRevision: Long?, expectedVersion: Long,
+        specification: String, userInstruction: String, hashes: List<String>, profileJson: String,
+        evidence: ReviewedAnalysisEvidence): SavedProjectStyle {
+        require(!evidence.needsRevalidation && evidence.context.profileId == id)
+        return saveRevision(id, expectedRevision, specification, userInstruction, hashes, evidence.context.mode,
+            evidence.context.sourcePackage, evidence.context.setupStamp, profileJson, evidence.encode(), expectedVersion,
+            if (evidence.userEdited) "USER" else "AUTO_ANALYSIS")
+    }
+
+    private suspend fun saveRevision(id: Long, expectedRevision: Long?, specification: String,
+        userInstruction: String, orderedHashes: List<String>, mode: String?, source: String?, sourceStamp: String?,
+        analysisProfileJson: String? = null, analysisEvidenceJson: String? = null,
+        expectedVersion: Long? = null, origin: String = "USER"): SavedProjectStyle = withAssetLease {
         require(mode == null || mode in setOf("CREATE", "EXTEND"))
         require(mode != "EXTEND" || !source.isNullOrBlank())
-        val candidate = StyleRevision(id, 1, specification = specification.trim(), userInstruction = userInstruction.trim())
+        val candidate = StyleRevision(id, 1, specification = specification.trim(), userInstruction = userInstruction.trim(),
+            origin = origin, analysisProfileJson = analysisProfileJson, analysisEvidenceJson = analysisEvidenceJson)
         validateStyle(candidate, orderedHashes)
         val assets = dao.assets(id).associateBy { it.hash }
         val references = orderedHashes.map { checkNotNull(assets[it]) { "Reference image is not owned by this project." } }
@@ -105,11 +122,15 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
             val current = history.find { it.revision == meta.activeRevision }
             val oldRefs = dao.references(id).filter { it.revision == meta.activeRevision }.map { it.assetHash }
             val contextChanged = mode != null && (mode != meta.mode || source != meta.sourcePackage || sourceStamp != meta.sourceStamp)
-            if (!contextChanged && current?.specification == candidate.specification && current.userInstruction == candidate.userInstruction && oldRefs == orderedHashes) {
+            val sameText = current?.specification == candidate.specification && current.userInstruction == candidate.userInstruction && oldRefs == orderedHashes
+            val sameAnalysis = analysisProfileJson == null || (current?.origin == origin &&
+                current.analysisProfileJson == analysisProfileJson && current.analysisEvidenceJson == analysisEvidenceJson)
+            if (!contextChanged && sameText && sameAnalysis) {
                 return@withTransaction SavedProjectStyle(meta, current, references)
             }
+            check(expectedVersion == null || meta.version == expectedVersion) { "Project preparation changed. Review it again." }
             check(meta.activeRevision == expectedRevision) { "The saved style changed. Reopen it before saving." }
-            val sameStyle = current?.specification == candidate.specification && current.userInstruction == candidate.userInstruction && oldRefs == orderedHashes
+            val sameStyle = sameText && sameAnalysis
             val revision = if (sameStyle) checkNotNull(current) else candidate.copy(revision = (history.maxOfOrNull { it.revision } ?: 0) + 1)
             if (!sameStyle) {
                 dao.insertRevisions(listOf(revision))
@@ -165,6 +186,10 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
             require(row.origin in setOf("USER", "IMPORTED", "AUTO_ANALYSIS"))
             require(row.specification.isNotBlank() && row.specification.length <= 6000 && row.userInstruction.length <= 2000)
             require(hashes.size <= 5 && hashes.distinct().size == hashes.size && hashes.all { it.matches(Regex("[a-f0-9]{64}")) })
+            require((row.analysisProfileJson == null) == (row.analysisEvidenceJson == null)) { "Incomplete analysis evidence." }
+            row.analysisEvidenceJson?.let { evidence ->
+                ReviewedAnalysisEvidence.parse(evidence).validate(row.profileId, checkNotNull(row.analysisProfileJson), row.specification, row.origin, hashes)
+            }
         }
 
         fun validateSnapshot(data: ProjectAiSnapshot, profileIds: Set<Long>) {

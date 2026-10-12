@@ -5,6 +5,12 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 ## Unreleased
 
+- Sample a source pack locally or prepare own references, then explicitly confirm
+  one optional OpenAI style-analysis request. Review suggestions and save a project
+  style separately; manual editing remains available without a key. No icons are generated.
+- Accepted structured style evidence travels in full backups/profile shares.
+  Unreviewed analysis candidates remain device-local and are excluded from backups.
+
 - Prepare a new pack from all launcher entries without an external source.
 - Inspect an installed source pack with actual static drawable coverage, separate project/lock status and searchable target selection; open the full classic editor.
 - Save project-specific AI descriptions and up to five ordered PNG references locally, separately from legacy global AI settings.
@@ -13,7 +19,7 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 - Start from Projects, continue any real Renkin profile or create a separate icon pack.
 - Open the classic editor from either Create or Complete an existing icon pack;
-  automatic style recognition remains planned.
+  optional reviewed style analysis is available in project Style Setup.
 - Return from the editor to Projects without switching or saving implicitly;
   save/cancel protects changes before entering a different project.
 

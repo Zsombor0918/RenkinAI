@@ -118,7 +118,7 @@ data class BackupPref(val tag: String, val value: Any) {
  */
 object BackupCodec {
     // Version 3 preserves watch baselines and pending completed suggestions.
-    const val FORMAT_VERSION = 4
+    const val FORMAT_VERSION = 5
 
     fun encode(data: BackupData): String {
         val root = JSONObject()

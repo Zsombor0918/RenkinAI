@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import dev.renkinProject.renkin.packages.CoverageAppFilterRead
+import dev.renkinProject.renkin.ai.style.renderStaticReference
 
 internal suspend fun loadIsolatedAppFilters(
     packs: List<IconPack>,
@@ -134,7 +135,7 @@ class IconPackRepository(
         iconPackCatalog.installedIconPacks().filter { !it.packageName.startsWith(IconPackBuilder.PACKAGE_NAME) }
     }
 
-    internal suspend fun coverageReader(packageName: String, rescan: Boolean): CoverageSourceReader = withContext(Dispatchers.Default) {
+    internal suspend fun coverageReader(packageName: String, rescan: Boolean, allMappings: Boolean = false): CoverageSourceReader = withContext(Dispatchers.Default) {
         val revision = coverageRevision.get()
         val info = iconPackCatalog.packageInfo(packageName)
         val version = info?.let(iconPackCatalog::versionCode)
@@ -144,7 +145,7 @@ class IconPackRepository(
         val loaded = iconPacks.find { it.packageName == packageName }
         val sameLoaded = loaded?.versionCode == version && loadedUpdateTimes[packageName] == info?.lastUpdateTime
         val read = if (installed && rescan) {
-            try { appManager.readAppFilterForCoverage(packageName, installedApplications.toList()) }
+            try { appManager.readAppFilterForCoverage(packageName, installedApplications.toList(), allMappings) }
             catch (error: CancellationException) { throw error }
             catch (_: Exception) { null }
         } else if (sameLoaded && iconPackLoaded) coverageReads[packageName] else null
@@ -163,6 +164,7 @@ class IconPackRepository(
         val capturedIndex = CoverageIndex(stamp, state, mappings, dynamic)
         object : CoverageSourceReader {
             override val index = capturedIndex
+            override val stableReferences = !iconPackCatalog.changesWithMaterialYouColors(packageName)
             override fun isCurrent(): Boolean {
                 val current = iconPackCatalog.packageInfo(packageName) ?: return false
                 return installed && coverageRevision.get() == revision &&
@@ -173,6 +175,14 @@ class IconPackRepository(
                 try {
                     appManager.getResourceDrawableByName(packageName, drawableName)?.drawable?.let(::drawCoveragePreview) == true
                 } catch (_: OutOfMemoryError) { false }
+            }
+            override suspend fun referencePng(drawableName: String): ByteArray? = withContext(Dispatchers.Default) {
+                if (!isCurrent()) throw dev.renkinProject.renkin.ai.style.StaleReferenceSource()
+                if (!stableReferences) return@withContext null
+                val bytes = appManager.getResourceDrawableByName(packageName, drawableName)?.drawable
+                    ?.let(::renderStaticReference)
+                if (!isCurrent()) throw dev.renkinProject.renkin.ai.style.StaleReferenceSource()
+                bytes
             }
         }
     }

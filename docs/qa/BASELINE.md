@@ -1,5 +1,141 @@
 # Verification baseline
 
+## Codex 04 verified code checkpoint — 47503e5c
+
+Code head `47503e5c0fa64a2508cab1e846896524f985f1a3` passed
+[Android 38240314705](https://github.com/Zsombor0918/RenkinAI/actions/runs/38240314705)
+and [regressions 38240314877](https://github.com/Zsombor0918/RenkinAI/actions/runs/38240314877).
+Independently downloaded artifact **11742147999**: summary HEAD matches, **135 XML,
+792/792 tests, zero failures/errors/skips**, every selector present and all exits zero.
+The unfiltered compileDebugKotlin/testDebugUnitTest/assembleDebug command passed after
+the isolated groups. Original Android CI independently built APK artifact **11742383649**.
+
+| Actual group | Passed tests |
+| --- | --- |
+| Original creation / ingress / together / shared form | 1 / 1 / 2 / 3 |
+| Create/Extend / coverage | 10 / 28 |
+| Project style/selection UI / data | 12 / 31 |
+| Generation gateway and retained legacy AI | 31 |
+| Reference sampler / schema + composer | 11 / 14 |
+| Analysis gateway / journal | 7 / 10 |
+| Actual analysis STYLE UI / persistence + session | 12 / 20 |
+| Complete unfiltered suite | 792 |
+
+The source-proven 503 Retry-After: 0 negative control passed both isolated and full:
+the repeatable-body control sends two mock POSTs; the actual one-shot adapter sends
+one and returns UNCERTAIN. This is not a live provider/billing trial. The three source
+families, route binding, durable result/uncertainty, real v19 fixture with exported
+indexes/version, full/share format 5 and legacy 3/4 regressions passed.
+
+KSP exports are byte-identical to source: v19 SHA256
+6c93a2fe875ad2e64482d68dcb72f5c0e1d79892a12f5481145c93440bdb8452; v20
+10410ffa2c99a0718ffb2552f2194280d00fe816e88af5e0ed9a667780abd8f8,
+identity 7645511f2ebcb036f0f2da33eee84a17. Local Python guards passed **51/51 in
+13.245 s** on this head; range docs/conventions and staged hooks passed. Local Gradle
+still fails before configuration at download (Network is unreachable). Hosted runs
+provide Android evidence, not a claimed local build.
+
+Closing documentation changes no Kotlin/test/schema/build files. Its own fresh exact
+SHA, all four contexts, XML/artifact results and single audit declaration must be
+verified and recorded in [PR #5](https://github.com/Zsombor0918/RenkinAI/pull/5),
+avoiding a self-hash cycle in this file. Do not substitute this prior code head for
+that final check. Earlier failures remain below, explicitly head-specific history.
+Physical devices, account/model quality/cost, true process/storage faults, SAF/signing/
+install, TalkBack and One UI/Theme Park/Flip/fold remain **NOT RUN**. Live requests=0.
+
+## Codex 04 continuation — failed initial hosted head
+
+Resumed PR #5 on October 12 from `420d0b879ff65db260b70d6713ffbf9699a294b6`.
+Fresh main remains `6aed9e08ee5619c1061481972dc172546c7f5abe`; PR #4 is merged.
+[Android 38215229608](https://github.com/Zsombor0918/RenkinAI/actions/runs/38215229608)
+compiled production Kotlin, then FAILED compiling unit tests: RuntimeEnvironment's
+non-generic getApplication was called with type arguments in ReferenceSamplerTest
+and StyleAnalysisFixtures, and ProjectStyleAnalysisComposeTest lacked the data
+IconPack import. No Android tests ran and APK tasks were skipped.
+[Regressions 38215229556](https://github.com/Zsombor0918/RenkinAI/actions/runs/38215229556)
+failed at the same boundary. Governance conventions passed; documentation audit
+correctly rejected the BLOCKED declaration. The retained compiled-vector fixture
+from CoveragePreviewTest also replaces unsupported raw platform vector inflation.
+Fresh local full Gradle attempt again FAILED downloading 8.11.1 with Network is
+unreachable before configuration; hosted reruns must establish actual test results.
+
+## Codex 04 starting checkpoint — October 12, 2026
+
+### Corrected executable checkpoint — 780ab879
+
+[Android 38238659202](https://github.com/Zsombor0918/RenkinAI/actions/runs/38238659202)
+and [regressions 38238659237](https://github.com/Zsombor0918/RenkinAI/actions/runs/38238659237)
+passed on 780ab879228a64665b6bae62e74188c818eebd71. Downloaded artifact 11741966280
+independently counted 135 XML / **791 tests / zero failure/error/skip**. All 16 groups
+passed with zero exits, missing selectors or malformed reports: original 1/1, 1/1,
+2/2, 3/3; Create/Extend 10/10; coverage 28/28; project UI 12/12; data 31/31;
+gateway/legacy 31/31; sampler 11/11; schema/composer 14/14; analysis gateway 6/6;
+journal 10/10; analysis UI 12/12; persistence/session 20/20; unfiltered 791/791.
+The real debug APK artifact is 11742580515. KSP v20 export is byte-identical to
+committed SHA256 10410ffa2c99a0718ffb2552f2194280d00fe816e88af5e0ed9a667780abd8f8.
+Local 51 Python guards passed in 13.233 s; range docs/conventions and staged hooks pass.
+
+The final billing review inspected the pinned upstream OkHttp tag parent-4.12.0,
+commit 4984568367caaf359b82c452bd28b5e192824d1c. RetryAndFollowUpInterceptor returns
+the original request for HTTP 503 with Retry-After: 0 independently of the connection
+retry flag; the interceptor stops that follow-up for isOneShot bodies. The narrow
+adapter correction and a real mock negative control require next-head execution.
+791/791 remains this checkpoint's evidence, not the new one-shot test's result.
+
+The continuation after test compilation repair is recorded separately below.
+
+Fresh accepted main 6aed9e08ee5619c1061481972dc172546c7f5abe, owner-merged PR #4
+at 04:45:50 UTC. Source a73c1e02 is an ancestor with identical tree. Its historical
+final Android 38177949323, regressions 38177949324 and governance 38178529351 are
+rechecked SUCCESS; 718/718 is that M3 source baseline, not a new M4 run.
+Fresh local `python3 -m unittest discover -s scripts/tests -v`: 45/45 in 13.018 s.
+`./gradlew compileDebugKotlin testDebugUnitTest assembleDebug`: FAILED before
+configuration at Gradle 8.11.1 download, SocketException Network is unreachable.
+No local Android suite/APK, emulator/device or live API request. Active ruleset
+24877351 still requires the same three contexts, has empty bypasses and prohibits
+force/delete; approvals=0, conversation/last-push/strict=false. No rule mutation.
+
+
+## Codex 04 initial implementation checks
+
+Local `python3 -m unittest discover -s scripts/tests -v`: 51/51 in 15.308 s, exit 0.
+Six new runner tests inject missing selectors/XML, empty XML, skipped/failure/error,
+nonzero commands, malformed/forged counts and preserve original/full selectors.
+Their XML/schema stand-ins are synthetic runner tests, never Room/Android evidence.
+New Kotlin tests and exported v20 are pending hosted execution. Existing M1/M2/M3
+selectors remain; no ignored tests, idling bypass or enlarged timeout. Local
+Gradle/SDK/network limitation above is unchanged; device/provider/live requests NOT RUN.
+
+## Codex 04 executable continuation — 53addf96
+
+[Android 38236937112](https://github.com/Zsombor0918/RenkinAI/actions/runs/38236937112)
+on `53addf96b0e2a49c1c98b527b1e6793f2c93931c` compiled production and tests,
+then ran **789 tests, five failures**, APK skipped. Downloaded and inspected artifact
+11741057628 (HTML report ZIP SHA256 bd2c61c6deb008bece75034695f8b01254390459813a70e3f0cbb7f6b5b3052a).
+The v19 exported-schema helper omitted indexes, causing Room's StyleReference index
+validation to fail; real historical fixtures must create every exported index.
+The new migration assertion observed user_version inside onCreate, before the framework
+sets it. Verify the physical file after creation. JSONObject normalized the test's
+Double 1.0 to integer 1 before parsing; retain literal 1.0 on the wire for rejection.
+The new sample assertion requested exact text for a fragment, while the old source
+label still expected recognition unavailable. Preserve full counter/source assertions
+against actual behavior. No production migration failure is established by those
+incomplete fixtures. Local Python guards passed 51/51 in 13.188 s; staged hooks passed.
+Fresh corrected Android execution is required; no test or original selector is removed.
+
+Downloaded regression artifact 11741377662 from run 38236937109 independently totals
+135 XML / 789 tests / five failures / zero errors or skips; summary HEAD matches
+53addf96 and every selector exists. Sampler 11/11, gateway 6/6, journal 10/10,
+original creation/ingress/both/form 1/1, 1/1, 2/2, 3/3, Create/Extend 10/10,
+coverage 28/28, project data 31/31 and gateway/legacy 31/31 passed. Style UI 11/12,
+schema/composer 13/14, analysis UI 10/11 and persistence/session 18/19 failed.
+Genuine KSP v20 identity is `7645511f2ebcb036f0f2da33eee84a17`; copied export SHA256
+`10410ffa2c99a0718ffb2552f2194280d00fe816e88af5e0ed9a667780abd8f8`.
+Sampler measured deterministic pairs: outline examined 18/valid 14/chosen 12/duplicates 4,
+103 ms; solid 18/11/11/7, 104 ms; detailed 18/17/12/1, 81 ms. Each homogeneous
+fixture reported mixed=false; the separate mixed fixture passed. Timings are hosted
+native fixture measurements, not phone/OEM performance guarantees.
+
 ## Codex 02 — verified implementation checkpoint
 
 Base/main `73a15e2210cb55cf003e60ebc2033130ee7a9e58`; branch

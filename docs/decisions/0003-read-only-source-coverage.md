@@ -1,6 +1,8 @@
 # ADR 0003 — separate source coverage from profile preparation
 
-Date: October 11, 2026. Status: proposed for owner review in Codex 02.
+Date: October 11, 2026. Status: accepted by owner-authorized PR #3 merge at
+20:21:28 UTC on October 11, 2026 (main aefeb1b6). Independent device or approving
+review evidence is not inferred; the historical proposal below remains the M2 scope.
 
 ## Context
 

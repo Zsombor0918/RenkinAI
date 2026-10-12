@@ -193,3 +193,27 @@ At the Codex 03 gate, PR #3 is owner-authorized and merged as aefeb1b6. Ruleset
 documentation-audit required, force/delete prohibited. Approvals remain 0,
 conversation resolution/last-push approval/strict checks false. Do not claim these
 recommended owner settings were enabled; no ruleset modification occurred.
+
+
+## Codex 04 verification additions
+
+The same runner retains every M1/M2/M3 selector and adds reference sampler, structured
+schema/composer, analysis gateway, journal, real STYLE UI and accepted-analysis
+persistence/session groups. The unfiltered complete command still runs last; it must
+contain all required selectors too. Each run clears prior report copies so missing
+XML cannot borrow an older result. Actual testcase counts must match declared JUnit
+counts; malformed/empty/missing/skipped/failure/error/nonzero evidence fails. Offline
+fault-injection tests exercise these negative boundaries and are explicitly synthetic,
+not Android proof. Genuine KSP v20 export and retained historical v19 are required in
+the artifact. No hooks, shared governance validators or original workflow are weakened.
+
+PR #4 is owner-merged as 6aed9e08 on October 12 at 04:45:50 UTC. Its a73c1e02 source
+is an ancestor with an identical tree. At the M4 gate the active ruleset still has
+empty bypasses, PR/three required contexts and force/delete protection; approvals=0,
+conversation/last-push/strict=false. The additional profile-form-regressions job is
+required by this task, not yet a saved ruleset context. No administration write occurred.
+
+Final Codex 04 reread on October 12 also reports
+`require_extra_approval_for_unattributed_changes: true`. No author/review status is
+fabricated and no ruleset write occurred. PR #5's latest final-head audit/checks
+determine readiness; owner acceptance and merge remain separate from green CI.

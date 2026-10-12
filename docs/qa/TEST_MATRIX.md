@@ -1,6 +1,6 @@
 # Regression and test matrix
 
-Current checkpoint is Codex 03. Head 06e71532 passed 718/718 and all filtered
+Accepted baseline is Codex 03, owner-merged PR #4. Codex 04 source/testing is in progress. Head 06e71532 passed 718/718 and all filtered
 groups/APK including legacy gallery compatibility. The final documentation/probe-
 removal head is verified separately in PR #4's audit.
 Codex 00/01/02 sections below remain historical, including M2's 669/669 baseline.
@@ -97,3 +97,28 @@ separately rejects those images as project references, with oversized gallery ZI
 negative coverage. It passed at 06e71532 in the nine-case ProjectAiBackupTest. Physical
 process-kill, URI permissions, storage exhaustion, Samsung/Flip/One UI/TalkBack,
 SAF/keystore and generated-pack install/update remain NOT RUN.
+
+
+## Codex 04 analysis matrix — code checkpoint verified, device acceptance pending
+
+Initial executable 53addf96 ran 789 tests with five fixture failures; actual group
+counts and stack diagnoses are in BASELINE. Corrected code 47503e5c passed 792/792
+and every isolated group, including same-profile mode/source guards, faithful v19
+indexes/version and one-shot HTTP transmission. Exact closing-head checks belong
+in PR #5; no code/test/schema/build change follows this verified checkpoint.
+
+| Area | Deterministic evidence passed at 47503e5c | Physical/live boundary |
+| --- | --- | --- |
+| Source references | Three real PNG style families, sorted/diverse 8–12, mixed/duplicate/empty/low-alpha/broken/dynamic, 120 bound, stale/cancel; actual bitmap/vector/adaptive draw and owned-bitmap recycling; existing all-map parser | Installed monochrome/color packs, real themes, source update/uninstall NOT RUN |
+| Schema/composer | Strict duplicate/depth/size/control/range/enum/null/version/palette validation, supported required-key schema, canonical/identity/user-priority escaping | Real model quality/self-assessment is NOT calibrated or tested |
+| Responses adapter | MockWebServer ordered 1/5/8/12 data URLs, endpoint/model/text.format/store false, no local identity, usage/refusal/incomplete/UTF-8/size/auth/rate/server/cancel/redirect/timeout/zero retry | Account access/actual POST/billing NOT RUN; zero live requests |
+| Durable request | Consent false/stale zero files/calls, REQUESTING before call, same UUID/concurrent/reopen no resend, uncertain crash/cancel, new retry consent, AtomicFile recovery/marker failure/quota/hash, cleanup/epochs/delete | Real process kill/storage fault requires device trial |
+| STYLE UX | Actual root/dialogs/gestures with offline backend: CREATE/EXTEND, local samples, paid decline/confirm, draft edit/Use/Save, five ordered refs, stale/no-key/empty/error/uncertain, restoration/dark/light/wide/48dp | TalkBack, Samsung/One UI/Theme Park/cover/fold/rotation NOT RUN |
+| Owner/save/restore | Real Room/assets/session guard, no active-on-result/Use, USER vs AUTO evidence, expected version/revision, dirty instruction, profile/catalog/source/epoch conflict; v19 file→v20 and fresh KSP identity; format 5/full/share/rekey and 3/4 legacy | Device install/update, all-store restore interruption and downgrade recovery NOT RUN |
+| Runner/governance | 51/51 Python guards locally; independently counted genuine 135 XML/792 tests, all 16 groups, zero errors/skips/missing selectors; genuine schemas match source | Synthetic fault fixtures are never Android proof; exact final-head audit/Actions belongs in PR #5 |
+
+No old suite was removed/ignored or timeout/idling policy changed. Local Android
+failed before configuration at download; hosted native/Room/MockWebServer execution
+is verified. Final documentation head must independently pass all original/new
+groups, complete suite/APK and governance before the PR is ready. Device/live gaps
+above remain NOT RUN; green CI is not owner or Play release approval.
