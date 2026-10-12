@@ -30,6 +30,12 @@ pins are untouched. Explicit discard or completed review can release staging ima
 while consumed request markers prevent replay. Unreviewed journals/staging are not
 portable backups; this limitation must remain visible. Accepted style/references are.
 
+HTTP submission enforces the same existing one-POST decision through a one-shot
+RequestBody in addition to disabled connection retries and redirects. Pinned OkHttp
+4.12's 503 Retry-After: 0 follow-up otherwise ignores the connection retry flag.
+Mock traffic must demonstrate that negative control and the production single-POST
+uncertain outcome; no live provider call is needed or authorized for this correction.
+
 Add only two nullable TEXT columns to StyleRevision through explicit v19→v20:
 validated structured suggestion JSON and validated reviewed evidence JSON. Plain
 specification/userInstruction remain separate. Legacy rows get NULL, never inferred

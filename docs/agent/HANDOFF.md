@@ -35,6 +35,13 @@ floating-point JSON token and exact UI source/count expectations. Route mode/sou
 is now bound before refresh and checked at paid confirmation, Use and guarded Save;
 new same-profile route regression tests must pass before acceptance.
 
+780ab879 passed original Android 38238659202 and regressions 38238659237: independently
+counted 135 XML / 791 tests, all 16 groups successful, zero failure/error/skip; APK
+11742580515 exists and KSP v20 matches the copied source byte-for-byte. Final billing
+review found OkHttp 4.12's 503 Retry-After: 0 follow-up bypassing its connection-retry
+flag. The analysis body is now one-shot with a mock negative-control regression;
+that next head must receive fresh complete checks before the audit becomes ready.
+
 - Local governance/runner guards: 51/51, 15.308 s, exit 0. Six injected runner tests
   are synthetic evidence of failure propagation, not Android/Room proof.
 - Local full Android command FAILED before configuration: Gradle 8.11.1 distribution

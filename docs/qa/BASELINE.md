@@ -18,6 +18,27 @@ unreachable before configuration; hosted reruns must establish actual test resul
 
 ## Codex 04 starting checkpoint — October 12, 2026
 
+### Corrected executable checkpoint — 780ab879
+
+[Android 38238659202](https://github.com/Zsombor0918/RenkinAI/actions/runs/38238659202)
+and [regressions 38238659237](https://github.com/Zsombor0918/RenkinAI/actions/runs/38238659237)
+passed on 780ab879228a64665b6bae62e74188c818eebd71. Downloaded artifact 11741966280
+independently counted 135 XML / **791 tests / zero failure/error/skip**. All 16 groups
+passed with zero exits, missing selectors or malformed reports: original 1/1, 1/1,
+2/2, 3/3; Create/Extend 10/10; coverage 28/28; project UI 12/12; data 31/31;
+gateway/legacy 31/31; sampler 11/11; schema/composer 14/14; analysis gateway 6/6;
+journal 10/10; analysis UI 12/12; persistence/session 20/20; unfiltered 791/791.
+The real debug APK artifact is 11742580515. KSP v20 export is byte-identical to
+committed SHA256 10410ffa2c99a0718ffb2552f2194280d00fe816e88af5e0ed9a667780abd8f8.
+Local 51 Python guards passed in 13.233 s; range docs/conventions and staged hooks pass.
+
+The final billing review inspected the pinned upstream OkHttp tag parent-4.12.0,
+commit 4984568367caaf359b82c452bd28b5e192824d1c. RetryAndFollowUpInterceptor returns
+the original request for HTTP 503 with Retry-After: 0 independently of the connection
+retry flag; the interceptor stops that follow-up for isOneShot bodies. The narrow
+adapter correction and a real mock negative control require next-head execution.
+791/791 remains this checkpoint's evidence, not the new one-shot test's result.
+
 The continuation after test compilation repair is recorded separately below.
 
 Fresh accepted main 6aed9e08ee5619c1061481972dc172546c7f5abe, owner-merged PR #4

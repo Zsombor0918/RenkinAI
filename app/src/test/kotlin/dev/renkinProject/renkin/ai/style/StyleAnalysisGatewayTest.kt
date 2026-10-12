@@ -5,6 +5,9 @@ import android.util.Base64
 import dev.renkinProject.renkin.apk.CoverageStamp
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.SocketPolicy
@@ -131,6 +134,26 @@ class StyleAnalysisGatewayTest {
             val job = launch { gateway(server).analyze(analysisFixtureRequest()) }
             withContext(Dispatchers.IO) { assertNotNull(server.takeRequest(5, TimeUnit.SECONDS)) }
             job.cancelAndJoin(); assertTrue(job.isCancelled); assertEquals(1, server.requestCount)
+        }
+    }
+    @Test fun serviceRetryAfterZeroCannotReplayOneBillableAnalysisBody() = runBlocking {
+        MockWebServer().use { server ->
+            // Negative control: the pinned client's connection flag alone permits
+            // a 503 HTTP follow-up. This is local mock traffic, never a provider.
+            server.enqueue(MockResponse().setResponseCode(503).addHeader("Retry-After", "0").setBody("busy"))
+            server.enqueue(MockResponse().setBody(analysisFixtureResponse()))
+            withContext(Dispatchers.IO) {
+                OkHttpClient.Builder().retryOnConnectionFailure(false).followRedirects(false).build()
+                    .newCall(Request.Builder().url(server.url("/v1/responses"))
+                        .post("{}".toRequestBody("application/json".toMediaType())).build())
+                    .execute().use { assertEquals(200, it.code) }
+            }
+            assertEquals(2, server.requestCount)
+            server.enqueue(MockResponse().setResponseCode(503).addHeader("Retry-After", "0").setBody("busy"))
+            server.enqueue(MockResponse().setBody(analysisFixtureResponse()))
+            val before = server.requestCount
+            assertEquals(StyleAnalysisOutcome.Uncertain, gateway(server).analyze(analysisFixtureRequest()))
+            assertEquals("One consent must submit at most one POST", before + 1, server.requestCount)
         }
     }
 }

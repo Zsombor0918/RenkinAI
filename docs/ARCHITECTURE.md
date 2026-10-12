@@ -639,6 +639,10 @@ supplied style text and thumbnails are transmitted. Account access/quality/cost 
 unverified; no fake price estimate. UI consent names source, N, model, one paid
 request, upload/licensing/privacy and uncertainty. Default HTTP bounds are 20s connect,
 30s write and 90s read/call; retries/redirects/logging are disabled.
+The analysis RequestBody additionally reports isOneShot=true. Pinned OkHttp 4.12.0
+otherwise retries a 503 with Retry-After: 0 despite retryOnConnectionFailure=false.
+The mock negative control demonstrates that follow-up; the production body must
+return UNCERTAIN after the single submitted POST instead. Legacy image clients stay.
 
 Output items are scanned by type (reasoning need not be first/last); refusal/incomplete/
 unknown tool content/malformed UTF-8/oversize output fail safely. Response bound is

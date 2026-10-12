@@ -14,8 +14,9 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.RequestBody
 import okhttp3.Response
+import okio.BufferedSink
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -45,10 +46,18 @@ internal class OpenAiStyleAnalysisGateway internal constructor(
         val credential = try { key().also { require(it.length in 20..2048 && it.all { c -> c.code in 33..126 }) } }
             catch (cancel: CancellationException) { throw cancel }
             catch (_: Exception) { return@withContext StyleAnalysisOutcome.Unauthorized }
-        val body = analysisBody(request).toString()
-        if (body.toByteArray().size > 5 * 1024 * 1024) return@withContext StyleAnalysisOutcome.InvalidInput
+        val body = analysisBody(request).toString().toByteArray(Charsets.UTF_8)
+        if (body.size > 5 * 1024 * 1024) return@withContext StyleAnalysisOutcome.InvalidInput
+        // OkHttp 4.12 may follow 503 Retry-After: 0 even with connection retries off.
+        // A billable body must be one-shot so no HTTP follow-up can submit it again.
+        val payload = object : RequestBody() {
+            override fun contentType() = "application/json".toMediaType()
+            override fun contentLength() = body.size.toLong()
+            override fun isOneShot() = true
+            override fun writeTo(sink: BufferedSink) { sink.write(body) }
+        }
         val call = http.newCall(Request.Builder().url(endpoint).header("Authorization", "Bearer $credential")
-            .header("X-Client-Request-Id", request.requestId).post(body.toRequestBody("application/json".toMediaType())).build())
+            .header("X-Client-Request-Id", request.requestId).post(payload).build())
         try {
             val response = executeAnalysis(call)
             when (response.code) {

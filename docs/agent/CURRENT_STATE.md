@@ -239,6 +239,10 @@ detail, strict text.format and store false; user text/thumbnails only, no automa
 metadata/inventory upload. HTTP/JSON/image/journal limits and durable consumed UUIDs
 prevent retry on reopen, cancellation or process death. A result saves locally before
 review; only current owner/preparation or explicitly re-reviewed source-only staleness
+can accept a proposal. The analysis HTTP body is one-shot: a 503 Retry-After: 0 cannot
+silently resubmit it, even though the pinned client's connection retry flag alone
+does not block that HTTP follow-up. A new offline negative-control test verifies it.
+Only explicitly reviewed results
 can Save a new immutable revision. Unedited model spec is AUTO_ANALYSIS; changed
 spec/ref provenance is USER with evidence. AI1/AI2 remain global/classic.
 
