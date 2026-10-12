@@ -1,5 +1,21 @@
 # Verification baseline
 
+## Codex 04 continuation — failed initial hosted head
+
+Resumed PR #5 on October 12 from `420d0b879ff65db260b70d6713ffbf9699a294b6`.
+Fresh main remains `6aed9e08ee5619c1061481972dc172546c7f5abe`; PR #4 is merged.
+[Android 38215229608](https://github.com/Zsombor0918/RenkinAI/actions/runs/38215229608)
+compiled production Kotlin, then FAILED compiling unit tests: RuntimeEnvironment's
+non-generic getApplication was called with type arguments in ReferenceSamplerTest
+and StyleAnalysisFixtures, and ProjectStyleAnalysisComposeTest lacked the data
+IconPack import. No Android tests ran and APK tasks were skipped.
+[Regressions 38215229556](https://github.com/Zsombor0918/RenkinAI/actions/runs/38215229556)
+failed at the same boundary. Governance conventions passed; documentation audit
+correctly rejected the BLOCKED declaration. The retained compiled-vector fixture
+from CoveragePreviewTest also replaces unsupported raw platform vector inflation.
+Fresh local full Gradle attempt again FAILED downloading 8.11.1 with Network is
+unreachable before configuration; hosted reruns must establish actual test results.
+
 ## Codex 04 starting checkpoint — October 12, 2026
 
 Fresh accepted main 6aed9e08ee5619c1061481972dc172546c7f5abe, owner-merged PR #4

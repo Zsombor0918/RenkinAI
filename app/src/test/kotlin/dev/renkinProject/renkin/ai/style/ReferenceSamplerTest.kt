@@ -103,12 +103,13 @@ class ReferenceSamplerTest {
         assertEquals(1, reader.renderCount)
     }
     @Test fun staticBitmapVectorAdaptiveRenderAndOwnedBitmapCleanupAreReal() {
-        val resources = RuntimeEnvironment.getApplication<Application>().resources
+        val resources = RuntimeEnvironment.getApplication().resources
         val input = BitmapFactory.decodeByteArray(analysisFixturePng(2), 0, analysisFixturePng(2).size)
         try {
             val bitmapDrawable = BitmapDrawable(resources, input)
-            val parser = Xml.newPullParser().apply { setInput(StringReader("""<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="64dp" android:height="64dp" android:viewportWidth="64" android:viewportHeight="64"><path android:fillColor="#ff00aa" android:pathData="M8,8 L56,8 L32,56 Z"/></vector>""")) }
-            val vector = Drawable.createFromXml(resources, parser)
+            // Platform vector inflation requires AAPT-compiled resource attributes.
+            val vector = resources.getDrawable(dev.renkinProject.renkin.R.drawable.ic_github, null)
+            assertTrue(vector is VectorDrawable)
             val adaptive = AdaptiveIconDrawable(ColorDrawable(Color.DKGRAY), bitmapDrawable)
             for (drawable in listOf(bitmapDrawable, vector, adaptive)) {
                 var owned: Bitmap? = null

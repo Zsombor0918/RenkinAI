@@ -72,7 +72,7 @@ internal fun analysisFixtureResponse(style: StyleProfileV1 = analysisFixtureStyl
         .put(json("type" to "message", "status" to "completed", "content" to JSONArray().put(json("type" to "output_text", "text" to style.encode())))))
         .apply { if (usage) put("usage", json("input_tokens" to 43, "output_tokens" to 92)) }.toString()
 
-internal fun analysisFixtureContext(directory: File): Context = object : ContextWrapper(RuntimeEnvironment.getApplication<Context>()) {
+internal fun analysisFixtureContext(directory: File): Context = object : ContextWrapper(RuntimeEnvironment.getApplication()) {
     override fun getNoBackupFilesDir(): File = directory
 }
 

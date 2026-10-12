@@ -21,6 +21,13 @@ required from hosted compilation; do not synthesize it.
 
 ## Current evidence and outstanding gate
 
+Continuation starts at PR #5 head 420d0b87, with accepted main still 6aed9e08.
+Hosted production compilation passed, but three new test compilation errors stopped
+all Android execution (two non-generic RuntimeEnvironment calls and missing IconPack
+import). Correct these fixtures plus the known compiled-vector resource contract,
+then inspect genuine full/filtered XML and KSP v20. No passing result is inferred
+from fixing compilation. See the continuation ledger in BASELINE.
+
 - Local governance/runner guards: 51/51, 15.308 s, exit 0. Six injected runner tests
   are synthetic evidence of failure propagation, not Android/Room proof.
 - Local full Android command FAILED before configuration: Gradle 8.11.1 distribution
