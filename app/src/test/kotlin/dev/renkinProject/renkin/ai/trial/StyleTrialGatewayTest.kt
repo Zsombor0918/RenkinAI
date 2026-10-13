@@ -7,6 +7,7 @@ import android.util.Base64
 import dev.renkinProject.renkin.ai.*
 import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.data.project.projectTestPng
+import dev.renkinProject.renkin.data.project.trialVariants
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrl

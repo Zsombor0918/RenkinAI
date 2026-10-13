@@ -1,5 +1,13 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## Single-icon red compilation repair
+
+Android CI38378700845 at b3d5a6bf compiled production, then failed test compilation
+at StyleTrialGatewayTest.kt:102, missing trialVariants extension import. Add only
+the existing extension import; keep all new/old assertions and production unchanged.
+This is not red regression proof. Read actual next-head hosted contract failures
+before applying the production correction; all21 groups and owner gate remain.
+
 ## Single-icon owner blocker — test-first continuation
 
 Continue only feat/style-trials-m5 / PR #6 from a1c2310895bd3f161da31ff03b72575b2853e917,

@@ -1,5 +1,13 @@
 # Verification baseline
 
+## Single-icon red checkpoint compilation — no assertion result yet
+
+Head b3d5a6bfccdcc19a2320409fd9959bdf9b459ba5 in Android CI38378700845 compiled
+production but failed unit-test compilation: StyleTrialGatewayTest.kt:102 needs
+the existing trialVariants extension import. Tests did not run and APK was skipped.
+The follow-up adds only that import, retaining all assertions and production bytes.
+Next-head actual red results are required before production edits. No live request.
+
 ## October 13 single-icon P0 — test-first checkpoint
 
 Start from a1c2310895bd3f161da31ff03b72575b2853e917 on existing PR #6, with clean
