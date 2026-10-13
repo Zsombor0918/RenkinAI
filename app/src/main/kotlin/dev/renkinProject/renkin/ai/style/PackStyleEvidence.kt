@@ -62,7 +62,7 @@ internal data class MeasuredPackSwatch(val argb: String, val role: String, val i
 internal data class PackStyleEvidence(val artworks: Int, val dominantFamily: Int, val families: Int,
     val colorPolicy: PackColorPolicy, val swatches: List<MeasuredPackSwatch>, val metrics: String) {
     fun validate() {
-        require(artworks in 1..300 && dominantFamily in 1..artworks && families in 1..artworks)
+        require(artworks in 1..600 && dominantFamily in 1..artworks && families in 1..artworks)
         require(swatches.size <= 6 && swatches.map { it.argb }.distinct().size == swatches.size)
         swatches.forEach { require(it.argb.matches(Regex("#FF[A-F0-9]{6}")) && it.role in setOf("neutral", "dominant", "secondary", "accent") &&
             it.icons in 1..artworks && it.sharePercent in 0..100) }
@@ -73,7 +73,7 @@ internal data class PackStyleEvidence(val artworks: Int, val dominantFamily: Int
     companion object {
         fun parse(r: JSONObject): PackStyleEvidence {
             r.exactKeys(setOf("schema", "artworks", "dominantFamily", "families", "colorPolicy", "swatches", "metrics")); require(r.longValue("schema") == 1L)
-            fun integer(root: JSONObject, key: String) = root.longValue(key).also { require(it in 0..300) }.toInt()
+            fun integer(root: JSONObject, key: String) = root.longValue(key).also { require(it in 0..600) }.toInt()
             val a = r.getJSONArray("swatches"); require(a.length() <= 6)
             return PackStyleEvidence(integer(r, "artworks"), integer(r, "dominantFamily"), integer(r, "families"),
                 PackColorPolicy.valueOf(r.stringValue("colorPolicy")), (0 until a.length()).map { i -> a.getJSONObject(i).let {

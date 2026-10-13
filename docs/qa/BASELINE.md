@@ -1,5 +1,75 @@
 # Verification baseline
 
+## Closing-head legacy rejection-journey readiness
+
+Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered
+tests. Full regressions38478557064 failed1/23 isolated trial-ui assertions because
+the retained rejection journey clicked style-analysis-prepare while its independent
+initial Room load kept the real button disabled. All other21 commands, including
+DNA26/26 and full925/925, passed. Independent artifact11856632498,644124bytes,
+SHA25682ec516e2af3be8bdba3fa42687adaf7b69135a0f8b7635f2f5e4e4f40abbb5b
+retains the actual failure; it is not erased by full-suite success.
+
+The test-only follow-up materializes and observes the actual enabled semantics within
+the existing10000ms bound in that second journey, exactly as the earlier EXTEND journey
+already does. Every displayed/enabled/click, error, consumed-consent, fresh-ID, manual
+Save and zero-image-call assertion remains unchanged. No runtime, selector, timeout,
+idling rule or signing/data change. Its own final-head all22/Android/governance,
+independent XML/schema and fresh APK are still required in PR7's audit.
+
+## October 14 — Style DNA verified code checkpoint
+
+Code `89eacb0d49fb9d1479db048b6f2b2a1e987995d0` passed
+[Android38477038060](https://github.com/Zsombor0918/RenkinAI/actions/runs/38477038060) and
+[all22 regressions38477037827](https://github.com/Zsombor0918/RenkinAI/actions/runs/38477037827).
+Independent artifact11857125237,638786 bytes,SHA256
+`076d772e6961d67ef9a50652fe5cdfed117b2cf90451c4964fcff8eea9585f12`:
+exact summary HEAD, every command exit0, all selectors present,
+**149 complete-suite XML /925 actual testcase nodes /0 failures /0 errors /0 skipped**.
+Declared suite and summary counts agree with independently recounted nodes.
+DNA integration26/26; retained trial gateway15/15. Genuine19/20/21 exports are
+byte-equivalent;v21 identity8c7a3c8b5b26ad29673ebbd77605838e,30159bytes.
+
+Test-first b2df166a (before production):904/6, all six failures new reproductions.
+Integration4531da8a compiled and executed925/1; artifact11854671326,642854 bytes,
+SHA2568b241e9942fea945bc2f2cfe5d54b787c16fda9e1cb2760acec44167308192a0
+independently has149 XML/925 tests/one duotone golden failure/no errors/skips.
+Stable-interior family colors correct that failure with all expectations unchanged.
+
+| Synthetic golden case | Reports | Families | Measured family policy | Elapsed ms | JVM heap delta bytes |
+| --- | --- | --- | --- | --- | --- |
+| Lux-like mixed | 12 | 2 | ADAPT_BRAND_COLORS | 162 | 58712464 |
+| Basit-like outline | 12 | 1 | MONOCHROME | 64 | 6291544 |
+| Monochrome | 12 | 1 | MONOCHROME | 76 | 9435192 |
+| Genuine duotone | 12 | 1 | DUOTONE | 76 | 12582944 |
+| Wordmark | 12 | 1 | MONOCHROME | 63 | 5242880 |
+| Variable brand colors | 12 | 1 | ADAPT_BRAND_COLORS | 162 | -63006392 |
+
+| Mappings | Cap | Examined / distinct / selected | Elapsed ms | JVM heap delta bytes |
+| --- | --- | --- | --- | --- |
+| 50 | 300 | 50 /37 /24 | 138 | 30999664 |
+| 50 | 600 | 50 /37 /24 | 140 | -90428152 |
+| 150 | 300 | 150 /40 /24 | 363 | 80203448 |
+| 150 | 600 | 150 /40 /24 | 365 | -39773416 |
+| 500 | 300 | 300 /41 /24 | 700 | 31170912 |
+| 500 | 600 | 500 /40 /24 | 1162 | 3496936 |
+| 1500 | 300 | 300 /41 /24 | 704 | 29858624 |
+| 1500 | 600 | 600 /40 /24 | 1376 | -74365992 |
+
+These are native-Robolectric synthetic fixtures, not Lux/Basit proprietary pack samples.
+GC-sensitive JVM heap deltas are not peak RSS/native memory or phone latency.
+The suite proves finer report granularity, families, policies, no reference-identity
+contamination and bounded one-shot recovery; no generated image or blind held-out
+style-fidelity comparison occurred. Deep and live D4 remain deferred.
+Local Python52/52 passed in14.988s at this code head; docs123paths/commit23subjects
+passed. Local Gradle/full runner fail before configuration downloading8.11.1.
+Zero live/paid API calls; no device, account, pricing or install/update validation.
+
+The closing documentation commit changes no code/tests/build/schema. Its own mandatory
+Android/all22/governance and fresh independent XML/APK verification must be recorded
+with final SHA in [PR7's audit](https://github.com/Zsombor0918/RenkinAI/pull/7).
+The code checkpoint above cannot substitute for that exact-head evidence.
+
 ## Closing-head isolated initial-load race — ffabb37b
 
 Documentation-only headffabb37b passed Android38437258752 and the unfiltered
@@ -813,3 +883,33 @@ changes. Local governance at 68c05698 passed 45/45 in 18.300 s, commit range pas
 six subjects, docs range passed 51 changed paths. Its governance job 114583693727
 passed all 45 guard tests and rejected only the deliberately still-BLOCKED PR audit.
 Subsequent final documentation commit verification is recorded in that PR audit.
+
+
+## Style DNA test-first stacked development
+
+Branch feat/style-dna-v1 starts from verified PR6 head454bd5ec, with mainaf7bdb10 unchanged. Both owner specifications were read in full. Legacy one-shot analysis and original-first trials already work. New test-only assertions reproduce missing reason categories, coarse-color duplicate bias, the24-reference boundary, absent per-image reports/family grammar and unevidenced modernization guidance. Hosted assertion execution is required before production changes. The three workflow base filters add feat/style-trials-m5 so a stacked draft receives the same unchanged jobs and complete21-group runner. No selector, timeout, test or approval check is removed. Local Android dependency access is unavailable; hosted CI supplies Android evidence. Zero live or paid provider calls. Deep and physical visual A/B remain deferred; no merge or force push.
+
+
+## Style DNA opt-in development on stacked PR7
+
+New feat/style-dna-v1 starts at PR6 head454bd5ec; PR6 and main are unchanged. D0 adds safe local missing/unrenderable/dynamic/stateful/render/alpha/resource reasons, independent Oklab color duplicate veto and bounded up-to600 local candidates/24 selected images. Legacy sampler defaults120/12 and M4 aggregate12 remain. New algorithmv3 accepts oldv1/v2 journals without rewriting their fingerprints.
+
+D1 Quick uses up-to12 labeled image parts and one report per image, with conservative independent local synthesis. Standard explicitly opts into up-to24 images in six-image groups and one separately listed text synthesis (maximum5 submissions). Same documented gpt-5.4-mini alias/snapshot, explicit low/high detail, strict Responses text.format/store:false, max12288 output tokens/step, bounded5MiB body/128KiB response. Model availability and quality remain unverified; low is not presumed cheaper. Deep and live A/B are deferred.
+
+D2 versioned reports and multi-family drawing grammar use a tagged style_dna payload in existing nullable revision JSON; Roomv21 and full/shareformat6/payload3 stay. Existing V1 rows/history remain unchanged. Explicit human review and Save create an immutable revision with up-to5 selected private refs. Legacy-only readers reject new grammar before restore writes; safe rollback needs a compatible forward reader. Device-local journals stay out of backups and retain global consumed IDs across delete/restore.
+
+D3 M5 optionally freezes target-specific drawing recipes, explicit family/symbol-type choices and DNA fingerprint in compatible optional plan/context fields. Original component C remains exclusive identity; B only style. Original verification and separate paid consent remain. Null-override AI1/AI2 bodies, non-DNA Stability paths, editor, profile, watch, signing/install and historical PNGs remain.
+
+Test-first b2df166a: hosted904 tests with exactly6 new assertion failures; no old failures. Current new implementation/integration execution is pending hosted CI, not claimed green. Local Python52 guards pass; local Gradle/full runner fail before configuration at distribution download. All old21 groups/selectors remain plus one additive DNA integration group. Zero live/paid requests, no device test, merge or force push. Owner visual acceptance remains open.
+
+
+## Style DNA integration and compilation follow-up
+
+Implementation2bf8ca7e CI38469333350 failed KSP parsing StyleTrialPlan.kt:117 at an extra closing parenthesis; no Android assertions or APK ran. The correction retains all old fields and optional recipes. Existing full M5 prompt assertions are extended with the new modernization prohibition; all prior exact prompt/image/legacy-byte assertions remain. New MockWebServer, real Room/full-share backup/owned-controller and320dp/dark/restoration/source-switch Compose fixtures join the additive DNA group. Renderer fixtures cover dark-on-dark visible artwork, alpha exclusions, state/animation versus real render exceptions; bounded300/600 local scans have50/150/500/1500 synthetic mappings. Retain all21 old groups, with22 total. Symlink companions, partial reports, consumed steps, native-color veto, and explicit manual Save are guarded. Current corrected execution is pending, not claimed passed. Zero live/paid requests or physical visual test.
+
+
+## Style DNA measured duotone correction
+
+Corrected integration head4531da8a compiled production and test Kotlin successfully, then Android CI38476057333 executed925 tests with exactly one new golden assertion failure: genuine white/cyan artwork was classified FIXED_PALETTE instead of DUOTONE. Independent failure artifact11853479616 is213996 bytes, SHA256 f3bf8d5964db87a4e273c39558a55b49e55cdbdb4689b536a5e4d0e88b6fa206. All924 other tests passed, including the six original red regressions and new wire/Room/UI integrations; no successful APK at that checkpoint.
+
+DNA family palette measurement now samples stable opaque interior paint before aggregating recurring colors. It excludes interpolated boundary mixtures, retains all existing geometry, falls back when too few interior pixels exist, and recycles its single256px bitmap. Existing legacy aggregate and sampler measurements stay unchanged. The same golden assertions remain; corrected full Android/all22/governance/XML/APK execution is required. No live or paid API request or physical device test occurred.

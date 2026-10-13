@@ -45,6 +45,14 @@ internal interface CoverageSourceReader {
     suspend fun canRender(drawableName: String): Boolean
     val stableReferences: Boolean get() = true
     suspend fun referencePng(drawableName: String): ByteArray? = null
+    /** Compatibility adapters may lack resource-ID diagnostics. Real pack readers override this. */
+    suspend fun inspectReference(drawableName: String): dev.renkinProject.renkin.ai.style.ReferenceRead {
+        if (!canRender(drawableName)) return dev.renkinProject.renkin.ai.style.ReferenceRead.Failed(
+            dev.renkinProject.renkin.ai.style.ReferenceFailure.MISSING_DRAWABLE)
+        val png = referencePng(drawableName) ?: return dev.renkinProject.renkin.ai.style.ReferenceRead.Failed(
+            dev.renkinProject.renkin.ai.style.ReferenceFailure.UNSUPPORTED_STATEFUL)
+        return dev.renkinProject.renkin.ai.style.ReferenceRead.Rendered(png)
+    }
 }
 
 internal data class CoverageEntry(

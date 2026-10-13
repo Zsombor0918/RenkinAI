@@ -1,5 +1,61 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## Closing-head legacy rejection-journey readiness
+
+Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered
+tests. Full regressions38478557064 failed1/23 isolated trial-ui assertions because
+the retained rejection journey clicked style-analysis-prepare while its independent
+initial Room load kept the real button disabled. All other21 commands, including
+DNA26/26 and full925/925, passed. Independent artifact11856632498,644124bytes,
+SHA25682ec516e2af3be8bdba3fa42687adaf7b69135a0f8b7635f2f5e4e4f40abbb5b
+retains the actual failure; it is not erased by full-suite success.
+
+The test-only follow-up materializes and observes the actual enabled semantics within
+the existing10000ms bound in that second journey, exactly as the earlier EXTEND journey
+already does. Every displayed/enabled/click, error, consumed-consent, fresh-ID, manual
+Save and zero-image-call assertion remains unchanged. No runtime, selector, timeout,
+idling rule or signing/data change. Its own final-head all22/Android/governance,
+independent XML/schema and fresh APK are still required in PR7's audit.
+
+## October 14 — completed D0–D3, owner visual acceptance open
+
+Both owner specifications were read fully before production edits. Primary execution scope
+is D0–D3 plus deterministic D4 fixtures on separate `feat/style-dna-v1`, stacked draft
+[PR7](https://github.com/Zsombor0918/RenkinAI/pull/7) targeting PR6's `feat/style-trials-m5`.
+Original baseline454bd5ec, unchanged mainaf7bdb10. Code89eacb0d passed Android38477038060
+and all22 groups38477037827: independently149 XML/925 actual tests/zero failures/errors/skips,
+DNA26/26, genuine19/20/21 schema bytes unchanged. Full file inventory, red/green evidence
+and exact limits are in the [verification note](../changes/2026-10-14-style-dna-verification.md).
+The closing docs-only head must have its own full checks and newly downloaded APK;
+its exact SHA, final XML/artifact and certificate evidence belong in PR7's audit.
+
+Free device walkthrough: open the real project, choose CREATE or EXTEND and the intended
+style packB, then Project AI style. Keep Legacy or explicitly choose Quick/Standard.
+Prepare locally and inspect examined/valid/duplicate/exclusion counts and labeled thumbnails;
+do not press paid confirmation during this authorized offline validation. Existing manual
+style Save and classic editor remain available without a key. Inspect Original app iconC
+separately from B and reject a themed, missing or wrong identity before any optional trial.
+
+After separate future owner authorization, the app's analysis confirmation lists actual
+model/detail/images and every frozen charged step. Inspect per-image reports/families,
+edit grammar if necessary, select at most5 style references, check human review and explicitly
+Save a new revision. Then choose trial targets/family/symbol type, inspect the frozen drawing
+recipe and genuine originalC, and separately confirm a trial only if authorized.
+No Prepare, navigation, report review, Save, backup or restart automatically submits an endpoint.
+
+Implemented deterministic contracts are distinct from experimental visual quality:
+Quick recurrence may remain UNKNOWN; Standard depends on unverified model observations.
+Deep is disabled. Real pack source diagnosis, blind held-out style/recognition/native-color
+comparison, peak memory, physical Samsung/Theme Park/TalkBack/fold and signing/update are open.
+CI debug signing uses an ephemeral runner key; do not assume it can update an installed
+debug build with a different certificate. Preserve existing data and both signing keys.
+
+Next safe task is owner local/device inspection. Before any paid A/B, prepare a concrete
+model/request/cost-limit proposal from current official pricing and the approved fixture set,
+then obtain explicit owner authorization and use the app's existing secure credential setup;
+never place a key in chat, source, fixtures, logs or CI. No live/paid call, merge, force push,
+main write or release occurred here. Keep both PRs draft/open for owner review.
+
 Closingffabb37b passed Android and898 unfiltered tests; isolated trial-ui failed
 one existing analysis journey before the panel's initial Room load enabled its
 prepare action. The test-only follow-up observes real enabled semantics before the
@@ -339,3 +395,33 @@ matches the redacted text, and Stability retains one all-zero sentinel reference
 hash so its real provider and two endpoint counters remain readable. Prepared=false,
 rotated epoch, missing images and retained device-wide consumed item IDs prohibit
 replay under the old or another owner. Other profiles' records/assets stay intact.
+
+
+## Style DNA test-first stacked development
+
+Branch feat/style-dna-v1 starts from verified PR6 head454bd5ec, with mainaf7bdb10 unchanged. Both owner specifications were read in full. Legacy one-shot analysis and original-first trials already work. New test-only assertions reproduce missing reason categories, coarse-color duplicate bias, the24-reference boundary, absent per-image reports/family grammar and unevidenced modernization guidance. Hosted assertion execution is required before production changes. The three workflow base filters add feat/style-trials-m5 so a stacked draft receives the same unchanged jobs and complete21-group runner. No selector, timeout, test or approval check is removed. Local Android dependency access is unavailable; hosted CI supplies Android evidence. Zero live or paid provider calls. Deep and physical visual A/B remain deferred; no merge or force push.
+
+
+## Style DNA opt-in development on stacked PR7
+
+New feat/style-dna-v1 starts at PR6 head454bd5ec; PR6 and main are unchanged. D0 adds safe local missing/unrenderable/dynamic/stateful/render/alpha/resource reasons, independent Oklab color duplicate veto and bounded up-to600 local candidates/24 selected images. Legacy sampler defaults120/12 and M4 aggregate12 remain. New algorithmv3 accepts oldv1/v2 journals without rewriting their fingerprints.
+
+D1 Quick uses up-to12 labeled image parts and one report per image, with conservative independent local synthesis. Standard explicitly opts into up-to24 images in six-image groups and one separately listed text synthesis (maximum5 submissions). Same documented gpt-5.4-mini alias/snapshot, explicit low/high detail, strict Responses text.format/store:false, max12288 output tokens/step, bounded5MiB body/128KiB response. Model availability and quality remain unverified; low is not presumed cheaper. Deep and live A/B are deferred.
+
+D2 versioned reports and multi-family drawing grammar use a tagged style_dna payload in existing nullable revision JSON; Roomv21 and full/shareformat6/payload3 stay. Existing V1 rows/history remain unchanged. Explicit human review and Save create an immutable revision with up-to5 selected private refs. Legacy-only readers reject new grammar before restore writes; safe rollback needs a compatible forward reader. Device-local journals stay out of backups and retain global consumed IDs across delete/restore.
+
+D3 M5 optionally freezes target-specific drawing recipes, explicit family/symbol-type choices and DNA fingerprint in compatible optional plan/context fields. Original component C remains exclusive identity; B only style. Original verification and separate paid consent remain. Null-override AI1/AI2 bodies, non-DNA Stability paths, editor, profile, watch, signing/install and historical PNGs remain.
+
+Test-first b2df166a: hosted904 tests with exactly6 new assertion failures; no old failures. Current new implementation/integration execution is pending hosted CI, not claimed green. Local Python52 guards pass; local Gradle/full runner fail before configuration at distribution download. All old21 groups/selectors remain plus one additive DNA integration group. Zero live/paid requests, no device test, merge or force push. Owner visual acceptance remains open.
+
+
+## Style DNA integration and compilation follow-up
+
+Implementation2bf8ca7e CI38469333350 failed KSP parsing StyleTrialPlan.kt:117 at an extra closing parenthesis; no Android assertions or APK ran. The correction retains all old fields and optional recipes. Existing full M5 prompt assertions are extended with the new modernization prohibition; all prior exact prompt/image/legacy-byte assertions remain. New MockWebServer, real Room/full-share backup/owned-controller and320dp/dark/restoration/source-switch Compose fixtures join the additive DNA group. Renderer fixtures cover dark-on-dark visible artwork, alpha exclusions, state/animation versus real render exceptions; bounded300/600 local scans have50/150/500/1500 synthetic mappings. Retain all21 old groups, with22 total. Symlink companions, partial reports, consumed steps, native-color veto, and explicit manual Save are guarded. Current corrected execution is pending, not claimed passed. Zero live/paid requests or physical visual test.
+
+
+## Style DNA measured duotone correction
+
+Corrected integration head4531da8a compiled production and test Kotlin successfully, then Android CI38476057333 executed925 tests with exactly one new golden assertion failure: genuine white/cyan artwork was classified FIXED_PALETTE instead of DUOTONE. Independent failure artifact11853479616 is213996 bytes, SHA256 f3bf8d5964db87a4e273c39558a55b49e55cdbdb4689b536a5e4d0e88b6fa206. All924 other tests passed, including the six original red regressions and new wire/Room/UI integrations; no successful APK at that checkpoint.
+
+DNA family palette measurement now samples stable opaque interior paint before aggregating recurring colors. It excludes interpolated boundary mixtures, retains all existing geometry, falls back when too few interior pixels exist, and recycles its single256px bitmap. Existing legacy aggregate and sampler measurements stay unchanged. The same golden assertions remain; corrected full Android/all22/governance/XML/APK execution is required. No live or paid API request or physical device test occurred.

@@ -1,6 +1,9 @@
 # Documentation index
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
+
+Current Style DNA scope, complete changed-file inventory and genuinely executed red/green
+evidence: [October14 verification](changes/2026-10-14-style-dna-verification.md).
 Current facts come from the checked-out source; inherited prose is not a substitute.
 The Codex 00 baseline is `main` at `eb4daa5de82fab54e115363c073eb8981f2203d6`
 (verified October 11, 2026). Commit-specific validation is recorded separately.
@@ -48,3 +51,5 @@ Owner review/merge is pending. Codex 06/07 remain planned; device/provider accep
 Only one canonical architecture and current-state document exist. User guides may
 refer to them. Do not create another parallel architecture or silently promote a
 historical test result into the current baseline.
+
+Style DNA is opt-in stacked development in [PR7](https://github.com/Zsombor0918/RenkinAI/pull/7), based on PR6 head454bd5ec. [ADR0008](decisions/0008-style-dna-stacked-development.md) records its bounded report/grammar/request decisions. Old M4/M5 remains available; final-head evidence and owner visual acceptance are required.

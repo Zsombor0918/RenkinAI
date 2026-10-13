@@ -1,5 +1,8 @@
 # Changelog
 
+- Add opt-in per-icon Style DNA diagnostics, Quick/Standard reports, editable family grammar and frozen target recipes on stacked draft PR7.
+- Repair optional recipe compilation and measured duotone paint classification; verified code passes925 tests and all22 regression groups. Deep and live/device visual quality remain unverified.
+
 - Improve local pack-style sampling and actual palette measurements; distinguish native brand-color variation from fixed palette or mixed drawing styles.
 - Show component-resource originals separately from style packs and require explicit original verification before paid trials when OEM artwork remains unverified.
 
@@ -56,3 +59,9 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 These entries describe source at `eb4daa5de82fab54e115363c073eb8981f2203d6`.
 The [October 4 handoff](docs/AI_HANDOFF_HU.md) is historical build evidence,
 not a new test run or proof that this fork has a published GitHub release.
+
+## Experimental Style DNA development
+
+- Add local exclusion reason counts and optional Quick/Standard labeled per-icon analysis with bounded explicit consent.
+- Add editable multi-family Style DNA and optional target-specific M5 drawing recipes; retain original-only identity and single-icon output.
+- Preserve saved V1 styles, Room21, backup/history, legacy AI1/AI2 and build/sign/install. Deep and visual-quality validation remain deferred.

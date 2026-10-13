@@ -46,6 +46,11 @@ CASES = {
     "trial-persistence-session": ["dev.renkinProject.renkin.data.project.StyleTrialPersistenceTest",
                                   "dev.renkinProject.renkin.data.project.StyleTrialMigrationTest",
                                   PACKAGE + "OwnedStyleTrialsTest"],
+    "style-dna-integration": ["dev.renkinProject.renkin.ai.style.StyleDnaReproductionTest",
+                              "dev.renkinProject.renkin.ai.style.StyleDnaWorkflowTest",
+                              "dev.renkinProject.renkin.ai.style.StyleDnaGatewayTest",
+                              "dev.renkinProject.renkin.data.project.StyleDnaPersistenceTest",
+                              PACKAGE + "StyleDnaComposeTest"],
     "full-suite": [],
 }
 

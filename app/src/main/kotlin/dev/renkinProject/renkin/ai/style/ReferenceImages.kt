@@ -20,7 +20,8 @@ import kotlin.math.sqrt
 internal const val REFERENCE_SIDE = 256
 internal const val MAX_ANALYSIS_PNG = 384 * 1024
 internal const val LEGACY_REFERENCE_ALGORITHM = "static256-features64-v1"
-internal const val REFERENCE_ALGORITHM = "static256-oklab64-families-v2"
+internal const val PREVIOUS_REFERENCE_ALGORITHM = "static256-oklab64-families-v2"
+internal const val REFERENCE_ALGORITHM = "static256-oklab64-diagnostics-v3"
 
 /** Adaptive/vector/bitmap draw is independent of profile rendering/modifiers.
  * Unstable animated/state/layer resources are deliberately not certified static. */
@@ -38,7 +39,7 @@ internal fun renderStaticReference(source: Drawable, allocate: () -> Bitmap): By
     return try {
         require(bitmap.width == REFERENCE_SIDE && bitmap.height == REFERENCE_SIDE && bitmap.config != Bitmap.Config.HARDWARE)
         drawable.setBounds(0, 0, REFERENCE_SIDE, REFERENCE_SIDE); drawable.draw(Canvas(bitmap))
-        png(bitmap).also { inspectPng(it, MAX_ANALYSIS_PNG) }
+        png(bitmap).also { inspectPng(it, MAX_ANALYSIS_PNG, requireVisible = false) }
     } finally { drawable.bounds = old; bitmap.recycle() }
 }
 
@@ -82,7 +83,10 @@ internal data class ReferenceFeatures(
         .08 * abs(outlineEstimate - other.outlineEstimate) + .08 * colors.zip(other.colors).sumOf { abs(it.first - it.second) } / 2
     fun near(other: ReferenceFeatures): Boolean =
         java.lang.Long.bitCount(alphaHash xor other.alphaHash) <= 2 &&
-        java.lang.Long.bitCount(luminanceHash xor other.luminanceHash) <= 2 && distance(other) < .025
+        java.lang.Long.bitCount(luminanceHash xor other.luminanceHash) <= 2 && distance(other) < .025 &&
+        palette.isNotEmpty() && other.palette.isNotEmpty() &&
+        palette.all { a -> other.palette.any { b -> colorDistance(android.graphics.Color.parseColor(a), android.graphics.Color.parseColor(b)) <= .02 } } &&
+        other.palette.all { b -> palette.any { a -> colorDistance(android.graphics.Color.parseColor(a), android.graphics.Color.parseColor(b)) <= .02 } }
 }
 
 /** Measured pixels, not recognition confidence. Stroke/outline is only a center-occupancy heuristic. */

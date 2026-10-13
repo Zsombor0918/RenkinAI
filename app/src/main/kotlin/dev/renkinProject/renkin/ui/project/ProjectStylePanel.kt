@@ -160,6 +160,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                 ProjectStyleAnalysisPanel(id, mode, source, stamp, enabled, analysis,
                     expectedRevision, ProjectStyleDraft(specification, instruction, hashes.toList()), dirty,
                     advanced, { advanced = it }, { busy = it },
+                    onDnaSaved = { saved -> applySaved(saved); error = null },
                     onUse = { draft, stale ->
                         specification = draft.specification
                         hashes = ArrayList(draft.hashes)

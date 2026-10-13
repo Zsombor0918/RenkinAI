@@ -1,5 +1,21 @@
 # Architecture
 
+## Current opt-in Style DNA architecture
+
+Separate stacked PR7 adds diagnostics, individually labeled reports, independently validated
+family synthesis, typed editable revision evidence and a target-specific recipe compiler.
+Quick1 and Standardup-to5 one-shot submissions use their own durable consumed-step journal.
+Only a consciously reviewed immutable revision enters M5; original componentC supplies
+identity at the existing native request factory. Stable opaque interiors improve new
+family palette measurement without changing legacy aggregate measurement. Room21,
+full/shareformat6/payload3 and historical optional JSON/fingerprints remain compatible.
+
+The code architecture is regression-verified at89eacb0d (925 tests/all22 groups).
+Provider visual quality and device/signing acceptance remain separate. See
+[ADR0008](decisions/0008-style-dna-stacked-development.md) and
+[closed scope](changes/2026-10-14-style-dna-verification.md). Earlier records below
+retain their original dates/results.
+
 Checkpoint73cd29e8 / Android38434288813 compiled and ran897 tests with exactly one new neutral-tile policy failure; all previous/new original, wire, journal and UI tests passed. The follow-up distinguishes recurring neutral/background mass from varying significant chromatic accents, preserving brand colors even when the tile dominates area. Genuine final-head results and all21 XML/benchmark evidence are recorded in PR#6.
 
 
@@ -901,3 +917,28 @@ matches the redacted text, and Stability retains one all-zero sentinel reference
 hash so its real provider and two endpoint counters remain readable. Prepared=false,
 rotated epoch, missing images and retained device-wide consumed item IDs prohibit
 replay under the old or another owner. Other profiles' records/assets stay intact.
+
+
+## Style DNA opt-in development on stacked PR7
+
+New feat/style-dna-v1 starts at PR6 head454bd5ec; PR6 and main are unchanged. D0 adds safe local missing/unrenderable/dynamic/stateful/render/alpha/resource reasons, independent Oklab color duplicate veto and bounded up-to600 local candidates/24 selected images. Legacy sampler defaults120/12 and M4 aggregate12 remain. New algorithmv3 accepts oldv1/v2 journals without rewriting their fingerprints.
+
+D1 Quick uses up-to12 labeled image parts and one report per image, with conservative independent local synthesis. Standard explicitly opts into up-to24 images in six-image groups and one separately listed text synthesis (maximum5 submissions). Same documented gpt-5.4-mini alias/snapshot, explicit low/high detail, strict Responses text.format/store:false, max12288 output tokens/step, bounded5MiB body/128KiB response. Model availability and quality remain unverified; low is not presumed cheaper. Deep and live A/B are deferred.
+
+D2 versioned reports and multi-family drawing grammar use a tagged style_dna payload in existing nullable revision JSON; Roomv21 and full/shareformat6/payload3 stay. Existing V1 rows/history remain unchanged. Explicit human review and Save create an immutable revision with up-to5 selected private refs. Legacy-only readers reject new grammar before restore writes; safe rollback needs a compatible forward reader. Device-local journals stay out of backups and retain global consumed IDs across delete/restore.
+
+D3 M5 optionally freezes target-specific drawing recipes, explicit family/symbol-type choices and DNA fingerprint in compatible optional plan/context fields. Original component C remains exclusive identity; B only style. Original verification and separate paid consent remain. Null-override AI1/AI2 bodies, non-DNA Stability paths, editor, profile, watch, signing/install and historical PNGs remain.
+
+Test-first b2df166a: hosted904 tests with exactly6 new assertion failures; no old failures. Current new implementation/integration execution is pending hosted CI, not claimed green. Local Python52 guards pass; local Gradle/full runner fail before configuration at distribution download. All old21 groups/selectors remain plus one additive DNA integration group. Zero live/paid requests, no device test, merge or force push. Owner visual acceptance remains open.
+
+
+## Style DNA integration and compilation follow-up
+
+Implementation2bf8ca7e CI38469333350 failed KSP parsing StyleTrialPlan.kt:117 at an extra closing parenthesis; no Android assertions or APK ran. The correction retains all old fields and optional recipes. Existing full M5 prompt assertions are extended with the new modernization prohibition; all prior exact prompt/image/legacy-byte assertions remain. New MockWebServer, real Room/full-share backup/owned-controller and320dp/dark/restoration/source-switch Compose fixtures join the additive DNA group. Renderer fixtures cover dark-on-dark visible artwork, alpha exclusions, state/animation versus real render exceptions; bounded300/600 local scans have50/150/500/1500 synthetic mappings. Retain all21 old groups, with22 total. Symlink companions, partial reports, consumed steps, native-color veto, and explicit manual Save are guarded. Current corrected execution is pending, not claimed passed. Zero live/paid requests or physical visual test.
+
+
+## Style DNA measured duotone correction
+
+Corrected integration head4531da8a compiled production and test Kotlin successfully, then Android CI38476057333 executed925 tests with exactly one new golden assertion failure: genuine white/cyan artwork was classified FIXED_PALETTE instead of DUOTONE. Independent failure artifact11853479616 is213996 bytes, SHA256 f3bf8d5964db87a4e273c39558a55b49e55cdbdb4689b536a5e4d0e88b6fa206. All924 other tests passed, including the six original red regressions and new wire/Room/UI integrations; no successful APK at that checkpoint.
+
+DNA family palette measurement now samples stable opaque interior paint before aggregating recurring colors. It excludes interpolated boundary mixtures, retains all existing geometry, falls back when too few interior pixels exist, and recycles its single256px bitmap. Existing legacy aggregate and sampler measurements stay unchanged. The same golden assertions remain; corrected full Android/all22/governance/XML/APK execution is required. No live or paid API request or physical device test occurred.

@@ -89,12 +89,12 @@ internal fun analysisBody(request: StyleAnalysisRequest): JSONObject {
             "strict" to true, "schema" to StyleProfileV1.jsonSchema())))
 }
 
-private data class AnalysisHttpResponse(val code: Int, val text: String)
+internal data class AnalysisHttpResponse(val code: Int, val text: String)
 /** Only an allowlisted error code affects the outcome; never retain provider error prose. */
 private fun analysisQuotaExceeded(text: String): Boolean = runCatching {
     strictObject(text, 128 * 1024, 12).optJSONObject("error")?.optString("code") == "insufficient_quota"
 }.getOrDefault(false)
-private suspend fun executeAnalysis(call: Call): AnalysisHttpResponse = suspendCancellableCoroutine { continuation ->
+internal suspend fun executeAnalysis(call: Call): AnalysisHttpResponse = suspendCancellableCoroutine { continuation ->
     continuation.invokeOnCancellation { call.cancel() }
     call.enqueue(object : Callback {
         override fun onFailure(call: Call, e: IOException) {

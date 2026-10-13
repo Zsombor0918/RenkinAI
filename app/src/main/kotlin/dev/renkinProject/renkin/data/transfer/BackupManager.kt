@@ -336,6 +336,7 @@ class BackupManager(
         // Device-local candidates are not imported styles. Invalidate their epoch before
         // replacing identities; keep consumed consent IDs so restoration cannot rebill.
         dev.renkinProject.renkin.ai.style.StyleAnalysisJournal(context).invalidateAll()
+        dev.renkinProject.renkin.ai.style.StyleDnaJournal(context).invalidateAll()
         dev.renkinProject.renkin.ai.trial.StyleTrialJournal(context).invalidateAll()
         watchRepo.replaceAllRules(data.profiles.flatMap { bp ->
             bp.watchRules.map { it.toImport(bp.profile.id) }

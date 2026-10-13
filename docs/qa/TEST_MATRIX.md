@@ -1,5 +1,25 @@
 # Regression and test matrix
 
+## October 14 — verified Style DNA code and remaining acceptance
+
+Code89eacb0d: Android38477038060 and all22 commands38477037827 passed;
+independent149 full-suite XML/925 tests/zero failures/errors/skips, all selectors present.
+The additive DNA group contains26 tests: reproduction6, workflow10, real-wire4,
+real Room/full-share/controller3, narrow Compose3. Retained M5 gateway adds one exact
+original/ref/recipe multipart case. Every old group and full-suite gate remains.
+
+| Contract tested offline | Remaining unverified boundary |
+| --- | --- |
+| Missing/unrenderable/state/animation/render/alpha/resource reasons; hue-preserving duplicate veto;300/600 caps and24 selection | Actual owner Lux176 omissions and installed resources; native peak memory |
+| Quick1 and Standard4×6+1 synthesis, exact IDs/hashes, strict reports/families/palette/depth, six synthetic golden cases | Real model consistency, account access, blind held-out visual improvement |
+| Mock400/401/403/429/503/refusal/malformed/partial/oversize/timeout, durable consumed steps, cold/delete/restore no replay | Physical process kill, filesystem faults and provider billing |
+| Native320dp/dark/restoration/source change, separate consent/review/Save; real Room21/full-share rekey | Physical fold/hinge/TalkBack and installed-data upgrade |
+| Actual multipart originalC, ordered style-only refs, concrete frozen recipes and hard single-icon contract | Recognizable pack-specific generated output on a real phone/provider |
+
+Room19/20/21 bytes/identities are unchanged. Zero live/paid calls. The closing docs-only
+HEAD still requires its own full hosted/local-governance verification and fresh artifact;
+exact final evidence is in [PR7](https://github.com/Zsombor0918/RenkinAI/pull/7).
+
 ## Style fidelity and original-source enhancement gates
 
 Retained routed EXTEND analysis additionally waits for the actual prepare node's
@@ -231,3 +251,21 @@ with real18/19/20 starting fixtures. KSP19/20/21 bytes match source. Exact final
 closing-head full/filtered/schema/APK/governance checks belong to PR #6 before
 readiness; the ancestor's856 result cannot substitute for them. Physical/live
 scenarios remain NOT RUN and CI is not owner/release acceptance.
+
+
+## Style DNA opt-in development on stacked PR7
+
+New feat/style-dna-v1 starts at PR6 head454bd5ec; PR6 and main are unchanged. D0 adds safe local missing/unrenderable/dynamic/stateful/render/alpha/resource reasons, independent Oklab color duplicate veto and bounded up-to600 local candidates/24 selected images. Legacy sampler defaults120/12 and M4 aggregate12 remain. New algorithmv3 accepts oldv1/v2 journals without rewriting their fingerprints.
+
+D1 Quick uses up-to12 labeled image parts and one report per image, with conservative independent local synthesis. Standard explicitly opts into up-to24 images in six-image groups and one separately listed text synthesis (maximum5 submissions). Same documented gpt-5.4-mini alias/snapshot, explicit low/high detail, strict Responses text.format/store:false, max12288 output tokens/step, bounded5MiB body/128KiB response. Model availability and quality remain unverified; low is not presumed cheaper. Deep and live A/B are deferred.
+
+D2 versioned reports and multi-family drawing grammar use a tagged style_dna payload in existing nullable revision JSON; Roomv21 and full/shareformat6/payload3 stay. Existing V1 rows/history remain unchanged. Explicit human review and Save create an immutable revision with up-to5 selected private refs. Legacy-only readers reject new grammar before restore writes; safe rollback needs a compatible forward reader. Device-local journals stay out of backups and retain global consumed IDs across delete/restore.
+
+D3 M5 optionally freezes target-specific drawing recipes, explicit family/symbol-type choices and DNA fingerprint in compatible optional plan/context fields. Original component C remains exclusive identity; B only style. Original verification and separate paid consent remain. Null-override AI1/AI2 bodies, non-DNA Stability paths, editor, profile, watch, signing/install and historical PNGs remain.
+
+Test-first b2df166a: hosted904 tests with exactly6 new assertion failures; no old failures. Current new implementation/integration execution is pending hosted CI, not claimed green. Local Python52 guards pass; local Gradle/full runner fail before configuration at distribution download. All old21 groups/selectors remain plus one additive DNA integration group. Zero live/paid requests, no device test, merge or force push. Owner visual acceptance remains open.
+
+
+## Style DNA integration and compilation follow-up
+
+Implementation2bf8ca7e CI38469333350 failed KSP parsing StyleTrialPlan.kt:117 at an extra closing parenthesis; no Android assertions or APK ran. The correction retains all old fields and optional recipes. Existing full M5 prompt assertions are extended with the new modernization prohibition; all prior exact prompt/image/legacy-byte assertions remain. New MockWebServer, real Room/full-share backup/owned-controller and320dp/dark/restoration/source-switch Compose fixtures join the additive DNA group. Renderer fixtures cover dark-on-dark visible artwork, alpha exclusions, state/animation versus real render exceptions; bounded300/600 local scans have50/150/500/1500 synthetic mappings. Retain all21 old groups, with22 total. Symlink companions, partial reports, consumed steps, native-color veto, and explicit manual Save are guarded. Current corrected execution is pending, not claimed passed. Zero live/paid requests or physical visual test.

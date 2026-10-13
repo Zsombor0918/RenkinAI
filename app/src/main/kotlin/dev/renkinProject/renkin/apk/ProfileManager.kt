@@ -81,6 +81,7 @@ class ProfileManager internal constructor(
         packRepo.deleteProfile(id)
         if (id != DEFAULT_PROFILE_ID) kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             dev.renkinProject.renkin.ai.style.StyleAnalysisJournal(context).invalidateProfile(id)
+            dev.renkinProject.renkin.ai.style.StyleDnaJournal(context).invalidateProfile(id)
             dev.renkinProject.renkin.ai.trial.StyleTrialJournal(context).invalidateProfile(id)
         }
         // Drop the profile's watch rules too, or the periodic worker keeps checking them and
