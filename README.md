@@ -18,6 +18,14 @@ implementation is in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), aw
 owner review/merge. Public backend/credits remain future work. Device/provider
 acceptance is tracked separately in the current-state and QA documents.
 
+Trial walkthrough: choose apps → **Save project target selection**; open **Project AI style**,
+enter a manual description under **Advanced: edit style and references** or review optional analysis,
+then **Save**. **Style trial icons** is visible at the top and explains missing
+prerequisites. Choose one to three apps → **Review frozen trial inputs** → the
+separate paid confirmation. Compare Original/Generated, Accept/Reject, then approve
+the common style separately. Local sampling, navigation and Save send no AI request.
+The October13 owner-reported failure still needs corrective-APK device retest.
+
 The overview, screenshots and release badges below originate from **upstream
 Renkin**, not a published RenkinAI release. Fork builds come from this repository's
 source/Actions; do not install an upstream APK expecting the AI features.

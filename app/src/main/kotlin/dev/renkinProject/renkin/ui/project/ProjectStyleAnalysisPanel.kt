@@ -103,9 +103,18 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
             if (record.status == AnalysisStatus.FAILED) Text(stringResource(when (record.reason) {
                 "Unauthorized" -> R.string.styleAnalysisUnauthorized
                 "RateLimited" -> R.string.styleAnalysisRateLimited
+                "QuotaExceeded", "REQUEST_REJECTED:402" -> R.string.styleAnalysisQuotaExceeded
+                "REQUEST_REJECTED:400", "REQUEST_REJECTED:422" -> R.string.styleAnalysisRequestRejected
+                "InvalidResponse" -> R.string.styleAnalysisInvalidResponse
+                "InvalidInput" -> R.string.styleAnalysisInvalidInput
+                "Unavailable" -> R.string.styleAnalysisUnavailable
+                "StaleSource" -> R.string.styleAnalysisStale
                 "Refused" -> R.string.styleAnalysisRefused
                 else -> R.string.styleAnalysisFailed
             }), Modifier.testTag("style-analysis-failed"))
+            if (prepared == null && !state.busy && record.status in setOf(AnalysisStatus.FAILED, AnalysisStatus.UNCERTAIN)) {
+                Text(stringResource(R.string.styleAnalysisFreshPreparation), Modifier.testTag("style-analysis-next-step"))
+            }
             if (validity != AnalysisValidity.CURRENT) Text(stringResource(R.string.styleAnalysisStale), Modifier.testTag("style-analysis-stale"))
             record.style?.let { style ->
                 Text(style.shortStyleDescription, Modifier.testTag("style-analysis-suggestion"))

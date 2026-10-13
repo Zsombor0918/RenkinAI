@@ -1,5 +1,40 @@
 # Current implementation
 
+## October 13 owner-blocker correction — verification pending
+
+PR #6 remains on feat/style-trials-m5, source baseline cfef34e1 / accepted main
+af7bdb10. The owner-observed FAILED analysis and trial discoverability are acceptance
+findings, not inferred HTTP causes. The fresh red checkpoint independently produced
+866 tests / 10 failures. Corrective source is not yet a passed Android build.
+
+STYLE now exposes its clean saved-style trial entry above analysis, with accessible
+Save guidance. TARGETS requires a saved style and nonempty, current saved selection,
+and explains missing or stale inputs. TRIAL distinguishes missing style/targets,
+changed setup/source and storage failures and offers a direct targets route. Manual
+CREATE and EXTEND styles require no cloud analysis; OpenAI allows zero to five saved
+refs. Up to twelve analysis samples, five saved refs and three trial apps remain
+separate limits. Save, opening and local preparation still send no provider request.
+
+The Responses wire schema now bounds lists to six and strings to the strict local
+160/800 limits. HTTP400/402/422 have safe rejection codes; quota, rate, unavailable,
+authentication, invalid-response and uncertainty have actionable UI copy. A consumed
+analysis needs fresh local preparation, a new UUID and separate new consent. No
+server error prose or key is retained in these diagnostics.
+
+Trial journal reads only committed base/backup files. Orphan first .new plans reserve
+their UUID and quota without becoming readable records or blocking fresh plans;
+partial result .new files prove no durable PNG, and consumed item .new tombstones
+still prohibit replay. A newly inserted unreviewed trial invalidates shared approval
+in the same Room transaction; idempotent recovery preserves an existing review.
+The read-only acceptance port also rejects any current unreviewed success.
+
+At the owner's explicit request, one replacement-key Python Responses contract
+probe used one synthetic 256px icon and no app/project inventory: HTTP200/completed,
+433 input + 185 output = 618 tokens, bounded style checks passed. It is not an
+Android gateway or phone run and not image-generation proof. No further live calls
+are planned. The earlier 401 probe remains separate historical evidence. Exact
+final-head CI/XML/APK evidence and owner/device retest remain to be recorded in QA.
+
 Accepted main is `af7bdb104869b0d0dded2acdf020fc030642dcf9`, owner merge of
 [PR #5](https://github.com/Zsombor0918/RenkinAI/pull/5) on October 12, 2026 at
 16:10:49 UTC. M4 source aceb691c passed its own 792 tests, all 16 commands,

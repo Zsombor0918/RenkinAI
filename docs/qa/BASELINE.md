@@ -1,5 +1,34 @@
 # Verification baseline
 
+## October 13 measured red checkpoint and limited live probe
+
+Reproduction head cfef34e146a91cadf9bf7db3a569bd04c7b70a05: original
+CI38362969348 compiled production/tests and ran866 tests/10 failures; APK skipped.
+Regression38362969202 ran all21 commands and independently confirmed866/10.
+Downloaded ZIP11796032465 digest
+baf89d5abb0bca055800963448947b1df0b742801aa27e17a2e3a23e640b2874 matches GitHub.
+Failures were read from actual full-suite XML: schema list bound1, orphan journal2,
+new-result approval1, typed HTTP400 reason1, routed UI5. The routed UI includes
+three offscreen-status assertions and one pool with11 unique samples; correction
+retains assertions and improves fixture/scroll setup. This is genuinely red evidence.
+
+Local corrective command `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug
+--console=plain` failed before configuration at Gradle8.11.1 download, SocketException
+Network is unreachable. Corrective hosted results are not yet observed; prior856
+passes cannot substitute. No tests or selectors are ignored/deleted.
+
+Explicit owner-authorized replacement-key probe: one Python Responses POST, one
+synthetic256px transparent test drawing, low detail,4096 maximum output tokens,
+store=false/no retries. HTTP200/completed, provider request header present,
+433 input +185 output =618 tokens; style shape/enums/ARGB/list/text checks passed.
+This request used the then-current cfef34e1 wire schema, before maxItems/maxLength
+correction, whose supported restrictions were checked in official docs and mocks.
+It was not the Android gateway, physical phone, source-pack sample or image generator.
+The prior key's401 is a separate historical attempt. No new live call is required.
+Keys, raw responses, owner identifiers and original user images are absent from repo.
+Local `python3 -m unittest discover -s scripts/tests -v`:52/52 passed in8.368s.
+Exact final correction SHA/XML/schema/APK/check evidence follows after CI.
+
 ## October 13 owner-blocker local checkpoint — Android not run
 
 Source baseline3c5c1de7332b598d077e82b13aacaaed3ea0d29b, same open PR#6 branch,

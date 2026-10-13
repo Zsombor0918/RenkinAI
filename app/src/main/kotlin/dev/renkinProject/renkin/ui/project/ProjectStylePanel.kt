@@ -132,6 +132,18 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     expectedRevision == null -> R.string.projectStyleUnset
                     else -> R.string.projectStyleSaved
                 }), Modifier.testTag("project-style-status"))
+                if (onTrials != null) {
+                    OutlinedButton(onClick = onTrials, enabled = enabled && !dirty && expectedRevision != null,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-trials")) {
+                        Text(stringResource(R.string.trialTitle))
+                    }
+                    Text(stringResource(when {
+                        !loaded -> R.string.projectInitializing
+                        dirty -> R.string.trialSaveStyleChanges
+                        expectedRevision == null -> R.string.trialSaveStyle
+                        else -> R.string.trialStyleNext
+                    }), Modifier.testTag("style-trials-reason"))
+                }
                 if (error != null) {
                     Text(stringResource(if (error == "load") R.string.projectStyleLoadError else R.string.projectStyleWriteError),
                         Modifier.testTag("project-style-error"))
@@ -252,10 +264,6 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     Text(stringResource(R.string.saveAction))
                 }
                 Text(stringResource(R.string.projectStyleLater))
-                if (onTrials != null) OutlinedButton(onClick = onTrials, enabled = enabled && !dirty && expectedRevision != null,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-trials")) {
-                    Text(stringResource(R.string.trialTitle))
-                }
             }
         }
     }

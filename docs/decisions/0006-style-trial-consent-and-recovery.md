@@ -123,3 +123,16 @@ matches the redacted text, and Stability retains one all-zero sentinel reference
 hash so its real provider and two endpoint counters remain readable. Prepared=false,
 rotated epoch, missing images and retained device-wide consumed item IDs prohibit
 replay under the old or another owner. Other profiles' records/assets stay intact.
+
+## October 13 approval and AtomicFile correction
+
+A newly committed same-revision trial result marks the existing approval for
+revalidation in the same Room transaction. Idempotent result repair preserves prior
+review and approval. The read-only reuse port also fails closed if any current
+success is unreviewed; reviewing alone still does not renew common approval.
+
+Read only committed AtomicFile bases/backups. Retain .new-only plan UUID reservations
+within the256-plan limit and consumed item reservations within8192, while ignoring
+those orphan plans as readable history. A partial result is not a saved PNG. Fresh
+separate consent can proceed with new IDs without deleting consumed rights, inventing
+completion, replaying a sent endpoint or weakening malformed committed-record checks.

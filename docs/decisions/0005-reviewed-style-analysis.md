@@ -92,3 +92,13 @@ The official [pricing](https://developers.openai.com/api/docs/pricing) and
 do not prove this account's access, icon recognition quality or exact request cost.
 No live request was made to establish those facts. Runtime unsupported/auth errors
 remain explicit outcomes and manual style remains usable.
+
+## October 13 request/result alignment
+
+Bound the existing non-fine-tuned model wire arrays to maxItems6 and note/description
+strings to maxLength160/800, matching the strict Kotlin parser rather than relaxing
+it. Preserve required keys, enums, ARGB and no-control checks. Safe rejection status
+400/402/422 and allowlisted insufficient_quota can guide remediation; raw provider
+error prose never becomes diagnostic data. Fresh preparation/new UUID/new consent
+is always required after consumption. The explicit owner-authorized618-token Python
+probe is limited contract evidence, separately recorded in QA, not device acceptance.

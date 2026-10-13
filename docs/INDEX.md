@@ -8,6 +8,7 @@ Codex 00–04 are owner-merged. PR #5 was merged as af7bdb10 at 16:10:49 UTC
 on October 12; its final aceb691c checks passed independently. Codex 05 trial
 is implemented in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), with
 verified code checkpoint 0df78ef8/856 tests and final-head checks in the PR audit.
+October13 owner acceptance failures are under corrective verification in the same PR.
 Owner review/merge is pending. Codex 06/07 remain planned; device/provider acceptance is separate.
 
 | Document | Responsibility |

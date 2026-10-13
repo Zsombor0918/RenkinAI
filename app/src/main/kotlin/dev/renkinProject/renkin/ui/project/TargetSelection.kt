@@ -67,6 +67,7 @@ internal fun TargetSelection(
     var selectionBusy by remember { mutableStateOf(false) }
     var selectionError by remember { mutableStateOf(false) }
     var selectionSaved by remember { mutableStateOf(false) }
+    var selectionEdited by rememberSaveable { mutableStateOf(false) }
     var invalidated by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val targets = uniqueCoverageTargets(data.targets)
@@ -95,6 +96,13 @@ internal fun TargetSelection(
         byKey[target.key]?.source in setOf(SourceCoverage.RESOLVABLE, SourceCoverage.UNMAPPED, SourceCoverage.DECLARED_BROKEN)) }.map { it.key }.toSet()
     val persistReady = ready && !data.metadataLoading && !data.metadataFailed && !selectionBusy && coverageReady &&
         (mode == ProjectSetupMode.CREATE || (snapshot?.index?.state == dev.renkinProject.renkin.apk.CoverageIndexState.READY && snapshot.index.stamp.versionCode != null))
+    val trialReason = when {
+        !persistReady -> if (data.metadataFailed) R.string.setupSelectionSaveError else R.string.projectInitializing
+        data.savedMetadata?.activeRevision == null -> R.string.trialSaveStyle
+        savedSelection == null || savedSelection.componentKeys.isEmpty() || selectionEdited -> R.string.trialSaveTargets
+        !savedSelection.isCurrent(mode.name, source, sourceStamp, catalogStamp, safeKeys) || invalidated -> R.string.trialStaleTargets
+        else -> null
+    }
     CenteredFullscreenContent {
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.testTag("project-targets")) {
@@ -118,14 +126,16 @@ internal fun TargetSelection(
                         selected = ArrayList(savedSelection.componentKeys.filter { it in safeKeys })
                         invalidated = false
                         selectionSaved = false
+                        selectionEdited = true
                     }, enabled = persistReady, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-revalidate-selection")) {
                         Text(stringResource(R.string.setupReviewSavedTargets))
                     }
                 }
-                OutlinedButton(onClick = onTrials, enabled = persistReady,
+                OutlinedButton(onClick = onTrials, enabled = trialReason == null,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-trials")) {
                     Text(stringResource(R.string.trialTitle))
                 }
+                trialReason?.let { Text(stringResource(it), Modifier.testTag("setup-trials-reason")) }
                 if (invalidated) Text(stringResource(R.string.setupSavedSelectionStale))
                 if (selectionError || data.metadataFailed) Text(stringResource(R.string.setupSelectionSaveError), Modifier.testTag("setup-selection-error"))
                 if (selectionSaved) Text(stringResource(R.string.setupSelectionSaved), Modifier.testTag("setup-selection-saved"))
@@ -135,7 +145,7 @@ internal fun TargetSelection(
                     val version = data.savedMetadata?.version ?: 0
                     val selection = ProjectSelection(mode.name, source, sourceStamp, catalogStamp, validSelected.sorted())
                     scope.launch {
-                        try { data.onSaveSelection(version, selection); selectionSaved = true; selectionError = false; invalidated = false }
+                        try { data.onSaveSelection(version, selection); selectionSaved = true; selectionError = false; invalidated = false; selectionEdited = false }
                         catch (cancel: CancellationException) { throw cancel }
                         catch (_: Exception) { selectionError = true; selectionSaved = false }
                         finally { selectionBusy = false }
@@ -192,10 +202,11 @@ internal fun TargetSelection(
                             if (mode == ProjectSetupMode.CREATE) it.selectable else byKey[it.key]?.actionable == true
                         }.map { it.key })
                         selectionSaved = false
+                        selectionEdited = true
                     }, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-select-all")) {
                         Text(stringResource(if (mode == ProjectSetupMode.CREATE) R.string.setupSelectAll else R.string.setupSelectMissing))
                     }
-                    TextButton(onClick = { selected = arrayListOf(); selectionSaved = false }, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-clear")) {
+                    TextButton(onClick = { selected = arrayListOf(); selectionSaved = false; selectionEdited = true }, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-clear")) {
                         Text(stringResource(R.string.setupClear))
                     }
                     Text(stringResource(R.string.setupSelectedCounts, validSelected.size, targets.size), Modifier.testTag("setup-selection-count"))
@@ -211,6 +222,7 @@ internal fun TargetSelection(
                         .toggleable(value = target.key in validSelected, enabled = target.selectable, role = Role.Checkbox) {
                             selected = ArrayList(if (it) validSelected + target.key else validSelected - target.key)
                             selectionSaved = false
+                            selectionEdited = true
                         }.testTag("setup-target-${target.key}"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             data.appIcon(target.key)

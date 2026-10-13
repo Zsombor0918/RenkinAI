@@ -162,7 +162,7 @@ internal class StyleAnalysisJournal(context: Context) {
             old.copy(status = AnalysisStatus.RESULT_SAVED, styleJson = encoded, responseId = outcome.responseId,
                 responseHash = sha256(encoded.toByteArray()), usage = outcome.usage, billingCertainty = "RESPONSE_RECEIVED")
         } else old.copy(status = if (outcome == StyleAnalysisOutcome.Uncertain) AnalysisStatus.UNCERTAIN else AnalysisStatus.FAILED,
-            reason = outcome.javaClass.simpleName)
+            reason = if (outcome is StyleAnalysisOutcome.RequestRejected) "REQUEST_REJECTED:${outcome.httpStatus}" else outcome.javaClass.simpleName)
         write(result); result
     }
     fun interrupted(id: Long, request: String) = synchronized(shared.lock) {

@@ -50,8 +50,10 @@ class ProjectStyleTrialJourneyComposeTest {
     private var key = true
     private var analysisCalls = 0
     private var imageCalls = 0
+    private var analysisOutcome: StyleAnalysisOutcome = StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_fixture", AnalysisUsage(43, 92))
     private val mutex = Mutex()
-    private var reader = FixtureReferenceReader((0 until 12).associate { "icon$it" to analysisFixturePng(it % 3, it) })
+    // A diverse source pool, rather than assuming twelve shapes are all perceptually unique.
+    private var reader = FixtureReferenceReader((0 until 30).associate { "icon$it" to analysisFixturePng(it % 3, it) })
     private suspend fun <T> owned(id: Long, action: suspend () -> T): T = mutex.withLock {
         check(home.activeProfileId == id && home.actionsEnabled); action()
     }
@@ -61,7 +63,7 @@ class ProjectStyleTrialJourneyComposeTest {
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         analysisJournal = StyleAnalysisJournal(f.context)
         val analysisGateway = StyleAnalysisGateway {
-            analysisCalls++; StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_fixture", AnalysisUsage(43, 92))
+            analysisCalls++; analysisOutcome
         }
         analysis = OwnedStyleAnalysis(scope, f.repo, analysisJournal, ReferenceSampler(),
             StyleAnalysisCoordinator(analysisJournal, analysisGateway), { key }, object : AnalysisSessionOwner {
@@ -149,6 +151,7 @@ class ProjectStyleTrialJourneyComposeTest {
         compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
         compose.onNodeWithTag("project-style-description").performTextInput("manual outline")
         click("project-style-1", "project-style-save")
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-status"))
         compose.onNodeWithTag("project-style-status").assertTextEquals("Project style saved")
     }
     private fun back() { compose.runOnIdle { activity.onBackPressedDispatcher.onBackPressed() }; settle() }
@@ -174,7 +177,11 @@ class ProjectStyleTrialJourneyComposeTest {
         click("project-trials-1", "trial-prepare")
         assertEquals(3, trials.state(1).value.plan!!.inputs.size); assertEquals(0, imageCalls)
         compose.onNodeWithTag("trial-decline").performClick(); settle()
-        click("project-trials-1", "trial-target-b/Main"); click("project-trials-1", "trial-target-c/Main")
+        click("project-trials-1", "trial-target-c/Main")
+        click("project-trials-1", "trial-prepare")
+        assertEquals(2, trials.state(1).value.plan!!.inputs.size); assertEquals(0, imageCalls)
+        compose.onNodeWithTag("trial-decline").performClick(); settle()
+        click("project-trials-1", "trial-target-b/Main")
         click("project-trials-1", "trial-prepare")
         assertEquals(1, trials.state(1).value.plan!!.inputs.size); assertEquals(0, imageCalls)
         compose.onNodeWithTag("trial-confirm-paid").performClick(); settle()
@@ -208,5 +215,50 @@ class ProjectStyleTrialJourneyComposeTest {
         compose.onNodeWithTag("trial-targets").assertIsEnabled().performClick(); settle()
         compose.onNodeWithTag("setup-save-selection").assertExists()
         assertEquals(0, imageCalls); assertEquals(0, analysisCalls)
+    }
+    @Test fun extendManualStyleWorksWithoutCloudAnalysisOrUploadedReferences() {
+        dark = true; compose.setContent { Content() }; open(extend = true); style(); manualSave()
+        back(); saveTargets(); enterTrials()
+        assertEquals("EXTEND", trials.state(1).value.preparation!!.context.mode)
+        assertEquals(0, trials.state(1).value.preparation!!.style.references.size)
+        click("project-trials-1", "trial-prepare")
+        assertEquals(3, trials.state(1).value.plan!!.inputs.size)
+        compose.onNodeWithTag("trial-decline").performClick(); settle()
+        assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
+    }
+    @Test fun dirtyStyleHasAccessibleSaveReasonBeforeTrialNavigation() {
+        compose.setContent { Content() }; open(); saveTargets(); style(); manualSave()
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
+        compose.onNodeWithTag("project-style-description").performTextInput(" refined")
+        compose.onNodeWithTag("project-style-1").performScrollToIndex(0)
+        compose.onNodeWithTag("style-trials").assertIsNotEnabled()
+        compose.onNodeWithTag("style-trials-reason").assertTextContains("Save your style changes")
+        assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
+    }
+    @Test fun changedSourceOnReloadOffersTargetsRemediationWithoutAnyGeneration() {
+        compose.setContent { Content() }; open(extend = true); saveTargets(); style(); manualSave(); back(); enterTrials()
+        reader = FixtureReferenceReader(mapOf("replacement" to analysisFixturePng(2, 91)))
+        click("project-trials-1", "trial-reload")
+        assertEquals("stale_targets", trials.state(1).value.error)
+        compose.onNodeWithTag("trial-error").assertTextContains("saved targets or source changed")
+        compose.onNodeWithTag("trial-targets").assertIsEnabled().performClick(); settle()
+        assertNull(trials.state(1).value.plan); assertEquals(0, imageCalls); assertEquals(0, analysisCalls)
+    }
+    @Test fun rejectedAnalysisExplainsConsumedConsentAndManualStyleStillReachesTrials() {
+        analysisOutcome = StyleAnalysisOutcome.RequestRejected(400)
+        compose.setContent { Content() }; open(extend = true); saveTargets(); style()
+        click("project-style-1", "style-analysis-prepare")
+        val first = analysis.state(1).value.preparation!!.requestId
+        click("project-style-1", "style-analysis-start")
+        compose.onNodeWithTag("style-analysis-confirm-paid").performClick(); settle()
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-failed"))
+        compose.onNodeWithTag("style-analysis-failed").assertTextContains("request format")
+        compose.onNodeWithTag("style-analysis-next-step").assertTextContains("previous confirmation is consumed")
+        assertEquals(1, analysisCalls); assertEquals(0, imageCalls)
+        click("project-style-1", "style-analysis-prepare")
+        assertNotEquals(first, analysis.state(1).value.preparation!!.requestId)
+        assertEquals(1, analysisCalls)
+        manualSave(); back(); enterTrials()
+        assertNotNull(trials.state(1).value.preparation); assertEquals(1, analysisCalls); assertEquals(0, imageCalls)
     }
 }

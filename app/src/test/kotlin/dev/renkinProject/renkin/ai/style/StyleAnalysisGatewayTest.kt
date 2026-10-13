@@ -86,12 +86,26 @@ class StyleAnalysisGatewayTest {
             val port = gateway(server)
             val expected = listOf(401 to StyleAnalysisOutcome.Unauthorized, 403 to StyleAnalysisOutcome.Unauthorized,
                 404 to StyleAnalysisOutcome.Unavailable, 429 to StyleAnalysisOutcome.RateLimited, 500 to StyleAnalysisOutcome.Uncertain,
-                503 to StyleAnalysisOutcome.Uncertain, 400 to StyleAnalysisOutcome.Unavailable)
+                503 to StyleAnalysisOutcome.Uncertain, 400 to StyleAnalysisOutcome.RequestRejected(400),
+                402 to StyleAnalysisOutcome.RequestRejected(402), 422 to StyleAnalysisOutcome.RequestRejected(422))
             for ((code, outcome) in expected) {
                 server.enqueue(MockResponse().setResponseCode(code).setBody("private server error"))
                 assertEquals(outcome, port.analyze(analysisFixtureRequest()))
             }
             assertEquals(expected.size, server.requestCount)
+        }
+    }
+    @Test fun quotaCodeIsAllowlistedWithoutRetainingSensitiveErrorProse() = runBlocking {
+        MockWebServer().use { server ->
+            val port = gateway(server)
+            val secret = "private key prompt and project identifiers"
+            server.enqueue(MockResponse().setResponseCode(429).setBody(json("error" to
+                json("code" to "insufficient_quota", "message" to secret)).toString()))
+            assertEquals(StyleAnalysisOutcome.QuotaExceeded, port.analyze(analysisFixtureRequest()))
+            server.enqueue(MockResponse().setResponseCode(429).setBody(json("error" to
+                json("code" to secret, "message" to secret)).toString()))
+            assertEquals(StyleAnalysisOutcome.RateLimited, port.analyze(analysisFixtureRequest()))
+            assertEquals(2, server.requestCount)
         }
     }
     @Test fun refusalMalformedSchemaIncompleteAndMissingUsageDoNotInventSuccessOrCost() = runBlocking {

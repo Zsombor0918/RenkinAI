@@ -1,5 +1,31 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## October 13 correction source — final verification pending
+
+Continue the existing PR #6; baseline cfef34e1, accepted main af7bdb10. Hosted red
+runs38362969348/38362969202 independently yielded866 tests/10 failures, with the
+regression ZIP11796032465 digest baf89d5abb0bca055800963448947b1df0b742801aa27e17a2e3a23e640b2874.
+Six failures expose wire-list bounds, typed rejection, orphan journal records/results,
+missing trial prerequisites and stale approval; four routed assertions first stopped
+at offscreen LazyColumn status or a near-duplicate fixture pool. Their assertions are
+retained with explicit scrolling and a larger diverse source pool; no timeout changes.
+
+Source now corrects these boundaries and expands the routed Room/controller tests
+for manual CREATE/EXTEND, zero refs/no key, dirty style, changed source, safe failed
+analysis with fresh local preparation,1/2/3 frozen apps and explicit paid consent.
+All original21 selectors remain. This is not an actual MainViewModel/Hilt/phone run.
+Next: exact-final-head complete Android/regressions/governance plus independently
+counted XML, genuine19/20/21 exports and matching APK, then update audit and transfer.
+Leave the PR open/unmerged and obtain owner device acceptance before merge/M6.
+
+Replacement-key contract probe was explicitly authorized: one synthetic icon, one
+Responses POST, gpt-5.4-mini,4096 maximum, store=false, no retry; HTTP200/completed,
+433 input/185 output/618 total, bounded style checks passed. No real Android gateway,
+image generation, user artwork or project inventory was sent. Credential exists only
+in the short-lived process; none is committed or printed. Stop live tests here.
+Original device HTTP cause remains unproven; the fresh app must display its safe
+category rather than making the owner repeat paid attempts to diagnose it.
+
 ## October 13 owner blocker — PR #6 remains draft
 
 Owner comment [6140130681](https://github.com/Zsombor0918/RenkinAI/pull/6#issuecomment-6140130681)

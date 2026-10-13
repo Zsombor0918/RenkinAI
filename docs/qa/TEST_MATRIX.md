@@ -1,5 +1,25 @@
 # Regression and test matrix
 
+## Corrective acceptance coverage
+
+The actual cfef34e1 hosted run866/10 is captured in BASELINE. Additive tests now
+require wire maxItems6, safe HTTP400/402/422/auth404/429/5xx failures without retry,
+allowlisted quota with no raw-error leakage, fresh UUID/new consent after rejection,
+orphan plan/result durability and old-approval invalidation after a new success.
+
+Routed native SDK33/320dp real-Room/controller tests retain both save orders and
+analysis Use/Save, then extend to manual EXTEND with zero refs, dirty-style accessible
+reason, changed-source remediation, rejected analysis/manual fallback,1/2/3 frozen
+trial apps, decline/paid consent/review/common approval and restoration. Fixtures
+remain offline. Explicit scrolling materializes the status assertion; a30-artwork
+pool avoids assuming all twelve generated shapes are perceptually different.
+No existing selector/idling/timeout is weakened. Final hosted checks are pending.
+
+Measured live coverage is only the authorized one-icon Python Responses contract
+probe (HTTP200/618 tokens), not Android/image-generation/phone evidence. Flip8/One UI,
+TalkBack/fold, real saved-data upgrade/restore and source-pack failure retest remain
+NOT RUN on the corrective APK until the owner verifies the journey.
+
 ## October 13 owner blocker additions
 
 ProjectStyleTrialJourneyComposeTest enters the existing trial-ui group: fresh targets,

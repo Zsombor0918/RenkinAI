@@ -78,6 +78,10 @@ internal sealed interface StyleAnalysisOutcome {
     data object InvalidInput : StyleAnalysisOutcome
     data object Unauthorized : StyleAnalysisOutcome
     data object RateLimited : StyleAnalysisOutcome
+    data object QuotaExceeded : StyleAnalysisOutcome
+    data class RequestRejected(val httpStatus: Int) : StyleAnalysisOutcome {
+        init { require(httpStatus in setOf(400, 402, 422)) }
+    }
     data object Unavailable : StyleAnalysisOutcome
     data object Uncertain : StyleAnalysisOutcome
     data object StaleSource : StyleAnalysisOutcome

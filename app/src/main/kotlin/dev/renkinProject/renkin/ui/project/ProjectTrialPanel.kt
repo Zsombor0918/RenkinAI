@@ -36,7 +36,7 @@ import kotlinx.coroutines.CancellationException
 @Composable
 internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, source: String?, available: Boolean,
     backend: ProjectTrialBackend, onBack: () -> Unit, onRefine: () -> Unit, onEditor: () -> Unit,
-    appIcon: @Composable (String) -> Unit = {}) {
+    appIcon: @Composable (String) -> Unit = {}, onTargets: () -> Unit = onBack) {
     val state by backend.state(id).collectAsState()
     var reload by remember { mutableIntStateOf(0) }
     var selected by rememberSaveable(id) { mutableStateOf(arrayListOf<String>()) }
@@ -72,7 +72,17 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 Text(stringResource(R.string.projectIdentity, id)); Text(mode.name); source?.let { Text(it) }
                 Text(stringResource(R.string.trialBoundary))
                 if (state.busy) WavyLoadingBar(Modifier.fillMaxWidth())
-                if (state.error != null || p == null && !state.busy) Text(stringResource(R.string.trialContextError), Modifier.testTag("trial-error"))
+                if (state.error != null || p == null && !state.busy) Text(stringResource(when (state.error) {
+                    "missing_style" -> R.string.trialSaveStyle
+                    "missing_targets" -> R.string.trialSaveTargets
+                    "stale_targets" -> R.string.trialStaleTargets
+                    "stale_source" -> R.string.trialStaleSource
+                    "changed_context" -> R.string.trialChangedContext
+                    "stability_references" -> R.string.trialStabilityRefs
+                    else -> R.string.trialContextError
+                }), Modifier.testTag("trial-error"))
+                OutlinedButton(onClick = onTargets, enabled = enabled,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("trial-targets")) { Text(stringResource(R.string.trialReviewTargets)) }
                 OutlinedButton(onClick = { backend.load(id, mode, source) }, enabled = enabled,
                     modifier = Modifier.heightIn(min = 48.dp).testTag("trial-reload")) { Text(stringResource(R.string.projectReload)) }
                 OutlinedButton(onClick = onRefine, enabled = enabled,

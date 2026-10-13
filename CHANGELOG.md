@@ -5,6 +5,13 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 ## Unreleased
 
+- Show Style trial icons above analysis and explain missing saved style/targets,
+  stale source or unsaved edits with direct remediation.
+- Distinguish analysis request, account/quota, model and invalid-result failures;
+  align structured-output bounds and explain new consent after a failed attempt.
+- Recover around unfinished trial journal writes without replaying consumed IDs,
+  and require common-style reapproval after any new successful trial.
+
 - Prepare up to three project style trials with separate frozen-input paid consent,
   original/generated launcher previews and explicit per-image review/regeneration.
 - Preserve original/RAW variants and approve the shared immutable style separately;

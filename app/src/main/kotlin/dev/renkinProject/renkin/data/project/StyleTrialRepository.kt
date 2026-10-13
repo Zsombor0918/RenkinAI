@@ -77,7 +77,12 @@ internal suspend fun ProjectAiRepository.installTrialVariant(plan: StyleTrialPla
         require(epochCurrent())
         check(database.profileDao().get(row.profileId) != null && dao.history(row.profileId).any { it.revision == row.styleRevision })
         val prior = dao.variant(row.id)
-        if (prior == null) { dao.insertAssets(listOf(originalAsset, raw)); dao.insertVariants(listOf(row)) }
+        if (prior == null) {
+            dao.insertAssets(listOf(originalAsset, raw)); dao.insertVariants(listOf(row))
+            dao.approval(row.profileId, row.styleRevision)?.let {
+                dao.putApprovals(listOf(it.copy(needsRevalidation = true)))
+            }
+        }
         else check(prior.originalHash == row.originalHash && prior.rawAssetHash == row.rawAssetHash && prior.trialContextJson == evidence)
     }
     fault("DB_COMMITTED")
@@ -150,6 +155,9 @@ internal suspend fun ProjectAiRepository.acceptedTrials(context: TrialContext,
     val dao = database.projectAiDao()
     val approval = dao.approval(context.profileId, context.revision) ?: return@withAssetLease emptyList()
     if (approval.needsRevalidation || TrialContext.parse(JSONObject(approval.contextJson)) != context) return@withAssetLease emptyList()
+    if (dao.allVariants().any { v -> v.profileId == context.profileId && v.reviewStatus == "UNREVIEWED" &&
+        v.trialContextJson?.let { TrialVariantEvidence.parse(it).let { e -> e.context == context || e.reviewContext == context } } == true
+    }) return@withAssetLease emptyList()
     val values = trialApprovalIds(approval).map { id ->
         val v = dao.variant(id) ?: return@withAssetLease emptyList()
         val e = v.trialContextJson?.let(TrialVariantEvidence::parse) ?: return@withAssetLease emptyList()

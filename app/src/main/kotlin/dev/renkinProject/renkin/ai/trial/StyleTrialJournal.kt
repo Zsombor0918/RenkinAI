@@ -65,6 +65,9 @@ internal class StyleTrialJournal(context: Context) {
     private fun resultFile(id: Long, request: String): File { trialId(request); return safe(File(profile(id), "results/$request.png")) }
     private fun consumedFile(request: String): File { trialId(request); return safe(File(root, "consumed-$request")) }
     private fun exists(f: File) = f.exists() || File(f.path + ".bak").exists() || File(f.path + ".new").exists()
+    // AtomicFile.openRead discards an unfinished first .new, then throws without a base.
+    // Such a plan still reserves its UUID; partial images never prove a durable result.
+    private fun committed(f: File) = f.exists() || File(f.path + ".bak").exists()
     private fun bytes(f: File, limit: Int) = AtomicFile(safe(f)).openRead().use { it.readBounded(limit) }
     private fun text(f: File, limit: Int) = Charsets.UTF_8.newDecoder()
         .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT).onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
@@ -89,7 +92,7 @@ internal class StyleTrialJournal(context: Context) {
     fun isActive(plan: StyleTrialPlan) = synchronized(shared.lock) { shared.active == plan.id }
     fun read(id: Long, planId: String): StyleTrialRecord? = synchronized(shared.lock) {
         val f = marker(id, planId)
-        if (!exists(f)) null else StyleTrialRecord.parse(text(f, 65536)).also {
+        if (!committed(f)) null else StyleTrialRecord.parse(text(f, 65536)).also {
             require(it.plan.id == planId && it.plan.context.profileId == id)
         }
     }
@@ -97,7 +100,7 @@ internal class StyleTrialJournal(context: Context) {
         val files = profile(id).listFiles().orEmpty().map { it.name.removeSuffix(".bak").removeSuffix(".new") }
             .filter { it.matches(Regex("plan-[a-f0-9-]{36}\\.json")) }.distinct()
         require(files.size <= MAX_RECORDS)
-        files.map { checkNotNull(read(id, it.removePrefix("plan-").removeSuffix(".json"))) }
+        files.mapNotNull { read(id, it.removePrefix("plan-").removeSuffix(".json")) }
             .sortedWith(compareBy<StyleTrialRecord> { it.confirmedAt }.thenBy { it.plan.id })
     }
     private fun update(id: Long, planId: String, request: String, change: (TrialItemRecord) -> TrialItemRecord): StyleTrialRecord {
@@ -115,7 +118,10 @@ internal class StyleTrialJournal(context: Context) {
         plan.validate(); val id = plan.context.profileId
         require(plan.context.styleFingerprint == styleFingerprint(plan.specification, plan.instruction)) { "Unknown style input cannot authorize a new request." }
         if (exists(marker(id, plan.id))) return false
-        check(shared.active == null && current(plan)); require(records(id).size < MAX_RECORDS)
+        check(shared.active == null && current(plan)); records(id)
+        // Orphan reservations count toward the same bounded plan history too.
+        require(profile(id).listFiles().orEmpty().map { it.name.removeSuffix(".bak").removeSuffix(".new") }
+            .filter { it.matches(Regex("plan-[a-f0-9-]{36}\\.json")) }.distinct().size < MAX_RECORDS)
         require(plan.inputs.none { exists(consumedFile(it.requestId)) }) { "A trial request UUID is already consumed." }
         val globalCount = root.listFiles().orEmpty().map { it.name.removeSuffix(".bak").removeSuffix(".new") }
             .filter { it.matches(Regex("consumed-[a-f0-9-]{36}")) }.distinct().size
@@ -123,7 +129,7 @@ internal class StyleTrialJournal(context: Context) {
         val required = (plan.inputs.map { it.originalHash } + plan.referenceHashes).toSet()
         require(images.keys == required)
         images.forEach { (hash, png) -> require(sha256(png) == hash); inspectPng(png) }
-        quota(id, images.filterKeys { !exists(imageFile(id, it)) }.values.sumOf { it.size.toLong() } + 65536)
+        quota(id, images.filterKeys { !committed(imageFile(id, it)) }.values.sumOf { it.size.toLong() } + 65536)
         val oldTime = records(id).maxOfOrNull { it.confirmedAt } ?: 0L
         val r = StyleTrialRecord(plan, maxOf(System.currentTimeMillis(), oldTime + 1), false,
             plan.inputs.map { TrialItemRecord(it.requestId) })
@@ -131,7 +137,7 @@ internal class StyleTrialJournal(context: Context) {
         plan.inputs.forEach { writeBytes(consumedFile(it.requestId), "$id:${plan.id}".toByteArray()) }
         images.forEach { (hash, png) ->
             val f = imageFile(id, hash)
-            if (exists(f)) require(sha256(bytes(f, 4 * 1024 * 1024)) == hash) else writeBytes(f, png)
+            if (committed(f)) require(sha256(bytes(f, 4 * 1024 * 1024)) == hash) else writeBytes(f, png)
         }
         write(r.copy(prepared = true)); shared.active = plan.id; true
     }
@@ -186,7 +192,7 @@ internal class StyleTrialJournal(context: Context) {
                     TrialStatus.PENDING -> item.copy(status = TrialStatus.SKIPPED, reason = "interrupted_before_submit")
                     TrialStatus.REQUESTING, TrialStatus.UNCERTAIN -> {
                         val saved = resultFile(id, item.requestId)
-                        if (current(r.plan) && exists(saved)) {
+                        if (current(r.plan) && committed(saved)) {
                             val png = result(id, item.requestId)
                             item.copy(status = TrialStatus.PNG_SAVED, resultHash = sha256(png), reason = "local_recovery")
                         } else if (item.status == TrialStatus.REQUESTING) item.copy(status =

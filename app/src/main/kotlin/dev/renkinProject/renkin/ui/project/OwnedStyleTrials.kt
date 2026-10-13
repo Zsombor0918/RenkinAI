@@ -17,6 +17,12 @@ internal interface TrialSessionOwner {
     suspend fun settings(): AiSettings
 }
 
+/** Local prerequisite codes only: never expose exception, source or provider prose. */
+private class TrialPrerequisite(val reason: String) : IllegalStateException()
+private fun trialRequire(condition: Boolean, reason: String) {
+    if (!condition) throw TrialPrerequisite(reason)
+}
+
 /** One controller in the existing VM. Paid jobs are never composition/restoration effects. */
 internal class OwnedStyleTrials(private val scope: CoroutineScope, private val repository: ProjectAiRepository,
     private val journal: StyleTrialJournal, private val coordinator: StyleTrialCoordinator,
@@ -42,24 +48,33 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         jobs[id] = scope.launch {
             try { action() }
             catch (cancel: CancellationException) { throw cancel }
+            catch (failure: TrialPrerequisite) { flow(id).value = flow(id).value.copy(error = failure.reason) }
             catch (_: Exception) { flow(id).value = flow(id).value.copy(error = "trial_context_or_storage") }
             finally { jobs.remove(id); flow(id).value = flow(id).value.copy(busy = false, network = false) }
         }
     }
     private suspend fun preparation(id: Long): TrialPreparation = owner.owned(id) {
-        val route = checkNotNull(routes[id]); val style = repository.load(id)
-        val revision = checkNotNull(style.revision) { "Save the project style first." }
+        val route = routes[id] ?: throw TrialPrerequisite("changed_context")
+        val style = repository.load(id)
+        val revision = style.revision ?: throw TrialPrerequisite("missing_style")
         val metadata = checkNotNull(style.metadata)
-        val selection = checkNotNull(ProjectSelection.decode(metadata.selectionJson)) { "Save selected targets first." }
-        check(selection.mode == route.first.name && selection.sourcePackage == route.second &&
-            metadata.mode == route.first.name && metadata.sourcePackage == route.second)
+        val selection = try { ProjectSelection.decode(metadata.selectionJson) }
+            catch (_: Exception) { throw TrialPrerequisite("stale_targets") }
+            ?: throw TrialPrerequisite("missing_targets")
+        trialRequire(selection.mode == route.first.name && selection.sourcePackage == route.second &&
+            metadata.mode == route.first.name && metadata.sourcePackage == route.second, "changed_context")
+        trialRequire(selection.componentKeys.isNotEmpty(), "missing_targets")
         val targets = owner.targets()
-        val reader = if (route.first == ProjectSetupMode.EXTEND) owner.reader(checkNotNull(route.second)) else null
+        val reader = if (route.first == ProjectSetupMode.EXTEND) {
+            val source = route.second ?: throw TrialPrerequisite("stale_source")
+            try { owner.reader(source) } catch (cancel: CancellationException) { throw cancel }
+            catch (_: Exception) { throw TrialPrerequisite("stale_source") }
+        } else null
         val stamp = reader?.index?.let(::projectSourceStamp)
-        check(selection.isCurrent(route.first.name, route.second, stamp, projectCatalogStamp(targets),
-            targets.filter { it.selectable }.map { it.key }.toSet())) { "Review and save current targets/source first." }
-        check(metadata.sourceStamp == stamp)
-        if (reader != null) check(reader.isCurrent() && reader.index.state == CoverageIndexState.READY && reader.index.stamp.versionCode != null)
+        trialRequire(selection.isCurrent(route.first.name, route.second, stamp, projectCatalogStamp(targets),
+            targets.filter { it.selectable }.map { it.key }.toSet()), "stale_targets")
+        trialRequire(metadata.sourceStamp == stamp, "stale_source")
+        if (reader != null) trialRequire(reader.isCurrent() && reader.index.state == CoverageIndexState.READY && reader.index.stamp.versionCode != null, "stale_source")
         val coverage = reader?.let { IconCoverageAnalyzer().analyze(id, targets.filter { it.key in selection.componentKeys }, it) }
         val defaults = chosenOptions[id] ?: owner.settings().let { Triple(it.provider, it.model, it.quality) }
         val context = TrialContext(id, revision.revision, metadata.version, route.first.name, route.second, stamp,
@@ -95,7 +110,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     override fun prepare(id: Long, keys: List<String>, allowCovered: Boolean) = start(id) {
         val p = preparation(id)
         StyleTrialTargetSelector.validateChoice(p.candidates, keys, allowCovered)
-        check(p.context.provider != AiSettings.STABILITY || p.style.references.size == 1) { "Stability needs exactly one reference." }
+        trialRequire(p.context.provider != AiSettings.STABILITY || p.style.references.size == 1, "stability_references")
         val originals = owner.owned(id) { keys.map { key -> key to owner.original(key) } }
         val inputs = originals.map { (key, original) -> TrialInput(key, p.candidates.single { it.target.key == key }.target.name,
             original.hash, original.origin) }

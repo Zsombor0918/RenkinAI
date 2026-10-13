@@ -1,5 +1,32 @@
 # Architecture
 
+## October 13 corrective boundaries
+
+Keep the existing Activity VM, shell, owned controllers, Room v21 and format6.
+The correction has no migration, package, source-parser, signing, install or AI1/AI2
+controller change. STYLE trial entry is visible above analysis; TARGETS reads its
+existing saved metadata to gate trials, and the existing TRIAL Back/targets route
+returns to preparation. These UI prerequisites never authorize a POST.
+
+OwnedStyleTrials emits bounded local prerequisite codes instead of exception text.
+The analysis adapter retains safe HTTP400/402/422 rejection status and only the
+allowlisted insufficient_quota code; no raw server body enters journals or UI.
+Schema maxItems6/maxLength160/800 matches the unrelaxed Kotlin checks. Official
+structured-output docs support these restrictions for the existing non-fine-tuned
+gpt-5.4-mini; the separate one-shot/consumed-consent boundary is retained.
+
+AtomicFile base or backup existence is readable durability; .new-only plans and
+consumed item markers are reservations, never permission. Orphan plans count against
+the existing 256-plan quota and cannot reuse their UUID. Partial image writes can
+be rewritten only from freshly consented immutable inputs; .new-only results never
+claim a completed charge or PNG. Fresh result insertion atomically invalidates the
+revision approval; idempotent installation does not. Accepted reads also check all
+current successes, closing stale or restored approval gaps. ADR0005/0006 record this.
+
+Only an explicitly authorized one-request Python contract probe was live: synthetic
+artwork, HTTP200/618 tokens, no inventories. It does not certify Android, the owner's
+source pack, image generation, Samsung behavior or provider quality.
+
 > Personal AI fork: see [AI_FORK_HU.md](AI_FORK_HU.md). The Kotlin namespace stays upstream;
 > the installed app ID is `hu.zsombor.renkinai` (`.dev` for debug), generated packs use
 > `${BuildConfig.APPLICATION_ID}.pack` plus per-profile suffixes. Single-icon AI accepts through the upload
