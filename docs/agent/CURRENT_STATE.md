@@ -1,5 +1,11 @@
 # Current implementation
 
+Final documentation-headffabb37b compiled/built and passed898 unfiltered tests,
+but one isolated retained UI journey clicked before its independent initial Room
+load completed. The follow-up waits for the actual enabled prepare action within
+the existing10000ms bound; all assertions and runtime behavior remain. Its own
+final checks/XML/APK must be verified in PR#6; see [readiness record](../changes/2026-10-13-style-panel-readiness-fixture.md).
+
 ## Verified enhancement checkpoint — owner device gate open
 
 Code head `2456bf5eee099d0d3d3cacfa0570e20e80c565b7` passed Android CI38435489330

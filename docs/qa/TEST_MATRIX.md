@@ -2,6 +2,12 @@
 
 ## Style fidelity and original-source enhancement gates
 
+Retained routed EXTEND analysis additionally waits for the actual prepare node's
+enabled semantics after the panel's independent initial Room load. The existing
+displayed/enabled/click assertions and10000ms bound remain. ffabb37b's isolated
+23/1 failure/full898 pass is retained in BASELINE; follow-up final-head gates are
+required rather than replacing the failed group with unfiltered success.
+
 Code checkpoint2456bf5e independently passes all21 command groups and898 actual
 tests with zero failures/errors/skips. Sampler19, analysis gateway10/journal11,
 trial domain14/UI23/persistence-session22 include the new assertions. All original

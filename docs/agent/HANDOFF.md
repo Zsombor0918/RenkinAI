@@ -1,5 +1,13 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+Closingffabb37b passed Android and898 unfiltered tests; isolated trial-ui failed
+one existing analysis journey before the panel's initial Room load enabled its
+prepare action. The test-only follow-up observes real enabled semantics before the
+unchanged click/assertions, with the same10000ms bound. No runtime changes or rerun
+to hide the failure. Independently verify this follow-up's own all21 groups,
+Android/governance/XML/schema/APK and record final SHA in PR#6 before owner handoff.
+See [fixture correction](../changes/2026-10-13-style-panel-readiness-fixture.md).
+
 ## Closed enhancement scope and safe handoff
 
 Continue existing PR#6/feat/style-trials-m5, accepted mainaf7bdb10. Owner comment

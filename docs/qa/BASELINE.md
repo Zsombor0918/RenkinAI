@@ -1,5 +1,23 @@
 # Verification baseline
 
+## Closing-head isolated initial-load race — ffabb37b
+
+Documentation-only headffabb37b passed Android38437258752 and the unfiltered
+898/898 full suite in regressions38437259108, but its isolated trial-ui group
+failed1/23: the retained EXTEND analysis journey asserted the prepare button enabled
+while ProjectStylePanel's initial Room load was still pending. Controller/network
+idle does not observe that panel coroutine. No new style/original assertion failed.
+All other20 command groups passed;144 full XML/898 tests/zero failures/errors/skips.
+Independent artifact11832999637,607386bytes,SHA256
+`c78c468812b8fa8778c31ba4ebb4127dcd22a9af2a9e74910b256a2a0c793faf`
+retains this failure; all selectors/counts and schemas remain genuine.
+
+The follow-up only materializes the existing prepare node and waits for its actual
+enabled semantics within the same10000ms bound before the unchanged displayed/
+enabled/click assertions. No runtime, old assertion, runner, timeout or idling rule
+changes. Its own final-head complete checks/independent reports/fresh APK are required
+in PR#6; the full898 pass above does not erase the failed isolated command.
+
 ## Verified style/original code checkpoint — 2456bf5e
 
 Head `2456bf5eee099d0d3d3cacfa0570e20e80c565b7` passes

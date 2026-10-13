@@ -207,7 +207,14 @@ class ProjectStyleTrialJourneyComposeTest {
     }
     @Test fun extendTargetsThenTwelveSampleAnalysisUseSaveAndReopenReachesTrialsWithFiveRefs() {
         dark = true; val restoration = StateRestorationTester(compose); restoration.setContent { Content() }
-        open(extend = true); saveTargets(); style(); click("project-style-1", "style-analysis-prepare")
+        open(extend = true); saveTargets(); style()
+        // The panel's initial Room load is independent of controller/network busy.
+        // Materialize and observe its enabled action before the existing click assertions.
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-prepare"))
+        compose.waitUntil(10000) {
+            compose.onAllNodes(hasTestTag("style-analysis-prepare") and isEnabled()).fetchSemanticsNodes().size == 1
+        }
+        click("project-style-1", "style-analysis-prepare")
         assertEquals(12, analysis.state(1).value.samples!!.samples.size); assertEquals(0, analysisCalls)
         click("project-style-1", "style-analysis-start")
         compose.onNodeWithTag("style-analysis-confirm-paid").performClick(); settle()
