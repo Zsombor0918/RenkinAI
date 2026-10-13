@@ -339,3 +339,8 @@ matches the redacted text, and Stability retains one all-zero sentinel reference
 hash so its real provider and two endpoint counters remain readable. Prepared=false,
 rotated epoch, missing images and retained device-wide consumed item IDs prohibit
 replay under the old or another owner. Other profiles' records/assets stay intact.
+
+
+## Style DNA test-first stacked development
+
+Branch feat/style-dna-v1 starts from verified PR6 head454bd5ec, with mainaf7bdb10 unchanged. Both owner specifications were read in full. Legacy one-shot analysis and original-first trials already work. New test-only assertions reproduce missing reason categories, coarse-color duplicate bias, the24-reference boundary, absent per-image reports/family grammar and unevidenced modernization guidance. Hosted assertion execution is required before production changes. The three workflow base filters add feat/style-trials-m5 so a stacked draft receives the same unchanged jobs and complete21-group runner. No selector, timeout, test or approval check is removed. Local Android dependency access is unavailable; hosted CI supplies Android evidence. Zero live or paid provider calls. Deep and physical visual A/B remain deferred; no merge or force push.

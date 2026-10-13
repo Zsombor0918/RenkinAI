@@ -2,7 +2,7 @@ name: Profile form regressions
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, "feat/style-trials-m5"]
     paths:
       - 'app/src/main/kotlin/dev/renkinProject/renkin/ui/**'
       - 'app/src/test/kotlin/dev/renkinProject/renkin/ui/**'

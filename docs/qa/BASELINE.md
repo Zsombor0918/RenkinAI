@@ -813,3 +813,8 @@ changes. Local governance at 68c05698 passed 45/45 in 18.300 s, commit range pas
 six subjects, docs range passed 51 changed paths. Its governance job 114583693727
 passed all 45 guard tests and rejected only the deliberately still-BLOCKED PR audit.
 Subsequent final documentation commit verification is recorded in that PR audit.
+
+
+## Style DNA test-first stacked development
+
+Branch feat/style-dna-v1 starts from verified PR6 head454bd5ec, with mainaf7bdb10 unchanged. Both owner specifications were read in full. Legacy one-shot analysis and original-first trials already work. New test-only assertions reproduce missing reason categories, coarse-color duplicate bias, the24-reference boundary, absent per-image reports/family grammar and unevidenced modernization guidance. Hosted assertion execution is required before production changes. The three workflow base filters add feat/style-trials-m5 so a stacked draft receives the same unchanged jobs and complete21-group runner. No selector, timeout, test or approval check is removed. Local Android dependency access is unavailable; hosted CI supplies Android evidence. Zero live or paid provider calls. Deep and physical visual A/B remain deferred; no merge or force push.
