@@ -1,5 +1,26 @@
 # Architecture
 
+## OpenAI single-target output contract — October 13
+
+PromptComposer.openAiTrialAppearance validates saved style/project/app text without
+nested escaping. openAiEditPrompt is the one authoritative OpenAI target/edit/output
+assembler: original image1, ordered style-only2..N, no borrowed reference symbols,
+one centered transparent1024 PNG and explicit collage exclusions. All appearance
+data, including MIXED categories/brand observations/conflicting instructions, is
+quoted below this precedence. Essential target typography is allowed. The full
+escaped body is bounded to32000; gateway preflight and frozen-plan validation share
+the same helper. The native OpenAI multipart factory always assembles it for a
+non-null override, preventing a raw M5 override from dropping the contract.
+
+Null overrides still call the untouched historical iconPrompt; reference order,
+fields/options/n=1 and one-shot transport bytes remain. Stability uses the previous
+composeSaved prompt and separate init_image/style_image/background endpoints,
+exactly one reference and distinct endpoint counters. No analysis/vision retry or
+new model call, schema, stored revision/approval mutation or automatic regeneration.
+PNG validation remains structural, not collage/logo classification. ADR0006 and
+the [corrective note](changes/2026-10-13-single-icon-trial-contract.md) record this
+boundary; device artwork acceptance is separate from actual automated evidence.
+
 ## October 13 corrective boundaries
 
 Keep the existing Activity VM, shell, owned controllers, Room v21 and format6.

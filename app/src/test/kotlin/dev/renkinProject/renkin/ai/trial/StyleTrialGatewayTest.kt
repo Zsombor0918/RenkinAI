@@ -7,7 +7,9 @@ import android.util.Base64
 import dev.renkinProject.renkin.ai.*
 import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.data.project.projectTestPng
+import dev.renkinProject.renkin.data.project.sha256
 import dev.renkinProject.renkin.data.project.trialVariants
+import dev.renkinProject.renkin.ui.project.projectCatalogStamp
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -110,13 +112,23 @@ class StyleTrialGatewayTest {
                 mixedStyleWarning = true, identityPreservationNotes = listOf("source examples: gears, folders and wordmarks"),
                 shortStyleDescription = "Mixed outlines and filled motifs; keep target recognition.")
             val before = f.repo.load(1); val specification = PromptComposer.specification(StyleProfileV1.parse(mixed.encode()))
-            f.repo.saveStyle(1, before.revision!!.revision, specification, "use the reviewed palette",
-                before.references.map { it.hash })
+            val metadata = checkNotNull(before.metadata); val hashes = before.references.map { it.hash }
+            val profileJson = mixed.encode()
+            val context = AnalysisContext(1, "EXTEND", "source.pack", metadata.sourceStamp, metadata.sourceStamp,
+                metadata.version, sha256(metadata.selectionJson.toByteArray()), projectCatalogStamp(f.targets),
+                before.revision!!.revision, sourceIdentity = f.index.stamp)
+            val evidence = ReviewedAnalysisEvidence(UUID.randomUUID().toString(), sha256("offline analysis".toByteArray()),
+                sha256("offline style prompt".toByteArray()), context, ANALYSIS_MODELS.first(), hashes, hashes,
+                "resp_offline", sha256(profileJson.toByteArray()), 1, false, false)
+            f.repo.saveAnalyzedStyle(1, before.revision.revision, metadata.version, specification, "use the reviewed palette",
+                hashes, profileJson, evidence)
             val p = f.plan(); val requests = mutableListOf<IconGenerationRequest>()
             StyleTrialCoordinator(f.journal, f.successful { requests += it }, f.repo).submit(p, f.images(p), true, { true })
             assertEquals(3, requests.size)
             requests.forEach { assertFullTrialPrompt(it, appearance(specification, p.instruction)) }
             assertEquals(specification, f.repo.load(1).revision!!.specification)
+            assertEquals("AUTO_ANALYSIS", f.repo.load(1).revision!!.origin)
+            assertEquals(profileJson, f.repo.load(1).revision!!.analysisProfileJson)
             assertEquals(StyleArchetype.MIXED, mixed.archetype); assertTrue(mixed.mixedStyleWarning)
         }
     }

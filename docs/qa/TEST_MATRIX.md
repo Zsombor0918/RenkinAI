@@ -1,5 +1,22 @@
 # Regression and test matrix
 
+## Single-icon OpenAI corrective acceptance
+
+Actual44c69cb2 red all21 execution has879 tests/5 failures, precisely the new
+StyleTrialGatewayTest contract cases; legacy parity and all existing UI pass.
+Corrective exact-head results are in PR#6; all previous tests/groups remain.
+
+| Boundary | Deterministic required evidence | Physical/live gate |
+| --- | --- | --- |
+| Single target and ordered refs | Real coordinator/Room/journal A/B/C,0/1/5 refs, full composed prompt and serialized native original/ref bytes/count/fields | Same Basit saved style, one PENNY/Sketchbook/Gallery Assistant icon; NOT RUN here |
+| Appearance/identity precedence | Saved manual and reviewed typed AUTO_ANALYSIS MIXED brand motifs, conflicting project/app/raw overrides, quoted text exactly once and full prompt bounds | Target symbol recognizable at48px; reference logos absent; NOT RUN |
+| Historical clients | Pre-fix byte snapshots for AI1/AI2, every model/quality/ref count and separate Stability style/background fields; exactly1 ref/two counters; retained503/429/cancel one-shot cases | Provider account/quality/cost and OEM install remain NOT RUN |
+| Existing data and flows | All21 original groups plus unfiltered suite; gallery/review/approval,19/20/21 migration, full/share/legacy backup, project UI, build/sign/install suites unchanged | Old PNGs remain unmodified; explicit Not suitable and new paid consent required |
+
+Structural PNG checks cannot recognize a collage or certify logo identity. No extra
+vision/model call, automatic retry or owner acceptance is inferred. PR stays draft/open
+until a separately authorized corrected phone trial meets all visual criteria.
+
 The b15112f3 checkpoint resolved nine failures (870/871 passed). The remaining
 analysis journey now observes the completed local Use/import draft, independently
 of the already idle network controller, before testing Save enabled. Its explicit

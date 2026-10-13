@@ -1,6 +1,7 @@
 package dev.renkinProject.renkin.ai
 
 import android.util.Base64
+import dev.renkinProject.renkin.ai.style.PromptComposer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -53,7 +54,8 @@ internal fun buildImageEditRequest(key: String, settings: AiSettings, images: Li
     require(images.all { it.isNotEmpty() && it.size <= 4 * 1024 * 1024 }) { "An input icon is too large." }
     val body = MultipartBody.Builder().setType(MultipartBody.FORM)
         .addFormDataPart("model", settings.model)
-        .addFormDataPart("prompt", promptOverride ?: iconPrompt(settings.style, images.size - 1, settings.appInstruction))
+        .addFormDataPart("prompt", promptOverride?.let { PromptComposer.openAiEditPrompt(it, images.size - 1) }
+            ?: iconPrompt(settings.style, images.size - 1, settings.appInstruction))
         .addFormDataPart("n", "1")
         .addFormDataPart("size", "1024x1024")
         .addFormDataPart("quality", settings.quality)

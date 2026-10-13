@@ -8,7 +8,10 @@ Codex 00–04 are owner-merged. PR #5 was merged as af7bdb10 at 16:10:49 UTC
 on October 12; its final aceb691c checks passed independently. Codex 05 trial
 is implemented in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), with
 verified code checkpoint 0df78ef8/856 tests and final-head checks in the PR audit.
-October13 owner acceptance failures are under corrective verification in the same PR.
+October13 owner single-icon collage acceptance is under correction in the same PR.
+The [test-first proof](changes/2026-10-13-single-icon-trial-reproduction.md) and
+[OpenAI contract correction](changes/2026-10-13-single-icon-trial-contract.md) retain
+legacy/Stability bytes and old results; exact final automated evidence is in PR#6.
 The [remaining CI repair](changes/2026-10-13-style-trial-ci-repair.md) records the
 source-free CREATE correction and preserved routed assertions from baseline 3133b522.
 Owner review/merge is pending. Codex 06/07 remain planned; device/provider acceptance is separate.

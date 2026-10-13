@@ -5,6 +5,12 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 ## Unreleased
 
+- Require one standalone OpenAI trial icon from the target original, using reference
+  images only for visual style; prevent saved-style prompt overrides from dropping
+  the identity/output contract. Legacy AI1/AI2 and Stability request bytes stay intact.
+- Preserve existing paid trial images and reviews; reject unsuitable output explicitly
+  and separately confirm a new paid retry. Corrected artwork still needs owner review.
+
 - Show Style trial icons above analysis and explain missing saved style/targets,
   stale source or unsaved edits with direct remediation.
 - Distinguish analysis request, account/quota, model and invalid-result failures;

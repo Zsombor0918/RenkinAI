@@ -1,5 +1,6 @@
 package dev.renkinProject.renkin.ai
 
+import dev.renkinProject.renkin.ai.style.PromptComposer
 import dev.renkinProject.renkin.data.project.inspectPng
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
@@ -19,6 +20,8 @@ data class IconGenerationRequest(
     val requestId: String = UUID.randomUUID().toString(),
     val profileId: Long? = null,
     val styleRevision: Long? = null,
+    // OpenAI treats overrides as quoted appearance data under its mandatory output contract.
+    // Stability retains its fixed-endpoint prompt behavior.
     val composedPrompt: String? = null,
     val beforeEndpoint: suspend (Int) -> Unit = {}
 )
@@ -62,6 +65,9 @@ class ClientIconGenerationGateway internal constructor(
                 require(request.styleRevision == null || request.styleRevision > 0)
                 require(request.referencePngs.size <= 5)
                 require(request.composedPrompt == null || request.composedPrompt.isNotBlank() && request.composedPrompt.length <= MAX_COMPOSED_ICON_PROMPT)
+                if (request.provider == AiSettings.OPENAI) request.composedPrompt?.let {
+                    PromptComposer.openAiEditPrompt(it, request.referencePngs.size)
+                }
                 require(request.provider != AiSettings.STABILITY || request.referencePngs.size == 1)
                 (listOf(request.originalPng) + request.referencePngs).forEach { inspectPng(it) }
                 AiSettings(request.provider, request.specification, request.model, request.quality,

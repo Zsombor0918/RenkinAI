@@ -1,5 +1,28 @@
 # Current implementation
 
+## October 13 single-icon P0 correction — owner visual acceptance pending
+
+Owner ticket6142499049 confirms analysis/trials now run on a1c2310, but new trial
+artwork was a multi-app collage; this supersedes earlier phone failure summaries
+below. The actual test-first44c69cb2 regression run independently produced879 tests
+with precisely five new contract failures and no errors/skips; legacy/Stability
+byte parity and all existing trial UI tests passed in that run.
+
+OpenAI trial overrides now contain appearance data beneath one mandatory shared
+target/edit/output contract assembled by the native request factory. Image1 is the
+single original target; ordered images2..N are style-only and cannot supply logos.
+Exactly one centered transparent1024 PNG is requested, with collage/grid/sheet/
+montage/mockup/label/watermark exclusion and essential intrinsic target typography
+preserved. MIXED and brand observations are retained as quoted style data. Saved
+maximum-length text is quoted once and complete final prompt bounds are validated.
+The null-override AI1/AI2 bytes and Stability's existing prompt/endpoints stay unchanged.
+
+Old images, styles, revisions, approvals, selection, Roomv21/backup, one-shot journals,
+editor/build/sign/install and keys are untouched. No automatic regeneration or semantic
+PNG detection exists. Zero live calls occurred. Exact final-head automated/XML/schema/
+APK measurements are in PR#6's audit; the corrected Flip8 paid artwork acceptance
+gate remains OPEN and the PR stays draft/open/unmerged.
+
 ## October 13 owner-blocker correction — final evidence in PR #6
 
 The follow-up from 3133b522 fixes CREATE navigation leaking a source stamp from a

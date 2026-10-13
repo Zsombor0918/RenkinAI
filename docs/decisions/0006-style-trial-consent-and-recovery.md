@@ -17,6 +17,19 @@ remain separate tasks. No live/billable request is authorized during development
 
 ## Decision
 
+October13 output-contract correction: OpenAI non-null prompt overrides are quoted
+appearance data under one mandatory target/edit/output assembler in PromptComposer.
+The native request factory enforces that boundary; gateway preflight and frozen-plan
+validation share its final32000-character limit. M5 uses separately validated saved
+style/project/app text with one escaping layer. Image1 supplies the sole target
+identity;2..N supply visual style only. One transparent1024 launcher icon is requested;
+MIXED/brand motifs stay observations, never extra subjects. Essential intrinsic
+target typography may remain. This restores the legacy contract's meaning without
+changing legacy null-override bytes or Stability's provider-specific prompt/endpoints.
+No stored style/PNG/review/approval, schema, paid rights or retry behavior changes.
+Reject bad artwork explicitly; a new paid retry and visual acceptance require the
+owner. Structural validation cannot judge semantic identity or collage output.
+
 Use the existing Activity VM/session owner and profile identity. Add a TRIAL route
 from STYLE and TARGETS. Require a saved style and freshly verified saved component
 selection. Unknown/dynamic/work-user/locked/protected local targets stay disabled;

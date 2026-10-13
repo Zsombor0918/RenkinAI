@@ -89,7 +89,10 @@ internal data class StyleTrialPlan(val context: TrialContext, val specification:
         context.validate(); trialId(id)
         cleanText(specification, 6000, true); require(specification.isNotBlank()); cleanText(instruction, 2000, true)
         require(context.styleFingerprint.isEmpty() || context.styleFingerprint == styleFingerprint(specification, instruction))
-        require(PromptComposer.composeSaved(specification, instruction).length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT)
+        val prompt = if (context.provider == AiSettings.OPENAI)
+            PromptComposer.openAiEditPrompt(PromptComposer.openAiTrialAppearance(specification, instruction), referenceHashes.size)
+            else PromptComposer.composeSaved(specification, instruction)
+        require(prompt.length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT)
         require(referenceFingerprint(referenceHashes) == context.referenceFingerprint)
         require(context.provider != AiSettings.STABILITY || referenceHashes.size == 1)
         require(inputs.size in 1..3 && inputs.map { it.key }.distinct().size == inputs.size &&

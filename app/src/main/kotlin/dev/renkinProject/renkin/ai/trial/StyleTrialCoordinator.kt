@@ -26,7 +26,9 @@ internal class StyleTrialCoordinator(private val journal: StyleTrialJournal, pri
                         plan.referenceHashes.map { journal.image(plan.context.profileId, it) }, plan.specification,
                         provider = plan.context.provider, model = plan.context.model, quality = plan.context.quality,
                         requestId = input.requestId, profileId = plan.context.profileId, styleRevision = plan.context.revision,
-                        composedPrompt = PromptComposer.composeSaved(plan.specification, plan.instruction),
+                        composedPrompt = if (plan.context.provider == AiSettings.OPENAI)
+                            PromptComposer.openAiTrialAppearance(plan.specification, plan.instruction)
+                            else PromptComposer.composeSaved(plan.specification, plan.instruction),
                         beforeEndpoint = { step -> check(current()) { "Trial input changed." }; journal.endpoint(plan, input.requestId, step) }))
                     if (result is IconGenerationOutcome.Generated) withContext(NonCancellable) {
                         require(result.requestId == input.requestId && result.provider == plan.context.provider)

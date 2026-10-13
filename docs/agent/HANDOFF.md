@@ -1,5 +1,33 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## Single-icon correction scope — final measurements in PR #6
+
+Accepted main remains af7bdb10; implementation continues existing feat/style-trials-m5
+from test-first44c69cb2, production baselinea1c2310. Read owner ticket6142499049:
+analysis/trials now run, but paid outputs were collages. No GitHub screenshot was
+inspected and no new live/paid API request was made. Old UNREVIEWED PNGs stay intact.
+
+Actual red CI38379257399 compiled879/6; the independent all21 run38379257536
+artifact11802239145 (bf5d18151c46802f37caf3434a5973dc59ac485246c94717b7ff49a90bcc72fb)
+contains144 XML/879 tests/5 failures/zero errors/skips. Only five new contract cases
+failed; all existing UI and legacy/Stability parity passed in that full run. No
+timeout, idling, old assertion, selector or runner is weakened.
+
+Closed code scope: shared PromptComposer OpenAI target/edit/output assembly; final
+OpenAiImageClient override enforcement; gateway preflight and frozen-plan bounds;
+M5 appearance-only composition while Stability keeps its previous composeSaved.
+The MIXED regression uses real saved AUTO_ANALYSIS JSON/review evidence, not relabeling.
+No DB/migration/backup/session/UI/signing/install change. Local52 guards pass; local
+Gradle and all21 runner attempts are blocked before configuration at download.
+
+Final committed SHA, complete Android/all21 XML/skips, genuine19/20/21 schemas,
+APK/certificate and latest four checks belong in the external PR audit after actual
+observation. Next safe task is the owner phone acceptance: mark old collage Not suitable,
+choose one target with the same saved Basit style, inspect frozen input and explicitly
+authorize the new paid request. Require one recognizable icon at48px, no reference
+symbols and credible alpha/padding. Stop if collage repeats. Keep draft/open; no
+merge, main write, force-push, new automatic request or M6/M7 work is authorized.
+
 ## Single-icon red compilation repair
 
 Android CI38378700845 at b3d5a6bf compiled production, then failed test compilation

@@ -1,5 +1,27 @@
 # Verification baseline
 
+## October 13 single-icon regression proof and corrective gate
+
+Before production edits,44c69cb2cab7722db93d26464b9b3e2b334f04a8 compiled in
+Android CI38379257399 and ran879/6; five new prompt-contract failures plus one
+existing analysis-journey UI assertion. APK skipped. Independently downloaded
+all21 run38379257536 artifact11802239145 SHA256
+bf5d18151c46802f37caf3434a5973dc59ac485246c94717b7ff49a90bcc72fb has exact HEAD,
+144 complete-suite XML/879 tests/5 failures/0 errors/0 skips. Every failure is one
+of the five new contract/bound cases. All other isolated groups and the existing
+21 trial-UI cases pass; generation/legacy33 and AiImagePipeline14/14 pass. This
+is red assertion proof of missing roles/output/quoting/bounds, not live collage QA.
+
+The correction adds one mandatory OpenAI contract at the final override boundary;
+legacy/Stability bytes, old tests/selectors, timeouts/idling and all21 groups remain.
+MIXED fixture also saves typed reviewed AUTO_ANALYSIS evidence. Local Python52/52
+passed in6.919s; local complete Gradle and all21 runner commands failed before
+configuration downloading8.11.1 (Network is unreachable), zero Android tests/APK.
+No live/paid API or physical device test. Exact corrective final SHA, four latest
+checks, independent complete/filtered XML/skips,19/20/21 schemas and verified APK
+are recorded in PR#6's audit after committing and actual execution; historical871
+results do not substitute. Owner single-icon visual gate remains OPEN.
+
 ## Single-icon red checkpoint compilation — no assertion result yet
 
 Head b3d5a6bfccdcc19a2320409fd9959bdf9b459ba5 in Android CI38378700845 compiled

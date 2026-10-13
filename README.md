@@ -24,7 +24,11 @@ then **Save**. **Style trial icons** is visible at the top and explains missing
 prerequisites. Choose one to three apps → **Review frozen trial inputs** → the
 separate paid confirmation. Compare Original/Generated, Accept/Reject, then approve
 the common style separately. Local sampling, navigation and Save send no AI request.
-The October13 owner-reported failure still needs corrective-APK device retest.
+OpenAI trials now require one standalone target icon: original image1 supplies the
+symbol, later images supply visual style only, never their logos. MIXED source motifs
+stay observations. Old collages remain unchanged: mark them **Not suitable** and
+separately confirm any new paid retry. The corrected Flip8 one-icon acceptance is
+still required before merge; structural PNG validation cannot judge recognition.
 
 The overview, screenshots and release badges below originate from **upstream
 Renkin**, not a published RenkinAI release. Fork builds come from this repository's
