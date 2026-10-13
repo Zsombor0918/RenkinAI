@@ -275,6 +275,12 @@ class ProjectStyleTrialJourneyComposeTest {
     @Test fun rejectedAnalysisExplainsConsumedConsentAndManualStyleStillReachesTrials() {
         analysisOutcome = StyleAnalysisOutcome.RequestRejected(400)
         compose.setContent { Content() }; open(extend = true); saveTargets(); style()
+        // The initial Room load also gates this retained rejection journey.
+        // Observe the real enabled action within the existing readiness bound.
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-prepare"))
+        compose.waitUntil(10000) {
+            compose.onAllNodes(hasTestTag("style-analysis-prepare") and isEnabled()).fetchSemanticsNodes().size == 1
+        }
         click("project-style-1", "style-analysis-prepare")
         val first = analysis.state(1).value.preparation!!.requestId
         click("project-style-1", "style-analysis-start")

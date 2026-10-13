@@ -15,7 +15,7 @@ Architecture impact: none
 Milestone impact: none
 Durable decision: none
 
-This closing commit changes documentation only. The complete accumulated PR7 inventory relative to source baseline454bd5ec is below, including this note. Production scope is D0–D3, optional Quick/Standard, legacy compatibility and additive deterministic tests; no M6/M7, live call, main change, merge or force push.
+This verification note was introduced in the docs-only checkpoint63e5e5be. The subsequent targeted readiness correction changes tests/docs only and preserves all runtime behavior. The complete accumulated PR7 inventory relative to source baseline454bd5ec is below, including the follow-up paths. Production scope is D0–D3, optional Quick/Standard, legacy compatibility and additive deterministic tests; no M6/M7, live call, main change, merge or force push.
 
 | Change | Literal repository path |
 | --- | --- |
@@ -78,6 +78,8 @@ This closing commit changes documentation only. The complete accumulated PR7 inv
 | Changed | `docs/qa/BASELINE.md` |
 | Changed | `docs/qa/TEST_MATRIX.md` |
 | Changed | `scripts/run_compose_regressions.py` |
+| Changed | `app/src/test/kotlin/dev/renkinProject/renkin/ui/project/ProjectStyleTrialJourneyComposeTest.kt` |
+| New | `docs/changes/2026-10-14-style-dna-rejection-readiness.md` |
 | New | `docs/changes/2026-10-14-style-dna-verification.md` |
 
 ## Behavior before / after
@@ -87,6 +89,8 @@ Legacy defaults and manual style Save remain available. New D0 inspects up-to600
 M5 optionally freezes reviewed family/symbol-type recipes and DNA fingerprint; the native edit boundary keeps component originalC as IMAGE1/exclusive identity, ordered style-only refs and one transparent1024 PNG contract. No arbitrary modernization/dark tile/gradient is authorized by unknown evidence. Room21, backup6/payload3, old V1 records/plan JSON, old consumed rights, editor/watch/profile/sign/install, legacy AI1/AI2 null-override bytes and non-DNA Stability wire paths remain.
 
 ## Tests actually run
+
+Closing63e5e5be actually passed Android/unit925 but failed1/23 in isolated trial-ui while the full149 XML/925 remained green. Independent artifact11856632498,644124bytes,SHA25682ec516e2af3be8bdba3fa42687adaf7b69135a0f8b7635f2f5e4e4f40abbb5b preserves the disabled-before-Room-ready assertion. The follow-up waits for actual enabled semantics in that retained rejection journey within the same10000ms bound; no old assertion, selector, timeout, idling rule or runtime changes. Exact follow-up final-head execution remains required in PR7's audit.
 
 Both owner documents and mandatory repo docs/sources/tests/reviews were read before production changes. Initial b2df166a CI38465737793 and complete regressions38465737896 executed904 tests with six new regression failures and no old failures; independently downloaded artifact11848579461,610761bytes,SHA256e8a59d21a3a321913b48965bdfe6b7e85722f83f08815ba014635bbaeb95f9bd proves the actual red assertions. Implementation2bf8ca7e failed KSP syntax before tests;4531da8a compiled and executed925/1, then principal interior-paint measurement fixed the one duotone failure without weakening its expectation.
 

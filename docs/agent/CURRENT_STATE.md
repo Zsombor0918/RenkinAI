@@ -1,5 +1,22 @@
 # Current implementation
 
+## Closing-head legacy rejection-journey readiness
+
+Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered
+tests. Full regressions38478557064 failed1/23 isolated trial-ui assertions because
+the retained rejection journey clicked style-analysis-prepare while its independent
+initial Room load kept the real button disabled. All other21 commands, including
+DNA26/26 and full925/925, passed. Independent artifact11856632498,644124bytes,
+SHA25682ec516e2af3be8bdba3fa42687adaf7b69135a0f8b7635f2f5e4e4f40abbb5b
+retains the actual failure; it is not erased by full-suite success.
+
+The test-only follow-up materializes and observes the actual enabled semantics within
+the existing10000ms bound in that second journey, exactly as the earlier EXTEND journey
+already does. Every displayed/enabled/click, error, consumed-consent, fresh-ID, manual
+Save and zero-image-call assertion remains unchanged. No runtime, selector, timeout,
+idling rule or signing/data change. Its own final-head all22/Android/governance,
+independent XML/schema and fresh APK are still required in PR7's audit.
+
 ## October 14 — Style DNA D0–D3 code verified on stacked PR7
 
 The current opt-in source is `feat/style-dna-v1`, stacked on working PR6 head
