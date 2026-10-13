@@ -5,7 +5,7 @@ import org.json.JSONObject
 
 /** Explicit versioned, credential-free backup payload. File bytes travel as separate ZIP entries. */
 object ProjectAiCodec {
-    fun encode(data: ProjectAiSnapshot): JSONObject = obj("schema" to 2,
+    fun encode(data: ProjectAiSnapshot): JSONObject = obj("schema" to 3,
         "metadata" to array(data.metadata.map { obj("profileId" to it.profileId, "mode" to it.mode,
             "sourcePackage" to it.sourcePackage, "sourceStamp" to it.sourceStamp, "activeRevision" to it.activeRevision,
             "selectionJson" to it.selectionJson, "version" to it.version, "createdAt" to it.createdAt, "updatedAt" to it.updatedAt) }),
@@ -22,11 +22,14 @@ object ProjectAiCodec {
             "componentKey" to it.componentKey, "styleRevision" to it.styleRevision, "originalHash" to it.originalHash,
             "rawAssetHash" to it.rawAssetHash, "editedAssetHash" to it.editedAssetHash, "origin" to it.origin,
             "requestStatus" to it.requestStatus, "reviewStatus" to it.reviewStatus, "applyStatus" to it.applyStatus,
-            "createdAt" to it.createdAt, "updatedAt" to it.updatedAt) }))
+            "createdAt" to it.createdAt, "updatedAt" to it.updatedAt, "trialContextJson" to it.trialContextJson) }),
+        "approvals" to array(data.approvals.map { obj("profileId" to it.profileId, "styleRevision" to it.styleRevision,
+            "approvalId" to it.approvalId, "contextJson" to it.contextJson, "variantIdsJson" to it.variantIdsJson,
+            "approvedAt" to it.approvedAt, "needsRevalidation" to it.needsRevalidation) }))
 
     fun decode(root: JSONObject?): ProjectAiSnapshot {
         if (root == null) return ProjectAiSnapshot()
-        require(root.getInt("schema") in 1..2) { "Unsupported project AI backup version." }
+        require(root.getInt("schema") in 1..3) { "Unsupported project AI backup version." }
         return ProjectAiSnapshot(
             root.rows("metadata").map { ProjectAiMetadata(it.getLong("profileId"), it.getString("mode"),
                 it.nullString("sourcePackage"), it.nullString("sourceStamp"),
@@ -44,7 +47,10 @@ object ProjectAiCodec {
                 it.getString("componentKey"), it.getLong("styleRevision"), it.getString("originalHash"),
                 it.getString("rawAssetHash"), it.nullString("editedAssetHash"), it.getString("origin"),
                 it.getString("requestStatus"), it.getString("reviewStatus"), it.getString("applyStatus"),
-                it.getLong("createdAt"), it.getLong("updatedAt")) })
+                it.getLong("createdAt"), it.getLong("updatedAt"), it.nullString("trialContextJson")) },
+            if (root.getInt("schema") < 3) emptyList() else root.rows("approvals").map {
+                StyleTrialApproval(it.getLong("profileId"), it.getLong("styleRevision"), it.getString("approvalId"),
+                    it.getString("contextJson"), it.getString("variantIdsJson"), it.getLong("approvedAt"), it.getBoolean("needsRevalidation")) })
     }
 
     private fun obj(vararg fields: Pair<String, Any?>) = JSONObject().apply {

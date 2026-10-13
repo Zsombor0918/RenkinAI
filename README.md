@@ -11,9 +11,24 @@ user-entered provider key; ordinary icon editing and pack assembly remain local.
 The unreleased Projects home lists real Renkin profiles, creates a separate profile
 and offers separate Create/Extend target preparation with read-only, mapped-and-drawn
 source coverage. Search/select targets, save project style text and references locally,
-or explicitly confirm optional reviewed AI style analysis in Style Setup. Trial-icon
-generation and public backend/credits remain future work; device/provider acceptance
-is tracked separately in the current-state and QA documents.
+or explicitly confirm optional reviewed AI style analysis in Style Setup. The new
+Style Trials source prepares up to three separately confirmed icons, preserves
+original/RAW history and explicit style approval without Apply or batch. The tested
+implementation is in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), awaiting
+owner review/merge. Public backend/credits remain future work. Device/provider
+acceptance is tracked separately in the current-state and QA documents.
+
+Trial walkthrough: choose apps → **Save project target selection**; open **Project AI style**,
+enter a manual description under **Advanced: edit style and references** or review optional analysis,
+then **Save**. **Style trial icons** is visible at the top and explains missing
+prerequisites. Choose one to three apps → **Review frozen trial inputs** → the
+separate paid confirmation. Inspect **Original app icon** and its resource/type metadata separately from **Style reference pack**. If Android/OEM art is unverified, consciously check each genuine symbol/native colors before enabling payment; decline incorrect originals. Compare Original/Generated, Accept/Reject, then approve
+the common style separately. Local sampling, navigation and Save send no AI request.
+OpenAI trials now require one standalone target icon: original image1 supplies the
+symbol, later images supply visual style only, never their logos. MIXED source motifs
+stay observations. Native target colors have priority unless a reviewed fixed/mono/duotone style intentionally recolors them. Local analysis inspects up to300 mappings, reports representative geometry and measured palette roles in Advanced, and uploads at most12 samples only after explicit consent. Old collages remain unchanged: mark them **Not suitable** and
+separately confirm any new paid retry. The corrected Flip8 one-icon acceptance is
+still required before merge; structural PNG validation cannot judge recognition.
 
 The overview, screenshots and release badges below originate from **upstream
 Renkin**, not a published RenkinAI release. Fork builds come from this repository's

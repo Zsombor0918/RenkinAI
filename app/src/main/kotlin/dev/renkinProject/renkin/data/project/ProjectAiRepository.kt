@@ -169,7 +169,7 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
 
     suspend fun snapshot(): ProjectAiSnapshot = withAssetLease { database.withTransaction { snapshotUnlocked() } }
     private suspend fun snapshotUnlocked() = ProjectAiSnapshot(dao.allMetadata(), dao.allRevisions(),
-        dao.allAssets(), dao.allReferences(), dao.allVariants())
+        dao.allAssets(), dao.allReferences(), dao.allVariants(), dao.allApprovals())
 
     /** Only unknown files/temp files are collected. Draft imports with Room rows remain pinned;
      * active/history/variant records cannot lose their images. No automatic startup GC. */
@@ -193,6 +193,7 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
         }
 
         fun validateSnapshot(data: ProjectAiSnapshot, profileIds: Set<Long>) {
+            validateTrialSnapshot(data)
             require(data.metadata.map { it.profileId }.distinct().size == data.metadata.size)
             require(data.revisions.map { it.profileId to it.revision }.distinct().size == data.revisions.size)
             require(data.assets.map { it.profileId to it.hash }.distinct().size == data.assets.size)
@@ -239,6 +240,7 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
             dao.insertRevisions(data.revisions)
             dao.insertReferences(data.references)
             dao.insertVariants(data.variants)
+            dao.putApprovals(data.approvals)
             data.metadata.forEach { dao.putMetadata(it) }
         }
     }

@@ -30,6 +30,12 @@ class StyleAnalysisSchemaTest {
         assertFalse(text.contains("minLength")); assertFalse(text.contains("pattern"))
         assertEquals("integer", schema.getJSONObject("properties").getJSONObject("schemaVersion").getString("type"))
     }
+    @Test fun wireSchemaConstrainsEveryListToTheSameSixItemsAsTheStrictLocalParser() {
+        val properties = StyleProfileV1.jsonSchema().getJSONObject("properties")
+        for (key in listOf("paletteArgb", "forbiddenFeatures", "identityPreservationNotes", "uncertaintyNotes")) {
+            assertEquals(key, 6, properties.getJSONObject(key).optInt("maxItems", -1))
+        }
+    }
     @Test fun missingExtraNullAndCoercedPropertiesAreRejected() {
         reject(JSONObject(analysisFixtureStyle().encode()).apply { remove("stroke") }.toString())
         reject(changed("extra", true)); reject(changed("stroke", null)); reject(changed("mixedStyleWarning", "false"))

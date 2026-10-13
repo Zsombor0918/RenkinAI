@@ -1,6 +1,90 @@
 # Regression and test matrix
 
-Accepted baseline is Codex 03, owner-merged PR #4. Codex 04 source/testing is in progress. Head 06e71532 passed 718/718 and all filtered
+## Style fidelity and original-source enhancement gates
+
+Retained routed EXTEND analysis additionally waits for the actual prepare node's
+enabled semantics after the panel's independent initial Room load. The existing
+displayed/enabled/click assertions and10000ms bound remain. ffabb37b's isolated
+23/1 failure/full898 pass is retained in BASELINE; follow-up final-head gates are
+required rather than replacing the failed group with unfiltered success.
+
+Code checkpoint2456bf5e independently passes all21 command groups and898 actual
+tests with zero failures/errors/skips. Sampler19, analysis gateway10/journal11,
+trial domain14/UI23/persistence-session22 include the new assertions. All original
+groups/selectors remain. The closing documentation head's own fresh results are in
+PR#6, not inferred from this checkpoint; owner device/provider acceptance stays open.
+
+Retain all21 groups/selectors and every old assertion. Add exact-hue/alpha-fringe fixtures,90% geometry plus outliers, mono/duotone/brand-color policies, old/new report and algorithm-journal round trips, bounded50/150/500 local benchmarks, mocked low/high JSON shape with production high rejection, exact alias resource versus themed API, removed resource, optional original plan parser, plan-specific conscious verification and A/B/C original-preview/real multipart invariance after source/display changes. The two red checkpoints independently contain883/4 and885/5; final green evidence must match final HEAD.
+
+Phone sequence: free local sample and Advanced color roles; optional one separately confirmed cloud analysis → Use → Save; target Save → one trial → Original app icon C versus style source B → consciously verify C → separate paid button. Stop if original is themed or generated artwork contains other logos. Owner Flip8/One UI Theme Park, real light/dark/alias/adaptive/work-user, upgrade/backup/sign/install/TalkBack remain NOT RUN here. No model quality gain or live provider test is asserted.
+
+## Single-icon OpenAI corrective acceptance
+
+Actual44c69cb2 red all21 execution has879 tests/5 failures, precisely the new
+StyleTrialGatewayTest contract cases; legacy parity and all existing UI pass.
+Corrective exact-head results are in PR#6; all previous tests/groups remain.
+
+| Boundary | Deterministic required evidence | Physical/live gate |
+| --- | --- | --- |
+| Single target and ordered refs | Real coordinator/Room/journal A/B/C,0/1/5 refs, full composed prompt and serialized native original/ref bytes/count/fields | Same Basit saved style, one PENNY/Sketchbook/Gallery Assistant icon; NOT RUN here |
+| Appearance/identity precedence | Saved manual and reviewed typed AUTO_ANALYSIS MIXED brand motifs, conflicting project/app/raw overrides, quoted text exactly once and full prompt bounds | Target symbol recognizable at48px; reference logos absent; NOT RUN |
+| Historical clients | Pre-fix byte snapshots for AI1/AI2, every model/quality/ref count and separate Stability style/background fields; exactly1 ref/two counters; retained503/429/cancel one-shot cases | Provider account/quality/cost and OEM install remain NOT RUN |
+| Existing data and flows | All21 original groups plus unfiltered suite; gallery/review/approval,19/20/21 migration, full/share/legacy backup, project UI, build/sign/install suites unchanged | Old PNGs remain unmodified; explicit Not suitable and new paid consent required |
+
+Structural PNG checks cannot recognize a collage or certify logo identity. No extra
+vision/model call, automatic retry or owner acceptance is inferred. PR stays draft/open
+until a separately authorized corrected phone trial meets all visual criteria.
+
+The b15112f3 checkpoint resolved nine failures (870/871 passed). The remaining
+analysis journey now observes the completed local Use/import draft, independently
+of the already idle network controller, before testing Save enabled. Its explicit
+dirty/no-durable-save/ref-count/restoration assertions and existing 10000 ms wait
+bound remain. Final actual-head results and APK are in PR #6's audit.
+
+## Remaining routed UI corrections
+
+The 3133b522 hosted baseline compiled and executed 871 tests with ten failures.
+CREATE's targets-first/manual-style journey now checks a null sourceStamp and exact
+saved component keys, guarding source-free navigation even with unrelated coverage
+input. Existing explanatory fragments use explicit substring matching; controls are
+scrolled before touches and completed writes are observed before Back. The shell
+fixture carries a real current encoded saved selection. All previous assertions,
+21 runner groups and selectors remain; final-head results are in PR #6's audit.
+Device/provider/owner acceptance is separate and remains pending.
+
+## Corrective acceptance coverage
+
+The actual cfef34e1 hosted run866/10 is captured in BASELINE. Additive tests now
+require wire maxItems6, safe HTTP400/402/422/auth404/429/5xx failures without retry,
+allowlisted quota with no raw-error leakage, fresh UUID/new consent after rejection,
+orphan plan/result durability and old-approval invalidation after a new success.
+
+Routed native SDK33/320dp real-Room/controller tests retain both save orders and
+analysis Use/Save, then extend to manual EXTEND with zero refs, dirty-style accessible
+reason, changed-source remediation, rejected analysis/manual fallback,1/2/3 frozen
+trial apps, decline/paid consent/review/common approval and restoration. Fixtures
+remain offline. Explicit scrolling materializes the status assertion; a30-artwork
+pool avoids assuming all twelve generated shapes are perceptually different.
+No existing selector/idling/timeout is weakened. Final hosted checks are pending.
+
+Measured live coverage is only the authorized one-icon Python Responses contract
+probe (HTTP200/618 tokens), not Android/image-generation/phone evidence. Flip8/One UI,
+TalkBack/fold, real saved-data upgrade/restore and source-pack failure retest remain
+NOT RUN on the corrective APK until the owner verifies the journey.
+
+## October 13 owner blocker additions
+
+ProjectStyleTrialJourneyComposeTest enters the existing trial-ui group: fresh targets,
+manual style with zero refs and no key, targets-first/style-first saves,1/3 frozen
+apps, separate paid trial consent/review/common approval, EXTEND12-sample analysis,
+explicit Use/Save and route restoration. Real Room/controllers/journals participate.
+Additional regressions cover safe HTTP400 failure persistence/new UUID consent,
+orphan plan/result .new recovery without replay and new unreviewed variant approval
+invalidation. These are new assertions awaiting execution, not prior856-test proof.
+
+
+Accepted baseline is Codex 04, owner-merged PR #5 as af7bdb10. M5 source/testing
+is in progress; historical Codex 03 evidence follows. Head 06e71532 passed 718/718 and all filtered
 groups/APK including legacy gallery compatibility. The final documentation/probe-
 removal head is verified separately in PR #4's audit.
 Codex 00/01/02 sections below remain historical, including M2's 669/669 baseline.
@@ -122,3 +206,28 @@ failed before configuration at download; hosted native/Room/MockWebServer execut
 is verified. Final documentation head must independently pass all original/new
 groups, complete suite/APK and governance before the PR is ready. Device/live gaps
 above remain NOT RUN; green CI is not owner or Play release approval.
+
+
+## Codex 05 trials — verified code checkpoint, device acceptance pending
+
+| Area | Automated coverage passed on0df78ef8 | Physical/live status |
+| --- | --- | --- |
+| Selection/frozen inputs | StyleTrialTargetSelectorTest/StyleTrialPlanTest: Create/Extend 0–3/many, covered override, unknown/work/lock/local protections, duplicate/tie/manual, vector/adaptive/empty/broken originals, strict plan and composer bounds | Actual launcher/source/theme updates NOT RUN |
+| Real client/no-replay | StyleTrialGatewayTest plus unchanged legacy gateway/AI suites: original/ref order, alpha/count/config/privacy, unsafe 503 control vs one-shot OpenAI/both Stability, invalid first step, 307/308/auth/404/429/5xx/malformed/timeout/cancel | Account/model quality/cost NOT RUN; zero live requests |
+| Journal/recovery | StyleTrialJournalTest: no-consent/stale/duplicate UUID/concurrent/serial, cold request/Stop, separate Stability markers, result-file/asset/DB faults with no gateway recovery, corrupt/quota/restore | Physical process death/full storage NOT RUN |
+| Owned UI/controller | StyleTrialComposeTest/OwnedStyleTrialsTest: real shell route/style refinement, frozen decline/double tap, previews/48dp/checker/theme/wide/restoration, no key/refs/targets, explicit review/approval/regenerate, profile/source/lock/original/style invalidation, external editor priority | Samsung/TalkBack/hinge/rotation/One UI/Theme Park NOT RUN |
+| Room/history/backup | StyleTrialPersistenceTest/StyleTrialMigrationTest and added ProjectAiBackupTest cases: original+RAW durable/pinned, review/approval/reuse, stale/corrupt/competing, genuine physical v20→v21/fresh, format6/payload3/full/share/rekey/legacy5 | Upgrade/SAF/signing/install/update NOT RUN |
+| Full acceptance | All original groups, five additive M5 groups, unfiltered compile/unit/debug APK, actual XML and KSP19/20/21 plus Python guards/conventions/docs on one final SHA | Owner acceptance and merge remain separate |
+
+Code0df78ef8 passed143 XML/856 tests/zero failure/error/skip, all21 commands and
+selectors: M5 domain10/gateway8/journal12/UI12/persistence-session19, plus backup3
+within retained project-data34. Populated deletion preserves valid redacted OpenAI/
+Stability records, real counters, consumed UUIDs and other-owner files. Native
+multipart factory/whole-body one-shot, numerical revision/style text alias rejection,
+safe model/account errors and32,000-character prompt bounds passed.
+
+No old assertion/selector is removed/ignored; migration assertions use genuine21
+with real18/19/20 starting fixtures. KSP19/20/21 bytes match source. Exact final
+closing-head full/filtered/schema/APK/governance checks belong to PR #6 before
+readiness; the ancestor's856 result cannot substitute for them. Physical/live
+scenarios remain NOT RUN and CI is not owner/release acceptance.

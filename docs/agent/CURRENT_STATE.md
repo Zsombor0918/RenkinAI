@@ -1,22 +1,129 @@
 # Current implementation
 
-Verified October 12, 2026: owner Zsombor0918 merged PR #4 at 04:45:50 UTC as main
-`6aed9e08ee5619c1061481972dc172546c7f5abe`. Accepted feature head
-`a73c1e026903b97f2964139e5831246ba465bd30` is an ancestor with identical tree.
-Its final Android/regression/governance checks passed: 718/718, every isolated
-group and debug APK; this is historical Codex 03 evidence, not fresh Codex 04.
-No independent APPROVED review or physical-device acceptance is inferred.
-Codex 04 starts on `feat/automatic-style-analysis-m4` from this accepted main;
-sampling/analysis/review is implemented and offline-verified in open PR #5.
-Code head `47503e5c0fa64a2508cab1e846896524f985f1a3` passed 792/792 tests,
-all retained/new groups and APK. Owner merge and physical/provider acceptance remain
-pending; final documentation-head checks are recorded externally in that PR audit.
-The STYLE route binds the current Create/Extend mode and chosen source as well as
-Profile.id. A proposal from another route context remains historical and cannot
-authorize a POST, Use or Save. Same-source updates retain explicit stale re-review.
-669/669 belongs to Codex 02. The accepted baseline uses Room v19 with an
-additive v18 migration. Manifest, dependencies, identities, signing/install and
-original Android CI remain unchanged. See [QA](../qa/BASELINE.md).
+Final documentation-headffabb37b compiled/built and passed898 unfiltered tests,
+but one isolated retained UI journey clicked before its independent initial Room
+load completed. The follow-up waits for the actual enabled prepare action within
+the existing10000ms bound; all assertions and runtime behavior remain. Its own
+final checks/XML/APK must be verified in PR#6; see [readiness record](../changes/2026-10-13-style-panel-readiness-fixture.md).
+
+## Verified enhancement checkpoint — owner device gate open
+
+Code head `2456bf5eee099d0d3d3cacfa0570e20e80c565b7` passed Android CI38435489330
+and all21 regressions38435489374. Independently downloaded artifact11833047373
+has144 complete-suite XML /898 actual tests /zero failures, errors or skips;
+all selectors and counts agree, and genuine Room19/20/21 exports match source.
+Local governance passed52/52; local Android commands still fail at Gradle download
+before configuration. No live/paid request or physical device test occurred.
+
+The closed incremental scope is representative local sampling, measured palette and
+geometry evidence, detailed style-only analysis/color policy, and resource-derived
+component originals with visible provenance and plan-specific verification. Existing
+original independence was verified first; source packs remain style/coverage only.
+The final documentation commit changes no runtime/test/build source. Its own exact
+SHA, fresh complete checks, XML and APK belong in the external PR#6 audit after
+actual execution; the898 checkpoint does not substitute for that final-head run.
+Owner free A/B/C preview and optional separately confirmed one-analysis/one-icon
+acceptance remain open. See [verification](../changes/2026-10-13-style-fidelity-verification.md).
+
+The following failed checkpoints are retained historical evidence.
+
+Checkpoint73cd29e8 / Android38434288813 compiled and ran897 tests with exactly one new neutral-tile policy failure; all previous/new original, wire, journal and UI tests passed. The follow-up distinguishes recurring neutral/background mass from varying significant chromatic accents, preserving brand colors even when the tile dominates area. Genuine final-head results and all21 XML/benchmark evidence are recorded in PR#6.
+
+
+Implementation checkpoint ab80db86 / Android38433644576 stopped at production compilation: nullable Resources.getDrawableForDensity result needs explicit fail-closed handling. No Android assertions/APK ran at that head. The follow-up preserves the resource-only contract, adds missing/disabled/wrong-user originals and a neutral-tile brand-accent regression, and strengthens source-switch multipart fixtures with distinct B2 bytes. Final executed results remain in PR#6.
+
+
+## October13 style fidelity and component original refinement
+
+Owner comment6149883090 is implemented incrementally on PR#6 from422ef578. Local EXTEND now inspects up to300 mappings and selects proportional geometry-family medoids plus minority checks, with real alpha-aware Oklab palette swatches and measured roles/prevalence/distributions. Varied native logo hues alone are not mixed drawing styles; fixed palettes require recurring evidence. Advanced shows bounded local measurements separately from model inference. Cloud remains one separately confirmed low-detail request, same model/V1 schema, <=12 thumbnails/4MiB; manual CREATE and0–5 ordered generation refs remain.
+
+M5 already used exact component icons independently of EXTEND. It now resolves the enabled current-user component declared full resource, compares activity API bytes, freezes optional versioned evidence and displays Original app icon separately from the style pack. OEM overlays remain possible: new resource originals display UNVERIFIED_ORIGINAL and require conscious plan-specific verification before separate paid consent. Missing resource fails closed. Equal bytes retain old origin stamps and historical approvals; real differences/version/config changes stale the plan. Source packs provide style/coverage only. Legacy editor, AI1/AI2, Roomv21, backup/history, keys/build/install and M6 read-only guards remain.
+
+Actual test-first red95cd7786:144 XML/883 tests/4 failures/0 errors/skips; red812bc7da:144 XML/885 tests/5 failures/0 errors/skips, all new regressions only. Final-head automated/XML/benchmark/APK evidence is recorded in PR#6 after execution. No live API call or physical device run. [ADR0007](../decisions/0007-style-fidelity-and-component-originals.md) defines the current boundaries. PR remains draft/open/unmerged for owner verification.
+
+## October 13 single-icon P0 correction — owner visual acceptance pending
+
+Owner ticket6142499049 confirms analysis/trials now run on a1c2310, but new trial
+artwork was a multi-app collage; this supersedes earlier phone failure summaries
+below. The actual test-first44c69cb2 regression run independently produced879 tests
+with precisely five new contract failures and no errors/skips; legacy/Stability
+byte parity and all existing trial UI tests passed in that run.
+
+OpenAI trial overrides now contain appearance data beneath one mandatory shared
+target/edit/output contract assembled by the native request factory. Image1 is the
+single original target; ordered images2..N are style-only and cannot supply logos.
+Exactly one centered transparent1024 PNG is requested, with collage/grid/sheet/
+montage/mockup/label/watermark exclusion and essential intrinsic target typography
+preserved. MIXED and brand observations are retained as quoted style data. Saved
+maximum-length text is quoted once and complete final prompt bounds are validated.
+The null-override AI1/AI2 bytes and Stability's existing prompt/endpoints stay unchanged.
+
+Old images, styles, revisions, approvals, selection, Roomv21/backup, one-shot journals,
+editor/build/sign/install and keys are untouched. No automatic regeneration or semantic
+PNG detection exists. Zero live calls occurred. Exact final-head automated/XML/schema/
+APK measurements are in PR#6's audit; the corrected Flip8 paid artwork acceptance
+gate remains OPEN and the PR stays draft/open/unmerged.
+
+## October 13 owner-blocker correction — final evidence in PR #6
+
+The follow-up from 3133b522 fixes CREATE navigation leaking a source stamp from a
+coverage snapshot. CREATE STYLE now always receives null; EXTEND accepts only its
+current profile/source snapshot. This preserves compatible saved targets without
+removing repository invalidation on actual context changes. Routed UI assertions
+observe saved state before Back and scroll controls before input. The 3133b522
+871-test/ten-failure baseline remains historical in QA; the final actual SHA,
+complete checks and matching downloadable APK are recorded in the PR audit.
+Owner corrective phone acceptance remains required before merge.
+
+PR #6 remains on feat/style-trials-m5, source baseline cfef34e1 / accepted main
+af7bdb10. The owner-observed FAILED analysis and trial discoverability are acceptance
+findings, not inferred HTTP causes. The fresh red checkpoint independently produced
+866 tests / 10 failures. The next 3133b522 source compiled but still failed ten
+routed UI assertions; this follow-up addresses them with independently inspected XML.
+
+STYLE now exposes its clean saved-style trial entry above analysis, with accessible
+Save guidance. TARGETS requires a saved style and nonempty, current saved selection,
+and explains missing or stale inputs. TRIAL distinguishes missing style/targets,
+changed setup/source and storage failures and offers a direct targets route. Manual
+CREATE and EXTEND styles require no cloud analysis; OpenAI allows zero to five saved
+refs. Up to twelve analysis samples, five saved refs and three trial apps remain
+separate limits. Save, opening and local preparation still send no provider request.
+
+The Responses wire schema now bounds lists to six and strings to the strict local
+160/800 limits. HTTP400/402/422 have safe rejection codes; quota, rate, unavailable,
+authentication, invalid-response and uncertainty have actionable UI copy. A consumed
+analysis needs fresh local preparation, a new UUID and separate new consent. No
+server error prose or key is retained in these diagnostics.
+
+Trial journal reads only committed base/backup files. Orphan first .new plans reserve
+their UUID and quota without becoming readable records or blocking fresh plans;
+partial result .new files prove no durable PNG, and consumed item .new tombstones
+still prohibit replay. A newly inserted unreviewed trial invalidates shared approval
+in the same Room transaction; idempotent recovery preserves an existing review.
+The read-only acceptance port also rejects any current unreviewed success.
+
+At the owner's explicit request, one replacement-key Python Responses contract
+probe used one synthetic 256px icon and no app/project inventory: HTTP200/completed,
+433 input + 185 output = 618 tokens, bounded style checks passed. It is not an
+Android gateway or phone run and not image-generation proof. No further live calls
+are planned. The earlier 401 probe remains separate historical evidence. Exact
+final-head CI/XML/APK evidence and owner/device retest remain to be recorded in QA.
+
+Accepted main is `af7bdb104869b0d0dded2acdf020fc030642dcf9`, owner merge of
+[PR #5](https://github.com/Zsombor0918/RenkinAI/pull/5) on October 12, 2026 at
+16:10:49 UTC. M4 source aceb691c passed its own 792 tests, all 16 commands,
+schemas 19/20 and APK before merge; these remain historical M4 evidence.
+All five earlier merges were reread. No independent APPROVED review or physical
+acceptance is inferred.
+
+Codex 05 is implemented on `feat/style-trials-m5` in
+[PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6). Head-specific automated
+evidence is in [QA](../qa/BASELINE.md), with the exact final SHA/checks in the PR
+audit. Owner review/merge and device/provider acceptance remain separate.
+Room v21 adds trial evidence/approval through explicit 20→21; original manifest,
+dependencies, identities, signing/install and Android CI stay unchanged. STYLE and
+TRIAL bind the current Create/Extend mode, source and profile. Review and reuse require fresh current proof; historical decisions never grant
+new paid permission.
 
 The M1 Robolectric 4.14.1 WRAP_CONTENT dialog-width correction remains in the
 compatible native SDK 33 / 320dp form harness; original identifiers, interactions
@@ -36,9 +143,9 @@ Ordinary icon creation/build can work offline; AI requires the chosen provider.
 | Create / extend / classic entry | Create confirms the real profile form and waits for completion, then opens all known launcher targets without a source requirement. Extend chooses an external source by package, then explicitly chooses/creates a target profile through the existing Save/Cancel controller, then inspects actual source coverage. Project setup actions return to session selections; the complete classic editor and AI1/AI2 remain available |
 | Home/setup/editor navigation | [RenkinAiRoot](../../app/src/main/kotlin/dev/renkinProject/renkin/ui/project/RenkinAiRoot.kt) uses the Activity's existing VM; editor Back returns Home after search/dialog handlers, Home clean Back exits, dirty Back offers return to editor or explicit exit without saving; no implicit save/switch/build/request on navigation |
 | Pack sources, modifications, import | ApplicationProvider, IconGenerationService, IconGenerator, UploadedImageStore; custom/base/rendered separation and existing SVG/vector/adaptive paths |
-| Named profiles | ProfileManager, DbApplication, DataPreferences; Room `renkinPack` v20 (explicit 19→20 nullable analysis fields), default id 1; settings snapshots switch with the profile, source/provenance locks remain |
+| Named profiles | ProfileManager, DbApplication, DataPreferences; Room `renkinPack` v21 (explicit 20→21 trial evidence/approval), default id 1; settings snapshots switch with the profile, source/provenance locks remain |
 | Export and installation | IconPackBuildService, IconPackBuilder, PackKeystore, ApkInstaller; calendar/clock/adaptive/themed outputs, appfilter/appmap/theme_resources; build snapshot persists to its owning profile |
-| Backup/share/watch | data/transfer and data/watch plus WatchWorker/AutoBackupWorker; format 5 carries accepted analysis evidence and project history/PNG assets to full backups and profile shares; legacy archives remain readable, device gallery/keystore boundaries remain |
+| Backup/share/watch | data/transfer and data/watch plus WatchWorker/AutoBackupWorker; format 6 carries trial original/RAW/approval history as well as analysis and project PNG assets; legacy archives remain readable, device gallery/keystore boundaries remain |
 | Single AI icon | [AiIconGenerationService](../../app/src/main/kotlin/dev/renkinProject/renkin/ai/AiIconGenerationService.kt), AiIconViewModel, IndividualOptions; original icon plus up to five reference files; PNG/alpha validation, 512 px gallery/draft persistence before preview; user accepts upload draft, then editor applies and Save/Build persists |
 | Missing-icon batch | [AiBatchRunner](../../app/src/main/kotlin/dev/renkinProject/renkin/ai/AiBatchRunner.kt), AiBatchStore/ViewModel and GlobalOptions; searchable selection, app prompt, paid confirmation, serial calls, pause/cancel/manual resume and one-app retry |
 | App instructions | AiPromptStore; DataStore keyed by hash of profile/component; empty inherits common style; 2000-character maximum |
@@ -183,14 +290,15 @@ has a real adapter reusing existing OpenAI/Stability clients and AiCredentialSto
 and offline fakes. It preserves original-first ordered references, output validation,
 no retries and typed uncertain/cancelled outcomes. Stability requires exactly one
 reference and two requests. The adapter is not yet the legacy single/batch route and
-has no project UI consumer. No live API request was made. Variant records are a
+is consumed by the new explicit M5 trial controller. No live API request was made. Variant records are a
 repository contract, not a new staging workflow or inferred origin for old icons.
 
 ## Planned, not implemented
 
-Codex 05 trial icons/approval, 06 staging gallery and 07 edits remain separate tasks. Project style is saved, never automatically approved. No
-GenerationPlan entity, generation confirmation, backend, login, credits, Billing,
-background scheduling or Play publication is implemented.
+Codex 06 staging gallery/bulk Apply and 07 edits remain separate tasks. M5 trial
+source is implemented below; verification and owner acceptance remain pending.
+Project style is saved, never automatically approved. No full-batch GenerationPlan,
+backend, login, credits, Billing, background scheduling or Play publication exists.
 Device acceptance and exact-final-head automated evidence remain separate in QA
 and the PR audit.
 Follow [ROADMAP](../ROADMAP.md) and [HANDOFF](HANDOFF.md).
@@ -220,7 +328,7 @@ large/transparent gallery restore fixture passed with byte-for-byte comparisons
 at 06e71532; upload/render code is unchanged.
 
 
-## Codex 04 source implementation — fresh Android evidence pending
+## Accepted Codex 04 source implementation — device evidence pending
 
 The existing STYLE route adds local source reference sampling (EXTEND) or owned PNG
 preparation (CREATE), separately confirmed OpenAI structured-text analysis, candidate
@@ -230,10 +338,10 @@ cloud analysis requires the existing saved OpenAI key. Suggestions never replace
 saved styles or dirty drafts without explicit Use, and Use itself does not save.
 
 ReferenceSampler uses the existing parser's opt-in all-source index, real static
-256px draw, <=120 uniformly distributed candidates and <=12 distinct diverse samples.
+256px draw, <=300 uniformly distributed candidates in EXTEND and <=12 proportional geometry-family samples.
 A report exposes actual exclusions, small samples and suspected mixed styles; no
 coverage/progress/confidence percentage is invented. Night/package/version/index/
-algorithm stamps guard reuse; dynamic/unstable artwork is excluded. Generation refs
+versioned algorithm stamps guard reuse; dynamic/unstable artwork is excluded. Generation refs
 retain their five-image cap, separately ordered/imported under the existing owner lease.
 
 StyleProfileV1 and PromptComposer bound categories/text/colors, escape untrusted input
@@ -265,4 +373,59 @@ export bytes match committed schema; real v19 indexes/version and migration pass
 Local guards are 51/51. Local Android still fails before configuration downloading
 Gradle; hosted evidence proves the feature. Device/provider quality/account/cost
 and true process/storage/OEM tests are NOT RUN. Live/billable requests remain zero.
-Final documentation head must receive its own complete checks; see QA and PR audit.
+Accepted closing head aceb691c received its own checks before the #5 owner merge.
+
+
+## Codex 05 style-trial implementation — owner acceptance pending
+
+TARGETS and clean saved STYLE open TRIAL in the existing VM/session. Create/Extend
+select 0–3 distinct current targets, with deterministic suggestions and manual
+selection. Covered overrides are explicit; locked, dynamic, ambiguous/work-user,
+unknown and protected local entries stay closed. Only chosen real originals are
+rendered at 1024px. The frozen input includes original hash/origin, exact saved style
+text plus separate instruction hash, immutable revision, ordered 0–5 owned refs,
+provider/model/quality, source/catalog/selection, metadata version and storage epoch.
+Numerical revision IDs alone cannot establish identical restored style contents.
+
+Separate paid consent displays actual inputs and N generations/OpenAI N or Stability
+up to 2N endpoints. Stability needs exactly one ref and uses fixed endpoints. The
+32,000-character composed-prompt ceiling is checked before consent. Missing keys or
+stale inputs prevent submission; typed provider/account errors have safe messages.
+Opening/resume, M4 consent, Save, review and approval never submit automatically.
+No exact price, account availability, model quality or calibrated complexity is claimed.
+
+A bounded, separate noBackup AtomicFile journal consumes plan/item UUIDs, records
+REQUESTING and each actual endpoint before enqueue, then atomic PNG staging before
+owned original/RAW files and the Room variant. Native multipart factories remain;
+actual transports use a whole-body one-shot wrapper preserving bytes/type/length.
+Serial Stop/cold recovery never replays sent work. File/DB/marker repair is local
+and idempotent, preserving explicit reviews. Storage errors keep bounded staging
+and visible failure; the 4 MiB project-asset cap remains. No trial writes profile icons.
+
+Original/generated 48dp and large sampled previews preserve alpha/checkerboard and
+light/dark backgrounds. Accept/Reject reviews one image; separate StyleTrialApproval
+binds exact accepted IDs/context/time to the immutable revision. Regenerate always
+makes a new paid plan from the original and retains old PNGs. Refine returns to the
+existing STYLE panel: local edits/save make a new revision with zero AI calls.
+
+Evidence keeps immutable generation context/origin and separate current
+reviewContext/reviewOriginalOrigin. After source/selection/epoch/share changes,
+identical artwork/style-text/revision/refs/provider configuration may be explicitly
+rechecked and accepted locally, then approved separately with zero POST. Unknown
+historical style hashes stay viewable and cannot authorize requests/reuse. Historical
+cards display their actual producer configuration. Changed artwork inputs require
+new paid generation; old ACCEPTED alone never grants readiness.
+
+Room v21 / format 6 / payload v3 carries original/RAW/history/approval. Share rekeys owners and
+variant IDs; full restore rotates local request epochs and stales approval. Legacy
+formats/payloads remain readable. Variants pin originals and RAW through GC. Deletion
+writes valid redacted text fingerprints; Stability retains an all-zero sentinel ref
+so its real provider/two endpoint counters stay readable. Rotated epoch,
+prepared=false, missing PNGs and device-wide consumed IDs prevent deleted-plan replay;
+other owners' records/assets remain. Details/limits are in ADR0006 and HANDOFF.
+
+The M6 read-only accepted port freshly checks exact inputs, current local review,
+approval and PNG bytes without generation or Apply. M6 gallery/bulk Apply and M7
+edit, backend/login/credits/Billing/publication remain separate. Head-specific tests
+and final gates are recorded in QA and PR #6; device/provider acceptance is NOT RUN.
+Legacy editor/AI1/AI2/watch/build/sign/install remain available.

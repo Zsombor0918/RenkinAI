@@ -38,6 +38,14 @@ CASES = {
     "analysis-style-ui": [PACKAGE + "ProjectStyleAnalysisComposeTest"],
     "analysis-persistence-session": ["dev.renkinProject.renkin.data.project.ProjectAiAnalysisPersistenceTest",
                                       PACKAGE + "OwnedStyleAnalysisTest"],
+    "trial-domain": ["dev.renkinProject.renkin.ai.trial.StyleTrialTargetSelectorTest",
+                     "dev.renkinProject.renkin.ai.trial.StyleTrialPlanTest"],
+    "trial-gateway": ["dev.renkinProject.renkin.ai.trial.StyleTrialGatewayTest"],
+    "trial-journal": ["dev.renkinProject.renkin.ai.trial.StyleTrialJournalTest"],
+    "trial-ui": [PACKAGE + "StyleTrialComposeTest", PACKAGE + "ProjectStyleTrialJourneyComposeTest"],
+    "trial-persistence-session": ["dev.renkinProject.renkin.data.project.StyleTrialPersistenceTest",
+                                  "dev.renkinProject.renkin.data.project.StyleTrialMigrationTest",
+                                  PACKAGE + "OwnedStyleTrialsTest"],
     "full-suite": [],
 }
 
@@ -107,6 +115,9 @@ def main():
     schema20 = ROOT / "app/schemas/dev.renkinProject.renkin.data.RenkinPackDatabase/20.json"
     summary["room_schema_20_exported"] = schema20.is_file()
     failed |= not schema20.is_file()
+    schema21 = ROOT / "app/schemas/dev.renkinProject.renkin.data.RenkinPackDatabase/21.json"
+    summary["room_schema_21_exported"] = schema21.is_file()
+    failed |= not schema21.is_file()
     (OUTPUT / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     return int(failed)
 

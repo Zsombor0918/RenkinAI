@@ -20,8 +20,9 @@ class ComposeRunnerFaultTests(unittest.TestCase):
             root = Path(directory)
             schema = root / "app/schemas/dev.renkinProject.renkin.data.RenkinPackDatabase"
             schema.mkdir(parents=True)
-            for version in (19, 20):
-                (schema / f"{version}.json").write_text("synthetic test file; not a Room export")
+            for version in (19, 20, 21):
+                if not (version == 21 and mode == "missing_schema"):
+                    (schema / f"{version}.json").write_text("synthetic test file; not a Room export")
             commands = []
 
             def gradle(command, **kwargs):
@@ -104,6 +105,18 @@ class ComposeRunnerFaultTests(unittest.TestCase):
         selectors = {selector.rsplit(".", 1)[-1] for group in RUNNER.CASES.values() for selector in group}
         self.assertTrue(required <= selectors)
         self.assertEqual([], RUNNER.CASES["full-suite"])
+
+    def test_all_trial_selectors_are_additive_and_current_schema_is_required(self):
+        required = {"StyleTrialTargetSelectorTest", "StyleTrialPlanTest", "StyleTrialGatewayTest",
+                    "StyleTrialJournalTest", "StyleTrialComposeTest", "StyleTrialPersistenceTest",
+                    "StyleTrialMigrationTest", "OwnedStyleTrialsTest"}
+        selectors = {selector.rsplit(".", 1)[-1] for group in RUNNER.CASES.values() for selector in group}
+        self.assertTrue(required <= selectors)
+        _, summary = self.execute()
+        self.assertTrue(summary["room_schema_21_exported"])
+        code, summary = self.execute("missing_schema")
+        self.assertNotEqual(0, code)
+        self.assertFalse(summary["room_schema_21_exported"])
 
 
 if __name__ == "__main__":

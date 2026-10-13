@@ -36,19 +36,26 @@ class StabilityImageClient internal constructor(private val client: OkHttpClient
         .retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build()
     }
 
-    suspend fun edit(key: String, settings: AiSettings, source: ByteArray, styleReference: ByteArray): ByteArray =
+    suspend fun edit(key: String, settings: AiSettings, source: ByteArray, styleReference: ByteArray,
+        promptOverride: String? = null, beforeEndpoint: suspend (Int) -> Unit = {}): ByteArray =
         withContext(Dispatchers.IO) {
             require(source.size in 1..4 * 1024 * 1024 && styleReference.size in 1..4 * 1024 * 1024)
-            val stylized = requestBytes(client.newCall(buildStabilityStyleRequest(key, settings, source, styleReference).newBuilder().url(styleEndpoint).build()))
-            requestBytes(client.newCall(buildStabilityRemoveBackgroundRequest(key, stylized).newBuilder().url(backgroundEndpoint).build()))
+            val first = buildStabilityStyleRequest(key, settings, source, styleReference, promptOverride).newBuilder().url(styleEndpoint).build().withOneShotBody()
+            beforeEndpoint(1)
+            val stylized = requestBytes(client.newCall(first))
+            dev.renkinProject.renkin.data.project.inspectPng(stylized, MAX_AI_RESPONSE_BYTES)
+            val second = buildStabilityRemoveBackgroundRequest(key, stylized).newBuilder().url(backgroundEndpoint).build().withOneShotBody()
+            beforeEndpoint(2)
+            requestBytes(client.newCall(second))
         }
 }
 
 internal fun buildStabilityStyleRequest(
-    key: String, settings: AiSettings, source: ByteArray, reference: ByteArray
+    key: String, settings: AiSettings, source: ByteArray, reference: ByteArray, promptOverride: String? = null
 ): Request {
     settings.validate()
     require(settings.provider == AiSettings.STABILITY)
+    require(promptOverride == null || promptOverride.isNotBlank() && promptOverride.length <= MAX_COMPOSED_ICON_PROMPT)
     val prompt = """
         Redraw the recognizable symbol from the input app icon as one minimal Android launcher icon.
         Preserve its distinctive app identity and composition. Apply this shared icon-pack style:
@@ -60,7 +67,7 @@ internal fun buildStabilityStyleRequest(
     val body = MultipartBody.Builder().setType(MultipartBody.FORM)
         .addFormDataPart("init_image", "app-icon.png", source.toRequestBody("image/png".toMediaType()))
         .addFormDataPart("style_image", "style-reference.png", reference.toRequestBody("image/png".toMediaType()))
-        .addFormDataPart("prompt", prompt)
+        .addFormDataPart("prompt", promptOverride ?: prompt)
         .addFormDataPart("composition_fidelity", "0.9")
         .addFormDataPart("change_strength", "0.7")
         .addFormDataPart("output_format", "png")
@@ -106,13 +113,13 @@ private suspend fun requestBytes(call: Call): ByteArray = suspendCancellableCoro
                         if (output.size() + count > limit) throw IOException("The image service response exceeds the safety limit.")
                         output.write(buffer, 0, count)
                     }
-                    if (!it.isSuccessful) throw IOException(stabilityErrorMessage(it.code))
+                    if (!it.isSuccessful) throw ImageApiException(it.code, "http_${it.code}", stabilityErrorMessage(it.code))
                     output.toByteArray()
                 }
                 if (continuation.isActive) continuation.resume(bytes)
             } catch (error: Exception) {
                 if (continuation.isActive) continuation.resumeWithException(
-                    IOException(error.message?.take(350) ?: "The image service response was invalid.")
+                    if (error is ImageApiException) error else IOException(error.message?.take(350) ?: "The image service response was invalid.")
                 )
             }
         }

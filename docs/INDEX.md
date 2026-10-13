@@ -4,9 +4,21 @@ Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 Current facts come from the checked-out source; inherited prose is not a substitute.
 The Codex 00 baseline is `main` at `eb4daa5de82fab54e115363c073eb8981f2203d6`
 (verified October 11, 2026). Commit-specific validation is recorded separately.
-Codex 00–03 are owner-merged. Codex 04 code is offline-verified in open PR #5;
-CURRENT_STATE and HANDOFF distinguish its 792-test checkpoint, exact final PR-head
-gates and pending owner/device/provider acceptance. Codex 05–07 remain planned.
+Codex 00–04 are owner-merged. PR #5 was merged as af7bdb10 at 16:10:49 UTC
+on October 12; its final aceb691c checks passed independently. Codex 05 trial
+is implemented in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), with
+verified style-fidelity/component-original checkpoint 2456bf5e/898 tests and all21
+regression groups; the closing commit's own final-head checks are in the PR audit.
+Owner confirms analysis and single-icon trials work; the new style/original refinement
+still needs owner device acceptance in the same draft/open PR.
+The [verification record](changes/2026-10-13-style-fidelity-verification.md) records
+the new red-to-green assertions, bounded benchmark and remaining phone gates.
+The [test-first proof](changes/2026-10-13-single-icon-trial-reproduction.md) and
+[OpenAI contract correction](changes/2026-10-13-single-icon-trial-contract.md) retain
+legacy/Stability bytes and old results; exact final automated evidence is in PR#6.
+The [remaining CI repair](changes/2026-10-13-style-trial-ci-repair.md) records the
+source-free CREATE correction and preserved routed assertions from baseline 3133b522.
+Owner review/merge is pending. Codex 06/07 remain planned; device/provider acceptance is separate.
 
 | Document | Responsibility |
 | --- | --- |
@@ -21,6 +33,8 @@ gates and pending owner/device/provider acceptance. Codex 05–07 remain planned
 | [Changes](changes/README.md) | New detailed record for each meaningful PR |
 | [Governance ADR](decisions/0001-repository-governance.md) | Durable decision, alternatives and consequences |
 | [Project AI persistence ADR](decisions/0004-project-ai-persistence.md) | Profile-owned immutable history/assets, migration, full/share backup and gateway limits |
+| [Trial consent/recovery ADR](decisions/0006-style-trial-consent-and-recovery.md) | Separate trial UUIDs, durable RAW/review/approval, v21 migration and M6 read-only reuse |
+| [Style fidelity/originals ADR](decisions/0007-style-fidelity-and-component-originals.md) | Bounded local geometry/palette evidence, compatible journals and explicit original verification |
 | [Reviewed analysis ADR](decisions/0005-reviewed-style-analysis.md) | Bounded references, consent-bound recovery, structured evidence and explicit style acceptance |
 | [Read-only coverage ADR](decisions/0003-read-only-source-coverage.md) | Source facts separate from local profile state, bounded preview and user-identity limits |
 | [Project/session ADR](decisions/0002-profile-backed-project-home.md) | Profile IDs as projects, single session and explicit asynchronous navigation |

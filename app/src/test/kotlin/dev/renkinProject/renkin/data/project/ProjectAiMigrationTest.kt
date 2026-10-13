@@ -39,7 +39,7 @@ class ProjectAiMigrationTest {
             var identity = ""
             RenkinPackDatabase.open(context, name).useDatabase { db ->
                 val packs = RenkinPackRepository(db)
-                assertEquals(20, db.openHelper.writableDatabase.version)
+                assertEquals(21, db.openHelper.writableDatabase.version)
                 assertEquals(legacyProfile, packs.profile(4))
                 assertEquals(listOf(expected), packs.getAll(4))
                 assertEquals("last-built-hash", packs.builtIcons(4).single().iconHash)

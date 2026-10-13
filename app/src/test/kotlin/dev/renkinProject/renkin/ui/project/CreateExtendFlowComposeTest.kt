@@ -157,7 +157,7 @@ class CreateExtendFlowComposeTest {
         scroll("coverage-counts"); compose.onNodeWithTag("coverage-counts").assertTextEquals("Launcher entries: 3 · declared: 2 · drawn: 1 Unmapped: 1 · broken: 1 · unknown: 0 · unavailable: 0")
         scroll("setup-select-all"); compose.onNodeWithTag("setup-select-all").performClick()
         compose.onNodeWithTag("setup-selection-count").assertTextEquals("Selected: 0 / 3 known launcher entries")
-        compose.onNodeWithTag("setup-filter").performClick()
+        scroll("setup-filter"); compose.onNodeWithTag("setup-filter").assertIsDisplayed().performClick()
         scroll("setup-target-app/Main"); compose.onNodeWithTag("setup-target-app/Main").assertIsEnabled().performClick()
         scroll("setup-clear"); compose.onNodeWithTag("setup-clear").performClick()
         compose.onNodeWithTag("setup-selection-count").assertTextEquals("Selected: 0 / 3 known launcher entries")
@@ -202,7 +202,7 @@ class CreateExtendFlowComposeTest {
         start(); extend()
         scroll("setup-select-all"); compose.onNodeWithTag("setup-select-all").performClick()
         compose.onNodeWithTag("setup-selection-count").assertTextEquals("Selected: 1 / 2 known launcher entries")
-        compose.onNodeWithTag("setup-filter").performClick()
+        scroll("setup-filter"); compose.onNodeWithTag("setup-filter").assertIsDisplayed().performClick()
         scroll("setup-target-app/Main"); compose.onNodeWithTag("setup-target-app/Main").assertIsNotEnabled()
         compose.runOnIdle {
             val snap = (data.coverage as CoverageUiState.Ready).snapshot

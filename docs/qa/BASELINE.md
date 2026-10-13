@@ -1,5 +1,346 @@
 # Verification baseline
 
+## Closing-head isolated initial-load race — ffabb37b
+
+Documentation-only headffabb37b passed Android38437258752 and the unfiltered
+898/898 full suite in regressions38437259108, but its isolated trial-ui group
+failed1/23: the retained EXTEND analysis journey asserted the prepare button enabled
+while ProjectStylePanel's initial Room load was still pending. Controller/network
+idle does not observe that panel coroutine. No new style/original assertion failed.
+All other20 command groups passed;144 full XML/898 tests/zero failures/errors/skips.
+Independent artifact11832999637,607386bytes,SHA256
+`c78c468812b8fa8778c31ba4ebb4127dcd22a9af2a9e74910b256a2a0c793faf`
+retains this failure; all selectors/counts and schemas remain genuine.
+
+The follow-up only materializes the existing prepare node and waits for its actual
+enabled semantics within the same10000ms bound before the unchanged displayed/
+enabled/click assertions. No runtime, old assertion, runner, timeout or idling rule
+changes. Its own final-head complete checks/independent reports/fresh APK are required
+in PR#6; the full898 pass above does not erase the failed isolated command.
+
+## Verified style/original code checkpoint — 2456bf5e
+
+Head `2456bf5eee099d0d3d3cacfa0570e20e80c565b7` passes
+[Android38435489330](https://github.com/Zsombor0918/RenkinAI/actions/runs/38435489330)
+and [regressions38435489374](https://github.com/Zsombor0918/RenkinAI/actions/runs/38435489374).
+Independently downloaded artifact11833047373,603306 bytes, SHA256
+`6dfeebd5fd79814e02e672e0e7d533dfbd382854e916a8833aaf37d3dfa1b66f`:
+exact summary HEAD, all21 commands exit0, every selector present,144 complete-suite
+XML / **898 actual testcases /0 failures /0 errors /0 skipped**. Each suite's
+declared counts match actual testcase nodes. All generated19/20/21 schemas match
+tracked bytes;v21 identity8c7a3c8b5b26ad29673ebbd77605838e and30159 bytes remain.
+
+| Actual group | Passed tests |
+| --- | --- |
+| Creation / ingress / combined / shared form | 1 /1 /2 /3 |
+| Create/Extend / coverage | 10 /28 |
+| Project style UI / data-backup | 12 /34 |
+| Generation gateway and legacy AI1/AI2 | 33 |
+| Reference sampler / schema-composer | 19 /15 |
+| Analysis gateway / journal / UI / persistence-session | 10 /11 /12 /21 |
+| Trial domain / gateway / journal / UI / persistence-session | 14 /14 /14 /23 /22 |
+| Complete unfiltered compile/unit/debug APK | 898 |
+
+New source tests simulate themed activity APIA, EXTEND styleB/B2 and declared exact
+alias resourceC; frozen preview/history and real multipart image1 stayC while refs
+change withB. Missing/disabled/wrong-user sources fail closed; new original evidence
+requires conscious verification. Existing original version/config staleness, adaptive
+rendering, locks and legacy tests remain. Mixed policies include significant varying
+brand accents over neutral tiles and repeated deliberate six-color fixed artwork.
+
+Hosted synthetic benchmark observations from the actual isolated sampler XML:
+
+| Mappings | Candidate cap | Examined / unique / selected | Elapsed ms | JVM heap delta bytes |
+| --- | --- | --- | --- | --- |
+| 50 | 120 | 50 /38 /12 | 271 | 21873968 |
+| 50 | 240 | 50 /38 /12 | 137 | -22157032 |
+| 50 | 300 | 50 /38 /12 | 116 | 14553672 |
+| 150 | 120 | 120 /42 /12 | 237 | -15085432 |
+| 150 | 240 | 150 /42 /12 | 257 | 35651584 |
+| 150 | 300 | 150 /42 /12 | 241 | -11932624 |
+| 500 | 120 | 120 /41 /12 | 201 | -20644528 |
+| 500 | 240 | 240 /40 /12 | 367 | 3109624 |
+| 500 | 300 | 300 /42 /12 | 445 | 15132648 |
+
+These pre-encoded synthetic fixtures repeat a54-motif pool; duplicate counts are
+examined minus unique. JVM heap deltas are GC-sensitive snapshots, **not peak RSS**,
+native memory or device latency. Retained sample PNGs are explicitly capped8MiB;
+at most300 descriptors,12 selected256px PNGs and4MiB aggregate upload remain.
+Real package rendering/cache/native peaks and provider quality are NOT RUN.
+
+Local Linux/Python3.12/JDK17: `python3 -m unittest discover -s scripts/tests -v`
+passed52/52 in7.475s. Docs range95 paths and17 conventional subjects pass;
+hooks/whitespace pass. `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug`
+and `python3 scripts/run_compose_regressions.py` both fail before configuration at
+Gradle8.11.1 distribution download (Network is unreachable);21 local cases have
+exit1 and zero Android tests. Hosted CI supplies genuine Android execution.
+
+The final documentation commit changes no code/tests/schemas/build files. It still
+requires its own complete Android/all21/governance checks and newly downloaded
+XML/schema/APK evidence. Exact terminal SHA and final artifact/certificate results
+are recorded in PR#6 after execution. Zero live paid API calls, device testing,
+main/force-push/merge actions; owner visual approval remains pending.
+
+The following failed checkpoints are retained historical evidence.
+
+Checkpoint73cd29e8 / Android38434288813 compiled and ran897 tests with exactly one new neutral-tile policy failure; all previous/new original, wire, journal and UI tests passed. The follow-up distinguishes recurring neutral/background mass from varying significant chromatic accents, preserving brand colors even when the tile dominates area. Genuine final-head results and all21 XML/benchmark evidence are recorded in PR#6.
+
+
+Implementation checkpoint ab80db86 / Android38433644576 stopped at production compilation: nullable Resources.getDrawableForDensity result needs explicit fail-closed handling. No Android assertions/APK ran at that head. The follow-up preserves the resource-only contract, adds missing/disabled/wrong-user originals and a neutral-tile brand-accent regression, and strengthens source-switch multipart fixtures with distinct B2 bytes. Final executed results remain in PR#6.
+
+
+## October13 style fidelity and component original refinement
+
+Owner comment6149883090 is implemented incrementally on PR#6 from422ef578. Local EXTEND now inspects up to300 mappings and selects proportional geometry-family medoids plus minority checks, with real alpha-aware Oklab palette swatches and measured roles/prevalence/distributions. Varied native logo hues alone are not mixed drawing styles; fixed palettes require recurring evidence. Advanced shows bounded local measurements separately from model inference. Cloud remains one separately confirmed low-detail request, same model/V1 schema, <=12 thumbnails/4MiB; manual CREATE and0–5 ordered generation refs remain.
+
+M5 already used exact component icons independently of EXTEND. It now resolves the enabled current-user component declared full resource, compares activity API bytes, freezes optional versioned evidence and displays Original app icon separately from the style pack. OEM overlays remain possible: new resource originals display UNVERIFIED_ORIGINAL and require conscious plan-specific verification before separate paid consent. Missing resource fails closed. Equal bytes retain old origin stamps and historical approvals; real differences/version/config changes stale the plan. Source packs provide style/coverage only. Legacy editor, AI1/AI2, Roomv21, backup/history, keys/build/install and M6 read-only guards remain.
+
+Actual test-first red95cd7786:144 XML/883 tests/4 failures/0 errors/skips; red812bc7da:144 XML/885 tests/5 failures/0 errors/skips, all new regressions only. Final-head automated/XML/benchmark/APK evidence is recorded in PR#6 after execution. No live API call or physical device run. [ADR0007](../decisions/0007-style-fidelity-and-component-originals.md) defines the current boundaries. PR remains draft/open/unmerged for owner verification.
+
+Independent red artifacts:11831575061 SHA256 b6e5e0af08c68c7c966c9317480da2292e943c164ddd5a84c3083812f8e1dffe and11832170290 SHA25677d863384c3c68323997aa38bcb02f5620e2852e15f04902aff2fd5ca061bf9c. Every existing selector was retained. Local Python52 guards passed; local Gradle/all21 fail before configuration at distribution download. Final-head results and actual synthetic50/150/500 timing/heap observations are in the PR audit; none is a device RSS or provider-quality claim.
+
+## October 13 single-icon regression proof and corrective gate
+
+Before production edits,44c69cb2cab7722db93d26464b9b3e2b334f04a8 compiled in
+Android CI38379257399 and ran879/6; five new prompt-contract failures plus one
+existing analysis-journey UI assertion. APK skipped. Independently downloaded
+all21 run38379257536 artifact11802239145 SHA256
+bf5d18151c46802f37caf3434a5973dc59ac485246c94717b7ff49a90bcc72fb has exact HEAD,
+144 complete-suite XML/879 tests/5 failures/0 errors/0 skips. Every failure is one
+of the five new contract/bound cases. All other isolated groups and the existing
+21 trial-UI cases pass; generation/legacy33 and AiImagePipeline14/14 pass. This
+is red assertion proof of missing roles/output/quoting/bounds, not live collage QA.
+
+The correction adds one mandatory OpenAI contract at the final override boundary;
+legacy/Stability bytes, old tests/selectors, timeouts/idling and all21 groups remain.
+MIXED fixture also saves typed reviewed AUTO_ANALYSIS evidence. Local Python52/52
+passed in6.919s; local complete Gradle and all21 runner commands failed before
+configuration downloading8.11.1 (Network is unreachable), zero Android tests/APK.
+No live/paid API or physical device test. Exact corrective final SHA, four latest
+checks, independent complete/filtered XML/skips,19/20/21 schemas and verified APK
+are recorded in PR#6's audit after committing and actual execution; historical871
+results do not substitute. Owner single-icon visual gate remains OPEN.
+
+## Single-icon red checkpoint compilation — no assertion result yet
+
+Head b3d5a6bfccdcc19a2320409fd9959bdf9b459ba5 in Android CI38378700845 compiled
+production but failed unit-test compilation: StyleTrialGatewayTest.kt:102 needs
+the existing trialVariants extension import. Tests did not run and APK was skipped.
+The follow-up adds only that import, retaining all assertions and production bytes.
+Next-head actual red results are required before production edits. No live request.
+
+## October 13 single-icon P0 — test-first checkpoint
+
+Start from a1c2310895bd3f161da31ff03b72575b2853e917 on existing PR #6, with clean
+tree and fresh remote main af7bdb10. Owner ticket6142499049 reports multi-app
+collages after otherwise functioning analysis/trials. The new two-class regression
+checkpoint changes no production source. Coordinator/Room and complete serialized
+multipart tests require one target, style-only refs, motif exclusion, quoted lower
+priority guidance, bounds and exact legacy AI1/AI2/Stability bytes. Hosted red results
+must be observed before the corrective code; historical871 passes are not evidence.
+Fresh local Python52/52 passed in7.319s; whitespace passed. Local complete Gradle
+failed before configuration downloading8.11.1, Network is unreachable. No local
+Android count or APK is claimed. No live/paid API call or physical device test.
+See the [test-first note](../changes/2026-10-13-single-icon-trial-reproduction.md).
+
+## October 13 870/871 checkpoint — local Use completion
+
+Head b15112f392b56378753cd7a04e47ecd2d91ef198 compiled production and tests in
+[CI 38370781348](https://github.com/Zsombor0918/RenkinAI/actions/runs/38370781348).
+[Regressions 38370781359](https://github.com/Zsombor0918/RenkinAI/actions/runs/38370781359)
+independently confirms **871 tests / 1 failure / 0 errors / 0 skips**, every selector
+present, all 21 commands executed. Create/Extend passes 10/10; trial UI 20/21; all
+other isolated groups pass. APK remains skipped until the complete suite passes.
+Downloaded artifact 11799355450 ZIP SHA256 is
+9fe8e55a16d1143134a303c1d350c2412695277a6a826ac0f0675920ae237267.
+Actual XML shows the analysis journey tried Save while its local Use/import operation
+still disabled it. Controller network-idle does not observe this panel coroutine.
+The follow-up awaits the existing Unsaved style changes status before Save, adds a
+dirty-draft assertion and retains all old assertions and the 10000 ms bound.
+Fresh local guards on b15112f3 passed 52/52 in 8.316 seconds. Final follow-up hosted
+results and matching APK are recorded in PR #6 after observing the actual final SHA.
+
+## October 13 final UI repair — measured baseline and execution contract
+
+Source 3133b5224b4fadb6107ee5dddec61bf8ac99b383 compiled production and tests:
+[CI 38366509384](https://github.com/Zsombor0918/RenkinAI/actions/runs/38366509384)
+executed 871 tests with ten failures and skipped APK. The independently downloaded
+[regression 38366509274](https://github.com/Zsombor0918/RenkinAI/actions/runs/38366509274)
+artifact 11796848515 has ZIP SHA256
+8dd04bb1f52795171cc2c81a144bbc95daa607b208f4cfeb59e278f3d08ecbb7.
+All 21 commands ran: Create/Extend 9/10 and trial UI 12/21, every other isolated
+group passed; full-suite 861/871, zero errors/skips. Actual XML identifies five
+fragment-matcher failures, missing scrolling/save completion and fixture/context
+problems. The CREATE missing_targets failure reveals a wrong sourceStamp; its
+correction retains repository invalidation and adds exact persisted-key assertions.
+
+Local Linux/Python: `python3 -m unittest discover -s scripts/tests -v` passed 52/52
+in 7.464 seconds. `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug`
+failed before configuration downloading 8.11.1, Network is unreachable; no local
+Android pass or count is claimed. Final hosted compile/full tests/debug APK plus
+`python3 scripts/run_compose_regressions.py` and governance run on the actual final
+head. Their observed SHA, exits, independent XML tally, genuine 19/20/21 exports,
+APK artifact and download verification are recorded in the final PR #6 audit.
+No test, selector, timeout or idling exemption is added. New live/paid requests: zero.
+Owner corrective Samsung journey/quality/signing/install acceptance remains pending.
+
+## October 13 measured red checkpoint and limited live probe
+
+Reproduction head cfef34e146a91cadf9bf7db3a569bd04c7b70a05: original
+CI38362969348 compiled production/tests and ran866 tests/10 failures; APK skipped.
+Regression38362969202 ran all21 commands and independently confirmed866/10.
+Downloaded ZIP11796032465 digest
+baf89d5abb0bca055800963448947b1df0b742801aa27e17a2e3a23e640b2874 matches GitHub.
+Failures were read from actual full-suite XML: schema list bound1, orphan journal2,
+new-result approval1, typed HTTP400 reason1, routed UI5. The routed UI includes
+three offscreen-status assertions and one pool with11 unique samples; correction
+retains assertions and improves fixture/scroll setup. This is genuinely red evidence.
+
+Local corrective command `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug
+--console=plain` failed before configuration at Gradle8.11.1 download, SocketException
+Network is unreachable. Corrective hosted results are not yet observed; prior856
+passes cannot substitute. No tests or selectors are ignored/deleted.
+
+Explicit owner-authorized replacement-key probe: one Python Responses POST, one
+synthetic256px transparent test drawing, low detail,4096 maximum output tokens,
+store=false/no retries. HTTP200/completed, provider request header present,
+433 input +185 output =618 tokens; style shape/enums/ARGB/list/text checks passed.
+This request used the then-current cfef34e1 wire schema, before maxItems/maxLength
+correction, whose supported restrictions were checked in official docs and mocks.
+It was not the Android gateway, physical phone, source-pack sample or image generator.
+The prior key's401 is a separate historical attempt. No new live call is required.
+Keys, raw responses, owner identifiers and original user images are absent from repo.
+Local `python3 -m unittest discover -s scripts/tests -v`:52/52 passed in8.368s.
+Exact final correction SHA/XML/schema/APK/check evidence follows after CI.
+
+## October 13 owner-blocker local checkpoint — Android not run
+
+Source baseline3c5c1de7332b598d077e82b13aacaaed3ea0d29b, same open PR#6 branch,
+accepted mainaf7bdb10. Fresh local Gradle compile/tests/APK command failed at wrapper
+Gradle8.11.1 download with SocketException Network is unreachable, before configuration.
+New red assertions await hosted execution. Owner device failures remain OPEN; earlier
+856 passing tests and APK are historical evidence, not corrective validation.
+
+
+## Codex 05 verified implementation — 0df78ef8, owner acceptance pending
+
+Code head `0df78ef8e8a8af7ef0119cb43c7fb3a50d48e157` passed
+[Android38293199741](https://github.com/Zsombor0918/RenkinAI/actions/runs/38293199741)
+and [regressions38293200475](https://github.com/Zsombor0918/RenkinAI/actions/runs/38293200475).
+Downloaded artifact11767029451: verified ZIP SHA256
+12b773071752038cb3dae2362d4b0e82ed3e2b1dc3cd2bb052610dcfacaecfc0, exact
+HEAD and independently counted143 XML / **856/856 tests**, zero failures/errors/skips.
+All21 commands exit0, every original/new selector occurs, no malformed report.
+The populated OpenAI/Stability deletion test passes isolated and unfiltered.
+Original CI independently built APK artifact11767123455; ZIP digest
+fe59ce41977ee76054213748391e2fd698f17f5e328032b2025ba4966b568b43.
+
+| Actual group | Passed tests |
+| --- | --- |
+| Original creation / ingress / both / shared form | 1 / 1 / 2 / 3 |
+| Create/Extend / coverage | 10 / 28 |
+| Project style/selection UI / data, including full/share/legacy backup | 12 / 34 |
+| Generation gateway and retained AI1/AI2 | 31 |
+| Reference sampler / schema + composer | 11 / 14 |
+| Analysis gateway / journal / STYLE UI / persistence-session | 7 / 10 / 12 / 20 |
+| Trial selector + frozen plan / real client gateway | 10 / 8 |
+| Trial journal / actual TRIAL UI / Room migration + ownership-session | 12 / 12 / 19 |
+| Complete unfiltered compileDebugKotlin/testDebugUnitTest/assembleDebug | 856 |
+
+Genuine KSP19/20/21 bytes match source. V21 identity
+8c7a3c8b5b26ad29673ebbd77605838e,30159bytes,SHA256
+11912e933464d86952e3c70ced6ceb2e7506fe3407ac44f3425ebed9a89e0dad.
+V19/v20 hashes remain6c93a2fe875ad2e64482d68dcb72f5c0e1d79892a12f5481145c93440bdb8452
+and10410ffa2c99a0718ffb2552f2194280d00fe816e88af5e0ed9a667780abd8f8.
+Local correction Python guards52/52 in7.704s; hooks/range checks pass.
+Hosted Linux/JDK17/SDK native Robolectric/Room/MockWebServer provide Android proof;
+local Gradle failed before configuration at download (Network is unreachable).
+
+The closing documentation changes no runtime/test/schema/build path. Its own
+exact final SHA, all four contexts, fresh XML/schema/APK artifacts and single audit
+declaration are recorded in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6)
+before readiness; this ancestor's856 result cannot substitute for that check.
+Main stays af7bdb10, ruleset24877351 active/no bypass/three required contexts;
+approvals0 and conversation/last-push/strict false, unchanged. Owner review/merge,
+device/emulator/Samsung/TalkBack/real storage/kill/upgrade/SAF/signing/install,
+provider quality/account/exact billing are NOT RUN. Live/billable requests=0.
+Earlier failed and successful checkpoints below retain their original outcomes.
+
+## Codex 05 verified code checkpoint — d61c2f91
+
+[Android38291847276](https://github.com/Zsombor0918/RenkinAI/actions/runs/38291847276)
+and [regressions38291847281](https://github.com/Zsombor0918/RenkinAI/actions/runs/38291847281)
+passed. Independently downloaded artifact11766448252: ZIP SHA256
+99eb2fa8476e7e480d9b0aaf87cb57108df674a7b58d0d994465cecf1e8bd491, exact
+HEAD,143 XML /855 tests /zero failures/errors/skips. All21 commands and selectors
+passed: retained original1/1/2/3, Create/Extend10, coverage28, project UI12/data34,
+gateway/legacy31, sampler11, composer14, analysis gateway7/journal10/UI12/session20;
+M5 domain10/gateway8/journal11/UI12/persistence-session19. The last unfiltered
+compile/unit/APK command passed; original CI APK artifact11766302772 is present.
+Genuine KSP19/20/21 exports are byte-identical to source;21 identity
+8c7a3c8b5b26ad29673ebbd77605838e, SHA25611912e933464d86952e3c70ced6ceb2e7506fe3407ac44f3425ebed9a89e0dad.
+
+Final source review then found populated journal deletion rejected its redacted
+style with an old fingerprint and Stability's emptied references. The correction
+keeps strict schema/counters and adds one genuine reopen/redaction/no-replay/other-
+owner test. Its next-head verification is required;855 is not the new test's result.
+Fresh correction Python guards52/52 in7.704s. Device/live NOT RUN, requests=0.
+
+## Codex 05 executable checkpoint — dd855e74, two retained regressions
+
+[CI38287235362](https://github.com/Zsombor0918/RenkinAI/actions/runs/38287235362)
+compiled production/tests and ran851 tests, two failures, APK skipped.
+[Regressions38287235504](https://github.com/Zsombor0918/RenkinAI/actions/runs/38287235504)
+artifact11763214314, verified ZIP SHA25624c243f033475c77216f53ba24d8e90aa3bed2a70da047b5517048e9e2f953e3:
+exact summary HEAD, independently counted143 XML /851 tests /2 failures /0 errors/
+skips. Every selector occurred; all M5 groups passed: domain9, gateway7, journal10,
+UI12, persistence/session18. Retained original groups passed except gateway/legacy
+30/31 and analysis persistence/session19/20. Project data34/34 passed including
+new full/share/legacy trial backup. Genuine KSP21 remains byte-identical to11912e93.
+
+Measured failures: existing AiImagePipelineTest casts the factory body to native
+MultipartBody; keep that factory type and wrap only the actual transport. Pinned
+4.12 MultipartBody does not propagate child one-shot flags, so a part-only fix is
+unsafe. Existing M4 full-format assertion expected5, actual new format6; retain its
+analysis/PNG/epoch assertions and update only the current format. Source style-text
+fingerprints, original-version stamps, safe model/account categories and additional
+negative tests require next-head verification;851/849 is not their result.
+Local corrected guard rerun52/52 in7.378s. Device/live tests remain NOT RUN.
+
+## Codex 05 first hosted checkpoint — 2920a5d7, test compilation failed
+
+[CI 38285597590](https://github.com/Zsombor0918/RenkinAI/actions/runs/38285597590)
+compiled production successfully, then failed test compilation at
+StyleTrialJournalTest:36: suspend Room read inside a non-suspend fixture callback.
+No Android tests ran, APK skipped. Preserve the durable-before-next-request
+assertion by making the fake observer suspend; no runtime bypass or assertion loss.
+[Regression 38285597542](https://github.com/Zsombor0918/RenkinAI/actions/runs/38285597542)
+artifact11763476310 digest82458f6fc77153e5302ad9b1c89cd255b916d6a9b6988d5de71d404748446855
+was downloaded/verified: summary HEAD2920a5d7, all21 commands exit1/tests0, no borrowed
+XML. Genuine KSP21 was exported and copied byte-for-byte: identity
+8c7a3c8b5b26ad29673ebbd77605838e, SHA256
+11912e933464d86952e3c70ced6ceb2e7506fe3407ac44f3425ebed9a89e0dad, 30159bytes.
+Export alone does not prove migration. The local-review correction and fixed
+fixture require next-head full/filtered Android/APK evidence; no current pass claimed.
+
+## Codex 05 initial source checkpoint — historical unverified starting state
+
+Accepted main is af7bdb104869b0d0dded2acdf020fc030642dcf9, owner merge of PR #5
+at 16:10:49 UTC on October 12. All #1–#5 merges were reread. M4 final aceb691c
+passed Android 38242055655 and regressions 38242055777: 135 XML / 792 tests /
+zero failures/errors/skips, all 16 groups and genuine schema 19/20, APK 11743631367.
+Four latest contexts were green before owner merge. This is not M5 test evidence.
+
+New branch feat/style-trials-m5 starts from that main. Linux/Python/JDK 17; fresh
+local baseline governance 51/51 in 6.981 s, initial expanded guards 52/52 in 8.458 s; strengthened schema-negative rerun 52/52 in 7.473 s.
+Local ./gradlew compileDebugKotlin testDebugUnitTest assembleDebug FAILED before
+configuration downloading Gradle 8.11.1: SocketException Network is unreachable.
+No local Android count or APK. New trial Kotlin/Compose/HTTP/Room/backup fixtures,
+genuine v21 export and complete feature-head evidence await hosted execution.
+Historical failures below remain unchanged. Device/emulator/OEM/TalkBack/physical
+storage/kill/upgrade/signing/install and provider quality/account/billing NOT RUN.
+Zero live/provider requests; all requests in test source use local fakes/mocks.
+
 ## Codex 04 verified code checkpoint — 47503e5c
 
 Code head `47503e5c0fa64a2508cab1e846896524f985f1a3` passed

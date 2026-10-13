@@ -92,7 +92,7 @@ class ProjectStyleComposeTest {
                     onCreate = { _, _, _ -> false }, onSave = {}, onCancel = {},
                     onAcknowledge = { operation = ProjectSessionState.Idle }, onRetry = {}, onExit = {},
                     setupData = { _, _, _, _ -> data }, readSetupContext = { records[it]?.metadata },
-                    stylePanel = { id, mode, source, stamp, back -> ProjectStylePanel(id, mode, source, stamp,
+                    stylePanel = { id, mode, source, stamp, back, _ -> ProjectStylePanel(id, mode, source, stamp,
                         id == home.activeProfileId, backend, back) }
                 ) { back ->
                     ProjectEditorBackHandler(back) {}

@@ -27,6 +27,31 @@ import java.util.concurrent.TimeUnit
 @Config(application = Application::class, sdk = [33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleAnalysisGatewayTest {
+    @Test fun analysisDescribesColorUsageAndGeometryWithoutCopyingSampleIdentities() {
+        val body = analysisBody(analysisFixtureRequest())
+        val rules = body.getString("instructions")
+        for (term in listOf("FIXED_PALETTE", "ADAPT_BRAND_COLORS", "MONOCHROME", "DUOTONE", "UNKNOWN",
+            "negative space", "shadow", "outlier", "never enumerate")) assertTrue(term, rules.contains(term))
+        val prompt = PromptComposer.openAiEditPrompt("mixed brand-colored outlines", 5)
+        assertTrue(prompt.contains("meaningful original colors"))
+        assertTrue(prompt.contains("sample swatches are observations"))
+        assertTrue(prompt.contains("Produce exactly ONE"))
+        assertEquals("low", body.getJSONArray("input").getJSONObject(0).getJSONArray("content").getJSONObject(1).getString("detail"))
+        assertEquals(canonicalJson(StyleProfileV1.jsonSchema()), canonicalJson(body.getJSONObject("text").getJSONObject("format").getJSONObject("schema")))
+    }
+    @Test fun safeGoldenLowHighComparisonChangesOnlyDetailAndProductionRejectsHighWithoutConsentChange() = runBlocking {
+        val request = analysisFixtureRequest()
+        val low = analysisBody(request)
+        val high = analysisBody(request.copy(detail = "high"))
+        val highImages = high.getJSONArray("input").getJSONObject(0).getJSONArray("content")
+        assertEquals("high", highImages.getJSONObject(1).getString("detail"))
+        highImages.getJSONObject(1).put("detail", "low")
+        assertEquals(canonicalJson(low), canonicalJson(high))
+        MockWebServer().use { server ->
+            assertEquals(StyleAnalysisOutcome.InvalidInput, gateway(server).analyze(request.copy(detail = "high")))
+            assertEquals(0, server.requestCount)
+        }
+    }
     private val offlineCredential = UUID.randomUUID().toString()
     private fun gateway(server: MockWebServer, timeout: Long = 3000, key: () -> String = { offlineCredential }) =
         OpenAiStyleAnalysisGateway(key, OkHttpClient.Builder().callTimeout(timeout, TimeUnit.MILLISECONDS).build(), server.url("/v1/responses"))
@@ -86,12 +111,26 @@ class StyleAnalysisGatewayTest {
             val port = gateway(server)
             val expected = listOf(401 to StyleAnalysisOutcome.Unauthorized, 403 to StyleAnalysisOutcome.Unauthorized,
                 404 to StyleAnalysisOutcome.Unavailable, 429 to StyleAnalysisOutcome.RateLimited, 500 to StyleAnalysisOutcome.Uncertain,
-                503 to StyleAnalysisOutcome.Uncertain, 400 to StyleAnalysisOutcome.Unavailable)
+                503 to StyleAnalysisOutcome.Uncertain, 400 to StyleAnalysisOutcome.RequestRejected(400),
+                402 to StyleAnalysisOutcome.RequestRejected(402), 422 to StyleAnalysisOutcome.RequestRejected(422))
             for ((code, outcome) in expected) {
                 server.enqueue(MockResponse().setResponseCode(code).setBody("private server error"))
                 assertEquals(outcome, port.analyze(analysisFixtureRequest()))
             }
             assertEquals(expected.size, server.requestCount)
+        }
+    }
+    @Test fun quotaCodeIsAllowlistedWithoutRetainingSensitiveErrorProse() = runBlocking {
+        MockWebServer().use { server ->
+            val port = gateway(server)
+            val secret = "private key prompt and project identifiers"
+            server.enqueue(MockResponse().setResponseCode(429).setBody(json("error" to
+                json("code" to "insufficient_quota", "message" to secret)).toString()))
+            assertEquals(StyleAnalysisOutcome.QuotaExceeded, port.analyze(analysisFixtureRequest()))
+            server.enqueue(MockResponse().setResponseCode(429).setBody(json("error" to
+                json("code" to secret, "message" to secret)).toString()))
+            assertEquals(StyleAnalysisOutcome.RateLimited, port.analyze(analysisFixtureRequest()))
+            assertEquals(2, server.requestCount)
         }
     }
     @Test fun refusalMalformedSchemaIncompleteAndMissingUsageDoNotInventSuccessOrCost() = runBlocking {

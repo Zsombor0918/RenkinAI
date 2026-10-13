@@ -6,6 +6,13 @@ on:
     paths:
       - 'app/src/main/kotlin/dev/renkinProject/renkin/ui/**'
       - 'app/src/test/kotlin/dev/renkinProject/renkin/ui/**'
+      - 'app/src/main/kotlin/dev/renkinProject/renkin/ai/**'
+      - 'app/src/main/kotlin/dev/renkinProject/renkin/data/project/**'
+      - 'app/src/main/kotlin/dev/renkinProject/renkin/data/transfer/**'
+      - 'app/src/main/kotlin/dev/renkinProject/renkin/data/DbApplication.kt'
+      - 'app/src/test/kotlin/dev/renkinProject/renkin/ai/**'
+      - 'app/src/test/kotlin/dev/renkinProject/renkin/data/**'
+      - 'app/schemas/**'
       - 'scripts/run_compose_regressions.py'
       - '.github/workflows/compose-regressions.yml'
       # Final QA evidence commits must retain regression checks on their own SHA.

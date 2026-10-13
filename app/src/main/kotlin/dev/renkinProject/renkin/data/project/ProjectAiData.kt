@@ -88,7 +88,8 @@ data class IconAssetVariant(
     val reviewStatus: String = "UNREVIEWED",
     val applyStatus: String = "NOT_APPLIED",
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = createdAt
+    val updatedAt: Long = createdAt,
+    val trialContextJson: String? = null
 )
 
 data class ProjectAiSnapshot(
@@ -96,13 +97,16 @@ data class ProjectAiSnapshot(
     val revisions: List<StyleRevision> = emptyList(),
     val assets: List<ReferenceAsset> = emptyList(),
     val references: List<StyleReference> = emptyList(),
-    val variants: List<IconAssetVariant> = emptyList()
+    val variants: List<IconAssetVariant> = emptyList(),
+    val approvals: List<StyleTrialApproval> = emptyList()
 ) {
     fun forProfile(id: Long) = ProjectAiSnapshot(metadata.filter { it.profileId == id },
         revisions.filter { it.profileId == id }, assets.filter { it.profileId == id },
-        references.filter { it.profileId == id }, variants.filter { it.profileId == id })
+        references.filter { it.profileId == id }, variants.filter { it.profileId == id }, approvals.filter { it.profileId == id })
 
-    fun rekey(oldId: Long, newId: Long) = forProfile(oldId).let { old -> ProjectAiSnapshot(
+    fun rekey(oldId: Long, newId: Long) = forProfile(oldId).let { old ->
+        val ids = old.variants.associate { it.id to java.util.UUID.randomUUID().toString() }
+        ProjectAiSnapshot(
         old.metadata.map { it.copy(profileId = newId, sourceStamp = null,
             selectionJson = ProjectSelection.decode(it.selectionJson)?.copy(sourceStamp = null, needsRevalidation = true)?.encode().orEmpty()) },
         old.revisions.map { it.copy(profileId = newId,
@@ -111,7 +115,16 @@ data class ProjectAiSnapshot(
             }) },
         old.assets.map { it.copy(profileId = newId, relativePath = ProjectAssetStore.path(newId, it.hash)) },
         old.references.map { it.copy(profileId = newId) },
-        old.variants.map { it.copy(id = java.util.UUID.randomUUID().toString(), profileId = newId) }
+        old.variants.map { row -> row.copy(id = ids.getValue(row.id), profileId = newId,
+            trialContextJson = row.trialContextJson?.let { text ->
+                dev.renkinProject.renkin.ai.trial.TrialVariantEvidence.parse(text).let {
+                    it.copy(context = it.context.copy(profileId = newId), requestId = ids.getValue(row.id),
+                        reviewContext = it.reviewContext?.copy(profileId = newId)).encode()
+                }
+            }) },
+        old.approvals.map { row -> row.copy(profileId = newId, approvalId = java.util.UUID.randomUUID().toString(),
+            contextJson = dev.renkinProject.renkin.ai.trial.TrialContext.parse(org.json.JSONObject(row.contextJson)).copy(profileId = newId).encode(),
+            variantIdsJson = org.json.JSONArray(trialApprovalIds(row).map { ids.getValue(it) }).toString(), needsRevalidation = true) }
     ) }
 }
 
@@ -132,6 +145,13 @@ interface ProjectAiDao {
     @Query("SELECT * FROM ReferenceAsset") suspend fun allAssets(): List<ReferenceAsset>
     @Query("SELECT * FROM StyleReference") suspend fun allReferences(): List<StyleReference>
     @Query("SELECT * FROM IconAssetVariant") suspend fun allVariants(): List<IconAssetVariant>
+    @Query("SELECT * FROM StyleTrialApproval") suspend fun allApprovals(): List<StyleTrialApproval>
+    @Query("SELECT * FROM StyleTrialApproval WHERE profileId = :id AND styleRevision = :revision")
+    suspend fun approval(id: Long, revision: Long): StyleTrialApproval?
+    @Query("SELECT * FROM IconAssetVariant WHERE id = :id") suspend fun variant(id: String): IconAssetVariant?
+    @Query("UPDATE IconAssetVariant SET reviewStatus = :status, trialContextJson = :evidence, updatedAt = :time WHERE id = :id AND profileId = :profileId")
+    suspend fun reviewVariant(profileId: Long, id: String, status: String, evidence: String, time: Long): Int
+    @Upsert suspend fun putApprovals(rows: List<StyleTrialApproval>)
     @Upsert suspend fun putMetadata(row: ProjectAiMetadata)
     @Insert suspend fun insertRevisions(rows: List<StyleRevision>)
     @Insert(onConflict = OnConflictStrategy.IGNORE) suspend fun insertAssets(rows: List<ReferenceAsset>)
@@ -144,6 +164,6 @@ interface ProjectAiDao {
     @Query("DELETE FROM ProjectAiMetadata") suspend fun clearMetadata()
     @Query("DELETE FROM ReferenceAsset WHERE profileId = :id AND hash IN (:hashes) " +
         "AND NOT EXISTS (SELECT 1 FROM StyleReference WHERE StyleReference.profileId = ReferenceAsset.profileId AND StyleReference.assetHash = ReferenceAsset.hash) " +
-        "AND NOT EXISTS (SELECT 1 FROM IconAssetVariant WHERE IconAssetVariant.profileId = ReferenceAsset.profileId AND (IconAssetVariant.rawAssetHash = ReferenceAsset.hash OR IconAssetVariant.editedAssetHash = ReferenceAsset.hash))")
+        "AND NOT EXISTS (SELECT 1 FROM IconAssetVariant WHERE IconAssetVariant.profileId = ReferenceAsset.profileId AND (IconAssetVariant.rawAssetHash = ReferenceAsset.hash OR IconAssetVariant.editedAssetHash = ReferenceAsset.hash OR (IconAssetVariant.trialContextJson IS NOT NULL AND IconAssetVariant.originalHash = ReferenceAsset.hash)))")
     suspend fun discardUnlinked(id: Long, hashes: List<String>)
 }

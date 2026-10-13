@@ -139,7 +139,8 @@ class MainViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val projectAiRepository: ProjectAiRepository,
     private val aiSettingsStore: AiSettingsStore,
-    private val styleAnalysisServices: dev.renkinProject.renkin.ai.style.StyleAnalysisServices
+    private val styleAnalysisServices: dev.renkinProject.renkin.ai.style.StyleAnalysisServices,
+    private val styleTrialServices: dev.renkinProject.renkin.ai.trial.StyleTrialServices
 ) : AndroidViewModel(application), IconPreviewBuilder {
     private val installerCatalog = InstallerCatalog(application)
     /**
@@ -207,6 +208,15 @@ class MainViewModel @Inject constructor(
                 if (referenceIndex) appProvider.referenceReader(source) else coverageReader(source, true)
         })
     internal suspend fun projectMetadata(id: Long) = projectAiRepository.metadata(id)
+    internal val projectTrials = dev.renkinProject.renkin.ui.project.OwnedStyleTrials(viewModelScope, projectAiRepository,
+        styleTrialServices.journal, styleTrialServices.coordinator, styleTrialServices::hasKey,
+        object : dev.renkinProject.renkin.ui.project.TrialSessionOwner {
+            override suspend fun <T> owned(id: Long, action: suspend () -> T): T = projectOperation(id, action)
+            override suspend fun targets() = dev.renkinProject.renkin.ui.project.revalidateLauncherTargets(coverageTargets(), coverageLauncherIdentity())
+            override suspend fun reader(source: String) = coverageReader(source, true)
+            override suspend fun original(key: String) = dev.renkinProject.renkin.ai.trial.currentTrialOriginal(getApplication(), key)
+            override suspend fun settings() = aiSettingsStore.load()
+        })
     internal val projectStyleBackend: ProjectStyleBackend = object : ProjectStyleBackend {
         override val analysis get() = projectAnalysis
         override suspend fun load(id: Long) = projectOperation(id) {
