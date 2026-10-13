@@ -139,11 +139,14 @@ class ProjectStyleTrialJourneyComposeTest {
     }
     private fun click(list: String, tag: String) {
         compose.onNodeWithTag(list).performScrollToNode(hasTestTag(tag))
-        compose.onNodeWithTag(tag).performClick(); settle()
+        compose.onNodeWithTag(tag).performScrollTo().assertIsDisplayed().assertIsEnabled().performClick(); settle()
     }
     private fun saveTargets() {
         click("project-targets", "setup-select-all"); click("project-targets", "setup-save-selection")
-        compose.onNodeWithTag("setup-selection-saved").assertExists()
+        compose.waitUntil(10000) {
+            compose.onAllNodesWithTag("setup-selection-saved", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("setup-selection-saved", useUnmergedTree = true).performScrollTo().assertIsDisplayed()
     }
     private fun style() { click("project-targets", "setup-project-style") }
     private fun manualSave() {
@@ -151,7 +154,14 @@ class ProjectStyleTrialJourneyComposeTest {
         compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
         compose.onNodeWithTag("project-style-description").performTextInput("manual outline")
         click("project-style-1", "project-style-save")
+        awaitSavedStyle()
+    }
+    private fun awaitSavedStyle() {
         compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-status"))
+        compose.waitUntil(10000) {
+            compose.onAllNodes(hasTestTag("project-style-status") and hasText("Project style saved"))
+                .fetchSemanticsNodes().size == 1
+        }
         compose.onNodeWithTag("project-style-status").assertTextEquals("Project style saved")
     }
     private fun back() { compose.runOnIdle { activity.onBackPressedDispatcher.onBackPressed() }; settle() }
@@ -159,7 +169,7 @@ class ProjectStyleTrialJourneyComposeTest {
     @Test fun freshTargetsExplainMissingStyleAndDisableTrialsBeforeAnyCloudOperation() {
         compose.setContent { Content() }; open()
         compose.onNodeWithTag("setup-trials").performScrollTo().assertIsNotEnabled()
-        compose.onNodeWithTag("setup-trials-reason").assertTextContains("Save a project style")
+        compose.onNodeWithTag("setup-trials-reason").assertTextContains("Save a project style", substring = true)
         assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
     }
     @Test fun manualTargetsFirstSaveStyleShowsTrialEntryAboveAnalysisAndKeepsSavedSelection() {
@@ -171,6 +181,9 @@ class ProjectStyleTrialJourneyComposeTest {
         assertEquals(3, trials.state(1).value.preparation!!.candidates.size)
         assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
         assertEquals(0, runBlocking { f.repo.load(1).references.size })
+        val saved = runBlocking { f.repo.load(1) }.metadata!!
+        assertNull(saved.sourceStamp)
+        assertEquals(f.targets.map { it.key }.sorted(), ProjectSelection.decode(saved.selectionJson)!!.componentKeys)
     }
     @Test fun manualStyleFirstThenTargetsReachesOneAndThreeFrozenAppsWithSeparatePaidConsent() {
         compose.setContent { Content() }; open(); style(); manualSave(); back(); saveTargets(); enterTrials()
@@ -203,7 +216,7 @@ class ProjectStyleTrialJourneyComposeTest {
         click("project-style-1", "style-analysis-use")
         compose.onNodeWithTag("style-analysis-confirm-use").performClick(); settle()
         assertNull(runBlocking { f.repo.load(1).revision })
-        click("project-style-1", "project-style-save"); back(); enterTrials()
+        click("project-style-1", "project-style-save"); awaitSavedStyle(); back(); enterTrials()
         assertEquals(5, trials.state(1).value.preparation!!.style.references.size)
         restoration.emulateSavedInstanceStateRestore(); settle()
         assertNotNull(trials.state(1).value.preparation); assertEquals(0, imageCalls); assertEquals(1, analysisCalls)
@@ -211,7 +224,7 @@ class ProjectStyleTrialJourneyComposeTest {
     @Test fun savedStyleWithoutTargetsExplainsExactlyWhatToSaveOnTheRoutedTrialScreen() {
         compose.setContent { Content() }; open(); style(); manualSave()
         click("project-style-1", "style-trials")
-        compose.onNodeWithTag("trial-error").assertTextContains("Save selected targets")
+        compose.onNodeWithTag("trial-error").assertTextContains("Save selected targets", substring = true)
         compose.onNodeWithTag("trial-targets").assertIsEnabled().performClick(); settle()
         compose.onNodeWithTag("setup-save-selection").assertExists()
         assertEquals(0, imageCalls); assertEquals(0, analysisCalls)
@@ -232,7 +245,7 @@ class ProjectStyleTrialJourneyComposeTest {
         compose.onNodeWithTag("project-style-description").performTextInput(" refined")
         compose.onNodeWithTag("project-style-1").performScrollToIndex(0)
         compose.onNodeWithTag("style-trials").assertIsNotEnabled()
-        compose.onNodeWithTag("style-trials-reason").assertTextContains("Save your style changes")
+        compose.onNodeWithTag("style-trials-reason").assertTextContains("Save your style changes", substring = true)
         assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
     }
     @Test fun changedSourceOnReloadOffersTargetsRemediationWithoutAnyGeneration() {
@@ -240,7 +253,7 @@ class ProjectStyleTrialJourneyComposeTest {
         reader = FixtureReferenceReader(mapOf("replacement" to analysisFixturePng(2, 91)))
         click("project-trials-1", "trial-reload")
         assertEquals("stale_targets", trials.state(1).value.error)
-        compose.onNodeWithTag("trial-error").assertTextContains("saved targets or source changed")
+        compose.onNodeWithTag("trial-error").assertTextContains("saved targets or source changed", substring = true)
         compose.onNodeWithTag("trial-targets").assertIsEnabled().performClick(); settle()
         assertNull(trials.state(1).value.plan); assertEquals(0, imageCalls); assertEquals(0, analysisCalls)
     }
@@ -252,8 +265,9 @@ class ProjectStyleTrialJourneyComposeTest {
         click("project-style-1", "style-analysis-start")
         compose.onNodeWithTag("style-analysis-confirm-paid").performClick(); settle()
         compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-failed"))
-        compose.onNodeWithTag("style-analysis-failed").assertTextContains("request format")
-        compose.onNodeWithTag("style-analysis-next-step").assertTextContains("previous confirmation is consumed")
+        compose.onNodeWithTag("style-analysis-failed").assertTextContains("request format", substring = true)
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-next-step"))
+        compose.onNodeWithTag("style-analysis-next-step").assertTextContains("previous confirmation is consumed", substring = true)
         assertEquals(1, analysisCalls); assertEquals(0, imageCalls)
         click("project-style-1", "style-analysis-prepare")
         assertNotEquals(first, analysis.state(1).value.preparation!!.requestId)

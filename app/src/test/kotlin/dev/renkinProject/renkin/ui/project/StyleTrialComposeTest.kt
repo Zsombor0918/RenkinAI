@@ -38,7 +38,9 @@ class StyleTrialComposeTest {
         val context = TrialContext(1, 1, 2, mode.name, source, stamp, "a".repeat(64), "c".repeat(64),
             referenceFingerprint(emptyList()), "initial:initial", AiSettings.OPENAI, AiSettings.MODELS.first(), "medium",
             styleFingerprint("saved outline", "separate instruction"))
-        return TrialPreparation(context, SavedProjectStyle(ProjectAiMetadata(1, mode.name, source, stamp, 1, version = 2),
+        val selection = ProjectSelection(mode.name, source, stamp, projectCatalogStamp(targets), targets.map { it.key })
+        return TrialPreparation(context, SavedProjectStyle(ProjectAiMetadata(1, mode.name, source, stamp, 1,
+            selectionJson = selection.encode(), version = 2),
             StyleRevision(1, 1, specification = "saved outline", userInstruction = "separate instruction"), emptyList()),
             targets.map { TrialCandidate(it, true, true, false, "eligible") })
     }

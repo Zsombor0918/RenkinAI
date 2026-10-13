@@ -280,7 +280,13 @@ internal fun ProjectShell(
                     onBack = setupBack,
                     onChangeSource = { setupPage = ProjectSetupPage.SOURCE },
                     onStyle = {
-                        styleStamp = (data.coverage as? CoverageUiState.Ready)?.snapshot?.let { projectSourceStamp(it.index) }
+                        // CREATE never has a source stamp, even if a caller still exposes
+                        // an earlier coverage snapshot. Keep a valid saved selection intact.
+                        styleStamp = if (setupMode == ProjectSetupMode.EXTEND) {
+                            (data.coverage as? CoverageUiState.Ready)?.snapshot?.takeIf {
+                                it.profileId == setupProfileId && it.index.stamp.packageName == sourcePackage
+                            }?.let { projectSourceStamp(it.index) }
+                        } else null
                         route = ProjectRoute.STYLE
                     },
                     onTrials = { route = ProjectRoute.TRIAL },

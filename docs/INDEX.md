@@ -9,6 +9,8 @@ on October 12; its final aceb691c checks passed independently. Codex 05 trial
 is implemented in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), with
 verified code checkpoint 0df78ef8/856 tests and final-head checks in the PR audit.
 October13 owner acceptance failures are under corrective verification in the same PR.
+The [remaining CI repair](changes/2026-10-13-style-trial-ci-repair.md) records the
+source-free CREATE correction and preserved routed assertions from baseline 3133b522.
 Owner review/merge is pending. Codex 06/07 remain planned; device/provider acceptance is separate.
 
 | Document | Responsibility |

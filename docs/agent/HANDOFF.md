@@ -1,5 +1,25 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## October 13 remaining CI repair
+
+This continuation starts from 3133b5224b4fadb6107ee5dddec61bf8ac99b383 on the
+existing feat/style-trials-m5 / PR #6, accepted main still af7bdb10. That source
+compiled production/tests but ran 871 tests with ten failures; Android run
+38366509384 skipped APK. All 21 commands in regression run 38366509274 ran;
+artifact 11796848515 ZIP SHA256 matches 8dd04bb1f52795171cc2c81a144bbc95daa607b208f4cfeb59e278f3d08ecbb7.
+Actual full-suite XML shows fragment matching, missing scroll/save synchronization,
+the old shell fixture's absent saved selection and CREATE's wrong source stamp.
+
+The shell now enforces the existing source-free CREATE invariant and checks EXTEND
+snapshot owner/source. Real routed tests retain every assertion and additionally
+check CREATE's null stamp and exact persisted target keys. Touches are scrolled into
+view; local style/target writes are awaited through observable UI completion.
+No timeout/idling/test/selector/consent/schema/signing rule is relaxed. Local 52 Python
+guards pass; local Android is blocked before configuration at Gradle download.
+Final-head Android, all 21 commands/XML/schema/APK and governance evidence are
+recorded externally in PR #6 after this source is committed, avoiding self-hash claims.
+Keep the PR draft/open/unmerged and the owner phone retest gate explicit.
+
 ## October 13 correction source — final verification pending
 
 Continue the existing PR #6; baseline cfef34e1, accepted main af7bdb10. Hosted red

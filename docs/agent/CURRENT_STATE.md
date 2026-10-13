@@ -1,11 +1,21 @@
 # Current implementation
 
-## October 13 owner-blocker correction — verification pending
+## October 13 owner-blocker correction — final evidence in PR #6
+
+The follow-up from 3133b522 fixes CREATE navigation leaking a source stamp from a
+coverage snapshot. CREATE STYLE now always receives null; EXTEND accepts only its
+current profile/source snapshot. This preserves compatible saved targets without
+removing repository invalidation on actual context changes. Routed UI assertions
+observe saved state before Back and scroll controls before input. The 3133b522
+871-test/ten-failure baseline remains historical in QA; the final actual SHA,
+complete checks and matching downloadable APK are recorded in the PR audit.
+Owner corrective phone acceptance remains required before merge.
 
 PR #6 remains on feat/style-trials-m5, source baseline cfef34e1 / accepted main
 af7bdb10. The owner-observed FAILED analysis and trial discoverability are acceptance
 findings, not inferred HTTP causes. The fresh red checkpoint independently produced
-866 tests / 10 failures. Corrective source is not yet a passed Android build.
+866 tests / 10 failures. The next 3133b522 source compiled but still failed ten
+routed UI assertions; this follow-up addresses them with independently inspected XML.
 
 STYLE now exposes its clean saved-style trial entry above analysis, with accessible
 Save guidance. TARGETS requires a saved style and nonempty, current saved selection,

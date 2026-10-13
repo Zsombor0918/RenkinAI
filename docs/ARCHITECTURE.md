@@ -8,6 +8,11 @@ controller change. STYLE trial entry is visible above analysis; TARGETS reads it
 existing saved metadata to gate trials, and the existing TRIAL Back/targets route
 returns to preparation. These UI prerequisites never authorize a POST.
 
+The shell passes null sourceStamp when opening STYLE for CREATE, regardless of
+available coverage input. For EXTEND it accepts only a snapshot matching the chosen
+profile and source package. An irrelevant snapshot must not cause saveRevision to
+erase compatible target selection; genuine context-change invalidation stays intact.
+
 OwnedStyleTrials emits bounded local prerequisite codes instead of exception text.
 The analysis adapter retains safe HTTP400/402/422 rejection status and only the
 allowlisted insufficient_quota code; no raw server body enters journals or UI.

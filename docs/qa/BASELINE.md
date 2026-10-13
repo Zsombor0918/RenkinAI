@@ -1,5 +1,29 @@
 # Verification baseline
 
+## October 13 final UI repair — measured baseline and execution contract
+
+Source 3133b5224b4fadb6107ee5dddec61bf8ac99b383 compiled production and tests:
+[CI 38366509384](https://github.com/Zsombor0918/RenkinAI/actions/runs/38366509384)
+executed 871 tests with ten failures and skipped APK. The independently downloaded
+[regression 38366509274](https://github.com/Zsombor0918/RenkinAI/actions/runs/38366509274)
+artifact 11796848515 has ZIP SHA256
+8dd04bb1f52795171cc2c81a144bbc95daa607b208f4cfeb59e278f3d08ecbb7.
+All 21 commands ran: Create/Extend 9/10 and trial UI 12/21, every other isolated
+group passed; full-suite 861/871, zero errors/skips. Actual XML identifies five
+fragment-matcher failures, missing scrolling/save completion and fixture/context
+problems. The CREATE missing_targets failure reveals a wrong sourceStamp; its
+correction retains repository invalidation and adds exact persisted-key assertions.
+
+Local Linux/Python: `python3 -m unittest discover -s scripts/tests -v` passed 52/52
+in 7.464 seconds. `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug`
+failed before configuration downloading 8.11.1, Network is unreachable; no local
+Android pass or count is claimed. Final hosted compile/full tests/debug APK plus
+`python3 scripts/run_compose_regressions.py` and governance run on the actual final
+head. Their observed SHA, exits, independent XML tally, genuine 19/20/21 exports,
+APK artifact and download verification are recorded in the final PR #6 audit.
+No test, selector, timeout or idling exemption is added. New live/paid requests: zero.
+Owner corrective Samsung journey/quality/signing/install acceptance remains pending.
+
 ## October 13 measured red checkpoint and limited live probe
 
 Reproduction head cfef34e146a91cadf9bf7db3a569bd04c7b70a05: original

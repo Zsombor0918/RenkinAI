@@ -1,5 +1,16 @@
 # Regression and test matrix
 
+## Remaining routed UI corrections
+
+The 3133b522 hosted baseline compiled and executed 871 tests with ten failures.
+CREATE's targets-first/manual-style journey now checks a null sourceStamp and exact
+saved component keys, guarding source-free navigation even with unrelated coverage
+input. Existing explanatory fragments use explicit substring matching; controls are
+scrolled before touches and completed writes are observed before Back. The shell
+fixture carries a real current encoded saved selection. All previous assertions,
+21 runner groups and selectors remain; final-head results are in PR #6's audit.
+Device/provider/owner acceptance is separate and remains pending.
+
 ## Corrective acceptance coverage
 
 The actual cfef34e1 hosted run866/10 is captured in BASELINE. Additive tests now
