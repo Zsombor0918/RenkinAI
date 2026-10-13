@@ -27,6 +27,18 @@ import java.util.concurrent.TimeUnit
 @Config(application = Application::class, sdk = [33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleAnalysisGatewayTest {
+    @Test fun analysisDescribesColorUsageAndGeometryWithoutCopyingSampleIdentities() {
+        val body = analysisBody(analysisFixtureRequest())
+        val rules = body.getString("instructions")
+        for (term in listOf("FIXED_PALETTE", "ADAPT_BRAND_COLORS", "MONOCHROME", "DUOTONE", "UNKNOWN",
+            "negative space", "shadow", "outlier", "never enumerate")) assertTrue(term, rules.contains(term))
+        val prompt = PromptComposer.openAiEditPrompt("mixed brand-colored outlines", 5)
+        assertTrue(prompt.contains("meaningful original colors"))
+        assertTrue(prompt.contains("sample swatches are observations"))
+        assertTrue(prompt.contains("Produce exactly ONE"))
+        assertEquals("low", body.getJSONArray("input").getJSONObject(0).getJSONArray("content").getJSONObject(1).getString("detail"))
+        assertEquals(canonicalJson(StyleProfileV1.jsonSchema()), canonicalJson(body.getJSONObject("text").getJSONObject("format").getJSONObject("schema")))
+    }
     private val offlineCredential = UUID.randomUUID().toString()
     private fun gateway(server: MockWebServer, timeout: Long = 3000, key: () -> String = { offlineCredential }) =
         OpenAiStyleAnalysisGateway(key, OkHttpClient.Builder().callTimeout(timeout, TimeUnit.MILLISECONDS).build(), server.url("/v1/responses"))

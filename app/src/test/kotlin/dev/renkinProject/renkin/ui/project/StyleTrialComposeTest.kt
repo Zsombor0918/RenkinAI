@@ -28,6 +28,15 @@ import org.robolectric.annotation.GraphicsMode
 @Config(application = Application::class, sdk = [33], qualifiers = "w320dp-h800dp")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleTrialComposeTest {
+    @Test fun frozenConfirmationNamesTheAppOriginalAndSeparatesTheStylePack() {
+        val b = Backend(preparation(ProjectSetupMode.EXTEND, 1)); show(b); prepare()
+        compose.onNodeWithText("Original app icon").assertExists()
+        compose.onNodeWithText("launcher:p0/Main:1", substring = true).assertExists()
+        compose.onNodeWithText("Style reference pack: source.pack", substring = true).assertExists()
+        val input = b.flow.value.plan!!.inputs.single()
+        compose.onNodeWithTag("trial-frozen-${input.requestId}").assertExists()
+        assertEquals(hash, input.originalHash); assertEquals(0, b.paidPlans)
+    }
     @get:Rule val compose = createComposeRule()
     private val png = projectTestPng(size = 1024)
     private val hash = sha256(png)

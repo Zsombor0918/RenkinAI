@@ -22,6 +22,35 @@ import java.io.StringReader
 @Config(application = Application::class, sdk = [33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ReferenceSamplerTest {
+    @Test fun paletteRetainsMeasuredBlueInsteadOfInventingRgbBinCenters() {
+        val bytes = analysisFixturePng()
+        val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        val bitmap = decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
+        val expected = Color.rgb(11, 133, 211)
+        try {
+            for (y in 0 until bitmap.height) for (x in 0 until bitmap.width) {
+                val alpha = Color.alpha(bitmap.getPixel(x, y))
+                bitmap.setPixel(x, y, Color.argb(alpha, 11, 133, 211))
+            }
+            val png = java.io.ByteArrayOutputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
+            val measured = Color.parseColor(referenceFeatures(png).palette.first())
+            for (channel in listOf<(Int) -> Int>(Color::red, Color::green, Color::blue))
+                assertEquals("Measured hue must not be a coarse bin midpoint", channel(expected).toDouble(), channel(measured).toDouble(), 2.0)
+        } finally { bitmap.recycle() }
+    }
+    @Test fun ninetyPercentCommonGeometryIsNotReplacedByMaximumDiversityOutliers() {
+        val png = analysisFixturePng(); val base = referenceFeatures(png)
+        val dominant = (0 until 90).map { SampledReference("dominant%03d".format(it), "outline", "$it", png, base) }
+        val outliers = (0 until 10).map { i -> SampledReference("outlier$i", "solid", "other$i", png,
+            base.copy(occupancy = .9 - i * .03, padding = .01, brightness = i / 10.0,
+                saturation = i / 10.0, edgeDensity = .02, outlineEstimate = .05)) }
+        val chosen = diverseReferences(dominant + outliers, 12)
+        assertEquals(12, chosen.size)
+        assertTrue("A 90% family must retain at least ten of twelve samples: ${chosen.map { it.component }}",
+            chosen.count { it.component.startsWith("dominant") } >= 10)
+        assertTrue(chosen.any { it.component.startsWith("outlier") })
+        assertEquals(chosen.map { it.component }, diverseReferences((dominant + outliers).reversed(), 12).map { it.component })
+    }
     private val sampler = ReferenceSampler()
     private fun artwork(style: Int) = (0 until 18).associate { "style${style}_$it" to analysisFixturePng(style, it) }
 
