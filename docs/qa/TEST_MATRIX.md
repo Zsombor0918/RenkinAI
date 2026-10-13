@@ -1,5 +1,11 @@
 # Regression and test matrix
 
+The b15112f3 checkpoint resolved nine failures (870/871 passed). The remaining
+analysis journey now observes the completed local Use/import draft, independently
+of the already idle network controller, before testing Save enabled. Its explicit
+dirty/no-durable-save/ref-count/restoration assertions and existing 10000 ms wait
+bound remain. Final actual-head results and APK are in PR #6's audit.
+
 ## Remaining routed UI corrections
 
 The 3133b522 hosted baseline compiled and executed 871 tests with ten failures.

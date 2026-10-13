@@ -1,5 +1,17 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## Remaining local Use synchronization
+
+The b15112f3 correction compiled and independently passed 870/871 in Android
+38370781348 and all-21-command run 38370781359. Downloaded artifact 11799355450
+digest 9fe8e55a16d1143134a303c1d350c2412695277a6a826ac0f0675920ae237267 matches
+GitHub. The sole XML failure reaches a disabled Save immediately after Use, which
+imports five references in a separate panel coroutine; network/controller idle is
+not draft completion. The existing journey now awaits Unsaved style changes before
+Save, without changing application source, timeouts, idling or old assertions.
+Exact final-head automated/schema/APK evidence belongs in the PR audit; owner
+physical acceptance remains required before merge.
+
 ## October 13 remaining CI repair
 
 This continuation starts from 3133b5224b4fadb6107ee5dddec61bf8ac99b383 on the

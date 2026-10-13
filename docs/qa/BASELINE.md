@@ -1,5 +1,22 @@
 # Verification baseline
 
+## October 13 870/871 checkpoint — local Use completion
+
+Head b15112f392b56378753cd7a04e47ecd2d91ef198 compiled production and tests in
+[CI 38370781348](https://github.com/Zsombor0918/RenkinAI/actions/runs/38370781348).
+[Regressions 38370781359](https://github.com/Zsombor0918/RenkinAI/actions/runs/38370781359)
+independently confirms **871 tests / 1 failure / 0 errors / 0 skips**, every selector
+present, all 21 commands executed. Create/Extend passes 10/10; trial UI 20/21; all
+other isolated groups pass. APK remains skipped until the complete suite passes.
+Downloaded artifact 11799355450 ZIP SHA256 is
+9fe8e55a16d1143134a303c1d350c2412695277a6a826ac0f0675920ae237267.
+Actual XML shows the analysis journey tried Save while its local Use/import operation
+still disabled it. Controller network-idle does not observe this panel coroutine.
+The follow-up awaits the existing Unsaved style changes status before Save, adds a
+dirty-draft assertion and retains all old assertions and the 10000 ms bound.
+Fresh local guards on b15112f3 passed 52/52 in 8.316 seconds. Final follow-up hosted
+results and matching APK are recorded in PR #6 after observing the actual final SHA.
+
 ## October 13 final UI repair — measured baseline and execution contract
 
 Source 3133b5224b4fadb6107ee5dddec61bf8ac99b383 compiled production and tests:

@@ -215,6 +215,14 @@ class ProjectStyleTrialJourneyComposeTest {
         assertNull(runBlocking { f.repo.load(1).revision }); assertEquals(1, analysisCalls)
         click("project-style-1", "style-analysis-use")
         compose.onNodeWithTag("style-analysis-confirm-use").performClick(); settle()
+        // Use imports five PNGs locally in the panel coroutine, independently of
+        // the controller's network busy flag. Observe its completed draft before Save.
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-status"))
+        compose.waitUntil(10000) {
+            compose.onAllNodes(hasTestTag("project-style-status") and hasText("Unsaved style changes"))
+                .fetchSemanticsNodes().size == 1
+        }
+        compose.onNodeWithTag("project-style-status").assertTextEquals("Unsaved style changes")
         assertNull(runBlocking { f.repo.load(1).revision })
         click("project-style-1", "project-style-save"); awaitSavedStyle(); back(); enterTrials()
         assertEquals(5, trials.state(1).value.preparation!!.style.references.size)
