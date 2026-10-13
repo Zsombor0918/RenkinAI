@@ -71,7 +71,7 @@ class OwnedStyleTrialsTest {
         f.initialize("EXTEND", refs = 1)
         val genuineC = f.originals.getValue("a/Main").png
         var appliedA = projectTestPng(android.graphics.Color.RED, 1024)
-        val sourceB = f.repo.referenceBytes(1, f.repo.load(1).references.single().hash)
+        var sourceB = f.repo.referenceBytes(1, f.repo.load(1).references.single().hash)
         assertFalse(genuineC.contentEquals(appliedA)); assertFalse(genuineC.contentEquals(sourceB))
         okhttp3.mockwebserver.MockWebServer().use { server ->
             val client = okhttp3.OkHttpClient.Builder().callTimeout(5, java.util.concurrent.TimeUnit.SECONDS).build()
@@ -83,8 +83,10 @@ class OwnedStyleTrialsTest {
                     appliedA = projectTestPng(android.graphics.Color.GREEN, 1024)
                     f.index = f.index.copy(stamp = f.index.stamp.copy(packageName = "source.other", versionCode = 2, theme = true))
                     val old = f.repo.load(1)
+                    val newReference = f.repo.importReference(1, java.io.ByteArrayInputStream(projectTestPng(android.graphics.Color.CYAN)))
                     f.repo.saveStyle(1, old.revision!!.revision, old.revision.specification, old.revision.userInstruction,
-                        old.references.map { it.hash }, "EXTEND", "source.other", projectSourceStamp(f.index))
+                        listOf(newReference.hash), "EXTEND", "source.other", projectSourceStamp(f.index))
+                    sourceB = f.repo.referenceBytes(1, newReference.hash)
                     val metadata = f.repo.load(1).metadata!!
                     f.repo.saveSelection(1, metadata.version, ProjectSelection("EXTEND", "source.other", projectSourceStamp(f.index),
                         projectCatalogStamp(f.targets), f.targets.map { it.key }))

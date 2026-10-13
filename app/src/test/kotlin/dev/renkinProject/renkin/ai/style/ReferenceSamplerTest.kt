@@ -79,6 +79,22 @@ class ReferenceSamplerTest {
         assertEquals(evidence, PackStyleEvidence.parse(evidence.encode()))
         assertTrue(evidence.metrics.contains("unknown locally"))
     }
+    @Test fun recurringNeutralTilesDoNotTurnVaryingSmallBrandAccentsIntoAMonochromeRule() {
+        val hues = listOf(Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.CYAN, Color.YELLOW,
+            Color.rgb(255, 130, 20), Color.rgb(140, 40, 210))
+        val icons = hues.map { color ->
+            val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
+            try {
+                val canvas = Canvas(bitmap); val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+                paint.color = Color.WHITE; canvas.drawRoundRect(16f, 16f, 240f, 240f, 20f, 20f, paint)
+                paint.color = color; canvas.drawCircle(128f, 128f, 40f, paint)
+                java.io.ByteArrayOutputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
+            } finally { bitmap.recycle() }
+        }
+        val evidence = packStyleEvidence(measured(icons))!!
+        assertEquals("A recurring neutral background is not a fixed logo palette", PackColorPolicy.ADAPT_BRAND_COLORS, evidence.colorPolicy)
+        assertTrue(evidence.swatches.any { it.role == "neutral" && it.icons == icons.size })
+    }
     @Test fun faintColoredFringeDoesNotBecomeAPaletteRuleAndOpticalBoundsAreMeasured() {
         val png = coloredIcon(Color.WHITE)
         val decoded = BitmapFactory.decodeByteArray(png, 0, png.size)

@@ -1,5 +1,8 @@
 # Verification baseline
 
+Implementation checkpoint ab80db86 / Android38433644576 stopped at production compilation: nullable Resources.getDrawableForDensity result needs explicit fail-closed handling. No Android assertions/APK ran at that head. The follow-up preserves the resource-only contract, adds missing/disabled/wrong-user originals and a neutral-tile brand-accent regression, and strengthens source-switch multipart fixtures with distinct B2 bytes. Final executed results remain in PR#6.
+
+
 ## October13 style fidelity and component original refinement
 
 Owner comment6149883090 is implemented incrementally on PR#6 from422ef578. Local EXTEND now inspects up to300 mappings and selects proportional geometry-family medoids plus minority checks, with real alpha-aware Oklab palette swatches and measured roles/prevalence/distributions. Varied native logo hues alone are not mixed drawing styles; fixed palettes require recurring evidence. Advanced shows bounded local measurements separately from model inference. Cloud remains one separately confirmed low-detail request, same model/V1 schema, <=12 thumbnails/4MiB; manual CREATE and0–5 ordered generation refs remain.

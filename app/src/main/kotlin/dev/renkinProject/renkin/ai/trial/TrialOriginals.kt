@@ -56,7 +56,7 @@ internal suspend fun currentTrialOriginal(context: Context, key: String): TrialO
     // Resolve the exact component's declared full icon from its owning package, without
     // selecting adaptive monochrome or consulting launcher, EXTEND or profile artwork.
     // Resources can still be OEM-overlaid: this is evidence, never a pristine-store guarantee.
-    val drawable = try { manager.getResourcesForApplication(info.applicationInfo).getDrawableForDensity(resourceId, density, null) }
+    val drawable = try { manager.getResourcesForApplication(info.applicationInfo).getDrawableForDensity(resourceId, density, null) ?: throw UnverifiedTrialOriginal() }
         catch (_: Exception) { throw UnverifiedTrialOriginal() }
     val bytes = renderTrialOriginal(drawable)
     val platformAgreement = runCatching { bytes.contentEquals(renderTrialOriginal(manager.getActivityIcon(component))) }.getOrDefault(false)

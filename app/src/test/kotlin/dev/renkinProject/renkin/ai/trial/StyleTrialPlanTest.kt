@@ -109,6 +109,19 @@ class StyleTrialPlanTest {
             assertNotEquals(sha256(sourcePackB), original.hash)
         }
     }
+    @Test fun wrongUserDisabledAndUnresolvableComponentResourcesFailWithoutSubstitution() = runBlocking {
+        val context = RuntimeEnvironment.getApplication(); val shadow = shadowOf(context.packageManager)
+        val component = ComponentName(context.packageName, context.packageName + ".UnsafeOriginalAlias")
+        val info = shadow.addActivityIfNotPresent(component)
+        info.icon = Int.MAX_VALUE; info.enabled = true; info.applicationInfo.enabled = true
+        shadow.addActivityIcon(component, ColorDrawable(Color.WHITE))
+        assertTrue(runCatching { currentTrialOriginal(context, component.flattenToString()) }.isFailure)
+        info.icon = R.drawable.ic_github; val uid = info.applicationInfo.uid
+        info.applicationInfo.uid = (android.os.Process.myUid() / 100000 + 1) * 100000 + 12345
+        assertTrue(runCatching { currentTrialOriginal(context, component.flattenToString()) }.isFailure)
+        info.applicationInfo.uid = uid; info.enabled = false
+        assertTrue(runCatching { currentTrialOriginal(context, component.flattenToString()) }.isFailure)
+    }
     @Test fun removedComponentNeverFallsBackToTheApplicationOrSourcePack() = runBlocking {
         val context = RuntimeEnvironment.getApplication()
         val key = context.packageName + "/MissingLauncherAlias"
