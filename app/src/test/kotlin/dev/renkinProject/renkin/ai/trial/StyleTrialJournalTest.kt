@@ -28,6 +28,35 @@ class StyleTrialJournalTest {
         c.submit(p, images, false, { true }); c.submit(p, images, true, { false })
         assertEquals(0, calls); assertFalse(File(f.context.noBackupFilesDir, "style_trials").exists())
     }
+    @Test fun orphanFirstAtomicWriteDoesNotBlockRecoveryOrFreshConsentAndCannotReplayItsUuid() = runBlocking {
+        val orphan = f.plan(listOf("a/Main"))
+        val directory = File(f.context.noBackupFilesDir, "style_trials/1").apply { mkdirs() }
+        File(directory, "plan-${orphan.id}.json.new").writeText("{unfinished first atomic write")
+        val reopened = StyleTrialJournal(f.context)
+        var calls = 0
+        val c = StyleTrialCoordinator(reopened, f.successful { calls++ }, f.repo)
+        c.recover(1)
+        assertTrue(reopened.records(1).isEmpty())
+        assertFalse(reopened.claim(orphan, f.images(orphan)))
+        val fresh = f.plan(listOf("a/Main"))
+        c.submit(fresh, f.images(fresh), false, { true }); assertEquals(0, calls)
+        c.submit(fresh, f.images(fresh), true, { true }); c.recover(1)
+        assertEquals(1, calls); assertEquals(TrialStatus.REVIEWABLE, reopened.read(1, fresh.id)!!.items.single().status)
+    }
+    @Test fun orphanResultWriteIsUncertainWhileConsumedRequestTombstoneRemainsAuthoritative() = runBlocking {
+        val p = f.plan(listOf("a/Main")); val request = p.inputs.single().requestId
+        f.journal.claim(p, f.images(p)); f.journal.begin(p, request); f.journal.endpoint(p, request, 1); f.journal.release(p)
+        val results = File(f.context.noBackupFilesDir, "style_trials/1/results").apply { mkdirs() }
+        File(results, "$request.png.new").writeBytes(projectTestPng(size = 1024))
+        val reopened = StyleTrialJournal(f.context); var calls = 0
+        StyleTrialCoordinator(reopened, f.successful { calls++ }, f.repo).recover(1)
+        assertEquals(TrialStatus.UNCERTAIN, reopened.read(1, p.id)!!.items.single().status)
+        assertTrue(f.repo.trialVariants(1).isEmpty()); assertEquals(0, calls)
+        val consumed = File(f.context.noBackupFilesDir, "style_trials/consumed-$request")
+        check(consumed.renameTo(File(consumed.path + ".new")))
+        assertTrue(runCatching { reopened.claim(p.copy(id = java.util.UUID.randomUUID().toString()), f.images(p)) }.isFailure)
+        assertEquals(0, calls)
+    }
     @Test fun serialSubmissionIsDurableBeforeCallAndSameIdCannotSubmitTwice() = runBlocking {
         var calls = 0
         val c = StyleTrialCoordinator(f.journal, f.successful { r ->

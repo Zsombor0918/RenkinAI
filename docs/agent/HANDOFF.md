@@ -1,5 +1,15 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## October 13 owner blocker — PR #6 remains draft
+
+Owner comment [6140130681](https://github.com/Zsombor0918/RenkinAI/pull/6#issuecomment-6140130681)
+reports real-device FAILED analysis after12/120 local sampling and inaccessible trials
+on the 3c5c1de7 APK. This overrides earlier automated readiness as a merge gate:
+P0 OPEN, audit BLOCKED, no owner acceptance. Continue only feat/style-trials-m5.
+The additive routed real-Room/controller journey and HTTP/journal/approval assertions
+are a deliberately red checkpoint, awaiting actual hosted execution. No M6/M7 scope.
+
+
 ## Accepted baseline and scope
 
 Owner merged PR #5 at 16:10:49 UTC on October 12, 2026 as

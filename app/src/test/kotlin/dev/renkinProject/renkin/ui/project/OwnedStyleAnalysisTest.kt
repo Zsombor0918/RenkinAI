@@ -194,4 +194,25 @@ class OwnedStyleAnalysisTest {
         assertNull(recreated.state(1).value.preparation); assertEquals(1, calls)
         recreated.discardCandidate(1, record.requestId); assertNull(repo.load(1).revision); assertEquals(1, calls)
     }
+    @Test fun rejectedAnalysisKeepsSafeReasonAndNeedsFreshPreparationUuidAndExplicitConfirmation() = runBlocking {
+        okhttp3.mockwebserver.MockWebServer().use { server ->
+            server.enqueue(okhttp3.mockwebserver.MockResponse().setResponseCode(400).setBody("private payload and identifiers"))
+            gateway = OpenAiStyleAnalysisGateway({ java.util.UUID.randomUUID().toString() },
+                okhttp3.OkHttpClient(), server.url("/v1/responses"))
+            val controller = newController(); val first = prepare(controller, extend = true)
+            controller.submit(1, first.requestId)
+            val failed = controller.state(1).first { !it.busy }.record!!
+            assertEquals(AnalysisStatus.FAILED, failed.status)
+            assertEquals("REQUEST_REJECTED:400", failed.reason)
+            assertFalse(failed.encode().contains("private payload"))
+            assertNull(controller.state(1).value.preparation)
+            controller.submit(1, first.requestId); controller.refresh(1); assertEquals(1, server.requestCount)
+            val next = prepare(controller, extend = true)
+            assertNotEquals(first.requestId, next.requestId); assertEquals(1, server.requestCount)
+            server.enqueue(okhttp3.mockwebserver.MockResponse().setBody(analysisFixtureResponse()))
+            controller.submit(1, next.requestId)
+            assertEquals(AnalysisStatus.RESULT_SAVED, controller.state(1).first { !it.busy }.record!!.status)
+            assertEquals(2, server.requestCount); assertNull(repo.load(1).revision)
+        }
+    }
 }

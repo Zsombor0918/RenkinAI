@@ -89,6 +89,24 @@ class StyleTrialPersistenceTest {
             f.repo.referenceBytes(1, row.rawAssetHash), { true })
         assertEquals("ACCEPTED", returned.reviewStatus); assertEquals(1, f.repo.trialVariants(1).size)
     }
+    @Test fun aNewUnreviewedSuccessInvalidatesPriorApprovalUntilEveryCurrentTrialIsReviewed() = runBlocking {
+        val (first, old) = saved(); accept(first, old)
+        val approval = f.repo.approveTrials(first.context, originals(), { true })
+        // Replaying durable installation is local recovery, not a new success.
+        f.repo.installTrialVariant(first, first.inputs.single(), f.originals.getValue("a/Main").png,
+            f.repo.referenceBytes(1, old.rawAssetHash), { true })
+        assertEquals(approval, f.db.projectAiDao().approval(1, 1))
+        assertEquals(old.id, f.repo.acceptedTrials(first.context, originals(), { true }).single().variantId)
+        val (second, fresh) = saved()
+        assertTrue("A new unreviewed success must block reuse of an old approval",
+            f.repo.acceptedTrials(second.context, originals(), { true }).isEmpty())
+        assertTrue(f.db.projectAiDao().approval(1, 1)!!.needsRevalidation)
+        assertEquals("ACCEPTED", f.repo.trialVariants(1).single { it.id == old.id }.reviewStatus)
+        assertTrue(runCatching { f.repo.approveTrials(second.context, originals(), { true }) }.isFailure)
+        f.repo.reviewTrial(second.context, fresh.id, false, originals().getValue("a/Main"), { true })
+        f.repo.approveTrials(second.context, originals(), { true })
+        assertEquals(old.id, f.repo.acceptedTrials(second.context, originals(), { true }).single().variantId)
+    }
     @Test fun restoredEpochRequiresNewLocalReviewAndApprovalButNeverNewGeneration() = runBlocking {
         val (p, row) = saved(); accept(p, row); f.repo.approveTrials(p.context, originals(), { true })
         f.journal.invalidateAll()

@@ -1,5 +1,15 @@
 # Agent, Git and review workflow
 
+## October 13 owner reproduction coverage
+
+The existing trial-ui group additionally includes ProjectStyleTrialJourneyComposeTest.
+All21 groups and previous selectors remain. NativeSDK33/320dp tests traverse the
+actual shell/targets/style/trial routes with real Room, sampler and owned controllers.
+Only artwork, session ownership callbacks and provider ports are fixtures; this is
+not a full Android MainViewModel/Hilt or phone test. The red checkpoint requires
+recorded failing assertions before corrective changes are declared verified.
+
+
 Start with [AGENTS.md](../../AGENTS.md); setup is in [CONTRIBUTING](../../CONTRIBUTING.md).
 The shared scripts own the automatic rules. This document explains their limits
 and the external settings required to turn checks into enforced merge conditions.

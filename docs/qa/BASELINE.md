@@ -1,5 +1,14 @@
 # Verification baseline
 
+## October 13 owner-blocker local checkpoint — Android not run
+
+Source baseline3c5c1de7332b598d077e82b13aacaaed3ea0d29b, same open PR#6 branch,
+accepted mainaf7bdb10. Fresh local Gradle compile/tests/APK command failed at wrapper
+Gradle8.11.1 download with SocketException Network is unreachable, before configuration.
+New red assertions await hosted execution. Owner device failures remain OPEN; earlier
+856 passing tests and APK are historical evidence, not corrective validation.
+
+
 ## Codex 05 verified implementation — 0df78ef8, owner acceptance pending
 
 Code head `0df78ef8e8a8af7ef0119cb43c7fb3a50d48e157` passed

@@ -42,7 +42,7 @@ CASES = {
                      "dev.renkinProject.renkin.ai.trial.StyleTrialPlanTest"],
     "trial-gateway": ["dev.renkinProject.renkin.ai.trial.StyleTrialGatewayTest"],
     "trial-journal": ["dev.renkinProject.renkin.ai.trial.StyleTrialJournalTest"],
-    "trial-ui": [PACKAGE + "StyleTrialComposeTest"],
+    "trial-ui": [PACKAGE + "StyleTrialComposeTest", PACKAGE + "ProjectStyleTrialJourneyComposeTest"],
     "trial-persistence-session": ["dev.renkinProject.renkin.data.project.StyleTrialPersistenceTest",
                                   "dev.renkinProject.renkin.data.project.StyleTrialMigrationTest",
                                   PACKAGE + "OwnedStyleTrialsTest"],

@@ -1,5 +1,16 @@
 # Regression and test matrix
 
+## October 13 owner blocker additions
+
+ProjectStyleTrialJourneyComposeTest enters the existing trial-ui group: fresh targets,
+manual style with zero refs and no key, targets-first/style-first saves,1/3 frozen
+apps, separate paid trial consent/review/common approval, EXTEND12-sample analysis,
+explicit Use/Save and route restoration. Real Room/controllers/journals participate.
+Additional regressions cover safe HTTP400 failure persistence/new UUID consent,
+orphan plan/result .new recovery without replay and new unreviewed variant approval
+invalidation. These are new assertions awaiting execution, not prior856-test proof.
+
+
 Accepted baseline is Codex 04, owner-merged PR #5 as af7bdb10. M5 source/testing
 is in progress; historical Codex 03 evidence follows. Head 06e71532 passed 718/718 and all filtered
 groups/APK including legacy gallery compatibility. The final documentation/probe-
