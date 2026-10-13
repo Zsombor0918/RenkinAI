@@ -31,7 +31,28 @@ internal fun synthesizeDnaLocally(reports: List<DnaIconReport>, images: Map<Stri
         "Quick uses conservative deterministic recurrence; unknown traits require human review.")).also { it.encode() }
 }
 private fun measuredFamily(reports: List<DnaIconReport>,images: Map<String,ByteArray>) = reports.map { r ->
-    val png=checkNotNull(images[r.sampleHash]); SampledReference(r.sampleId,"style",r.sampleHash,png,referenceFeatures(png))
+    val png=checkNotNull(images[r.sampleHash]); SampledReference(r.sampleId,"style",r.sampleHash,png,familyColorFeatures(png))
+}
+/** Measure principal paint from stable opaque interiors. Resampling a two-color boundary
+ * creates intermediate RGB values; those edge mixtures are not additional paint colors.
+ * Geometry and legacy aggregate measurements remain unchanged. Fine/soft artwork falls
+ * back to the ordinary alpha-aware measurement rather than inventing a fixed palette. */
+private fun familyColorFeatures(png: ByteArray): ReferenceFeatures {
+    val features=referenceFeatures(png)
+    val bitmap=checkNotNull(android.graphics.BitmapFactory.decodeByteArray(png,0,png.size))
+    try {
+        val interior=mutableListOf<Pair<Int,Double>>()
+        for(y in 2 until bitmap.height-2 step 4) for(x in 2 until bitmap.width-2 step 4) {
+            val color=bitmap.getPixel(x,y)
+            if(android.graphics.Color.alpha(color)<224) continue
+            val neighbors=listOf(bitmap.getPixel(x-1,y),bitmap.getPixel(x+1,y),bitmap.getPixel(x,y-1),bitmap.getPixel(x,y+1))
+            if(neighbors.all { android.graphics.Color.alpha(it)>=224 && colorDistance(color,it)<=.02 })
+                interior+=(color or (0xff shl 24)) to 1.0
+        }
+        if(interior.size<20) return features
+        val palette=measuredColors(interior)
+        return features.copy(palette=palette.map { colorHex(it.first) },paletteWeights=palette.map { it.second })
+    } finally {bitmap.recycle()}
 }
 internal fun measuredFamilyPolicy(reports: List<DnaIconReport>,images: Map<String,ByteArray>) =
     checkNotNull(packStyleEvidence(measuredFamily(reports,images))).colorPolicy

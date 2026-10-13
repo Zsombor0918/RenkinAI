@@ -919,3 +919,10 @@ Test-first b2df166a: hosted904 tests with exactly6 new assertion failures; no ol
 ## Style DNA integration and compilation follow-up
 
 Implementation2bf8ca7e CI38469333350 failed KSP parsing StyleTrialPlan.kt:117 at an extra closing parenthesis; no Android assertions or APK ran. The correction retains all old fields and optional recipes. Existing full M5 prompt assertions are extended with the new modernization prohibition; all prior exact prompt/image/legacy-byte assertions remain. New MockWebServer, real Room/full-share backup/owned-controller and320dp/dark/restoration/source-switch Compose fixtures join the additive DNA group. Renderer fixtures cover dark-on-dark visible artwork, alpha exclusions, state/animation versus real render exceptions; bounded300/600 local scans have50/150/500/1500 synthetic mappings. Retain all21 old groups, with22 total. Symlink companions, partial reports, consumed steps, native-color veto, and explicit manual Save are guarded. Current corrected execution is pending, not claimed passed. Zero live/paid requests or physical visual test.
+
+
+## Style DNA measured duotone correction
+
+Corrected integration head4531da8a compiled production and test Kotlin successfully, then Android CI38476057333 executed925 tests with exactly one new golden assertion failure: genuine white/cyan artwork was classified FIXED_PALETTE instead of DUOTONE. Independent failure artifact11853479616 is213996 bytes, SHA256 f3bf8d5964db87a4e273c39558a55b49e55cdbdb4689b536a5e4d0e88b6fa206. All924 other tests passed, including the six original red regressions and new wire/Room/UI integrations; no successful APK at that checkpoint.
+
+DNA family palette measurement now samples stable opaque interior paint before aggregating recurring colors. It excludes interpolated boundary mixtures, retains all existing geometry, falls back when too few interior pixels exist, and recycles its single256px bitmap. Existing legacy aggregate and sampler measurements stay unchanged. The same golden assertions remain; corrected full Android/all22/governance/XML/APK execution is required. No live or paid API request or physical device test occurred.
