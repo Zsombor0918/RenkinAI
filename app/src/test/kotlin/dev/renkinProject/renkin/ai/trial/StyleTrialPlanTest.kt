@@ -1,5 +1,7 @@
 package dev.renkinProject.renkin.ai.trial
 
+import android.content.ComponentName
+import org.robolectric.Shadows.shadowOf
 import android.app.Application
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -76,5 +78,28 @@ class StyleTrialPlanTest {
             override fun getOpacity() = android.graphics.PixelFormat.TRANSLUCENT
         }
         assertTrue(runCatching { renderTrialOriginal(broken) }.isFailure)
+    }
+    @Test fun exactAliasResourceRemainsOriginalWhenTheActivityApiReturnsThemedArtwork() = runBlocking {
+        val context = RuntimeEnvironment.getApplication()
+        val component = ComponentName(context.packageName, context.packageName + ".OriginalAlias")
+        val shadow = shadowOf(context.packageManager)
+        val info = shadow.addActivityIfNotPresent(component)
+        info.icon = R.drawable.ic_github
+        info.enabled = true; info.applicationInfo.enabled = true
+        val sourcePackB = renderTrialOriginal(checkNotNull(context.getDrawable(R.mipmap.ic_launcher_foreground)))
+        val genuineC = renderTrialOriginal(checkNotNull(context.getDrawable(R.drawable.ic_github)))
+        assertNotEquals(sha256(sourcePackB), sha256(genuineC))
+        for (appliedA in listOf(Color.WHITE, Color.GREEN)) {
+            shadow.addActivityIcon(component, ColorDrawable(appliedA))
+            val original = currentTrialOriginal(context, component.flattenToString())
+            assertArrayEquals("A themed display/API icon must not replace exact component resource C", genuineC, original.png)
+            assertTrue(original.origin.contains(component.flattenToString()))
+            assertNotEquals(sha256(sourcePackB), original.hash)
+        }
+    }
+    @Test fun removedComponentNeverFallsBackToTheApplicationOrSourcePack() = runBlocking {
+        val context = RuntimeEnvironment.getApplication()
+        val key = context.packageName + "/MissingLauncherAlias"
+        assertTrue(runCatching { currentTrialOriginal(context, key) }.isFailure)
     }
 }
