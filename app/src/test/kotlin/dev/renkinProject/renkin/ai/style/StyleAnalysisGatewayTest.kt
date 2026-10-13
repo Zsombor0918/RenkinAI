@@ -39,6 +39,19 @@ class StyleAnalysisGatewayTest {
         assertEquals("low", body.getJSONArray("input").getJSONObject(0).getJSONArray("content").getJSONObject(1).getString("detail"))
         assertEquals(canonicalJson(StyleProfileV1.jsonSchema()), canonicalJson(body.getJSONObject("text").getJSONObject("format").getJSONObject("schema")))
     }
+    @Test fun safeGoldenLowHighComparisonChangesOnlyDetailAndProductionRejectsHighWithoutConsentChange() = runBlocking {
+        val request = analysisFixtureRequest()
+        val low = analysisBody(request)
+        val high = analysisBody(request.copy(detail = "high"))
+        val highImages = high.getJSONArray("input").getJSONObject(0).getJSONArray("content")
+        assertEquals("high", highImages.getJSONObject(1).getString("detail"))
+        highImages.getJSONObject(1).put("detail", "low")
+        assertEquals(canonicalJson(low), canonicalJson(high))
+        MockWebServer().use { server ->
+            assertEquals(StyleAnalysisOutcome.InvalidInput, gateway(server).analyze(request.copy(detail = "high")))
+            assertEquals(0, server.requestCount)
+        }
+    }
     private val offlineCredential = UUID.randomUUID().toString()
     private fun gateway(server: MockWebServer, timeout: Long = 3000, key: () -> String = { offlineCredential }) =
         OpenAiStyleAnalysisGateway(key, OkHttpClient.Builder().callTimeout(timeout, TimeUnit.MILLISECONDS).build(), server.url("/v1/responses"))

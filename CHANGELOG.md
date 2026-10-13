@@ -1,5 +1,8 @@
 # Changelog
 
+- Improve local pack-style sampling and actual palette measurements; distinguish native brand-color variation from fixed palette or mixed drawing styles.
+- Show component-resource originals separately from style packs and require explicit original verification before paid trials when OEM artwork remains unverified.
+
 User-visible release changes only. Detailed engineering and test evidence belong
 in [change notes](docs/changes/README.md). No release is published by this PR.
 

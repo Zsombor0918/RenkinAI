@@ -1,5 +1,13 @@
 # Architecture
 
+## October13 style fidelity and component original refinement
+
+Owner comment6149883090 is implemented incrementally on PR#6 from422ef578. Local EXTEND now inspects up to300 mappings and selects proportional geometry-family medoids plus minority checks, with real alpha-aware Oklab palette swatches and measured roles/prevalence/distributions. Varied native logo hues alone are not mixed drawing styles; fixed palettes require recurring evidence. Advanced shows bounded local measurements separately from model inference. Cloud remains one separately confirmed low-detail request, same model/V1 schema, <=12 thumbnails/4MiB; manual CREATE and0–5 ordered generation refs remain.
+
+M5 already used exact component icons independently of EXTEND. It now resolves the enabled current-user component declared full resource, compares activity API bytes, freezes optional versioned evidence and displays Original app icon separately from the style pack. OEM overlays remain possible: new resource originals display UNVERIFIED_ORIGINAL and require conscious plan-specific verification before separate paid consent. Missing resource fails closed. Equal bytes retain old origin stamps and historical approvals; real differences/version/config changes stale the plan. Source packs provide style/coverage only. Legacy editor, AI1/AI2, Roomv21, backup/history, keys/build/install and M6 read-only guards remain.
+
+Actual test-first red95cd7786:144 XML/883 tests/4 failures/0 errors/skips; red812bc7da:144 XML/885 tests/5 failures/0 errors/skips, all new regressions only. Final-head automated/XML/benchmark/APK evidence is recorded in PR#6 after execution. No live API call or physical device run. [ADR0007](decisions/0007-style-fidelity-and-component-originals.md) defines the current boundaries. PR remains draft/open/unmerged for owner verification.
+
 ## OpenAI single-target output contract — October 13
 
 PromptComposer.openAiTrialAppearance validates saved style/project/app text without
@@ -658,13 +666,13 @@ variant before/after rendering. Material You-advertised sources, calendar/clock 
 animated/state/level/layer drawables are excluded or counted unsupported. Current
 night variants are explicitly stamped, not promised representative of other themes.
 
-ReferenceSampler sorts all source mappings, uniformly covers at most 120 candidates,
+ReferenceSampler sorts all source mappings, uniformly covers at most 300 candidates in the EXTEND controller (sampler compatibility default120),
 validates the existing 96px probe and a separately owned static 256px software PNG,
 and drops corrupt/empty/low-alpha, exact-SHA or near-perceptual duplicates. 64px
 features measure alpha occupancy/bounds, padding, brightness/saturation/contrast,
-quantized palette, edges and center occupancy; outline is a heuristic, not measured
-stroke width or recognition confidence. A medoid plus greedy farthest-first with
-source/hash tie-breaks selects at most 12. The report records actual examined/valid/
+actual alpha-weighted Oklab palette, edges and center occupancy; outline is a heuristic, not measured
+stroke width or recognition confidence. Proportional geometry families with density medoids, minority checks and
+source/hash tie-breaks select at most12. The report records actual examined/valid/
 duplicate/unsupported/broken counts and low-sample/mixed warnings. Zero samples
 cannot produce an analysis request. CREATE uses up to five owned manual PNGs, no pack.
 
@@ -782,8 +790,8 @@ StyleTrialPlan adds exact saved description/instruction and their style fingerpr
 and unique item/plan UUIDs. A zero eligible selection creates no plan. Unknown/dynamic/
 work-user/locked/protected local entries fail closed; covered overrides are explicit.
 Stable sorted first/middle/last suggestions avoid ranking every phone icon at API
-resolution and make no complexity claim. currentTrialOriginal checks a real launcher
-component and package stamps before/after a bounded 1024 draw, preserving alpha and
+resolution and make no complexity claim. currentTrialOriginal checks a real enabled current-user launcher
+component and its declared full resource, with package/configuration stamps before/after a bounded1024 draw, preserving alpha and
 rejecting empty/broken resources. Only previews are sampled into Compose bitmaps.
 
 ProjectTrialPanel reads on entry/resume, permits selection/configuration and then

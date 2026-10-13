@@ -22,6 +22,23 @@ class StyleAnalysisJournalTest {
     private fun journal() = StyleAnalysisJournal(analysisFixtureContext(temporary.root))
     private fun suggested() = StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_fixture", AnalysisUsage(40, 60))
 
+    @Test fun historicalAlgorithmFingerprintsRemainReadableAndNewEvidenceSurvivesReopen() = runBlocking {
+        val old = analysisFixtureRequest().copy(algorithm = LEGACY_REFERENCE_ALGORITHM)
+        val j = journal(); assertTrue(j.claim(old)); j.finish(4, old.requestId, suggested()); j.release(4, old.requestId)
+        val record = j.read(4, old.requestId)!!
+        assertFalse(org.json.JSONObject(record.encode()).has("algorithm"))
+        assertEquals(old.fingerprint, AnalysisRecord.parse(record.encode()).fingerprint)
+        assertEquals(LEGACY_REFERENCE_ALGORITHM, record.algorithm)
+        val samples = ReferenceSampler().manual((0 until 5).map { "own$it" to analysisFixturePng(it % 3, it) })
+        val current = analysisFixtureRequest(images = samples.samples.size).copy(images = samples.samples.map { AnalysisImage(it.hash, it.png) }, localReport = samples.report)
+        assertTrue(j.claim(current)); j.finish(4, current.requestId, suggested()); j.release(4, current.requestId)
+        val reopened = journal().latest(4)!!
+        assertEquals(REFERENCE_ALGORITHM, reopened.algorithm)
+        assertEquals(samples.report, reopened.localReport)
+        assertEquals(current.fingerprint, reopened.fingerprint)
+        assertEquals(analysisFixtureStyle(), reopened.style)
+        assertFalse(journal().claim(current))
+    }
     @Test fun noConsentAndStaleContextWriteNoFilesAndCallNoGateway() = runBlocking {
         val journal = journal(); val calls = AtomicInteger()
         val coordinator = StyleAnalysisCoordinator(journal, StyleAnalysisGateway { calls.incrementAndGet(); suggested() })

@@ -16,7 +16,8 @@ internal data class AnalysisRecord(val profileId: Long, val requestId: String, v
     val hashes: List<String>, val promptHash: String, val createdAt: Long,
     val status: AnalysisStatus, val styleJson: String? = null, val responseId: String? = null,
     val responseHash: String? = null, val usage: AnalysisUsage? = null, val reason: String? = null,
-    val reviewedRevision: Long? = null, val billingCertainty: String = "NOT_SUBMITTED", val localReport: ReferenceSampleReport? = null) {
+    val reviewedRevision: Long? = null, val billingCertainty: String = "NOT_SUBMITTED", val localReport: ReferenceSampleReport? = null,
+    val algorithm: String = REFERENCE_ALGORITHM) {
     val style: StyleProfileV1? get() = styleJson?.let(StyleProfileV1::parse)
     fun encode() = canonicalJson(json("schema" to 1, "profileId" to profileId, "requestId" to requestId,
         "fingerprint" to fingerprint, "context" to context?.encode(), "model" to model,
@@ -25,13 +26,13 @@ internal data class AnalysisRecord(val profileId: Long, val requestId: String, v
         "styleJson" to styleJson, "responseId" to responseId, "responseHash" to responseHash,
         "usage" to usage?.let { json("input" to it.inputTokens, "output" to it.outputTokens) },
         "reason" to reason, "reviewedRevision" to reviewedRevision, "billingCertainty" to billingCertainty,
-        "localReport" to localReport?.encode()))
+        "localReport" to localReport?.encode()).also { if (algorithm != LEGACY_REFERENCE_ALGORITHM) it.put("algorithm", algorithm) })
     companion object {
         fun parse(text: String): AnalysisRecord {
             val r = strictObject(text, 65536, 12); require(r.longValue("schema") == 1L)
             r.exactKeys(setOf("schema", "profileId", "requestId", "fingerprint", "context", "model", "description", "userInstruction",
                 "hashes", "promptHash", "createdAt", "status", "styleJson", "responseId", "responseHash", "usage", "reason",
-                "reviewedRevision", "billingCertainty", "localReport"))
+                "reviewedRevision", "billingCertainty", "localReport") + if (r.has("algorithm")) setOf("algorithm") else emptySet())
             fun nullable(key: String) = if (r.isNull(key)) null else r.stringValue(key)
             val a = r.getJSONArray("hashes"); require(a.length() <= 12)
             val record = AnalysisRecord(r.longValue("profileId"), r.stringValue("requestId"), r.stringValue("fingerprint"),
@@ -41,7 +42,9 @@ internal data class AnalysisRecord(val profileId: Long, val requestId: String, v
                 r.longValue("createdAt"), AnalysisStatus.valueOf(r.stringValue("status")), nullable("styleJson"),
                 nullable("responseId"), nullable("responseHash"), if (r.isNull("usage")) null else r.getJSONObject("usage").let { AnalysisUsage(it.longValue("input"), it.longValue("output")) },
                 nullable("reason"), if (r.isNull("reviewedRevision")) null else r.longValue("reviewedRevision"), r.stringValue("billingCertainty"),
-                if (r.isNull("localReport")) null else ReferenceSampleReport.parse(r.getJSONObject("localReport")))
+                if (r.isNull("localReport")) null else ReferenceSampleReport.parse(r.getJSONObject("localReport")),
+                if (r.has("algorithm")) r.stringValue("algorithm") else LEGACY_REFERENCE_ALGORITHM)
+            require(record.algorithm in setOf(REFERENCE_ALGORITHM, LEGACY_REFERENCE_ALGORITHM))
             require(record.profileId > 0 && UUID.fromString(record.requestId).toString() == record.requestId)
             require(record.fingerprint.matches(Regex("[a-f0-9]{64}")) && record.createdAt > 0)
             require(record.billingCertainty in setOf("NOT_SUBMITTED", "UNKNOWN", "RESPONSE_RECEIVED"))
@@ -50,7 +53,7 @@ internal data class AnalysisRecord(val profileId: Long, val requestId: String, v
                 require(record.model in ANALYSIS_MODELS && record.promptHash == sha256(canonicalJson(json("description" to record.description, "instruction" to record.userInstruction)).toByteArray()))
                 require(record.fingerprint == sha256(canonicalJson(json("context" to record.context.encode(),
                     "hashes" to JSONArray(record.hashes), "promptHash" to record.promptHash, "model" to record.model,
-                    "detail" to "low", "schema" to 1, "algorithm" to REFERENCE_ALGORITHM, "localReport" to record.localReport?.encode())).toByteArray()))
+                    "detail" to "low", "schema" to 1, "algorithm" to record.algorithm, "localReport" to record.localReport?.encode())).toByteArray()))
             } else require(record.status == AnalysisStatus.FAILED && record.styleJson == null)
             require(record.hashes.all { it.matches(Regex("[a-f0-9]{64}")) } && record.hashes.distinct().size == record.hashes.size)
             if (record.styleJson != null) {
@@ -145,7 +148,8 @@ internal class StyleAnalysisJournal(context: Context) {
         // PREPARED is a consumed consent too; an interrupted preparation is never replayed.
         val initial = AnalysisRecord(request.context.profileId, request.requestId, request.fingerprint, request.context,
             request.model, request.description, request.userInstruction, request.images.map { it.hash }, request.promptHash,
-            maxOf(System.currentTimeMillis(), (history.maxOfOrNull { it.createdAt } ?: 0L) + 1L), AnalysisStatus.PREPARED, localReport = request.localReport)
+            maxOf(System.currentTimeMillis(), (history.maxOfOrNull { it.createdAt } ?: 0L) + 1L), AnalysisStatus.PREPARED,
+            localReport = request.localReport, algorithm = request.algorithm)
         write(initial)
         request.images.forEach { image ->
             val destination = File(directory, "${image.hash}.png")

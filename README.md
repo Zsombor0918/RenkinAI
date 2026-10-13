@@ -22,11 +22,11 @@ Trial walkthrough: choose apps → **Save project target selection**; open **Pro
 enter a manual description under **Advanced: edit style and references** or review optional analysis,
 then **Save**. **Style trial icons** is visible at the top and explains missing
 prerequisites. Choose one to three apps → **Review frozen trial inputs** → the
-separate paid confirmation. Compare Original/Generated, Accept/Reject, then approve
+separate paid confirmation. Inspect **Original app icon** and its resource/type metadata separately from **Style reference pack**. If Android/OEM art is unverified, consciously check each genuine symbol/native colors before enabling payment; decline incorrect originals. Compare Original/Generated, Accept/Reject, then approve
 the common style separately. Local sampling, navigation and Save send no AI request.
 OpenAI trials now require one standalone target icon: original image1 supplies the
 symbol, later images supply visual style only, never their logos. MIXED source motifs
-stay observations. Old collages remain unchanged: mark them **Not suitable** and
+stay observations. Native target colors have priority unless a reviewed fixed/mono/duotone style intentionally recolors them. Local analysis inspects up to300 mappings, reports representative geometry and measured palette roles in Advanced, and uploads at most12 samples only after explicit consent. Old collages remain unchanged: mark them **Not suitable** and
 separately confirm any new paid retry. The corrected Flip8 one-icon acceptance is
 still required before merge; structural PNG validation cannot judge recognition.
 

@@ -1,5 +1,15 @@
 # Verification baseline
 
+## October13 style fidelity and component original refinement
+
+Owner comment6149883090 is implemented incrementally on PR#6 from422ef578. Local EXTEND now inspects up to300 mappings and selects proportional geometry-family medoids plus minority checks, with real alpha-aware Oklab palette swatches and measured roles/prevalence/distributions. Varied native logo hues alone are not mixed drawing styles; fixed palettes require recurring evidence. Advanced shows bounded local measurements separately from model inference. Cloud remains one separately confirmed low-detail request, same model/V1 schema, <=12 thumbnails/4MiB; manual CREATE and0–5 ordered generation refs remain.
+
+M5 already used exact component icons independently of EXTEND. It now resolves the enabled current-user component declared full resource, compares activity API bytes, freezes optional versioned evidence and displays Original app icon separately from the style pack. OEM overlays remain possible: new resource originals display UNVERIFIED_ORIGINAL and require conscious plan-specific verification before separate paid consent. Missing resource fails closed. Equal bytes retain old origin stamps and historical approvals; real differences/version/config changes stale the plan. Source packs provide style/coverage only. Legacy editor, AI1/AI2, Roomv21, backup/history, keys/build/install and M6 read-only guards remain.
+
+Actual test-first red95cd7786:144 XML/883 tests/4 failures/0 errors/skips; red812bc7da:144 XML/885 tests/5 failures/0 errors/skips, all new regressions only. Final-head automated/XML/benchmark/APK evidence is recorded in PR#6 after execution. No live API call or physical device run. [ADR0007](../decisions/0007-style-fidelity-and-component-originals.md) defines the current boundaries. PR remains draft/open/unmerged for owner verification.
+
+Independent red artifacts:11831575061 SHA256 b6e5e0af08c68c7c966c9317480da2292e943c164ddd5a84c3083812f8e1dffe and11832170290 SHA25677d863384c3c68323997aa38bcb02f5620e2852e15f04902aff2fd5ca061bf9c. Every existing selector was retained. Local Python52 guards passed; local Gradle/all21 fail before configuration at distribution download. Final-head results and actual synthetic50/150/500 timing/heap observations are in the PR audit; none is a device RSS or provider-quality claim.
+
 ## October 13 single-icon regression proof and corrective gate
 
 Before production edits,44c69cb2cab7722db93d26464b9b3e2b334f04a8 compiled in

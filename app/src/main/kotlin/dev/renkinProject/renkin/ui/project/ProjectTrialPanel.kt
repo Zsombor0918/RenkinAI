@@ -79,6 +79,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                     "stale_source" -> R.string.trialStaleSource
                     "changed_context" -> R.string.trialChangedContext
                     "stability_references" -> R.string.trialStabilityRefs
+                    "unverified_original" -> R.string.trialUnverifiedUnavailable
                     else -> R.string.trialContextError
                 }), Modifier.testTag("trial-error"))
                 OutlinedButton(onClick = onTargets, enabled = enabled,
@@ -211,6 +212,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
             modifier = Modifier.testTag("trial-recheck-confirm")) { Text(stringResource(R.string.trialAccept)) } },
         dismissButton = { TextButton(onClick = { recheckId = null }, Modifier.testTag("trial-recheck-cancel")) { Text(stringResource(R.string.colorizeCancel)) } })
     val plan = state.plan
+    var originalsVerified by remember(plan?.id) { mutableStateOf(false) }
     if (plan != null) RenkinAlertDialog(onDismissRequest = { if (!state.network) backend.cancelPreparation(id) },
         title = { Text(stringResource(R.string.trialConsentTitle)) },
         text = { Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()).testTag("trial-frozen-confirmation"),
@@ -219,18 +221,36 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 plan.context.provider, if (plan.context.provider == AiSettings.STABILITY) stringResource(R.string.trialStabilityRoute) else plan.context.model,
                 if (plan.context.provider == AiSettings.STABILITY) stringResource(R.string.trialProviderDefault) else plan.context.quality, plan.context.revision))
             Text(plan.specification); Text(plan.instruction); Text(plan.fingerprint)
+            Text(stringResource(R.string.trialStylePack, plan.context.sourcePackage ?: stringResource(R.string.styleAnalysisOwnSource)),
+                Modifier.testTag("trial-style-source"))
             plan.inputs.forEach { input ->
+                Text(stringResource(R.string.trialOriginalApp), Modifier.testTag("trial-original-label-${input.requestId}"))
                 Text(input.name); Text(input.key); Text(input.originalHash)
+                Text(input.origin, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("trial-original-origin-${input.requestId}"))
+                input.originalEvidence?.let { evidence ->
+                    Text(stringResource(R.string.trialOriginalEvidence, evidence.source, evidence.drawableType, evidence.user,
+                        if (evidence.platformAgreement) stringResource(R.string.trialOriginalAgreement) else stringResource(R.string.trialOriginalDifference)))
+                }
                 TrialPreview(id, input.originalHash, backend, "trial-frozen-${input.requestId}", 72, false, true,
-                    stringResource(R.string.trialOriginal))
+                    stringResource(R.string.trialOriginalApp))
             }
             plan.referenceHashes.forEachIndexed { index, hash ->
                 Text(stringResource(R.string.projectStyleReferenceNumber, index + 1)); Text(hash)
                 TrialPreview(id, hash, backend, "trial-frozen-reference-$index", 72, false, true,
                     stringResource(R.string.projectStyleReferencePreview))
             }
+            if (plan.inputs.any { it.originalEvidence != null }) {
+                Text(stringResource(R.string.trialOriginalUnverified), Modifier.testTag("trial-original-unverified"))
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(originalsVerified, enabled, Role.Checkbox) {
+                    originalsVerified = it; backend.verifyOriginals(id, plan.id, it)
+                }.testTag("trial-verify-originals")) {
+                    Checkbox(originalsVerified, onCheckedChange = null)
+                    Text(stringResource(R.string.trialVerifyOriginals))
+                }
+            }
         } },
-        confirmButton = { TextButton(onClick = { backend.submit(id, plan.id) }, enabled = enabled && state.hasKey && p?.context == plan.context,
+        confirmButton = { TextButton(onClick = { backend.submit(id, plan.id) }, enabled = enabled && state.hasKey && p?.context == plan.context &&
+            (plan.inputs.none { it.originalEvidence != null } || originalsVerified),
             modifier = Modifier.testTag("trial-confirm-paid")) { Text(stringResource(R.string.trialConfirmPaid)) } },
         dismissButton = { TextButton(onClick = { backend.cancelPreparation(id) }, enabled = !state.network,
             modifier = Modifier.testTag("trial-decline")) { Text(stringResource(R.string.colorizeCancel)) } })

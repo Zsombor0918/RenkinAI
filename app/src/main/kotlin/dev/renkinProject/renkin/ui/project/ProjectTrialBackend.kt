@@ -18,6 +18,7 @@ internal interface ProjectTrialBackend {
     fun options(id: Long, provider: String, model: String, quality: String)
     fun prepare(id: Long, keys: List<String>, allowCovered: Boolean)
     fun submit(id: Long, planId: String)
+    fun verifyOriginals(id: Long, planId: String, verified: Boolean) {}
     fun cancelPreparation(id: Long)
     fun stop(id: Long)
     fun release(id: Long)

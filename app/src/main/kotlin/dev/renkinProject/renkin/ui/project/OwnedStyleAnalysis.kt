@@ -58,7 +58,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         start(id) {
             val samples = if (mode == ProjectSetupMode.EXTEND) {
                 require(!source.isNullOrBlank() && setupStamp != null)
-                sampler.sample(owner.reader(source, true))
+                sampler.sample(owner.reader(source, true), candidateLimit = 300)
             } else {
                 val images = owner.owned(id) { draft.hashes.map { it to repository.referenceBytes(id, it) } }
                 sampler.manual(images)

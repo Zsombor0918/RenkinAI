@@ -2,6 +2,7 @@ package dev.renkinProject.renkin.ui.project
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -80,6 +82,13 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                 samples.sourceIdentity.packageName, samples.sourceIdentity.versionCode.toString(), samples.sourceIdentity.theme.toString()))
             if (samples.report.lowSample) Text(stringResource(R.string.styleAnalysisLowSamples))
             if (samples.report.mixedStyleSuspected) Text(stringResource(R.string.styleAnalysisMixed), Modifier.testTag("style-analysis-mixed"))
+            samples.report.evidence?.let { evidence ->
+                Text(stringResource(R.string.styleAnalysisLocalPolicy, evidence.colorPolicy.name), Modifier.testTag("style-analysis-local-policy"))
+                TextButton(onClick = { onAdvanced(!advanced) }, modifier = Modifier.heightIn(min = 48.dp).testTag("style-analysis-local-details")) {
+                    Text(stringResource(R.string.styleAnalysisAdvanced))
+                }
+                if (advanced) LocalStyleEvidence(evidence, samples.report, samples.samples.size)
+            }
             samples.samples.chunked(4).forEachIndexed { row, images ->
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     images.forEachIndexed { column, sample -> AnalysisThumbnail(sample.hash, { sample.png }, row * 4 + column) }
@@ -134,6 +143,7 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                 }
                 if (advanced) {
                     Text(stringResource(R.string.styleAnalysisAdvancedHelp))
+                    record.localReport?.evidence?.let { LocalStyleEvidence(it, record.localReport, record.hashes.size) }
                     Text(stringResource(R.string.styleAnalysisSelectedRefs, selected.size))
                     record.hashes.forEachIndexed { index, hash ->
                         Row {
@@ -207,6 +217,23 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
             dismissButton = { TextButton(onClick = { confirm = false }, modifier = Modifier.testTag("style-analysis-decline")) {
                 Text(stringResource(R.string.colorizeCancel))
             } })
+    }
+}
+
+@Composable
+private fun LocalStyleEvidence(evidence: PackStyleEvidence, report: ReferenceSampleReport, selected: Int) {
+    Column(Modifier.testTag("style-analysis-local-evidence"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(stringResource(R.string.styleAnalysisQuality, report.examined, report.valid, selected, report.duplicates,
+            report.unsupported, report.broken))
+        Text(stringResource(R.string.styleAnalysisFamilies, evidence.dominantFamily, evidence.artworks, evidence.families))
+        Text(stringResource(R.string.styleAnalysisMeasuredOnly))
+        evidence.swatches.forEach { swatch ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                androidx.compose.foundation.layout.Box(Modifier.size(24.dp).background(Color(android.graphics.Color.parseColor(swatch.argb))))
+                Text(stringResource(R.string.styleAnalysisSwatchRole, swatch.argb, swatch.role, swatch.icons, evidence.artworks, swatch.sharePercent))
+            }
+        }
+        Text(evidence.metrics)
     }
 }
 

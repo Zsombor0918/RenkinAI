@@ -19,7 +19,8 @@ import kotlin.math.sqrt
 
 internal const val REFERENCE_SIDE = 256
 internal const val MAX_ANALYSIS_PNG = 384 * 1024
-internal const val REFERENCE_ALGORITHM = "static256-features64-v1"
+internal const val LEGACY_REFERENCE_ALGORITHM = "static256-features64-v1"
+internal const val REFERENCE_ALGORITHM = "static256-oklab64-families-v2"
 
 /** Adaptive/vector/bitmap draw is independent of profile rendering/modifiers.
  * Unstable animated/state/layer resources are deliberately not certified static. */
@@ -65,8 +66,15 @@ private fun png(bitmap: Bitmap): ByteArray = ByteArrayOutputStream().use {
 internal data class ReferenceFeatures(
     val occupancy: Double, val padding: Double, val brightness: Double, val saturation: Double,
     val contrast: Double, val edgeDensity: Double, val outlineEstimate: Double,
-    val palette: List<String>, val colors: List<Double>, val alphaHash: Long, val luminanceHash: Long
+    val palette: List<String>, val colors: List<Double>, val alphaHash: Long, val luminanceHash: Long,
+    val paletteWeights: List<Double> = emptyList(), val width: Double = 0.0, val height: Double = 0.0,
+    val softAlpha: Double = 0.0
 ) {
+    /** Geometry family sketch deliberately excludes logo hue and theme brightness. */
+    fun geometryDistance(other: ReferenceFeatures): Double =
+        .35 * abs(occupancy - other.occupancy) + .15 * abs(padding - other.padding) +
+        .25 * abs(outlineEstimate - other.outlineEstimate) + .15 * abs(edgeDensity - other.edgeDensity) +
+        .10 * abs(contrast - other.contrast)
     fun distance(other: ReferenceFeatures): Double =
         .18 * abs(occupancy - other.occupancy) + .10 * abs(padding - other.padding) +
         .14 * abs(brightness - other.brightness) + .14 * abs(saturation - other.saturation) +
@@ -86,7 +94,8 @@ internal fun referenceFeatures(bytes: ByteArray): ReferenceFeatures {
         val pixels = IntArray(4096); bitmap.getPixels(pixels, 0, 64, 0, 0, 64, 64)
         val alpha = DoubleArray(4096); val luminance = DoubleArray(4096); val hist = IntArray(64)
         var occupied = 0; var center = 0; var left = 64; var top = 64; var right = -1; var bottom = -1
-        var light = 0.0; var light2 = 0.0; var sat = 0.0
+        var light = 0.0; var light2 = 0.0; var sat = 0.0; var weight = 0.0; var soft = 0
+        val colorPixels = mutableListOf<Pair<Int, Double>>()
         for (i in pixels.indices) {
             val p = pixels[i]; val a = (p ushr 24) and 255; alpha[i] = a / 255.0
             if (a < 32) continue
@@ -95,9 +104,13 @@ internal fun referenceFeatures(bytes: ByteArray): ReferenceFeatures {
             left = min(left, x); right = max(right, x); top = min(top, y); bottom = max(bottom, y)
             val r = (p ushr 16) and 255; val g = (p ushr 8) and 255; val b = p and 255
             val l = (.2126 * r + .7152 * g + .0722 * b) / 255
-            luminance[i] = l * alpha[i]; light += l; light2 += l * l
-            val hi = max(r, max(g, b)); val lo = min(r, min(g, b)); sat += if (hi == 0) 0.0 else (hi - lo).toDouble() / hi
+            luminance[i] = l * alpha[i]
+            val w = alpha[i]; weight += w; light += l * w; light2 += l * l * w
+            val hi = max(r, max(g, b)); val lo = min(r, min(g, b)); sat += w * if (hi == 0) 0.0 else (hi - lo).toDouble() / hi
             hist[(r / 64) * 16 + (g / 64) * 4 + b / 64]++
+            if (a < 224) soft++
+            // Faint antialias/shadow RGB is not a principal palette swatch.
+            if (a >= 128) colorPixels += (p or (0xff shl 24)) to w
         }
         require(occupied >= 20 && pixels.distinct().size > 1) { "Reference has too little visible artwork." }
         var edges = 0
@@ -113,13 +126,12 @@ internal fun referenceFeatures(bytes: ByteArray): ReferenceFeatures {
             }
             return result
         }
-        val palette = hist.indices.filter { hist[it] > 0 }.sortedWith(compareByDescending<Int> { hist[it] }.thenBy { it }).take(6).map {
-            val r = (it / 16) * 64 + 32; val g = (it / 4 % 4) * 64 + 32; val b = (it % 4) * 64 + 32
-            "#FF%02X%02X%02X".format(java.util.Locale.ROOT, r, g, b)
-        }
+        require(colorPixels.isNotEmpty()) { "Reference has no reliable visible colors." }
+        val swatches = measuredColors(colorPixels)
         return ReferenceFeatures(occupied / 4096.0, min(min(left, top), min(63 - right, 63 - bottom)) / 64.0,
-            light / occupied, sat / occupied, sqrt((light2 / occupied - (light / occupied) * (light / occupied)).coerceAtLeast(0.0)),
-            edges / 3969.0, (1 - center / 576.0).coerceIn(0.0, 1.0), palette,
-            hist.map { it.toDouble() / occupied }, hash(alpha), hash(luminance))
+            light / weight, sat / weight, sqrt((light2 / weight - (light / weight) * (light / weight)).coerceAtLeast(0.0)),
+            edges / 3969.0, (1 - center / 576.0).coerceIn(0.0, 1.0), swatches.map { colorHex(it.first) },
+            hist.map { it.toDouble() / occupied }, hash(alpha), hash(luminance), swatches.map { it.second },
+            (right - left + 1) / 64.0, (bottom - top + 1) / 64.0, soft.toDouble() / occupied)
     } finally { if (bitmap !== decoded) bitmap.recycle(); decoded.recycle() }
 }

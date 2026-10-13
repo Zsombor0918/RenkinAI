@@ -37,6 +37,18 @@ class StyleTrialPlanTest {
             assertEquals(3, p.endpointMaximum)
         }
     }
+    @Test fun optionalOriginalEvidenceRoundTripsWithoutRewritingLegacyPlanFingerprints() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(); val old = f.plan()
+            assertEquals(old.encode(), StyleTrialPlan.parse(old.encode()).encode())
+            assertFalse(old.encode().contains("originalEvidence"))
+            val evidence = OriginalIconEvidence("APP_COMPONENT_RESOURCE", "adaptive", 0, 420, 123, false)
+            val updated = old.copy(inputs = old.inputs.map { it.copy(originalEvidence = evidence) })
+            assertNotEquals(old.fingerprint, updated.fingerprint)
+            assertEquals(updated, StyleTrialPlan.parse(updated.encode()))
+            assertTrue(runCatching { OriginalIconEvidence.parse(evidence.json().put("verification", "PRISTINE")) }.isFailure)
+        }
+    }
     @Test fun strictSchemaTamperingDuplicateTargetsAndStabilityReferenceCountsReject() = runBlocking {
         StyleTrialFixture(temporary.root).use { f ->
             f.initialize(); val p = f.plan()

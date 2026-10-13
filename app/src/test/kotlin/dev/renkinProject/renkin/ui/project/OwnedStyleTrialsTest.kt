@@ -53,6 +53,59 @@ class OwnedStyleTrialsTest {
     private suspend fun generated(c: OwnedStyleTrials): StyleTrialPlan {
         val plan = prepared(c); c.submit(1, plan.id); idle(c).also { assertNull(it.error) }; return plan
     }
+    @Test fun resourceOriginalVerificationIsPlanSpecificAndChangedEvidencePreventsAPost() = runBlocking {
+        val value = f.originals.getValue("a/Main")
+        val evidence = OriginalIconEvidence("APP_COMPONENT_RESOURCE", "adaptive", 0, 420, 123, true)
+        f.originals["a/Main"] = value.copy(evidence = evidence)
+        val c = controller(); val p = prepared(c)
+        assertEquals(evidence, p.inputs.single().originalEvidence)
+        c.submit(1, p.id); assertEquals(0, calls)
+        c.verifyOriginals(1, "wrong-plan", true); c.submit(1, p.id); assertEquals(0, calls)
+        c.verifyOriginals(1, p.id, true)
+        f.originals["a/Main"] = value.copy(evidence = evidence.copy(density = 480))
+        c.submit(1, p.id); idle(c); assertEquals(0, calls)
+        val fresh = prepared(c); c.submit(1, fresh.id); assertEquals(0, calls)
+        c.verifyOriginals(1, fresh.id, true); c.submit(1, fresh.id); idle(c); assertEquals(1, calls)
+    }
+    @Test fun appliedDisplayAAndExtendStyleBRemainSeparateFromFrozenOriginalCAndRealFirstMultipart() = runBlocking {
+        f.initialize("EXTEND", refs = 1)
+        val genuineC = f.originals.getValue("a/Main").png
+        var appliedA = projectTestPng(android.graphics.Color.RED, 1024)
+        val sourceB = f.repo.referenceBytes(1, f.repo.load(1).references.single().hash)
+        assertFalse(genuineC.contentEquals(appliedA)); assertFalse(genuineC.contentEquals(sourceB))
+        okhttp3.mockwebserver.MockWebServer().use { server ->
+            val client = okhttp3.OkHttpClient.Builder().callTimeout(5, java.util.concurrent.TimeUnit.SECONDS).build()
+            gateway = ClientIconGenerationGateway({ java.util.UUID.randomUUID().toString() },
+                OpenAiImageClient(client, server.url("/edits")), StabilityImageClient(client, server.url("/style"), server.url("/background")))
+            val c = controller()
+            for (pass in 0..1) {
+                if (pass == 1) {
+                    appliedA = projectTestPng(android.graphics.Color.GREEN, 1024)
+                    f.index = f.index.copy(stamp = f.index.stamp.copy(packageName = "source.other", versionCode = 2, theme = true))
+                    val old = f.repo.load(1)
+                    f.repo.saveStyle(1, old.revision!!.revision, old.revision.specification, old.revision.userInstruction,
+                        old.references.map { it.hash }, "EXTEND", "source.other", projectSourceStamp(f.index))
+                    val metadata = f.repo.load(1).metadata!!
+                    f.repo.saveSelection(1, metadata.version, ProjectSelection("EXTEND", "source.other", projectSourceStamp(f.index),
+                        projectCatalogStamp(f.targets), f.targets.map { it.key }))
+                }
+                c.load(1, ProjectSetupMode.EXTEND, if (pass == 0) "source.pack" else "source.other"); assertNull(idle(c).error)
+                c.prepare(1, listOf("a/Main"), false); val plan = idle(c).plan!!
+                assertEquals(sha256(genuineC), plan.inputs.single().originalHash)
+                assertArrayEquals(genuineC, c.preview(1, plan.inputs.single().originalHash))
+                assertArrayEquals(sourceB, c.preview(1, plan.referenceHashes.single()))
+                val output = projectTestPng(size = 1024)
+                server.enqueue(okhttp3.mockwebserver.MockResponse().setBody("{\"data\":[{\"b64_json\":\"${android.util.Base64.encodeToString(output, android.util.Base64.NO_WRAP)}\"}]}"))
+                c.submit(1, plan.id); assertNull(idle(c).error)
+                val wire = server.takeRequest(5, java.util.concurrent.TimeUnit.SECONDS)!!.body.readByteArray().toString(Charsets.ISO_8859_1)
+                val originalPosition = wire.indexOf(genuineC.toString(Charsets.ISO_8859_1))
+                val stylePosition = wire.indexOf(sourceB.toString(Charsets.ISO_8859_1))
+                assertTrue(originalPosition >= 0 && stylePosition > originalPosition)
+                assertFalse(wire.contains(appliedA.toString(Charsets.ISO_8859_1)))
+                assertEquals(pass + 1, server.requestCount)
+            }
+        }
+    }
     @Test fun openPrepareCancelReloadAndMissingKeyRemainLocal() = runBlocking {
         key = false; val c = controller(); val p = prepared(c)
         assertFalse(c.state(1).value.hasKey); c.submit(1, p.id); c.cancelPreparation(1); loaded(c)

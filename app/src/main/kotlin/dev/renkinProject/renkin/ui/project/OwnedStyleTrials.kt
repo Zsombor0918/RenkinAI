@@ -32,6 +32,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     private val jobs = ConcurrentHashMap<Long, Job>()
     private val chosenOptions = ConcurrentHashMap<Long, Triple<String, String, String>>()
     private val images = ConcurrentHashMap<Long, Map<String, ByteArray>>()
+    private val verifiedOriginalPlans = ConcurrentHashMap<Long, String>()
     private fun matchesRoute(c: TrialContext) = routes[c.profileId]?.let { it.first.name == c.mode && it.second == c.sourcePackage } == true
     private fun flow(id: Long) = states.getOrPut(id) { MutableStateFlow(ProjectTrialState()) }
     override fun state(id: Long): StateFlow<ProjectTrialState> = flow(id)
@@ -49,6 +50,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             try { action() }
             catch (cancel: CancellationException) { throw cancel }
             catch (failure: TrialPrerequisite) { flow(id).value = flow(id).value.copy(error = failure.reason) }
+            catch (_: UnverifiedTrialOriginal) { flow(id).value = flow(id).value.copy(error = "unverified_original") }
             catch (_: Exception) { flow(id).value = flow(id).value.copy(error = "trial_context_or_storage") }
             finally { jobs.remove(id); flow(id).value = flow(id).value.copy(busy = false, network = false) }
         }
@@ -108,12 +110,14 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         routes[id]?.let { load(id, it.first, it.second) }
     }
     override fun prepare(id: Long, keys: List<String>, allowCovered: Boolean) = start(id) {
+        verifiedOriginalPlans.remove(id); images.remove(id)
+        flow(id).value = flow(id).value.copy(plan = null)
         val p = preparation(id)
         StyleTrialTargetSelector.validateChoice(p.candidates, keys, allowCovered)
         trialRequire(p.context.provider != AiSettings.STABILITY || p.style.references.size == 1, "stability_references")
         val originals = owner.owned(id) { keys.map { key -> key to owner.original(key) } }
         val inputs = originals.map { (key, original) -> TrialInput(key, p.candidates.single { it.target.key == key }.target.name,
-            original.hash, original.origin) }
+            original.hash, original.origin, originalEvidence = original.evidence) }
         val bytes = owner.owned(id) { p.style.references.associate { it.hash to repository.referenceBytes(id, it.hash) } } +
             originals.associate { it.second.hash to it.second.png }
         val plan = StyleTrialPlan(p.context, checkNotNull(p.style.revision).specification,
@@ -125,22 +129,28 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     }
     private suspend fun current(plan: StyleTrialPlan): Boolean = try {
         if (preparation(plan.context.profileId).context != plan.context) false else owner.owned(plan.context.profileId) {
-            plan.inputs.all { input -> owner.original(input.key).let { it.hash == input.originalHash && it.origin == input.origin } }
+            plan.inputs.all { input -> owner.original(input.key).let { it.hash == input.originalHash && it.origin == input.origin &&
+                (input.originalEvidence == null || it.evidence == input.originalEvidence) } }
         }
     } catch (cancel: CancellationException) { throw cancel }
     catch (_: Exception) { false }
     override fun submit(id: Long, planId: String) {
         val state = flow(id).value; val plan = state.plan ?: return
         if (plan.id != planId || !state.hasKey || state.busy) return
+        if (plan.inputs.any { it.originalEvidence != null } && verifiedOriginalPlans[id] != plan.id) return
         val bytes = images[id] ?: return
         start(id, network = true) {
             flow(id).value = flow(id).value.copy(plan = null)
             try { check(current(plan)); coordinator.submit(plan, bytes, true, { current(plan) }, { history(id) }) }
-            finally { withContext(NonCancellable) { images.remove(id); flow(id).value = flow(id).value.copy(plan = null); history(id) } }
+            finally { withContext(NonCancellable) { images.remove(id); verifiedOriginalPlans.remove(id); flow(id).value = flow(id).value.copy(plan = null); history(id) } }
             coordinator.recover(id); history(id)
         }
     }
-    override fun cancelPreparation(id: Long) { if (!flow(id).value.network) { images.remove(id); flow(id).value = flow(id).value.copy(plan = null) } }
+    override fun verifyOriginals(id: Long, planId: String, verified: Boolean) {
+        if (flow(id).value.plan?.id != planId || flow(id).value.busy) return
+        if (verified) verifiedOriginalPlans[id] = planId else verifiedOriginalPlans.remove(id)
+    }
+    override fun cancelPreparation(id: Long) { if (!flow(id).value.network) { images.remove(id); verifiedOriginalPlans.remove(id); flow(id).value = flow(id).value.copy(plan = null) } }
     override fun stop(id: Long) { jobs[id]?.cancel() }
     override fun release(id: Long) { if (!flow(id).value.network) { jobs[id]?.cancel(); cancelPreparation(id) } }
     private suspend fun currentOriginals(p: TrialPreparation, keys: List<String>): Map<String, Pair<String, String>> = owner.owned(p.context.profileId) {

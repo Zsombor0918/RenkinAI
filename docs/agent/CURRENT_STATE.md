@@ -1,5 +1,13 @@
 # Current implementation
 
+## October13 style fidelity and component original refinement
+
+Owner comment6149883090 is implemented incrementally on PR#6 from422ef578. Local EXTEND now inspects up to300 mappings and selects proportional geometry-family medoids plus minority checks, with real alpha-aware Oklab palette swatches and measured roles/prevalence/distributions. Varied native logo hues alone are not mixed drawing styles; fixed palettes require recurring evidence. Advanced shows bounded local measurements separately from model inference. Cloud remains one separately confirmed low-detail request, same model/V1 schema, <=12 thumbnails/4MiB; manual CREATE and0–5 ordered generation refs remain.
+
+M5 already used exact component icons independently of EXTEND. It now resolves the enabled current-user component declared full resource, compares activity API bytes, freezes optional versioned evidence and displays Original app icon separately from the style pack. OEM overlays remain possible: new resource originals display UNVERIFIED_ORIGINAL and require conscious plan-specific verification before separate paid consent. Missing resource fails closed. Equal bytes retain old origin stamps and historical approvals; real differences/version/config changes stale the plan. Source packs provide style/coverage only. Legacy editor, AI1/AI2, Roomv21, backup/history, keys/build/install and M6 read-only guards remain.
+
+Actual test-first red95cd7786:144 XML/883 tests/4 failures/0 errors/skips; red812bc7da:144 XML/885 tests/5 failures/0 errors/skips, all new regressions only. Final-head automated/XML/benchmark/APK evidence is recorded in PR#6 after execution. No live API call or physical device run. [ADR0007](../decisions/0007-style-fidelity-and-component-originals.md) defines the current boundaries. PR remains draft/open/unmerged for owner verification.
+
 ## October 13 single-icon P0 correction — owner visual acceptance pending
 
 Owner ticket6142499049 confirms analysis/trials now run on a1c2310, but new trial
@@ -297,10 +305,10 @@ cloud analysis requires the existing saved OpenAI key. Suggestions never replace
 saved styles or dirty drafts without explicit Use, and Use itself does not save.
 
 ReferenceSampler uses the existing parser's opt-in all-source index, real static
-256px draw, <=120 uniformly distributed candidates and <=12 distinct diverse samples.
+256px draw, <=300 uniformly distributed candidates in EXTEND and <=12 proportional geometry-family samples.
 A report exposes actual exclusions, small samples and suspected mixed styles; no
 coverage/progress/confidence percentage is invented. Night/package/version/index/
-algorithm stamps guard reuse; dynamic/unstable artwork is excluded. Generation refs
+versioned algorithm stamps guard reuse; dynamic/unstable artwork is excluded. Generation refs
 retain their five-image cap, separately ordered/imported under the existing owner lease.
 
 StyleProfileV1 and PromptComposer bound categories/text/colors, escape untrusted input

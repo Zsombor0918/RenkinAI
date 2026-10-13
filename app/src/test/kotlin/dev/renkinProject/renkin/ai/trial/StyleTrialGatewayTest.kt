@@ -49,6 +49,8 @@ class StyleTrialGatewayTest {
         appendLine("TARGET / EDIT / OUTPUT CONTRACT (authoritative):")
         appendLine("Image 1 is the TARGET ORIGINAL: the original icon of this single target app.")
         appendLine("Preserve its distinctive identifying symbol and recognizability at 48 px; never substitute another app's logo.")
+        appendLine("Preserve its logo proportions and meaningful original colors by default. For ADAPT_BRAND_COLORS, MIXED or UNKNOWN color policy, target native hues win; sample swatches are observations, not mandatory recoloring.")
+        appendLine("Only an explicitly reviewed FIXED_PALETTE, MONOCHROME or DUOTONE style may intentionally recolor this target; identity always wins. Apply geometry, stroke, background, shadow and padding without borrowing reference content.")
         appendLine(if (refs == 0) "No style reference images were supplied; use only the quoted appearance guidance."
             else "Images 2 through ${refs + 1} are STYLE REFERENCES ONLY. Transfer palette, stroke weight, optical size, geometry, shading and padding; never copy their logos or app symbols.")
         appendLine("Produce exactly ONE centered standalone Android launcher icon on a 1024x1024 transparent PNG canvas.")

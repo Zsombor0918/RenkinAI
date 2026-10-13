@@ -30,6 +30,7 @@ Owner review/merge is pending. Codex 06/07 remain planned; device/provider accep
 | [Governance ADR](decisions/0001-repository-governance.md) | Durable decision, alternatives and consequences |
 | [Project AI persistence ADR](decisions/0004-project-ai-persistence.md) | Profile-owned immutable history/assets, migration, full/share backup and gateway limits |
 | [Trial consent/recovery ADR](decisions/0006-style-trial-consent-and-recovery.md) | Separate trial UUIDs, durable RAW/review/approval, v21 migration and M6 read-only reuse |
+| [Style fidelity/originals ADR](decisions/0007-style-fidelity-and-component-originals.md) | Bounded local geometry/palette evidence, compatible journals and explicit original verification |
 | [Reviewed analysis ADR](decisions/0005-reviewed-style-analysis.md) | Bounded references, consent-bound recovery, structured evidence and explicit style acceptance |
 | [Read-only coverage ADR](decisions/0003-read-only-source-coverage.md) | Source facts separate from local profile state, bounded preview and user-identity limits |
 | [Project/session ADR](decisions/0002-profile-backed-project-home.md) | Profile IDs as projects, single session and explicit asynchronous navigation |

@@ -63,19 +63,21 @@ internal data class TrialContext(val profileId: Long, val revision: Long, val me
 }
 
 internal data class TrialInput(val key: String, val name: String, val originalHash: String,
-    val origin: String, val requestId: String = UUID.randomUUID().toString()) {
+    val origin: String, val requestId: String = UUID.randomUUID().toString(), val originalEvidence: OriginalIconEvidence? = null) {
     fun validate() {
         require(key.isNotBlank() && key.length <= 1000 && '/' in key && '\u0000' !in key)
         require(name.length <= 1000 && origin.isNotBlank() && origin.length <= 1000)
         trialHash(originalHash); trialId(requestId)
+        originalEvidence?.validate()
     }
     fun json(): JSONObject { validate(); return json("key" to key, "name" to name, "originalHash" to originalHash,
-        "origin" to origin, "requestId" to requestId) }
+        "origin" to origin, "requestId" to requestId).also { if (originalEvidence != null) it.put("originalEvidence", originalEvidence.json()) } }
     companion object {
         fun parse(r: JSONObject): TrialInput {
-            r.exactKeys(setOf("key", "name", "originalHash", "origin", "requestId"))
+            r.exactKeys(setOf("key", "name", "originalHash", "origin", "requestId") + if (r.has("originalEvidence")) setOf("originalEvidence") else emptySet())
             return TrialInput(r.stringValue("key"), r.stringValue("name"), r.stringValue("originalHash"),
-                r.stringValue("origin"), r.stringValue("requestId")).also { it.validate() }
+                r.stringValue("origin"), r.stringValue("requestId"),
+                if (r.has("originalEvidence")) OriginalIconEvidence.parse(r.getJSONObject("originalEvidence")) else null).also { it.validate() }
         }
     }
 }

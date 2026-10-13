@@ -874,7 +874,7 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="styleAnalysisFailed">No valid style suggestion was received, or the candidate was discarded. The saved style is unchanged. A new request needs new confirmation and may cost money.</string>
     <string name="styleAnalysisStale">This candidate belongs to an older source, preparation or restored project. View it as historical inspiration. Only a source-only change allows explicit re-review; changed project context requires fresh preparation.</string>
     <string name="styleAnalysisSummary">Type: %1$s · Background: %2$s · Stroke: %3$s · Corners: %4$s · Padding: %5$s · Detail: %6$s</string>
-    <string name="styleAnalysisPalette">Palette: %1$s</string>
+    <string name="styleAnalysisPalette">Model palette suggestion (review before recoloring): %1$s</string>
     <string name="styleAnalysisAssessment">Model self-assessment: %1$s. This is not calibrated confidence or a probability.</string>
     <string name="styleAnalysisUsage">Observed API usage: %1$d input tokens, %2$d output tokens. This is not a price estimate.</string>
     <string name="styleAnalysisAdvanced">Advanced: edit style and references</string>
@@ -890,7 +890,7 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="styleAnalysisUseText">Copy this suggestion and the selected references into the draft? Your project instruction is preserved. A separate Save accepts it.</string>
     <string name="styleAnalysisConsentTitle">Confirm one paid style-analysis request</string>
     <string name="styleAnalysisOwnSource">your own images</string>
-    <string name="styleAnalysisConsentText">Source: %1$s\nUpload: %2$d small PNG samples and your style text\nModel: %3$s\n\nThis sends at most 1 analysis request to OpenAI using your saved OpenAI key. The exact cost is unknown; the request may be billed. It creates no icons and never retries automatically. The request asks OpenAI not to store the response; the provider may still retain operational data under its policies. Use only images you are entitled to send, including third-party pack artwork. Package identity and installed-app lists are not uploaded. Confirm only this frozen input.</string>
+    <string name="styleAnalysisConsentText">Source: %1$s\nUpload: %2$d small PNG samples, your style text and bounded measured pixel statistics\nModel: %3$s\n\nThis sends at most 1 analysis request to OpenAI using your saved OpenAI key. The exact cost is unknown; the request may be billed. It creates no icons and never retries automatically. The request asks OpenAI not to store the response; the provider may still retain operational data under its policies. Use only images you are entitled to send, including third-party pack artwork. Package identity and installed-app lists are not uploaded. Confirm only this frozen input.</string>
     <string name="styleAnalysisConfirm">Confirm 1 paid analysis request</string>
     <string name="styleAnalysisPreview">Analysis reference %1$d preview</string>
     <string name="trialTitle">Style trial icons</string>
@@ -953,4 +953,18 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="trialGenerated">Generated</string>
     <string name="trialImageUnavailable">Saved image unavailable. Restore its backup; do not regenerate automatically.</string>
     <string name="trialLauncherPreview">%1$s at 48 px launcher size</string>
+
+    <string name="trialOriginalApp">Original app icon</string>
+    <string name="trialStylePack">Style reference pack: %1$s</string>
+    <string name="trialOriginalEvidence">%1$s · %2$s · user %3$d · %4$s</string>
+    <string name="trialOriginalAgreement">resource agrees with activity icon API</string>
+    <string name="trialOriginalDifference">resource differs from activity icon API</string>
+    <string name="trialOriginalUnverified">UNVERIFIED_ORIGINAL: Android app resources can still have OEM or Theme Park overlays. Compare each frozen icon with the genuine app symbol and native colors. If these are themed or incorrect, decline; no paid request has started.</string>
+    <string name="trialVerifyOriginals">I checked each original symbol and authentic colors. Use these exact icons.</string>
+    <string name="trialUnverifiedUnavailable">UNVERIFIED_ORIGINAL: the exact enabled component resource could not be verified for this user. No paid request was prepared. Review the app and target selection; a source-pack or custom icon will never be substituted.</string>
+    <string name="styleAnalysisLocalPolicy">Local color usage estimate: %1$s</string>
+    <string name="styleAnalysisQuality">Inspected %1$d mappings · %2$d distinct artworks · %3$d selected/request thumbnails · %4$d duplicates · %5$d unsupported · %6$d broken or empty</string>
+    <string name="styleAnalysisFamilies">Dominant geometry family: %1$d of %2$d distinct artworks; %3$d measured families.</string>
+    <string name="styleAnalysisMeasuredOnly">Measured local swatches and pixel statistics; model descriptions are separate inferences. Swatches are observations, not mandatory target recoloring. Duplicates and one source theme can limit representativeness.</string>
+    <string name="styleAnalysisSwatchRole">%1$s · %2$s · present in %3$d/%4$d artworks · mean visible share %5$d%%</string>
 </resources>

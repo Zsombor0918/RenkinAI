@@ -52,14 +52,16 @@ internal data class AnalysisImage(val hash: String, val png: ByteArray)
 internal data class StyleAnalysisRequest(val context: AnalysisContext, val images: List<AnalysisImage>,
     val description: String, val userInstruction: String,
     val model: String = DEFAULT_ANALYSIS_MODEL, val detail: String = "low",
-    val requestId: String = UUID.randomUUID().toString(), val localReport: ReferenceSampleReport? = null) {
+    val requestId: String = UUID.randomUUID().toString(), val localReport: ReferenceSampleReport? = null,
+    val algorithm: String = REFERENCE_ALGORITHM) {
     val promptHash: String get() = sha256(canonicalJson(json("description" to description, "instruction" to userInstruction)).toByteArray())
     val fingerprint: String get() = sha256(canonicalJson(json("context" to context.encode(),
         "hashes" to JSONArray(images.map { it.hash }), "promptHash" to promptHash,
-        "model" to model, "detail" to detail, "schema" to 1, "algorithm" to REFERENCE_ALGORITHM,
+        "model" to model, "detail" to detail, "schema" to 1, "algorithm" to algorithm,
         "localReport" to localReport?.encode())).toByteArray())
     fun validate() {
         context.validate(); require(UUID.fromString(requestId).toString() == requestId)
+        require(algorithm in setOf(REFERENCE_ALGORITHM, LEGACY_REFERENCE_ALGORITHM))
         require(model in ANALYSIS_MODELS && detail == "low" && images.size in 1..12)
         cleanText(description, 6000, true); cleanText(userInstruction, 2000, true)
         require(images.map { it.hash }.distinct().size == images.size && images.sumOf { it.png.size.toLong() } <= 4L * 1024 * 1024)

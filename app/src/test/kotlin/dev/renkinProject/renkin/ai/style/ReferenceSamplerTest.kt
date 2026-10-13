@@ -51,6 +51,72 @@ class ReferenceSamplerTest {
         assertTrue(chosen.any { it.component.startsWith("outlier") })
         assertEquals(chosen.map { it.component }, diverseReferences((dominant + outliers).reversed(), 12).map { it.component })
     }
+    private fun coloredIcon(color: Int, variant: Int = 0, secondary: Int? = null): ByteArray {
+        val original = analysisFixturePng(0, variant)
+        val decoded = BitmapFactory.decodeByteArray(original, 0, original.size)
+        val bitmap = decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
+        try {
+            for (y in 0 until 256) for (x in 0 until 256) {
+                val a = Color.alpha(bitmap.getPixel(x, y))
+                val c = if (secondary != null && x >= 128) secondary else color
+                bitmap.setPixel(x, y, Color.argb(a, Color.red(c), Color.green(c), Color.blue(c)))
+            }
+            return java.io.ByteArrayOutputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
+        } finally { bitmap.recycle() }
+    }
+    private fun measured(pngs: List<ByteArray>) = pngs.mapIndexed { i, png -> SampledReference("shape$i", "fixture", sha256(png), png, referenceFeatures(png)) }
+    @Test fun monochromeDuotoneAndBrandColorsHaveDifferentPoliciesWithoutCallingVariedHuesMixedGeometry() {
+        val white = measured((0 until 8).map { coloredIcon(Color.WHITE, it) })
+        assertEquals(PackColorPolicy.MONOCHROME, packStyleEvidence(white)!!.colorPolicy)
+        val duo = measured((0 until 8).map { coloredIcon(Color.rgb(11, 133, 211), it, Color.rgb(245, 130, 22)) })
+        assertEquals(PackColorPolicy.DUOTONE, packStyleEvidence(duo)!!.colorPolicy)
+        val hues = listOf(Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.CYAN, Color.YELLOW,
+            Color.rgb(255, 130, 20), Color.rgb(140, 40, 210))
+        val branded = measured(hues.mapIndexed { i, c -> coloredIcon(c, i) })
+        val evidence = packStyleEvidence(branded)!!
+        assertEquals(PackColorPolicy.ADAPT_BRAND_COLORS, evidence.colorPolicy)
+        assertTrue(evidence.dominantFamily >= branded.size * .8)
+        assertEquals(evidence, PackStyleEvidence.parse(evidence.encode()))
+        assertTrue(evidence.metrics.contains("unknown locally"))
+    }
+    @Test fun faintColoredFringeDoesNotBecomeAPaletteRuleAndOpticalBoundsAreMeasured() {
+        val png = coloredIcon(Color.WHITE)
+        val decoded = BitmapFactory.decodeByteArray(png, 0, png.size)
+        val bitmap = decoded.copy(Bitmap.Config.ARGB_8888, true).also { decoded.recycle() }
+        try {
+            for (x in 0 until 256) bitmap.setPixel(x, 0, Color.argb(10, 255, 0, 255))
+            val bytes = java.io.ByteArrayOutputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
+            val f = referenceFeatures(bytes)
+            assertEquals("#FFFFFFFF", f.palette.first())
+            assertTrue(f.width in .2.. .9 && f.height in .2.. .9 && f.padding > 0.0)
+            assertTrue(f.paletteWeights.first() > .95)
+        } finally { bitmap.recycle() }
+    }
+    @Test fun newReportEvidenceRoundTripsAndHistoricalReportsStayByteEquivalent() {
+        val old = ReferenceSampleReport(120, 12, 100, 3, 5, false, false)
+        assertEquals(old, ReferenceSampleReport.parse(old.encode()))
+        assertFalse(old.encode().has("evidence"))
+        val evidence = packStyleEvidence(measured((0 until 8).map { coloredIcon(Color.WHITE, it) }))!!
+        val newer = ReferenceSampleReport(300, 8, 280, 3, 9, false, false, evidence)
+        assertEquals(newer, ReferenceSampleReport.parse(newer.encode()))
+        assertTrue(runCatching { ReferenceSampleReport.parse(newer.encode().put("extra", 1)) }.isFailure)
+        assertTrue(runCatching { PackStyleEvidence.parse(evidence.encode().put("schema", 2)) }.isFailure)
+    }
+    @Test fun boundedLocalScanBenchmarksFiftyOneHundredFiftyAndFiveHundredMappings() = runBlocking {
+        val pngs = artwork(0) + artwork(1) + artwork(2)
+        val names = pngs.keys.sorted()
+        for (count in listOf(50, 150, 500)) for (cap in listOf(120, 240, 300)) {
+            val mapping = (0 until count).associate { "bench.%04d/Main".format(it) to names[it % names.size] }
+            val start = System.nanoTime(); val runtime = Runtime.getRuntime(); val before = runtime.totalMemory() - runtime.freeMemory()
+            val result = sampler.sample(FixtureReferenceReader(pngs, mapping), candidateLimit = cap)
+            val elapsed = (System.nanoTime() - start) / 1000000
+            val heapDelta = runtime.totalMemory() - runtime.freeMemory() - before
+            assertEquals(minOf(count, cap), result.report.examined)
+            assertTrue(result.samples.size <= 12 && result.samples.sumOf { it.png.size.toLong() } <= 4L * 1024 * 1024)
+            result.report.validate()
+            println("REFERENCE_BENCH pack=$count cap=$cap examined=${result.report.examined} unique=${result.report.valid} selected=${result.samples.size} duplicates=${result.report.duplicates} elapsedMs=$elapsed heapDeltaBytes=$heapDelta retainedPngCapBytes=8388608")
+        }
+    }
     private val sampler = ReferenceSampler()
     private fun artwork(style: Int) = (0 until 18).associate { "style${style}_$it" to analysisFixturePng(style, it) }
 

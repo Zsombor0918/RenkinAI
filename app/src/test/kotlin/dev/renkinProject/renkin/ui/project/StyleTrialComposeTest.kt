@@ -56,6 +56,8 @@ class StyleTrialComposeTest {
     private inner class Backend(var base: TrialPreparation? = preparation()) : ProjectTrialBackend {
         val flow = MutableStateFlow(ProjectTrialState(preparation = base, hasKey = true))
         var paidPlans = 0; var stops = 0; var loads = 0; var key = true
+        var originalEvidence: OriginalIconEvidence? = null
+        var verifiedPlan: String? = null
         val consumed = mutableSetOf<String>(); var pending: StyleTrialPlan? = null
         override fun state(id: Long) = flow
         override fun load(id: Long, mode: ProjectSetupMode, source: String?) {
@@ -68,9 +70,10 @@ class StyleTrialComposeTest {
         override fun prepare(id: Long, keys: List<String>, allowCovered: Boolean) {
             val p = checkNotNull(base); StyleTrialTargetSelector.validateChoice(p.candidates, keys, allowCovered)
             val plan = StyleTrialPlan(p.context, p.style.revision!!.specification, p.style.revision.userInstruction,
-                p.style.references.map { it.hash }, keys.map { TrialInput(it, p.candidates.single { c -> c.target.key == it }.target.name, hash, "launcher:$it:1") })
+                p.style.references.map { it.hash }, keys.map { TrialInput(it, p.candidates.single { c -> c.target.key == it }.target.name, hash, "launcher:$it:1", originalEvidence = originalEvidence) })
             flow.value = flow.value.copy(plan = plan)
         }
+        override fun verifyOriginals(id: Long, planId: String, verified: Boolean) { verifiedPlan = if (verified) planId else null }
         override fun submit(id: Long, planId: String) {
             val p = flow.value.plan ?: return
             if (!key || flow.value.busy || p.id != planId || !consumed.add(planId)) return
@@ -117,6 +120,20 @@ class StyleTrialComposeTest {
         compose.onNodeWithTag("trial-decline").performClick(); assertEquals(0, b.paidPlans)
         restoration.emulateSavedInstanceStateRestore(); assertEquals(0, b.paidPlans)
         compose.onNodeWithTag("trial-confirm-paid").assertDoesNotExist()
+    }
+    @Test fun unverifiedResourceOriginalNeedsVisibleConsciousVerificationBeforePaidConsent() {
+        val b = Backend(preparation(ProjectSetupMode.EXTEND, 1))
+        b.originalEvidence = OriginalIconEvidence("APP_COMPONENT_RESOURCE", "adaptive", 0, 420, 123, false)
+        show(b); prepare()
+        compose.onNodeWithTag("trial-confirm-paid").assertIsNotEnabled()
+        compose.onNodeWithTag("trial-frozen-confirmation").performScrollToNode(hasTestTag("trial-original-unverified"))
+        compose.onNodeWithText("UNVERIFIED_ORIGINAL", substring = true).assertExists()
+        compose.onNodeWithTag("trial-frozen-confirmation").performScrollToNode(hasTestTag("trial-verify-originals"))
+        compose.onNodeWithTag("trial-verify-originals").performClick()
+        assertEquals(b.flow.value.plan!!.id, b.verifiedPlan)
+        compose.onNodeWithTag("trial-confirm-paid").assertIsEnabled()
+        compose.onNodeWithTag("trial-decline").performClick(); assertEquals(0, b.paidPlans)
+        prepare(); compose.onNodeWithTag("trial-confirm-paid").assertIsNotEnabled()
     }
     @Test fun explicitConfirmationDoubleTapReviewAndSeparateApprovalAreDistinct() {
         val b = Backend(); show(b); prepare()
