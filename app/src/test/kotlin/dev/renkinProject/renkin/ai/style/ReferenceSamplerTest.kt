@@ -95,6 +95,24 @@ class ReferenceSamplerTest {
         assertEquals("A recurring neutral background is not a fixed logo palette", PackColorPolicy.ADAPT_BRAND_COLORS, evidence.colorPolicy)
         assertTrue(evidence.swatches.any { it.role == "neutral" && it.icons == icons.size })
     }
+    @Test fun deliberatelyRepeatedSixColorArtworkHasAFixedPaletteRatherThanMixedBrandHues() {
+        val hues = listOf(Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.CYAN, Color.YELLOW)
+        val icons = (0 until 8).map { variant ->
+            val bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
+            try {
+                val canvas = Canvas(bitmap); val paint = Paint()
+                hues.forEachIndexed { index, c ->
+                    paint.color = c
+                    canvas.drawRect(16f + index * 36, (16 + variant).toFloat(), 16f + (index + 1) * 36, (240 - variant).toFloat(), paint)
+                }
+                java.io.ByteArrayOutputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
+            } finally { bitmap.recycle() }
+        }
+        val evidence = packStyleEvidence(measured(icons))!!
+        assertEquals(PackColorPolicy.FIXED_PALETTE, evidence.colorPolicy)
+        assertEquals(6, evidence.swatches.size)
+        assertTrue(evidence.swatches.all { it.icons == icons.size })
+    }
     @Test fun faintColoredFringeDoesNotBecomeAPaletteRuleAndOpticalBoundsAreMeasured() {
         val png = coloredIcon(Color.WHITE)
         val decoded = BitmapFactory.decodeByteArray(png, 0, png.size)

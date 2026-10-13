@@ -67,8 +67,12 @@ internal suspend fun currentTrialOriginal(context: Context, key: String): TrialO
     val suffix = "${component.flattenToString()}:${androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(after)}:${after.lastUpdateTime}:$night:render1"
     // Equal original bytes retain the historical origin, so a refactor alone does not stale approvals.
     val origin = if (platformAgreement) "launcher:$suffix" else "component-resource-v2:$suffix:user=$user:resource=$resourceId"
-    val type = when (drawable) { is AdaptiveIconDrawable -> "adaptive"; is android.graphics.drawable.BitmapDrawable -> "bitmap"
-        is android.graphics.drawable.VectorDrawable -> "vector"; else -> "other" }
+    val type = when {
+        android.os.Build.VERSION.SDK_INT >= 26 && drawable is AdaptiveIconDrawable -> "adaptive"
+        drawable is android.graphics.drawable.BitmapDrawable -> "bitmap"
+        drawable is android.graphics.drawable.VectorDrawable -> "vector"
+        else -> "other"
+    }
     TrialOriginal(bytes, origin, OriginalIconEvidence(if (info.icon != 0) "APP_COMPONENT_RESOURCE" else "APP_RESOURCE_FALLBACK",
         type, user, density, resourceId, platformAgreement))
 }

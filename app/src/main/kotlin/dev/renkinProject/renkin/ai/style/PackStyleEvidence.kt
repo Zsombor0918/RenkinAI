@@ -105,14 +105,21 @@ internal fun packStyleEvidence(input: List<SampledReference>): PackStyleEvidence
     fun matching(s: SampledReference, color: Int) = s.features.palette.mapIndexed { i, c ->
         if (colorDistance(android.graphics.Color.parseColor(c), color) <= .05) s.features.paletteWeights.getOrNull(i) ?: (1.0 / s.features.palette.size) else 0.0 }.sum()
     val recurring = palette.filter { (color, _) -> input.count { matching(it, color) >= .08 } >= input.size * .7 }
-    val fixed = input.size >= 4 && input.count { sample -> recurring.sumOf { matching(sample, it.first) } >= .88 } >= input.size * .8
+    // A common neutral tile must not erase a small but meaningful varying brand accent.
+    val variableAccents = input.count { sample -> sample.features.palette.withIndex().any { (i, hex) ->
+        val color = android.graphics.Color.parseColor(hex); val lab = oklab(color)
+        val share = sample.features.paletteWeights.getOrNull(i) ?: (1.0 / sample.features.palette.size)
+        share >= .05 && sqrt(lab[1].pow(2) + lab[2].pow(2)) > .025 && recurring.none { colorDistance(color, it.first) <= .05 }
+    } } >= input.size * .5
+    val fixed = input.size >= 4 && !variableAccents &&
+        input.count { sample -> recurring.sumOf { matching(sample, it.first) } >= .88 } >= input.size * .8
     val coherent = families.first().size >= input.size * .8
     val policy = when {
         input.size < 4 -> PackColorPolicy.UNKNOWN
         fixed && recurring.size == 1 -> PackColorPolicy.MONOCHROME
         fixed && recurring.size == 2 -> PackColorPolicy.DUOTONE
         fixed -> PackColorPolicy.FIXED_PALETTE
-        coherent && input.count { it.features.saturation > .15 } >= input.size * .7 -> PackColorPolicy.ADAPT_BRAND_COLORS
+        coherent && (variableAccents || input.count { it.features.saturation > .15 } >= input.size * .7) -> PackColorPolicy.ADAPT_BRAND_COLORS
         families.first().size < input.size * .7 -> PackColorPolicy.MIXED
         else -> PackColorPolicy.UNKNOWN
     }
