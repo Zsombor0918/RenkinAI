@@ -1,5 +1,8 @@
 # Changelog
 
+- Add opt-in per-icon Style DNA diagnostics, Quick/Standard reports, editable family grammar and frozen target recipes on stacked draft PR7.
+- Repair optional recipe compilation and measured duotone paint classification; verified code passes925 tests and all22 regression groups. Deep and live/device visual quality remain unverified.
+
 - Improve local pack-style sampling and actual palette measurements; distinguish native brand-color variation from fixed palette or mixed drawing styles.
 - Show component-resource originals separately from style packs and require explicit original verification before paid trials when OEM artwork remains unverified.
 

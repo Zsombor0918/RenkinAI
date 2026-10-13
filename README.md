@@ -1,5 +1,15 @@
 # Renkin AI – personal fork
 
+Opt-in Style DNA D0–D3 is developed in stacked draft [PR #7](https://github.com/Zsombor0918/RenkinAI/pull/7)
+above working PR #6. Code tests pass925/925 and all22 regression groups; final-head
+evidence is in the PR audit. In Project AI style choose Legacy, Quick or Standard,
+then **Prepare locally** to inspect exclusions and labeled samples without a key or paid call.
+Quick uses up-to12 individual reports/local synthesis; Standard uses up-to24 reports
+and separately listed synthesis. Each paid action needs explicit frozen-plan consent;
+review/edit families and explicitly Save before choosing a target-specific trial recipe.
+The original target icon supplies identity. Deep is disabled and improved generated
+visual quality is unverified. [Complete scope and limitations](docs/changes/2026-10-14-style-dna-verification.md).
+
 AI icon generation, persistent missing-icon batches and per-app prompt instructions. [Hungarian setup, architecture and limitations](docs/AI_FORK_HU.md).
 Based on the upstream Renkin project below; GPLv3 and upstream attribution retained.
 

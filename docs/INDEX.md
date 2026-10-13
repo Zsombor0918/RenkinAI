@@ -1,6 +1,9 @@
 # Documentation index
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
+
+Current Style DNA scope, complete changed-file inventory and genuinely executed red/green
+evidence: [October14 verification](changes/2026-10-14-style-dna-verification.md).
 Current facts come from the checked-out source; inherited prose is not a substitute.
 The Codex 00 baseline is `main` at `eb4daa5de82fab54e115363c073eb8981f2203d6`
 (verified October 11, 2026). Commit-specific validation is recorded separately.

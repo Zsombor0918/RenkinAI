@@ -1,5 +1,58 @@
 # Verification baseline
 
+## October 14 — Style DNA verified code checkpoint
+
+Code `89eacb0d49fb9d1479db048b6f2b2a1e987995d0` passed
+[Android38477038060](https://github.com/Zsombor0918/RenkinAI/actions/runs/38477038060) and
+[all22 regressions38477037827](https://github.com/Zsombor0918/RenkinAI/actions/runs/38477037827).
+Independent artifact11857125237,638786 bytes,SHA256
+`076d772e6961d67ef9a50652fe5cdfed117b2cf90451c4964fcff8eea9585f12`:
+exact summary HEAD, every command exit0, all selectors present,
+**149 complete-suite XML /925 actual testcase nodes /0 failures /0 errors /0 skipped**.
+Declared suite and summary counts agree with independently recounted nodes.
+DNA integration26/26; retained trial gateway15/15. Genuine19/20/21 exports are
+byte-equivalent;v21 identity8c7a3c8b5b26ad29673ebbd77605838e,30159bytes.
+
+Test-first b2df166a (before production):904/6, all six failures new reproductions.
+Integration4531da8a compiled and executed925/1; artifact11854671326,642854 bytes,
+SHA2568b241e9942fea945bc2f2cfe5d54b787c16fda9e1cb2760acec44167308192a0
+independently has149 XML/925 tests/one duotone golden failure/no errors/skips.
+Stable-interior family colors correct that failure with all expectations unchanged.
+
+| Synthetic golden case | Reports | Families | Measured family policy | Elapsed ms | JVM heap delta bytes |
+| --- | --- | --- | --- | --- | --- |
+| Lux-like mixed | 12 | 2 | ADAPT_BRAND_COLORS | 162 | 58712464 |
+| Basit-like outline | 12 | 1 | MONOCHROME | 64 | 6291544 |
+| Monochrome | 12 | 1 | MONOCHROME | 76 | 9435192 |
+| Genuine duotone | 12 | 1 | DUOTONE | 76 | 12582944 |
+| Wordmark | 12 | 1 | MONOCHROME | 63 | 5242880 |
+| Variable brand colors | 12 | 1 | ADAPT_BRAND_COLORS | 162 | -63006392 |
+
+| Mappings | Cap | Examined / distinct / selected | Elapsed ms | JVM heap delta bytes |
+| --- | --- | --- | --- | --- |
+| 50 | 300 | 50 /37 /24 | 138 | 30999664 |
+| 50 | 600 | 50 /37 /24 | 140 | -90428152 |
+| 150 | 300 | 150 /40 /24 | 363 | 80203448 |
+| 150 | 600 | 150 /40 /24 | 365 | -39773416 |
+| 500 | 300 | 300 /41 /24 | 700 | 31170912 |
+| 500 | 600 | 500 /40 /24 | 1162 | 3496936 |
+| 1500 | 300 | 300 /41 /24 | 704 | 29858624 |
+| 1500 | 600 | 600 /40 /24 | 1376 | -74365992 |
+
+These are native-Robolectric synthetic fixtures, not Lux/Basit proprietary pack samples.
+GC-sensitive JVM heap deltas are not peak RSS/native memory or phone latency.
+The suite proves finer report granularity, families, policies, no reference-identity
+contamination and bounded one-shot recovery; no generated image or blind held-out
+style-fidelity comparison occurred. Deep and live D4 remain deferred.
+Local Python52/52 passed in14.988s at this code head; docs123paths/commit23subjects
+passed. Local Gradle/full runner fail before configuration downloading8.11.1.
+Zero live/paid API calls; no device, account, pricing or install/update validation.
+
+The closing documentation commit changes no code/tests/build/schema. Its own mandatory
+Android/all22/governance and fresh independent XML/APK verification must be recorded
+with final SHA in [PR7's audit](https://github.com/Zsombor0918/RenkinAI/pull/7).
+The code checkpoint above cannot substitute for that exact-head evidence.
+
 ## Closing-head isolated initial-load race — ffabb37b
 
 Documentation-only headffabb37b passed Android38437258752 and the unfiltered

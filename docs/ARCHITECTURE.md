@@ -1,5 +1,21 @@
 # Architecture
 
+## Current opt-in Style DNA architecture
+
+Separate stacked PR7 adds diagnostics, individually labeled reports, independently validated
+family synthesis, typed editable revision evidence and a target-specific recipe compiler.
+Quick1 and Standardup-to5 one-shot submissions use their own durable consumed-step journal.
+Only a consciously reviewed immutable revision enters M5; original componentC supplies
+identity at the existing native request factory. Stable opaque interiors improve new
+family palette measurement without changing legacy aggregate measurement. Room21,
+full/shareformat6/payload3 and historical optional JSON/fingerprints remain compatible.
+
+The code architecture is regression-verified at89eacb0d (925 tests/all22 groups).
+Provider visual quality and device/signing acceptance remain separate. See
+[ADR0008](decisions/0008-style-dna-stacked-development.md) and
+[closed scope](changes/2026-10-14-style-dna-verification.md). Earlier records below
+retain their original dates/results.
+
 Checkpoint73cd29e8 / Android38434288813 compiled and ran897 tests with exactly one new neutral-tile policy failure; all previous/new original, wire, journal and UI tests passed. The follow-up distinguishes recurring neutral/background mass from varying significant chromatic accents, preserving brand colors even when the tile dominates area. Genuine final-head results and all21 XML/benchmark evidence are recorded in PR#6.
 
 

@@ -1,5 +1,21 @@
 # Agent, Git and review workflow
 
+## October 14 — Style DNA closing-head verification
+
+Style DNA code89eacb0d passes original Android tasks and all22 runner groups:
+149 XML/925 actual tests, zero failures/errors/skips, all selectors and genuine schema
+exports present. Independent artifact11857125237 is638786 bytes, SHA256
+`076d772e6961d67ef9a50652fe5cdfed117b2cf90451c4964fcff8eea9585f12`.
+Initial b2df166a904/6 and corrected compilation4531da8a925/1 remain observed red evidence.
+No selector, assertion, timeout, idling, failure condition or existing job was weakened.
+
+For the closing docs-only HEAD run all mandatory local guards/range checks, complete
+runner and Gradle attempt, then hosted Android/all22/commit-conventions/documentation-audit.
+Local SDK/bootstrap network failure is not Android success. Independently download final-head
+XML/schema evidence and APK, verify package/digests/signature and update PR7's audit with
+the final SHA. BLOCKED stays until mandatory gates finish; PASS WITH RISKS may record
+explicit device/live gaps without claiming owner review/merge. Keep stacked draft unmerged.
+
 ## October 13 owner reproduction coverage
 
 The existing trial-ui group additionally includes ProjectStyleTrialJourneyComposeTest.

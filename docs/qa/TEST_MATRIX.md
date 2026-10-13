@@ -1,5 +1,25 @@
 # Regression and test matrix
 
+## October 14 — verified Style DNA code and remaining acceptance
+
+Code89eacb0d: Android38477038060 and all22 commands38477037827 passed;
+independent149 full-suite XML/925 tests/zero failures/errors/skips, all selectors present.
+The additive DNA group contains26 tests: reproduction6, workflow10, real-wire4,
+real Room/full-share/controller3, narrow Compose3. Retained M5 gateway adds one exact
+original/ref/recipe multipart case. Every old group and full-suite gate remains.
+
+| Contract tested offline | Remaining unverified boundary |
+| --- | --- |
+| Missing/unrenderable/state/animation/render/alpha/resource reasons; hue-preserving duplicate veto;300/600 caps and24 selection | Actual owner Lux176 omissions and installed resources; native peak memory |
+| Quick1 and Standard4×6+1 synthesis, exact IDs/hashes, strict reports/families/palette/depth, six synthetic golden cases | Real model consistency, account access, blind held-out visual improvement |
+| Mock400/401/403/429/503/refusal/malformed/partial/oversize/timeout, durable consumed steps, cold/delete/restore no replay | Physical process kill, filesystem faults and provider billing |
+| Native320dp/dark/restoration/source change, separate consent/review/Save; real Room21/full-share rekey | Physical fold/hinge/TalkBack and installed-data upgrade |
+| Actual multipart originalC, ordered style-only refs, concrete frozen recipes and hard single-icon contract | Recognizable pack-specific generated output on a real phone/provider |
+
+Room19/20/21 bytes/identities are unchanged. Zero live/paid calls. The closing docs-only
+HEAD still requires its own full hosted/local-governance verification and fresh artifact;
+exact final evidence is in [PR7](https://github.com/Zsombor0918/RenkinAI/pull/7).
+
 ## Style fidelity and original-source enhancement gates
 
 Retained routed EXTEND analysis additionally waits for the actual prepare node's

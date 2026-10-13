@@ -1,5 +1,34 @@
 # Current implementation
 
+## October 14 — Style DNA D0–D3 code verified on stacked PR7
+
+The current opt-in source is `feat/style-dna-v1`, stacked on working PR6 head
+`454bd5ec9219b6dd9add26f21f399e8a63bb53b6`; PR6 and main remain unchanged.
+Code checkpoint `89eacb0d49fb9d1479db048b6f2b2a1e987995d0` passed Android
+CI38477038060 and every22 regression command in38477037827. Independently counted
+149 full-suite XML / **925 tests /0 failures /0 errors /0 skipped**; DNA integration26/26.
+Real Room19/20/21 exports match tracked bytes, with no schema/migration change.
+Local Python52/52 passed; local Gradle remains unavailable before configuration.
+
+D0 diagnoses safe source exclusions and preserves distinct measured hues, with explicit
+up-to600-candidate/24-image sampling. D1 binds each labeled icon to its own report:
+Quick up-to12/one POST/local synthesis; Standard up-to24/six-image groups plus independent
+text synthesis, maximum5 explicitly listed submissions. D2 stores editable family grammar
+in tagged nullable revision JSON and requires human Save. D3 freezes target-specific
+drawing recipes while component originalC remains exclusive identity and output stays one icon.
+Existing manual/aggregate M4, null-override AI1/AI2, editor, profiles, backup, watch and
+build/sign/install paths remain covered by retained tests.
+
+Deep, blind held-out visual fidelity, actual Lux/Basit resources, account/model quality,
+physical phone/TalkBack/fold, peak native memory and signed installed-data upgrade are NOT RUN.
+Six synthetic golden cases prove report/family/palette behavior, not better generated visuals.
+Zero live/paid API calls. No key was requested or reused. Keep PR7 draft/unmerged.
+The closing documentation commit changes no source; its own final-head checks,
+fresh XML/APK hashes and exact SHA are recorded externally in [PR7's audit](https://github.com/Zsombor0918/RenkinAI/pull/7).
+See [complete scope and verification](../changes/2026-10-14-style-dna-verification.md).
+
+The sections below retain earlier checkpoint evidence and must not replace current-head checks.
+
 Final documentation-headffabb37b compiled/built and passed898 unfiltered tests,
 but one isolated retained UI journey clicked before its independent initial Room
 load completed. The follow-up waits for the actual enabled prepare action within

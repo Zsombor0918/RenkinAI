@@ -1,5 +1,44 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## October 14 — completed D0–D3, owner visual acceptance open
+
+Both owner specifications were read fully before production edits. Primary execution scope
+is D0–D3 plus deterministic D4 fixtures on separate `feat/style-dna-v1`, stacked draft
+[PR7](https://github.com/Zsombor0918/RenkinAI/pull/7) targeting PR6's `feat/style-trials-m5`.
+Original baseline454bd5ec, unchanged mainaf7bdb10. Code89eacb0d passed Android38477038060
+and all22 groups38477037827: independently149 XML/925 actual tests/zero failures/errors/skips,
+DNA26/26, genuine19/20/21 schema bytes unchanged. Full file inventory, red/green evidence
+and exact limits are in the [verification note](../changes/2026-10-14-style-dna-verification.md).
+The closing docs-only head must have its own full checks and newly downloaded APK;
+its exact SHA, final XML/artifact and certificate evidence belong in PR7's audit.
+
+Free device walkthrough: open the real project, choose CREATE or EXTEND and the intended
+style packB, then Project AI style. Keep Legacy or explicitly choose Quick/Standard.
+Prepare locally and inspect examined/valid/duplicate/exclusion counts and labeled thumbnails;
+do not press paid confirmation during this authorized offline validation. Existing manual
+style Save and classic editor remain available without a key. Inspect Original app iconC
+separately from B and reject a themed, missing or wrong identity before any optional trial.
+
+After separate future owner authorization, the app's analysis confirmation lists actual
+model/detail/images and every frozen charged step. Inspect per-image reports/families,
+edit grammar if necessary, select at most5 style references, check human review and explicitly
+Save a new revision. Then choose trial targets/family/symbol type, inspect the frozen drawing
+recipe and genuine originalC, and separately confirm a trial only if authorized.
+No Prepare, navigation, report review, Save, backup or restart automatically submits an endpoint.
+
+Implemented deterministic contracts are distinct from experimental visual quality:
+Quick recurrence may remain UNKNOWN; Standard depends on unverified model observations.
+Deep is disabled. Real pack source diagnosis, blind held-out style/recognition/native-color
+comparison, peak memory, physical Samsung/Theme Park/TalkBack/fold and signing/update are open.
+CI debug signing uses an ephemeral runner key; do not assume it can update an installed
+debug build with a different certificate. Preserve existing data and both signing keys.
+
+Next safe task is owner local/device inspection. Before any paid A/B, prepare a concrete
+model/request/cost-limit proposal from current official pricing and the approved fixture set,
+then obtain explicit owner authorization and use the app's existing secure credential setup;
+never place a key in chat, source, fixtures, logs or CI. No live/paid call, merge, force push,
+main write or release occurred here. Keep both PRs draft/open for owner review.
+
 Closingffabb37b passed Android and898 unfiltered tests; isolated trial-ui failed
 one existing analysis journey before the panel's initial Room load enabled its
 prepare action. The test-only follow-up observes real enabled semantics before the
