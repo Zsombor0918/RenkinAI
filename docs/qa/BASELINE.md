@@ -1,5 +1,19 @@
 # Verification baseline
 
+## October 13 single-icon P0 — test-first checkpoint
+
+Start from a1c2310895bd3f161da31ff03b72575b2853e917 on existing PR #6, with clean
+tree and fresh remote main af7bdb10. Owner ticket6142499049 reports multi-app
+collages after otherwise functioning analysis/trials. The new two-class regression
+checkpoint changes no production source. Coordinator/Room and complete serialized
+multipart tests require one target, style-only refs, motif exclusion, quoted lower
+priority guidance, bounds and exact legacy AI1/AI2/Stability bytes. Hosted red results
+must be observed before the corrective code; historical871 passes are not evidence.
+Fresh local Python52/52 passed in7.319s; whitespace passed. Local complete Gradle
+failed before configuration downloading8.11.1, Network is unreachable. No local
+Android count or APK is claimed. No live/paid API call or physical device test.
+See the [test-first note](../changes/2026-10-13-single-icon-trial-reproduction.md).
+
 ## October 13 870/871 checkpoint — local Use completion
 
 Head b15112f392b56378753cd7a04e47ecd2d91ef198 compiled production and tests in

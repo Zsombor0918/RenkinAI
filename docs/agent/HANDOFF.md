@@ -1,5 +1,23 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## Single-icon owner blocker — test-first continuation
+
+Continue only feat/style-trials-m5 / PR #6 from a1c2310895bd3f161da31ff03b72575b2853e917,
+accepted main af7bdb10, fresh remote refs and no unrelated changes. Owner ticket
+[6142499049](https://github.com/Zsombor0918/RenkinAI/pull/6#issuecomment-6142499049)
+supersedes earlier phone failure status: analysis/trials now run, but produced collages
+remain UNREVIEWED. No source-pack screenshot was inspected in GitHub.
+
+Only additive tests and docs change in this deliberately red checkpoint. Require
+actual Android assertions before production edits: complete original-first ordered
+multipart 0/1/5 refs and targets A/B/C, manual/MIXED motifs, conflicting quoted text,
+prompt bounds and independently frozen legacy/Stability body parity. Python52 passes;
+local Gradle download is blocked before configuration. All original21 groups remain.
+Next: read hosted failures, enforce the OpenAI single-icon contract at composition
+and request boundary, preserve Stability/legacy bytes, then final-head gates/APK.
+No live API calls, retries, main writes, force pushes, merge or M6/M7 work. Keep draft
+open until owner separately authorizes a new phone generation and accepts one icon.
+
 ## Remaining local Use synchronization
 
 The b15112f3 correction compiled and independently passed 870/871 in Android
