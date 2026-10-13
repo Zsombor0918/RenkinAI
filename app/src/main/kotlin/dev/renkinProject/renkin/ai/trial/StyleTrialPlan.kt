@@ -114,7 +114,7 @@ internal data class StyleTrialPlan(val context: TrialContext, val specification:
     fun encode(): String { validate(); return canonicalJson(json("schema" to 1, "id" to id,
         "context" to context.json(), "specification" to specification, "instruction" to instruction,
         "referenceHashes" to JSONArray(referenceHashes), "inputs" to JSONArray(inputs.map { it.json() })).also {
-            if (drawingRecipes.isNotEmpty()) it.put("drawingRecipes",json(*drawingRecipes.map { it.key to it.value }.toTypedArray())) })) }
+            if (drawingRecipes.isNotEmpty()) it.put("drawingRecipes",json(*drawingRecipes.map { it.key to it.value }.toTypedArray())) }) }
     companion object {
         fun parse(text: String): StyleTrialPlan {
             val r = strictObject(text, 65536, 12); require(r.longValue("schema") == 1L)

@@ -48,16 +48,16 @@ internal class StyleDnaJournal(context: Context,private val fault: (String)->Uni
     private fun directory(id: Long): File { require(id>0);return safe(File(root,id.toString())) }
     private fun safe(file: File): File { require(file.canonicalPath==file.absolutePath && file.absolutePath.startsWith(root.parentFile!!.canonicalPath+File.separator));return file }
     private fun recordFile(p: StyleDnaPlan)=safe(File(directory(p.context.profileId),"plan-${p.id}.json"))
-    private fun readable(f: File)=f.isFile || File(f.path+".bak").isFile
-    private fun reserved(f: File)=readable(f) || File(f.path+".new").exists()
+    private fun readable(f: File)=safe(f).isFile || safe(File(f.path+".bak")).isFile
+    private fun reserved(f: File)=readable(f) || safe(File(f.path+".new")).exists()
     private fun write(f: File,bytes: ByteArray) {
         require(bytes.size<=256*1024);safe(f);check(f.parentFile!!.mkdirs() || f.parentFile!!.isDirectory)
-        val atomic=AtomicFile(f);val out=atomic.startWrite()
+        safe(File(f.path+".bak"));safe(File(f.path+".new"));val atomic=AtomicFile(f);val out=atomic.startWrite()
         try {out.write(bytes);out.flush();out.fd.sync();fault("BEFORE_FINISH");atomic.finishWrite(out) }
         catch(t: Throwable) { atomic.failWrite(out);throw t }
     }
     private fun read(f: File): StyleDnaRecord {
-        safe(f);return AtomicFile(f).openRead().use { input->
+        safe(f);safe(File(f.path+".bak"));safe(File(f.path+".new"));return AtomicFile(f).openRead().use { input->
             val bytes=input.readBytesBounded(256*1024);StyleDnaRecord.parse(Charsets.UTF_8.newDecoder()
                 .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT).decode(java.nio.ByteBuffer.wrap(bytes)).toString()) }
     }
@@ -96,7 +96,7 @@ internal class StyleDnaJournal(context: Context,private val fault: (String)->Uni
     }
     private fun writeImage(f: File,bytes: ByteArray) {
         validateAnalysisPng(bytes);safe(f);check(f.parentFile!!.mkdirs() || f.parentFile!!.isDirectory)
-        val atomic=AtomicFile(f);val out=atomic.startWrite()
+        safe(File(f.path+".bak"));safe(File(f.path+".new"));val atomic=AtomicFile(f);val out=atomic.startWrite()
         try {out.write(bytes);out.flush();out.fd.sync();atomic.finishWrite(out)} catch(t:Throwable){atomic.failWrite(out);throw t}
     }
     fun image(id: Long,hash: String): ByteArray=synchronized(shared.lock) {
@@ -112,7 +112,7 @@ internal class StyleDnaJournal(context: Context,private val fault: (String)->Uni
         r.copy(steps=r.steps.map { if(it.id==s.id)it.copy(status="DONE",responseId=response.responseId,usage=response.usage) else it },reports=r.reports+newReports) }
     fun result(p: StyleDnaPlan,result: SavedStyleDna)=mutate(p) { r->require(r.steps.all { it.status=="DONE" } && r.reports==result.reports)
         r.copy(status=DnaStatus.RESULT_SAVED,result=result) }
-    fun failed(p: StyleDnaPlan,reason: String,unknown: Boolean)=mutate(p) { it.copy(status=if(unknown)DnaStatus.UNCERTAIN else DnaStatus.FAILED,reason=reason) }
+    fun failed(p: StyleDnaPlan,reason: String,unknown: Boolean)=mutate(p) { if(it.result!=null)it else it.copy(status=if(unknown)DnaStatus.UNCERTAIN else DnaStatus.FAILED,reason=reason) }
     fun reviewed(p: StyleDnaPlan)=mutate(p) { check(it.result!=null);it.copy(status=DnaStatus.REVIEWED) }
     private fun mutate(p: StyleDnaPlan,action: (StyleDnaRecord)->StyleDnaRecord)=synchronized(shared.lock) {
         val f=recordFile(p);val r=read(f);require(r.plan==p);write(f,action(r).encode().toByteArray()) }

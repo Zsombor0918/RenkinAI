@@ -34,6 +34,36 @@ internal fun dnaReportsBody(reports: List<DnaIconReport>)=canonicalJson(json("sc
 class StyleDnaWorkflowTest {
     @get:Rule val temporary=TemporaryFolder()
     private fun journal()=StyleDnaJournal(analysisFixtureContext(temporary.root))
+
+    @Test fun safeRendererSeparatesDeliberateStatefulExclusionsFromDarkVisibleAndBrokenArt() {
+        val resources=org.robolectric.RuntimeEnvironment.getApplication().resources
+        val bitmap=Bitmap.createBitmap(256,256,Bitmap.Config.ARGB_8888)
+        try {
+            bitmap.eraseColor(Color.rgb(20,20,22));val paint=Paint().apply {color=Color.rgb(25,25,28)}
+            Canvas(bitmap).drawCircle(128f,128f,65f,paint)
+            val result=diagnoseReference(android.graphics.drawable.BitmapDrawable(resources,bitmap))
+            assertTrue(result is ReferenceRead.Rendered);assertTrue(referenceFeatures((result as ReferenceRead.Rendered).png).occupancy>.9)
+            assertEquals(ReferenceFailure.UNSUPPORTED_STATEFUL,(diagnoseReference(android.graphics.drawable.StateListDrawable()) as ReferenceRead.Failed).reason)
+            assertEquals(ReferenceFailure.UNSUPPORTED_DYNAMIC,(diagnoseReference(android.graphics.drawable.AnimationDrawable()) as ReferenceRead.Failed).reason)
+            assertEquals(ReferenceFailure.EMPTY_ALPHA,(diagnoseReference(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT)) as ReferenceRead.Failed).reason)
+            assertEquals(ReferenceFailure.NEAR_EMPTY_ALPHA,(diagnoseReference(android.graphics.drawable.ColorDrawable(Color.argb(10,255,255,255))) as ReferenceRead.Failed).reason)
+            val broken=object:android.graphics.drawable.Drawable(){override fun draw(canvas:Canvas){throw IllegalStateException("private resource path")}
+                override fun setAlpha(alpha:Int){};override fun setColorFilter(filter:ColorFilter?){};@Deprecated("Deprecated")override fun getOpacity()=PixelFormat.TRANSLUCENT}
+            assertEquals(ReferenceFailure.RENDER_EXCEPTION,(diagnoseReference(broken) as ReferenceRead.Failed).reason)
+        } finally {bitmap.recycle()}
+    }
+    @Test fun boundedSixHundredCandidateScanRetainsTwentyFourSeparateThumbnailsAndMinorityChecks()=runBlocking {
+        val art=(0 until 54).associate {"art$it" to analysisFixturePng(it%3,it)}
+        for(size in listOf(50,150,500,1500)) for(cap in listOf(300,600)) {
+            val mapping=(0 until size).associate {"entry%04d/Main".format(it) to "art${it%54}"}
+            val before=System.nanoTime();val runtime=Runtime.getRuntime();val heap=runtime.totalMemory()-runtime.freeMemory()
+            val r=ReferenceSampler().sample(FixtureReferenceReader(art,mapping),cap,24)
+            assertEquals(minOf(size,cap),r.report.examined);r.report.validate();assertTrue(r.samples.size<=24)
+            assertTrue(r.samples.sumOf {it.png.size.toLong()}<=8L*1024*1024)
+            println("DNA_SCAN mappings=$size cap=$cap examined=${r.report.examined} distinct=${r.report.valid} selected=${r.samples.size} elapsedMs=${(System.nanoTime()-before)/1000000} heapDeltaBytes=${runtime.totalMemory()-runtime.freeMemory()-heap} nativePeak=NOT_MEASURED")
+        }
+    }
+
     @Test fun standardHasFourSixImageReadsThenOneIndependentSynthesisWithDurableSteps()=runBlocking {
         val (plan,images)=dnaFixturePlan();val j=journal();var calls=0
         val c=StyleDnaCoordinator(j,StyleDnaGateway { request,before->

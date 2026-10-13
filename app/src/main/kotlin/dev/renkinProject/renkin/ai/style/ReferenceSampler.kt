@@ -137,7 +137,10 @@ internal fun diverseReferences(input: List<SampledReference>, limit: Int): List<
     val size = minOf(limit, input.size)
     val allocations = IntArray(families.size)
     // Reserve one minority check only when there is room; the rest follow population share.
-    if (families.size > 1 && size > 1) allocations[1] = 1
+    if (families.size > 1 && size > 1) {
+        if (limit <= 12) allocations[1] = 1
+        else families.indices.drop(1).take(2).forEach { allocations[it] = minOf(2,families[it].size) }
+    }
     while (allocations.sum() < size) {
         val next = families.indices.filter { allocations[it] < families[it].size }
             .maxBy { families[it].size.toDouble() / (allocations[it] + 1) }

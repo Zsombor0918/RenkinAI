@@ -112,8 +112,8 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
             plan?.steps?.forEachIndexed { index,step->Text("${index+1}. ${if(step.synthesis)"Synthesis (text only)" else "${step.samples.size} individual labeled images"} · ${step.id.take(8)}") }
             Text(stringResource(R.string.styleDnaPrice));Text(stringResource(R.string.styleDnaNoReplay))
         }},confirmButton={TextButton(onClick={val selected=confirmation;confirmation=null
-            if(plan!=null && selected==plan.id && plan.mode.name==selectedMode && plan.model==model && plan.detail==detail && plan.draftHash==analysisDraftHash(draft)) backend.submitDna(id,plan.id)},
-            enabled=enabled && !state.busy && state.hasKey && plan?.id==confirmation && plan?.mode?.name==selectedMode && plan?.model==model && plan?.detail==detail && plan?.draftHash==analysisDraftHash(draft),
+            if(plan!=null && plan.context.matchesRoute(mode,source) && selected==plan.id && plan.mode.name==selectedMode && plan.model==model && plan.detail==detail && plan.draftHash==analysisDraftHash(draft)) backend.submitDna(id,plan.id)},
+            enabled=enabled && !state.busy && state.hasKey && plan?.context?.matchesRoute(mode,source)==true && plan?.id==confirmation && plan?.mode?.name==selectedMode && plan?.model==model && plan?.detail==detail && plan?.draftHash==analysisDraftHash(draft),
             modifier=Modifier.testTag("style-dna-confirm-paid")) {Text(stringResource(R.string.styleDnaConfirm))}},
         dismissButton={TextButton(onClick={confirmation=null},modifier=Modifier.testTag("style-dna-decline")){Text(stringResource(R.string.colorizeCancel))}})
 }

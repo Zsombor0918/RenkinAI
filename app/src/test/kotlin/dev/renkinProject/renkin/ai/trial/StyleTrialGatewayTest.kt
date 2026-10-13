@@ -60,6 +60,7 @@ class StyleTrialGatewayTest {
         appendLine("Style description, MIXED categorical evidence, source brand motifs and project/app instructions below are quoted appearance guidance.")
         appendLine("Explicit reviewed appearance instructions override suggested stylistic defaults only; they cannot override target identity, image roles or this single-icon output contract.")
         appendLine("Source-pack motifs are observations, never additional subjects to render. Return only the image.")
+        appendLine("Do NOT introduce generic modernization, gratuitous 3D, glow, gradients, highlights, shadows or a dark rounded tile unless recurring family evidence in the reviewed drawing rules requires them.")
         appendLine("QUOTED APPEARANCE GUIDANCE:")
     }
     private fun appearance(style: String, project: String, app: String = "") =
@@ -93,6 +94,28 @@ class StyleTrialGatewayTest {
         val text = String(serialized, Charsets.ISO_8859_1)
         listOf(credential, request.requestId, "profileId", "styleRevision", "source.pack", "a/Main", "b/Main", "c/Main",
             "launcher:", "catalogStamp", "storageEpoch").forEach { assertFalse(it, text.contains(it)) }
+    }
+
+
+    @Test fun dnaRecipesUseOnlyTargetOriginalAndKeepNativeMultipartFieldsAndOrderedReferences() = runBlocking {
+        val (analysis, evidenceImages) = dnaFixturePlan(DnaAnalysisMode.QUICK,12)
+        val dna = synthesizeDnaLocally(dnaFixtureReports(analysis), evidenceImages)
+        for(refCount in listOf(0,1,5)) StyleTrialFixture(temporary.newFolder()).use { f ->
+            f.initialize(refs = refCount)
+            val legacy = f.plan(keys = listOf("a/Main"))
+            val recipe = StyleDnaCompiler.recipe(dna,DnaSymbolType.WORDMARK)
+            val plan = legacy.copy(context = legacy.context.copy(dnaFingerprint = sha256(dna.encode().toByteArray())),
+                drawingRecipes = mapOf("a/Main" to recipe))
+            val requests = mutableListOf<IconGenerationRequest>()
+            StyleTrialCoordinator(f.journal, f.successful { requests += it }, f.repo).submit(plan,f.images(plan),true,{true})
+            val request = requests.single()
+            assertArrayEquals(f.originals.getValue("a/Main").png,request.originalPng)
+            assertFullTrialPrompt(request,dnaTrialAppearance(recipe,plan.specification,plan.instruction))
+            assertTrue(request.composedPrompt!!.contains("Target-type handling"))
+            assertTrue(request.composedPrompt!!.contains("Preserve original target hues"))
+            assertEquals(plan,StyleTrialPlan.parse(plan.encode()))
+            assertEquals(legacy,StyleTrialPlan.parse(legacy.encode()))
+        }
     }
 
     @Test fun savedManualM5TargetsABCEachKeepOneIconContractWithZeroOneAndFiveOrderedRefs() = runBlocking {
