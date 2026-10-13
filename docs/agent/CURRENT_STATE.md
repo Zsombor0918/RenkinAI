@@ -1,5 +1,26 @@
 # Current implementation
 
+## Verified enhancement checkpoint — owner device gate open
+
+Code head `2456bf5eee099d0d3d3cacfa0570e20e80c565b7` passed Android CI38435489330
+and all21 regressions38435489374. Independently downloaded artifact11833047373
+has144 complete-suite XML /898 actual tests /zero failures, errors or skips;
+all selectors and counts agree, and genuine Room19/20/21 exports match source.
+Local governance passed52/52; local Android commands still fail at Gradle download
+before configuration. No live/paid request or physical device test occurred.
+
+The closed incremental scope is representative local sampling, measured palette and
+geometry evidence, detailed style-only analysis/color policy, and resource-derived
+component originals with visible provenance and plan-specific verification. Existing
+original independence was verified first; source packs remain style/coverage only.
+The final documentation commit changes no runtime/test/build source. Its own exact
+SHA, fresh complete checks, XML and APK belong in the external PR#6 audit after
+actual execution; the898 checkpoint does not substitute for that final-head run.
+Owner free A/B/C preview and optional separately confirmed one-analysis/one-icon
+acceptance remain open. See [verification](../changes/2026-10-13-style-fidelity-verification.md).
+
+The following failed checkpoints are retained historical evidence.
+
 Checkpoint73cd29e8 / Android38434288813 compiled and ran897 tests with exactly one new neutral-tile policy failure; all previous/new original, wire, journal and UI tests passed. The follow-up distinguishes recurring neutral/background mass from varying significant chromatic accents, preserving brand colors even when the tile dominates area. Genuine final-head results and all21 XML/benchmark evidence are recorded in PR#6.
 
 

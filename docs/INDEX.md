@@ -7,8 +7,12 @@ The Codex 00 baseline is `main` at `eb4daa5de82fab54e115363c073eb8981f2203d6`
 Codex 00–04 are owner-merged. PR #5 was merged as af7bdb10 at 16:10:49 UTC
 on October 12; its final aceb691c checks passed independently. Codex 05 trial
 is implemented in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), with
-verified code checkpoint 0df78ef8/856 tests and final-head checks in the PR audit.
-October13 owner single-icon collage acceptance is under correction in the same PR.
+verified style-fidelity/component-original checkpoint 2456bf5e/898 tests and all21
+regression groups; the closing commit's own final-head checks are in the PR audit.
+Owner confirms analysis and single-icon trials work; the new style/original refinement
+still needs owner device acceptance in the same draft/open PR.
+The [verification record](changes/2026-10-13-style-fidelity-verification.md) records
+the new red-to-green assertions, bounded benchmark and remaining phone gates.
 The [test-first proof](changes/2026-10-13-single-icon-trial-reproduction.md) and
 [OpenAI contract correction](changes/2026-10-13-single-icon-trial-contract.md) retain
 legacy/Stability bytes and old results; exact final automated evidence is in PR#6.

@@ -2,6 +2,12 @@
 
 ## Style fidelity and original-source enhancement gates
 
+Code checkpoint2456bf5e independently passes all21 command groups and898 actual
+tests with zero failures/errors/skips. Sampler19, analysis gateway10/journal11,
+trial domain14/UI23/persistence-session22 include the new assertions. All original
+groups/selectors remain. The closing documentation head's own fresh results are in
+PR#6, not inferred from this checkpoint; owner device/provider acceptance stays open.
+
 Retain all21 groups/selectors and every old assertion. Add exact-hue/alpha-fringe fixtures,90% geometry plus outliers, mono/duotone/brand-color policies, old/new report and algorithm-journal round trips, bounded50/150/500 local benchmarks, mocked low/high JSON shape with production high rejection, exact alias resource versus themed API, removed resource, optional original plan parser, plan-specific conscious verification and A/B/C original-preview/real multipart invariance after source/display changes. The two red checkpoints independently contain883/4 and885/5; final green evidence must match final HEAD.
 
 Phone sequence: free local sample and Advanced color roles; optional one separately confirmed cloud analysis → Use → Save; target Save → one trial → Original app icon C versus style source B → consciously verify C → separate paid button. Stop if original is themed or generated artwork contains other logos. Owner Flip8/One UI Theme Park, real light/dark/alias/adaptive/work-user, upgrade/backup/sign/install/TalkBack remain NOT RUN here. No model quality gain or live provider test is asserted.

@@ -1,5 +1,38 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## Closed enhancement scope and safe handoff
+
+Continue existing PR#6/feat/style-trials-m5, accepted mainaf7bdb10. Owner comment
+6149883090 refinement started from422ef578 after working analysis/single-icon trials.
+Current verified code head2456bf5e passes Android38435489330 and all21
+regressions38435489374: independent144 XML/898 actual tests/zero failures/errors/skips,
+every selector present, genuine19/20/21 exports byte-equivalent. Local52 guards pass;
+local Gradle/full runner fail before configuration at distribution download.
+
+Red95cd7786 and812bc7da preserve unchanged production while proving hue/sampling,
+prompt/provenance and themed-API resource failures. The intermediate nullable-resource
+compile failure and897/1 neutral-background red checkpoint remain recorded below.
+No assertion, selector, timeout, idling, legacy request or workflow is weakened.
+See [verification note](../changes/2026-10-13-style-fidelity-verification.md) and
+[ADR0007](../decisions/0007-style-fidelity-and-component-originals.md).
+
+No new Room migration, model/detail/image-count change, paid request, auto-retry,
+M6/M7 feature, main write, force-push or merge is authorized. This closing document
+commit requires its own final-head Android/all21/governance, independent XML/schema
+and APK verification; exact SHA, artifact hashes/signing and final results belong in
+PR#6 after committing. Keep the PR draft/open/unmerged for explicit owner approval.
+
+Next safe task after final-head delivery is owner device testing: preserve signing/data,
+use applied packA and distinct EXTEND packB; free local scan/Advanced and frozen
+Original app iconC comparison; optionally authorize one analysis, review/Use/Save;
+Save one target and verifyC, then optionally authorize one paid trial. Require one
+standalone recognizableC symbol with native colors unless reviewed pack recoloring
+is intentional, B style only and no reference logos. IfC is themed/untrusted, stop
+before the paid button. Real Samsung/Theme Park/alias/adaptive/light-dark/work-user,
+TalkBack, saved-data upgrade/backup/install and provider quality remain untested here.
+
+The following earlier checkpoints retain their original measured outcomes.
+
 Checkpoint73cd29e8 / Android38434288813 compiled and ran897 tests with exactly one new neutral-tile policy failure; all previous/new original, wire, journal and UI tests passed. The follow-up distinguishes recurring neutral/background mass from varying significant chromatic accents, preserving brand colors even when the tile dominates area. Genuine final-head results and all21 XML/benchmark evidence are recorded in PR#6.
 
 
@@ -14,7 +47,7 @@ M5 already used exact component icons independently of EXTEND. It now resolves t
 
 Actual test-first red95cd7786:144 XML/883 tests/4 failures/0 errors/skips; red812bc7da:144 XML/885 tests/5 failures/0 errors/skips, all new regressions only. Final-head automated/XML/benchmark/APK evidence is recorded in PR#6 after execution. No live API call or physical device run. [ADR0007](../decisions/0007-style-fidelity-and-component-originals.md) defines the current boundaries. PR remains draft/open/unmerged for owner verification.
 
-Next safe task: inspect exact final-head CI and all21 commands, independently tally XML and benchmark logs, verify matching APK/package/certificate, update the ten-section PR audit, then owner free A/B/C preview and optional separately confirmed one analysis/one trial. No additional live API call, automatic retry or M6/M7 expansion is authorized.
+At the implementation checkpoint the next task was exact-head CI/XML/benchmark/APK inspection. Code-head inspection is now complete; final documentation-head delivery and owner gates are described above. No additional live API call, automatic retry or M6/M7 expansion is authorized.
 
 ## Single-icon correction scope — final measurements in PR #6
 

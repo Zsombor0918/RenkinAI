@@ -1,5 +1,70 @@
 # Verification baseline
 
+## Verified style/original code checkpoint — 2456bf5e
+
+Head `2456bf5eee099d0d3d3cacfa0570e20e80c565b7` passes
+[Android38435489330](https://github.com/Zsombor0918/RenkinAI/actions/runs/38435489330)
+and [regressions38435489374](https://github.com/Zsombor0918/RenkinAI/actions/runs/38435489374).
+Independently downloaded artifact11833047373,603306 bytes, SHA256
+`6dfeebd5fd79814e02e672e0e7d533dfbd382854e916a8833aaf37d3dfa1b66f`:
+exact summary HEAD, all21 commands exit0, every selector present,144 complete-suite
+XML / **898 actual testcases /0 failures /0 errors /0 skipped**. Each suite's
+declared counts match actual testcase nodes. All generated19/20/21 schemas match
+tracked bytes;v21 identity8c7a3c8b5b26ad29673ebbd77605838e and30159 bytes remain.
+
+| Actual group | Passed tests |
+| --- | --- |
+| Creation / ingress / combined / shared form | 1 /1 /2 /3 |
+| Create/Extend / coverage | 10 /28 |
+| Project style UI / data-backup | 12 /34 |
+| Generation gateway and legacy AI1/AI2 | 33 |
+| Reference sampler / schema-composer | 19 /15 |
+| Analysis gateway / journal / UI / persistence-session | 10 /11 /12 /21 |
+| Trial domain / gateway / journal / UI / persistence-session | 14 /14 /14 /23 /22 |
+| Complete unfiltered compile/unit/debug APK | 898 |
+
+New source tests simulate themed activity APIA, EXTEND styleB/B2 and declared exact
+alias resourceC; frozen preview/history and real multipart image1 stayC while refs
+change withB. Missing/disabled/wrong-user sources fail closed; new original evidence
+requires conscious verification. Existing original version/config staleness, adaptive
+rendering, locks and legacy tests remain. Mixed policies include significant varying
+brand accents over neutral tiles and repeated deliberate six-color fixed artwork.
+
+Hosted synthetic benchmark observations from the actual isolated sampler XML:
+
+| Mappings | Candidate cap | Examined / unique / selected | Elapsed ms | JVM heap delta bytes |
+| --- | --- | --- | --- | --- |
+| 50 | 120 | 50 /38 /12 | 271 | 21873968 |
+| 50 | 240 | 50 /38 /12 | 137 | -22157032 |
+| 50 | 300 | 50 /38 /12 | 116 | 14553672 |
+| 150 | 120 | 120 /42 /12 | 237 | -15085432 |
+| 150 | 240 | 150 /42 /12 | 257 | 35651584 |
+| 150 | 300 | 150 /42 /12 | 241 | -11932624 |
+| 500 | 120 | 120 /41 /12 | 201 | -20644528 |
+| 500 | 240 | 240 /40 /12 | 367 | 3109624 |
+| 500 | 300 | 300 /42 /12 | 445 | 15132648 |
+
+These pre-encoded synthetic fixtures repeat a54-motif pool; duplicate counts are
+examined minus unique. JVM heap deltas are GC-sensitive snapshots, **not peak RSS**,
+native memory or device latency. Retained sample PNGs are explicitly capped8MiB;
+at most300 descriptors,12 selected256px PNGs and4MiB aggregate upload remain.
+Real package rendering/cache/native peaks and provider quality are NOT RUN.
+
+Local Linux/Python3.12/JDK17: `python3 -m unittest discover -s scripts/tests -v`
+passed52/52 in7.475s. Docs range95 paths and17 conventional subjects pass;
+hooks/whitespace pass. `./gradlew compileDebugKotlin testDebugUnitTest assembleDebug`
+and `python3 scripts/run_compose_regressions.py` both fail before configuration at
+Gradle8.11.1 distribution download (Network is unreachable);21 local cases have
+exit1 and zero Android tests. Hosted CI supplies genuine Android execution.
+
+The final documentation commit changes no code/tests/schemas/build files. It still
+requires its own complete Android/all21/governance checks and newly downloaded
+XML/schema/APK evidence. Exact terminal SHA and final artifact/certificate results
+are recorded in PR#6 after execution. Zero live paid API calls, device testing,
+main/force-push/merge actions; owner visual approval remains pending.
+
+The following failed checkpoints are retained historical evidence.
+
 Checkpoint73cd29e8 / Android38434288813 compiled and ran897 tests with exactly one new neutral-tile policy failure; all previous/new original, wire, journal and UI tests passed. The follow-up distinguishes recurring neutral/background mass from varying significant chromatic accents, preserving brand colors even when the tile dominates area. Genuine final-head results and all21 XML/benchmark evidence are recorded in PR#6.
 
 
