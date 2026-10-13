@@ -5,7 +5,8 @@ import dev.renkinProject.renkin.data.project.*
 import kotlinx.coroutines.flow.StateFlow
 
 internal data class TrialPreparation(val context: TrialContext, val style: SavedProjectStyle,
-    val candidates: List<TrialCandidate>)
+    val candidates: List<TrialCandidate>,
+    val dnaChoices: Map<String, Pair<String, dev.renkinProject.renkin.ai.style.DnaSymbolType>> = emptyMap())
 internal data class ProjectTrialState(val preparation: TrialPreparation? = null, val plan: StyleTrialPlan? = null,
     val records: List<StyleTrialRecord> = emptyList(), val variants: List<IconAssetVariant> = emptyList(),
     val busy: Boolean = false, val network: Boolean = false, val hasKey: Boolean = false,
@@ -15,6 +16,7 @@ internal interface ProjectTrialBackend {
     fun bindContext(id: Long, mode: ProjectSetupMode, source: String?) {}
     fun state(id: Long): StateFlow<ProjectTrialState>
     fun load(id: Long, mode: ProjectSetupMode, source: String?)
+    fun dnaChoice(id: Long,key: String,family: String,type: dev.renkinProject.renkin.ai.style.DnaSymbolType) {}
     fun options(id: Long, provider: String, model: String, quality: String)
     fun prepare(id: Long, keys: List<String>, allowCovered: Boolean)
     fun submit(id: Long, planId: String)

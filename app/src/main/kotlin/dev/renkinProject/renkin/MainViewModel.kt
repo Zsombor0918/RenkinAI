@@ -206,7 +206,7 @@ class MainViewModel @Inject constructor(
                 dev.renkinProject.renkin.ui.project.revalidateLauncherTargets(coverageTargets(), coverageLauncherIdentity()))
             override suspend fun reader(source: String, referenceIndex: Boolean) =
                 if (referenceIndex) appProvider.referenceReader(source) else coverageReader(source, true)
-        })
+        }, styleAnalysisServices.dnaCoordinator)
     internal suspend fun projectMetadata(id: Long) = projectAiRepository.metadata(id)
     internal val projectTrials = dev.renkinProject.renkin.ui.project.OwnedStyleTrials(viewModelScope, projectAiRepository,
         styleTrialServices.journal, styleTrialServices.coordinator, styleTrialServices::hasKey,

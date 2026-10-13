@@ -38,7 +38,8 @@ import kotlinx.coroutines.withContext
 internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source: String?, stamp: String?,
     enabled: Boolean, backend: ProjectAnalysisBackend, expected: Long?, draft: ProjectStyleDraft,
     dirty: Boolean, advanced: Boolean, onAdvanced: (Boolean) -> Unit,
-    onBusy: (Boolean) -> Unit, onUse: (AnalyzedDraft, Boolean) -> Unit) {
+    onBusy: (Boolean) -> Unit, onUse: (AnalyzedDraft, Boolean) -> Unit,
+    onDnaSaved: (dev.renkinProject.renkin.data.project.SavedProjectStyle) -> Unit = {}) {
     val state by backend.state(id).collectAsState()
     var invalidation by remember { mutableIntStateOf(0) }
     val theme = PackageResourceResolver.displayedNightMode
@@ -57,6 +58,7 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
     var useError by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     Column(Modifier.fillMaxWidth().testTag("style-analysis-$id"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (backend.supportsDna) ProjectStyleDnaPanel(id,mode,source,stamp,enabled,backend,expected,draft,onDnaSaved)
         Text(stringResource(R.string.styleAnalysisTitle))
         Text(stringResource(if (mode == ProjectSetupMode.CREATE) R.string.styleAnalysisCreate else R.string.styleAnalysisExtend))
         Text(stringResource(R.string.styleAnalysisManualFallback))

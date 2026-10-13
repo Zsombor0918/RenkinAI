@@ -22,7 +22,7 @@ internal fun styleFingerprint(specification: String, instruction: String) =
 internal data class TrialContext(val profileId: Long, val revision: Long, val metadataVersion: Long,
     val mode: String, val sourcePackage: String?, val sourceStamp: String?, val catalogStamp: String,
     val selectionHash: String, val referenceFingerprint: String, val epoch: String,
-    val provider: String, val model: String, val quality: String, val styleFingerprint: String = "") {
+    val provider: String, val model: String, val quality: String, val styleFingerprint: String = "", val dnaFingerprint: String = "") {
     fun validate() {
         require(profileId > 0 && revision > 0 && metadataVersion >= 0)
         require(mode in setOf("CREATE", "EXTEND"))
@@ -32,6 +32,7 @@ internal data class TrialContext(val profileId: Long, val revision: Long, val me
         require(epoch.matches(Regex("[a-zA-Z0-9:-]{1,140}")))
         require(provider in AiSettings.PROVIDERS && model in AiSettings.MODELS && quality in AiSettings.QUALITIES)
         if (styleFingerprint.isNotEmpty()) trialHash(styleFingerprint)
+        if (dnaFingerprint.isNotEmpty()) trialHash(dnaFingerprint)
     }
     fun json(): JSONObject { validate(); return json("profileId" to profileId, "revision" to revision,
         "metadataVersion" to metadataVersion, "mode" to mode, "sourcePackage" to sourcePackage,
@@ -39,25 +40,27 @@ internal data class TrialContext(val profileId: Long, val revision: Long, val me
         "referenceFingerprint" to referenceFingerprint, "epoch" to epoch, "provider" to provider,
         "model" to model, "quality" to quality).also {
             if (styleFingerprint.isNotEmpty()) it.put("styleFingerprint", styleFingerprint)
+            if (dnaFingerprint.isNotEmpty()) it.put("dnaFingerprint", dnaFingerprint)
         } }
     fun encode() = canonicalJson(json())
     /** Source/selection/epoch changes need human re-review, while actual artwork inputs stay fixed. */
     fun sameArtworkInputs(other: TrialContext) = profileId == other.profileId && revision == other.revision &&
-        styleFingerprint.isNotEmpty() && styleFingerprint == other.styleFingerprint &&
+        styleFingerprint.isNotEmpty() && styleFingerprint == other.styleFingerprint && dnaFingerprint == other.dnaFingerprint &&
         referenceFingerprint == other.referenceFingerprint && provider == other.provider && model == other.model && quality == other.quality
     fun sameStyleKeys(other: TrialContext) = profileId == other.profileId && revision == other.revision &&
-        referenceFingerprint == other.referenceFingerprint && provider == other.provider && model == other.model && quality == other.quality
+        referenceFingerprint == other.referenceFingerprint && provider == other.provider && model == other.model && quality == other.quality && dnaFingerprint == other.dnaFingerprint
     companion object {
         fun parse(r: JSONObject): TrialContext {
             r.exactKeys(setOf("profileId", "revision", "metadataVersion", "mode", "sourcePackage", "sourceStamp",
                 "catalogStamp", "selectionHash", "referenceFingerprint", "epoch", "provider", "model", "quality") +
-                if (r.has("styleFingerprint")) setOf("styleFingerprint") else emptySet())
+                (if (r.has("styleFingerprint")) setOf("styleFingerprint") else emptySet()) + (if (r.has("dnaFingerprint")) setOf("dnaFingerprint") else emptySet()))
             return TrialContext(r.longValue("profileId"), r.longValue("revision"), r.longValue("metadataVersion"),
                 r.stringValue("mode"), if (r.isNull("sourcePackage")) null else r.stringValue("sourcePackage"),
                 if (r.isNull("sourceStamp")) null else r.stringValue("sourceStamp"), r.stringValue("catalogStamp"),
                 r.stringValue("selectionHash"), r.stringValue("referenceFingerprint"), r.stringValue("epoch"),
                 r.stringValue("provider"), r.stringValue("model"), r.stringValue("quality"),
-                if (r.has("styleFingerprint")) r.stringValue("styleFingerprint") else "").also { it.validate() }
+                if (r.has("styleFingerprint")) r.stringValue("styleFingerprint") else "",
+                if (r.has("dnaFingerprint")) r.stringValue("dnaFingerprint") else "").also { it.validate() }
         }
     }
 }
@@ -84,7 +87,8 @@ internal data class TrialInput(val key: String, val name: String, val originalHa
 
 /** Primitive frozen input only. Actual PNGs are privately staged after explicit consent. */
 internal data class StyleTrialPlan(val context: TrialContext, val specification: String, val instruction: String,
-    val referenceHashes: List<String>, val inputs: List<TrialInput>, val id: String = UUID.randomUUID().toString()) {
+    val referenceHashes: List<String>, val inputs: List<TrialInput>, val id: String = UUID.randomUUID().toString(),
+    val drawingRecipes: Map<String, String> = emptyMap()) {
     val endpointMaximum get() = inputs.size * if (context.provider == AiSettings.STABILITY) 2 else 1
     val fingerprint get() = sha256(encode().toByteArray())
     fun validate() {
@@ -100,19 +104,28 @@ internal data class StyleTrialPlan(val context: TrialContext, val specification:
         require(inputs.size in 1..3 && inputs.map { it.key }.distinct().size == inputs.size &&
             inputs.map { it.requestId }.distinct().size == inputs.size)
         inputs.forEach { it.validate() }
+        require((context.dnaFingerprint.isEmpty() && drawingRecipes.isEmpty()) ||
+            context.dnaFingerprint.isNotEmpty() && drawingRecipes.keys == inputs.map { it.key }.toSet())
+        drawingRecipes.forEach { (_,recipe) -> cleanText(recipe,6000,true); require(recipe.isNotBlank())
+            if (context.provider == AiSettings.OPENAI) PromptComposer.openAiEditPrompt(dnaTrialAppearance(recipe,specification,instruction),referenceHashes.size)
+            else require(PromptComposer.composeSaved(recipe,instruction).length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT) }
+
     }
     fun encode(): String { validate(); return canonicalJson(json("schema" to 1, "id" to id,
         "context" to context.json(), "specification" to specification, "instruction" to instruction,
-        "referenceHashes" to JSONArray(referenceHashes), "inputs" to JSONArray(inputs.map { it.json() }))) }
+        "referenceHashes" to JSONArray(referenceHashes), "inputs" to JSONArray(inputs.map { it.json() })).also {
+            if (drawingRecipes.isNotEmpty()) it.put("drawingRecipes",json(*drawingRecipes.map { it.key to it.value }.toTypedArray())) })) }
     companion object {
         fun parse(text: String): StyleTrialPlan {
             val r = strictObject(text, 65536, 12); require(r.longValue("schema") == 1L)
-            r.exactKeys(setOf("schema", "id", "context", "specification", "instruction", "referenceHashes", "inputs"))
+            r.exactKeys(setOf("schema", "id", "context", "specification", "instruction", "referenceHashes", "inputs") + if (r.has("drawingRecipes")) setOf("drawingRecipes") else emptySet())
             val refs = r.getJSONArray("referenceHashes"); require(refs.length() <= 5)
             val inputs = r.getJSONArray("inputs"); require(inputs.length() in 1..3)
             return StyleTrialPlan(TrialContext.parse(r.getJSONObject("context")), r.stringValue("specification"),
                 r.stringValue("instruction"), (0 until refs.length()).map { refs.getString(it) },
-                (0 until inputs.length()).map { TrialInput.parse(inputs.getJSONObject(it)) }, r.stringValue("id")).also { it.validate() }
+                (0 until inputs.length()).map { TrialInput.parse(inputs.getJSONObject(it)) }, r.stringValue("id"),
+                if (r.has("drawingRecipes")) r.getJSONObject("drawingRecipes").let { recipes -> require(recipes.length()<=3);
+                    recipes.keys().asSequence().associateWith { recipes.stringValue(it) } } else emptyMap()).also { it.validate() }
         }
     }
 }
@@ -179,4 +192,10 @@ internal object StyleTrialTargetSelector {
         require(keys.size in 1..3 && keys.distinct().size == keys.size)
         require(keys.all { key -> candidates.any { it.target.key == key && it.eligible && (!it.overrideRequired || allowCovered) } })
     }
+}
+
+/** Fixed recipe and optional user appearance stay below the final original/output contract. */
+internal fun dnaTrialAppearance(recipe: String,specification: String,instruction: String): String {
+    cleanText(recipe,6000,true);cleanText(specification,6000,true);cleanText(instruction,2000,true)
+    return "Reviewed target drawing recipe:\n$recipe\nSeparate user-reviewed style guidance: ${org.json.JSONObject.quote(specification)}\nProject instruction: ${org.json.JSONObject.quote(instruction)}"
 }

@@ -61,7 +61,7 @@ internal data class StyleAnalysisRequest(val context: AnalysisContext, val image
         "localReport" to localReport?.encode())).toByteArray())
     fun validate() {
         context.validate(); require(UUID.fromString(requestId).toString() == requestId)
-        require(algorithm in setOf(REFERENCE_ALGORITHM, LEGACY_REFERENCE_ALGORITHM))
+        require(algorithm in setOf(REFERENCE_ALGORITHM, PREVIOUS_REFERENCE_ALGORITHM, LEGACY_REFERENCE_ALGORITHM))
         require(model in ANALYSIS_MODELS && detail == "low" && images.size in 1..12)
         cleanText(description, 6000, true); cleanText(userInstruction, 2000, true)
         require(images.map { it.hash }.distinct().size == images.size && images.sumOf { it.png.size.toLong() } <= 4L * 1024 * 1024)

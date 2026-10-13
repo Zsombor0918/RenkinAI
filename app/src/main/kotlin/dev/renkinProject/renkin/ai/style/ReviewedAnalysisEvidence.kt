@@ -14,12 +14,15 @@ internal data class ReviewedAnalysisEvidence(val requestId: String, val fingerpr
         context.validate(); require(context.profileId == profileId && UUID.fromString(requestId).toString() == requestId)
         require(model in ANALYSIS_MODELS && reviewedAt > 0 && responseId.matches(Regex("[A-Za-z0-9_-]{1,128}")))
         require(listOf(fingerprint, promptHash, responseHash).all { it.matches(Regex("[a-f0-9]{64}")) })
-        require(sampleHashes.size in 1..12 && sampleHashes.distinct().size == sampleHashes.size)
+        val dna = SavedStyleDna.optional(profileJson)
+        require(sampleHashes.size in 1..(if (dna == null) 12 else 24) && sampleHashes.distinct().size == sampleHashes.size)
         require((sampleHashes + selectedHashes).all { it.matches(Regex("[a-f0-9]{64}")) })
         require(selectedHashes == hashes && selectedHashes.size <= 5)
-        val profile = StyleProfileV1.parse(profileJson); require(profileJson == profile.encode() && responseHash == sha256(profileJson.toByteArray()))
+        val profile = if (dna == null) StyleProfileV1.parse(profileJson) else null
+        require(profileJson == (dna?.encode() ?: checkNotNull(profile).encode()) && responseHash == sha256(profileJson.toByteArray()))
+        if (dna != null) require(dna.reports.map { it.sampleHash } == sampleHashes)
         require(origin == if (userEdited) "USER" else "AUTO_ANALYSIS")
-        if (!userEdited) require(specification == PromptComposer.specification(profile) && selectedHashes.all { it in sampleHashes })
+        if (!userEdited) require(specification == (dna?.let(StyleDnaCompiler::specification) ?: PromptComposer.specification(checkNotNull(profile))) && selectedHashes.all { it in sampleHashes })
     }
     fun encode() = canonicalJson(json("schema" to 1, "requestId" to requestId, "fingerprint" to fingerprint,
         "promptHash" to promptHash, "context" to context.encode(), "model" to model,
@@ -33,7 +36,7 @@ internal data class ReviewedAnalysisEvidence(val requestId: String, val fingerpr
             r.exactKeys(setOf("schema", "requestId", "fingerprint", "promptHash", "context", "model", "sampleHashes",
                 "selectedHashes", "responseId", "responseHash", "reviewedAt", "userEdited", "staleSourceAccepted", "needsRevalidation"))
             require(r.longValue("schema") == 1L)
-            fun hashes(key: String) = r.getJSONArray(key).let { a -> require(a.length() <= 12); (0 until a.length()).map { a.get(it) as? String ?: error("Invalid sample hash.") } }
+            fun hashes(key: String) = r.getJSONArray(key).let { a -> require(a.length() <= 24); (0 until a.length()).map { a.get(it) as? String ?: error("Invalid sample hash.") } }
             fun flag(key: String) = r.get(key) as? Boolean ?: error("Invalid evidence flag.")
             return ReviewedAnalysisEvidence(r.stringValue("requestId"), r.stringValue("fingerprint"), r.stringValue("promptHash"),
                 AnalysisContext.parse(r.getJSONObject("context")), r.stringValue("model"), hashes("sampleHashes"), hashes("selectedHashes"),

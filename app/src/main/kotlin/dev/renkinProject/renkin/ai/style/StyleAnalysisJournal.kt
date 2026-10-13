@@ -44,7 +44,7 @@ internal data class AnalysisRecord(val profileId: Long, val requestId: String, v
                 nullable("reason"), if (r.isNull("reviewedRevision")) null else r.longValue("reviewedRevision"), r.stringValue("billingCertainty"),
                 if (r.isNull("localReport")) null else ReferenceSampleReport.parse(r.getJSONObject("localReport")),
                 if (r.has("algorithm")) r.stringValue("algorithm") else LEGACY_REFERENCE_ALGORITHM)
-            require(record.algorithm in setOf(REFERENCE_ALGORITHM, LEGACY_REFERENCE_ALGORITHM))
+            require(record.algorithm in setOf(REFERENCE_ALGORITHM, PREVIOUS_REFERENCE_ALGORITHM, LEGACY_REFERENCE_ALGORITHM))
             require(record.profileId > 0 && UUID.fromString(record.requestId).toString() == record.requestId)
             require(record.fingerprint.matches(Regex("[a-f0-9]{64}")) && record.createdAt > 0)
             require(record.billingCertainty in setOf("NOT_SUBMITTED", "UNKNOWN", "RESPONSE_RECEIVED"))

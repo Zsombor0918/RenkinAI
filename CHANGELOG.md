@@ -56,3 +56,9 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 These entries describe source at `eb4daa5de82fab54e115363c073eb8981f2203d6`.
 The [October 4 handoff](docs/AI_HANDOFF_HU.md) is historical build evidence,
 not a new test run or proof that this fork has a published GitHub release.
+
+## Experimental Style DNA development
+
+- Add local exclusion reason counts and optional Quick/Standard labeled per-icon analysis with bounded explicit consent.
+- Add editable multi-family Style DNA and optional target-specific M5 drawing recipes; retain original-only identity and single-icon output.
+- Preserve saved V1 styles, Room21, backup/history, legacy AI1/AI2 and build/sign/install. Deep and visual-quality validation remain deferred.

@@ -115,3 +115,7 @@ Required checks and observed main-protection status: [agent workflow](docs/agent
 ## License
 
 GPLv3, same as upstream. See [LICENSE](LICENSE).
+
+## Experimental Style DNA
+
+Project STYLE optionally scans detailed local exclusion reasons, then prepares Quick (up to12 individual reports/one request/local synthesis) or Standard (up to24 images in groups of6 plus one synthesis, maximum5 charged submissions). Every step is frozen and separately listed in consent, with no replay after interruption. Per-image reports and multi-family rules stay editable; explicit reviewed Save creates an immutable revision. M5 applies the chosen family to the genuine original target only. Legacy aggregate analysis and all classic workflows remain. Deep and real visual A/B are deferred; improved provider quality is not established by mocks. See [ADR0008](docs/decisions/0008-style-dna-stacked-development.md).

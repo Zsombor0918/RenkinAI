@@ -179,6 +179,16 @@ internal class ApplicationManager(
         return getResourceDrawableByName(iconPackName, item.drawableLink)
     }
 
+    internal fun inspectReferenceDrawable(iconPackName: String, drawableName: String): dev.renkinProject.renkin.ai.style.ReferenceRead {
+        val res = try { resourceResolver.getResources(iconPackName) } catch (_: Exception) { null }
+            ?: return dev.renkinProject.renkin.ai.style.ReferenceRead.Failed(dev.renkinProject.renkin.ai.style.ReferenceFailure.SOURCE_RESOURCE_FAILURE)
+        val id = try { res.getIdentifierByName(drawableName, "drawable", iconPackName) } catch (_: Exception) { 0 }
+        if (id <= 0) return dev.renkinProject.renkin.ai.style.ReferenceRead.Failed(dev.renkinProject.renkin.ai.style.ReferenceFailure.MISSING_DRAWABLE)
+        val drawable = try { resourceResolver.getDrawable(res, id) } catch (_: Exception) { null }
+            ?: return dev.renkinProject.renkin.ai.style.ReferenceRead.Failed(dev.renkinProject.renkin.ai.style.ReferenceFailure.DECLARED_UNRENDERABLE)
+        return dev.renkinProject.renkin.ai.style.diagnoseReference(drawable)
+    }
+
     fun getResourceDrawableByName(iconPackName: String, drawableName: String): ResourceDrawable? {
         val res = resourceResolver.getResources(iconPackName) ?: return null
         val resourceId = runCatching {

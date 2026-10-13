@@ -1,6 +1,7 @@
 package dev.renkinProject.renkin.ui.project
 
 import dev.renkinProject.renkin.ai.AiSettings
+import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.ai.trial.*
 import dev.renkinProject.renkin.apk.*
 import dev.renkinProject.renkin.data.project.*
@@ -30,6 +31,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     private val states = ConcurrentHashMap<Long, MutableStateFlow<ProjectTrialState>>()
     private val routes = ConcurrentHashMap<Long, Pair<ProjectSetupMode, String?>>()
     private val jobs = ConcurrentHashMap<Long, Job>()
+    private val dnaChoices = ConcurrentHashMap<Long, Map<String, Pair<String, DnaSymbolType>>>()
     private val chosenOptions = ConcurrentHashMap<Long, Triple<String, String, String>>()
     private val images = ConcurrentHashMap<Long, Map<String, ByteArray>>()
     private val verifiedOriginalPlans = ConcurrentHashMap<Long, String>()
@@ -82,8 +84,11 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val context = TrialContext(id, revision.revision, metadata.version, route.first.name, route.second, stamp,
             projectCatalogStamp(targets), sha256(metadata.selectionJson.toByteArray()),
             referenceFingerprint(style.references.map { it.hash }), withContext(Dispatchers.IO) { journal.epoch(id) },
-            defaults.first, defaults.second, defaults.third, styleFingerprint(revision.specification, revision.userInstruction)).also { it.validate() }
-        TrialPreparation(context, style, StyleTrialTargetSelector.candidates(route.first.name, targets, selection.componentKeys, coverage))
+            defaults.first, defaults.second, defaults.third, styleFingerprint(revision.specification, revision.userInstruction),
+            SavedStyleDna.optional(revision.analysisProfileJson)?.let { dna -> sha256(canonicalJson(json("reviewedDna" to dna.encode(),
+                "choices" to json(*(dnaChoices[id].orEmpty().filterKeys { key -> key in selection.componentKeys }.map { (key,value) ->
+                    key to json("family" to value.first,"type" to value.second.name) }).toTypedArray()))).toByteArray()) }.orEmpty()).also { it.validate() }
+        TrialPreparation(context, style, StyleTrialTargetSelector.candidates(route.first.name, targets, selection.componentKeys, coverage), dnaChoices[id].orEmpty())
     }
     private suspend fun history(id: Long) {
         val records = withContext(Dispatchers.IO) { journal.records(id) }
@@ -109,6 +114,15 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         chosenOptions[id] = Triple(provider, model, quality)
         routes[id]?.let { load(id, it.first, it.second) }
     }
+    override fun dnaChoice(id: Long,key: String,family: String,type: DnaSymbolType) {
+        if(flow(id).value.busy) return
+        val p=flow(id).value.preparation ?: return
+        require(p.candidates.any { it.target.key==key && it.eligible })
+        val dna=checkNotNull(SavedStyleDna.optional(p.style.revision?.analysisProfileJson))
+        require(dna.dna.families.any { it.id==family })
+        val choices=dnaChoices[id].orEmpty()+ (key to (family to type));require(choices.size<=1000)
+        dnaChoices[id]=choices;routes[id]?.let {load(id,it.first,it.second)}
+    }
     override fun prepare(id: Long, keys: List<String>, allowCovered: Boolean) = start(id) {
         verifiedOriginalPlans.remove(id); images.remove(id)
         flow(id).value = flow(id).value.copy(plan = null)
@@ -121,14 +135,23 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val bytes = owner.owned(id) { p.style.references.associate { it.hash to repository.referenceBytes(id, it.hash) } } +
             originals.associate { it.second.hash to it.second.png }
         val plan = StyleTrialPlan(p.context, checkNotNull(p.style.revision).specification,
-            p.style.revision.userInstruction, p.style.references.map { it.hash }, inputs)
+            p.style.revision.userInstruction, p.style.references.map { it.hash }, inputs,
+            drawingRecipes = SavedStyleDna.optional(p.style.revision.analysisProfileJson)?.let { dna -> keys.associateWith { key ->
+                val choice=p.dnaChoices[key] ?: (dna.selectedFamily to DnaSymbolType.UNKNOWN)
+                StyleDnaCompiler.recipe(dna.dna,choice.second,choice.first)
+            } }.orEmpty())
         check(current(plan))
         images[id] = bytes
         flow(id).value = flow(id).value.copy(preparation = p, plan = plan,
             hasKey = withContext(Dispatchers.IO) { hasKey(p.context.provider) }, ready = false)
     }
     private suspend fun current(plan: StyleTrialPlan): Boolean = try {
-        if (preparation(plan.context.profileId).context != plan.context) false else owner.owned(plan.context.profileId) {
+        val p=preparation(plan.context.profileId)
+        val dna=SavedStyleDna.optional(p.style.revision?.analysisProfileJson)
+        val expectedRecipes=dna?.let { saved -> plan.inputs.associate { input ->
+            val choice=p.dnaChoices[input.key] ?: (saved.selectedFamily to DnaSymbolType.UNKNOWN)
+            input.key to StyleDnaCompiler.recipe(saved.dna,choice.second,choice.first) } }.orEmpty()
+        if (p.context != plan.context || plan.drawingRecipes != expectedRecipes) false else owner.owned(plan.context.profileId) {
             plan.inputs.all { input -> owner.original(input.key).let { it.hash == input.originalHash && it.origin == input.origin &&
                 (input.originalEvidence == null || it.evidence == input.originalEvidence) } }
         }

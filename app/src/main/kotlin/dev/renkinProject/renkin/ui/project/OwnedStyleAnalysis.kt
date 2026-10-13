@@ -27,7 +27,7 @@ internal interface AnalysisSessionOwner {
 internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val repository: ProjectAiRepository,
     private val journal: StyleAnalysisJournal, private val sampler: ReferenceSampler,
     private val coordinator: StyleAnalysisCoordinator, private val hasKey: () -> Boolean,
-    private val owner: AnalysisSessionOwner) : ProjectAnalysisBackend {
+    private val owner: AnalysisSessionOwner, private val dnaCoordinator: StyleDnaCoordinator? = null) : ProjectAnalysisBackend {
     private val states = mutableMapOf<Long, MutableStateFlow<ProjectAnalysisState>>()
     private val jobs = mutableMapOf<Long, Job>()
     private val routes = ConcurrentHashMap<Long, Pair<ProjectSetupMode, String?>>()
@@ -45,7 +45,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
             try { action() }
             catch (cancel: CancellationException) {
                 if (network) withContext(NonCancellable + Dispatchers.IO) {
-                    flow(id).value = flow(id).value.copy(record = journal.latest(id), preparation = null)
+                    flow(id).value = flow(id).value.copy(record = journal.latest(id), preparation = null, dnaPlan = null)
                 }
                 throw cancel
             }
@@ -53,6 +53,110 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
             finally { jobs.remove(id); flow(id).value = flow(id).value.copy(busy = false, network = false) }
         }
     }
+
+    override val supportsDna get() = dnaCoordinator != null
+    override fun prepareDna(id: Long, mode: ProjectSetupMode, source: String?, setupStamp: String?, expected: Long?,
+        draft: ProjectStyleDraft, analysisMode: DnaAnalysisMode, model: String, detail: String) {
+        if (dnaCoordinator == null) return
+        bindContext(id, mode, source)
+        start(id) {
+            flow(id).value = flow(id).value.copy(preparation = null, dnaPlan = null)
+            val samples = if (mode == ProjectSetupMode.EXTEND) {
+                require(source != null && setupStamp != null)
+                sampler.sample(owner.reader(source,true), candidateLimit = 600, sampleLimit = if (analysisMode == DnaAnalysisMode.STANDARD) 24 else 12)
+            } else sampler.manual(owner.owned(id) { draft.hashes.map { it to repository.referenceBytes(id,it) } })
+            require(samples.samples.isNotEmpty())
+            val context = owner.owned(id) {
+                val saved = repository.load(id); check(saved.revision?.revision == expected)
+                if (mode == ProjectSetupMode.EXTEND) {
+                    val setup = owner.reader(checkNotNull(source),false); val refs = owner.reader(source,true)
+                    check(setup.isCurrent() && projectSourceStamp(setup.index) == setupStamp && refs.isCurrent() && projectSourceStamp(refs.index) == samples.sourceStamp)
+                }
+                AnalysisContext(id,mode.name,source,setupStamp,samples.sourceStamp,saved.metadata?.version ?: 0L,
+                    sha256(saved.metadata?.selectionJson.orEmpty().toByteArray()),owner.catalogStamp(),expected,
+                    withContext(Dispatchers.IO) { journal.epoch(id) },samples.sourceIdentity)
+            }
+            val plan = StyleDnaPlan(context,analysisMode,samples.samples.mapIndexed { i,s -> DnaSampleBinding("s%02d".format(i+1),s.hash) },
+                samples.report,draft.specification,draft.instruction,analysisDraftHash(draft),model,detail).also { it.validate() }
+            val images = samples.samples.associate { it.hash to it.png }
+            validateDnaImages(plan,images)
+            plan.steps.filter { !it.synthesis }.forEach { step ->
+                require(dnaBody(DnaCall(plan,step,step.samples.associate { plan.bindings.getValue(it) to images.getValue(plan.bindings.getValue(it)) },emptyList()))
+                    .toString().toByteArray().size <= 5*1024*1024)
+            }
+            val cached = withContext(Dispatchers.IO) { dnaCoordinator.journal.records(id).lastOrNull { it.plan.fingerprint == plan.fingerprint && it.result != null } }
+            check(validity(context) == AnalysisValidity.CURRENT)
+            flow(id).value = flow(id).value.copy(samples = samples, dnaPlan = if (cached == null) plan else null,
+                dnaRecord = cached, preparedDraftHash = analysisDraftHash(draft), hasKey = withContext(Dispatchers.IO) { hasKey() }, validity = AnalysisValidity.CURRENT)
+        }
+    }
+    override fun submitDna(id: Long, planId: String) {
+        val coordinator = dnaCoordinator ?: return; val state = flow(id).value; val plan = state.dnaPlan ?: return
+        if (plan.id != planId || !state.hasKey || !matchesRoute(plan.context)) return
+        val images = state.samples?.samples?.associate { it.hash to it.png } ?: return
+        start(id, network = true) {
+            flow(id).value = flow(id).value.copy(dnaPlan = null)
+            try {
+                val record = coordinator.submit(plan,images,true,{ validity(plan.context) == AnalysisValidity.CURRENT }) { record ->
+                    flow(id).value = flow(id).value.copy(dnaRecord = record) }
+                flow(id).value = flow(id).value.copy(dnaRecord = record, validity = validity(plan.context))
+            } finally { withContext(NonCancellable + Dispatchers.IO) {
+                flow(id).value = flow(id).value.copy(dnaRecord = coordinator.journal.latest(id),dnaPlan = null) } }
+        }
+    }
+    override suspend fun dnaPreview(id: Long, hash: String): ByteArray = withContext(Dispatchers.IO) {
+        checkNotNull(dnaCoordinator).journal.image(id,hash)
+    }
+    override suspend fun discardDna(id: Long, planId: String) {
+        withContext(Dispatchers.IO) { val j = checkNotNull(dnaCoordinator).journal; val r = checkNotNull(j.record(id,planId)); j.discard(r.plan) }; refresh(id)
+    }
+    /** Human Save only. Never executes a gateway; edited JSON becomes a new immutable revision. */
+    override suspend fun saveDna(id: Long, planId: String?, grammar: String, selectedFamily: String, hashes: List<String>,
+        expected: Long?, draft: ProjectStyleDraft): SavedProjectStyle = owner.owned(id) {
+        val coordinator = checkNotNull(dnaCoordinator)
+        val current = repository.load(id); check(current.revision?.revision == expected)
+        val record = if (planId == null) null else withContext(Dispatchers.IO) { checkNotNull(coordinator.journal.record(id,planId)) }
+        val sourceDna = record?.result ?: checkNotNull(SavedStyleDna.optional(current.revision?.analysisProfileJson))
+        val originalEvidence = current.revision?.analysisEvidenceJson?.let(ReviewedAnalysisEvidence::parse)
+        val context = if (record != null) {
+            check(record.status in setOf(DnaStatus.RESULT_SAVED,DnaStatus.REVIEWED) && matchesRoute(record.plan.context))
+            check(validityWithoutOwner(record.plan.context,current) == AnalysisValidity.CURRENT)
+            record.plan.context
+        } else {
+            val route = checkNotNull(routes[id]); val setup = if (route.first == ProjectSetupMode.EXTEND) owner.reader(checkNotNull(route.second),false) else null
+            val refs = if (route.first == ProjectSetupMode.EXTEND) owner.reader(checkNotNull(route.second),true) else null
+            check(setup == null || setup.isCurrent() && refs!!.isCurrent() && projectSourceStamp(setup.index) == current.metadata?.sourceStamp)
+            AnalysisContext(id,route.first.name,route.second,setup?.index?.let(::projectSourceStamp),refs?.index?.let(::projectSourceStamp),current.metadata?.version ?: 0L,
+                sha256(current.metadata?.selectionJson.orEmpty().toByteArray()),owner.catalogStamp(),expected,
+                withContext(Dispatchers.IO) { journal.epoch(id) },refs?.index?.stamp)
+        }
+        val reviewed = sourceDna.copy(dna = StyleDnaV1.parse(grammar), selectedFamily = selectedFamily)
+        val encoded = reviewed.encode(); val specification = StyleDnaCompiler.specification(reviewed)
+        require(hashes.size <= 5 && hashes.distinct().size == hashes.size)
+        val selected = if (record != null) {
+            require(hashes.all { hash -> record.plan.samples.any { it.hash == hash } })
+            repository.importReferences(id,hashes.map { hash -> { ByteArrayInputStream(coordinator.journal.image(id,hash)) } }).map { it.hash }
+        } else { require(hashes == current.references.map { it.hash }); hashes }
+        val evidence = ReviewedAnalysisEvidence(record?.plan?.id ?: checkNotNull(originalEvidence).requestId,
+            record?.plan?.fingerprint ?: originalEvidence!!.fingerprint,record?.plan?.promptHash ?: originalEvidence!!.promptHash,context,reviewed.model,
+            reviewed.reports.map { it.sampleHash },selected,record?.steps?.lastOrNull { it.responseId != null }?.responseId ?: originalEvidence!!.responseId,
+            sha256(encoded.toByteArray()),System.currentTimeMillis(), encoded != sourceDna.encode() || record == null,false)
+        val saved = repository.saveAnalyzedStyle(id,expected,current.metadata?.version ?: 0L,specification,draft.instruction,selected,encoded,evidence)
+        if (record != null) withContext(NonCancellable + Dispatchers.IO) { coordinator.journal.reviewed(record.plan); coordinator.journal.collect(id) }
+        flow(id).value = flow(id).value.copy(savedDna = reviewed, dnaPlan = null, dnaRecord = record?.copy(status = DnaStatus.REVIEWED))
+        saved
+    }
+    private suspend fun validityWithoutOwner(c: AnalysisContext,saved: SavedProjectStyle): AnalysisValidity {
+        if (!matchesRoute(c) || (saved.metadata?.version ?: 0L) != c.metadataVersion || saved.revision?.revision != c.baseRevision ||
+            sha256(saved.metadata?.selectionJson.orEmpty().toByteArray()) != c.selectionHash || owner.catalogStamp() != c.catalogStamp) return AnalysisValidity.PREPARATION_CHANGED
+        if (withContext(Dispatchers.IO) { journal.epoch(c.profileId) } != c.storageEpoch) return AnalysisValidity.RESTORED
+        if (c.mode == "EXTEND") {
+            val setup = owner.reader(checkNotNull(c.sourcePackage),false); val refs = owner.reader(c.sourcePackage,true)
+            if (!setup.isCurrent() || !refs.isCurrent() || projectSourceStamp(setup.index) != c.setupStamp || projectSourceStamp(refs.index) != c.referenceStamp) return AnalysisValidity.SOURCE_STALE
+        }
+        return AnalysisValidity.CURRENT
+    }
+
     override fun prepare(id: Long, mode: ProjectSetupMode, source: String?, setupStamp: String?, expected: Long?, draft: ProjectStyleDraft) {
         bindContext(id, mode, source)
         start(id) {
@@ -80,7 +184,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
             val request = if (samples.samples.isEmpty()) null else StyleAnalysisRequest(context,
                 samples.samples.map { AnalysisImage(it.hash, it.png) }, draft.specification, draft.instruction, localReport = samples.report).also { it.validate() }
             flow(id).value = flow(id).value.copy(samples = samples, preparation = request,
-                hasKey = withContext(Dispatchers.IO) { hasKey() }, validity = AnalysisValidity.CURRENT,
+                dnaPlan = null, hasKey = withContext(Dispatchers.IO) { hasKey() }, validity = AnalysisValidity.CURRENT,
                 error = if (request == null) "empty" else null, preparedDraftHash = analysisDraftHash(draft))
         }
     }
@@ -98,13 +202,16 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
     override fun cancel(id: Long) { jobs[id]?.cancel() }
     override fun releasePreview(id: Long) {
         if (!flow(id).value.network) jobs[id]?.cancel()
-        flow(id).value = flow(id).value.copy(samples = null, preparation = null)
+        flow(id).value = flow(id).value.copy(samples = null, preparation = null, dnaPlan = null)
     }
     override suspend fun refresh(id: Long) {
         val record = withContext(Dispatchers.IO) { journal.latest(id) }
-        val v = record?.context?.let { validity(it) } ?: AnalysisValidity.CURRENT
+        val dnaRecord = withContext(Dispatchers.IO) { dnaCoordinator?.journal?.latest(id) }
+        val savedDna = if (dnaCoordinator == null) null else try { owner.owned(id) { SavedStyleDna.optional(repository.load(id).revision?.analysisProfileJson) } }
+            catch (cancel: CancellationException) { throw cancel } catch (_: Exception) { null }
+        val v = (dnaRecord?.plan?.context ?: record?.context)?.let { validity(it) } ?: AnalysisValidity.CURRENT
         // Existing VM jobs survive Activity recreation. Never replace a running preparation.
-        flow(id).value = flow(id).value.copy(record = record, validity = v,
+        flow(id).value = flow(id).value.copy(record = record, dnaRecord = dnaRecord, savedDna = savedDna, validity = v,
             hasKey = withContext(Dispatchers.IO) { hasKey() })
     }
     private suspend fun validity(context: AnalysisContext): AnalysisValidity = try {

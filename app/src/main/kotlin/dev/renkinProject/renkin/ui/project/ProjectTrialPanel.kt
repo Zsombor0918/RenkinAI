@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import dev.renkinProject.renkin.R
 import dev.renkinProject.renkin.ai.AiSettings
+import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.ai.trial.*
 import dev.renkinProject.renkin.data.project.IconAssetVariant
 import dev.renkinProject.renkin.packages.PackageResourceResolver
@@ -56,8 +57,10 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
     val context = p?.context?.encode().orEmpty()
     LaunchedEffect(context) {
         if (context.isNotEmpty() && selectionContext != context) {
-            selected = ArrayList(StyleTrialTargetSelector.recommend(p!!.candidates))
-            selectionContext = context; allowCovered = false
+            val previous = runCatching { TrialContext.parse(org.json.JSONObject(selectionContext)) }.getOrNull()
+            val drawingOnly = previous != null && p != null && previous.copy(dnaFingerprint = p.context.dnaFingerprint) == p.context
+            if (!drawingOnly) { selected = ArrayList(StyleTrialTargetSelector.recommend(p!!.candidates)); allowCovered = false }
+            selectionContext = context
         }
     }
     val enabled = available && !state.busy
@@ -99,6 +102,17 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                     Text(stringResource(R.string.trialRevision, p.context.revision, p.style.references.size), Modifier.testTag("trial-style"))
                     Text(checkNotNull(p.style.revision).specification)
                     if (p.style.revision.userInstruction.isNotBlank()) Text(p.style.revision.userInstruction)
+                    SavedStyleDna.optional(p.style.revision.analysisProfileJson)?.let { dna ->
+                        Text(stringResource(R.string.styleDnaTargetHelp))
+                        selected.forEach { key ->
+                            val choice=p.dnaChoices[key] ?: (dna.selectedFamily to DnaSymbolType.UNKNOWN)
+                            Text(key)
+                            dna.dna.families.forEach { family -> TextButton(onClick={backend.dnaChoice(id,key,family.id,choice.second)},
+                                enabled=enabled,modifier=Modifier.heightIn(min=48.dp).testTag("trial-dna-family-${family.id}-$key")) {Text("${family.id} ${if(choice.first==family.id)"✓" else ""}")} }
+                            DnaSymbolType.entries.forEach { type -> TextButton(onClick={backend.dnaChoice(id,key,choice.first,type)},
+                                enabled=enabled,modifier=Modifier.heightIn(min=48.dp).testTag("trial-dna-type-${type.name}-$key")) {Text("${type.name} ${if(choice.second==type)"✓" else ""}")} }
+                        }
+                    }
                     TrialOptions(p.context, enabled) { provider, model, quality -> backend.options(id, provider, model, quality) }
                     if (!state.hasKey) Text(stringResource(R.string.trialNoKey), Modifier.testTag("trial-no-key"))
                     if (!refsValid) Text(stringResource(R.string.trialStabilityRefs), Modifier.testTag("trial-reference-error"))
@@ -217,6 +231,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
         title = { Text(stringResource(R.string.trialConsentTitle)) },
         text = { Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()).testTag("trial-frozen-confirmation"),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            plan.drawingRecipes.forEach { (key,recipe) -> Text(key); Text(recipe) }
             Text(name); Text(stringResource(R.string.trialConsentText, plan.inputs.size, plan.endpointMaximum,
                 plan.context.provider, if (plan.context.provider == AiSettings.STABILITY) stringResource(R.string.trialStabilityRoute) else plan.context.model,
                 if (plan.context.provider == AiSettings.STABILITY) stringResource(R.string.trialProviderDefault) else plan.context.quality, plan.context.revision))

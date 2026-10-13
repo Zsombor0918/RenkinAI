@@ -71,4 +71,4 @@ internal fun dnaReportFixture(id: String, hash: String, family: String = "OUTLIN
         "optical_scale", "negative_space", "shadow_gradient", "luminance", "color_roles", "wordmark_handling", "simplification").map {
         it to json("value" to if (it == "tile_geometry") "No tile; transparent canvas" else if (it == "shadow_gradient") "No depth or gradient observed" else "Consistent planar contours",
             "provenance" to "OBSERVED")
-    }.toTypedArray()), "color_policy" to policy, "outlier_reason" to "", "do_not_copy_reference_logo" to true)
+    }.toTypedArray()), "color_policy" to policy, "tile_vote" to "NONE", "depth_vote" to "NONE", "outlier_reason" to "", "do_not_copy_reference_logo" to true)

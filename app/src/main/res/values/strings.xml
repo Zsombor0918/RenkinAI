@@ -967,4 +967,28 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="styleAnalysisFamilies">Dominant geometry family: %1$d of %2$d distinct artworks; %3$d measured families.</string>
     <string name="styleAnalysisMeasuredOnly">Measured local swatches and pixel statistics; model descriptions are separate inferences. Swatches are observations, not mandatory target recoloring. Duplicates and one source theme can limit representativeness.</string>
     <string name="styleAnalysisSwatchRole">%1$s · %2$s · present in %3$d/%4$d artworks · mean visible share %5$d%%</string>
+    <string name="styleDnaTitle">Style DNA · experimental visual quality</string>
+    <string name="styleDnaLegacy">Legacy · one aggregate analysis (existing)</string>
+    <string name="styleDnaDeep">Deep · deferred until measured A/B validation</string>
+    <string name="styleDnaQuick">Quick: up to 12 labeled individual images, one charged request, conservative local synthesis.</string>
+    <string name="styleDnaStandard">Standard: up to 24 labeled individual images, groups of six plus separate text synthesis. Maximum five charged submissions; opt-in.</string>
+    <string name="styleDnaPrice">Image tokens are billed per image. Low is not guaranteed cheaper than high. Each submission allows at most 12,288 output tokens; exact price and provider availability are unverified. Use your provider project spend limit.</string>
+    <string name="styleDnaPrepare">Scan and freeze locally · free</string>
+    <string name="styleDnaCounts">Inspected %1$d · valid distinct %2$d · duplicate mappings %3$d · excluded %4$d · selected %5$d</string>
+    <string name="styleDnaTimeBound">The local time budget ended; remaining candidates were not inspected.</string>
+    <string name="styleDnaAnalyze">Review paid analysis plan</string>
+    <string name="styleDnaProgress">%1$d/%2$d analyzed · %3$d images submitted · %4$d/%5$d endpoint submissions</string>
+    <string name="styleDnaNoReplay">Cancel, timeout, failure or restart never replay a charged step. Partial reports remain readable. A new request needs fresh preparation and consent.</string>
+    <string name="styleDnaReports">Inspect per-sample observations</string>
+    <string name="styleDnaDoNotCopy">Reference logo is never generation identity.</string>
+    <string name="styleDnaReviewHelp">Review recurring rules and uncertainty. Family counts are sampled reports, not pack-wide confidence. Save replaces this draft style, keeps your separate instruction and creates an immutable revision. This does not approve the style or generate an icon.</string>
+    <string name="styleDnaEdit">Edit versioned family rules</string>
+    <string name="styleDnaGrammar">Style DNA JSON · editable</string>
+    <string name="styleDnaInvalid">The grammar, evidence links or recipe exceeds its valid bounds. Correct it before saving.</string>
+    <string name="styleDnaReviewed">I reviewed the selected family and its drawing rules.</string>
+    <string name="styleDnaSave">Save reviewed Style DNA · free</string>
+    <string name="styleDnaLocalError">Inputs changed or local validation failed. Prepare current samples or reopen the style; no automatic request.</string>
+    <string name="styleDnaConsent">Send %1$d separate labeled style images using %2$s, detail=%3$s. Authorize only the following frozen steps, maximum %4$d charged endpoint submissions. Uploaded content is style evidence only; no target identity is analyzed here.</string>
+    <string name="styleDnaConfirm">Authorize only these paid analysis steps</string>
+    <string name="styleDnaTargetHelp">Use the reviewed family for this original target. Choose its symbol type from the genuine original preview; UNKNOWN keeps essential geometry and wording. Package names never determine symbol type. References supply style only.</string>
 </resources>

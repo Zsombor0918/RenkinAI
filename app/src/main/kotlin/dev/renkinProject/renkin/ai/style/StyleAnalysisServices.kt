@@ -13,6 +13,8 @@ class StyleAnalysisServices @Inject constructor(@ApplicationContext context: Con
     private val credentials: AiCredentialStore) {
     internal val journal = StyleAnalysisJournal(context)
     internal val sampler = ReferenceSampler()
+    internal val dnaJournal = StyleDnaJournal(context)
+    internal val dnaCoordinator = StyleDnaCoordinator(dnaJournal, OpenAiStyleDnaGateway(credentials))
     internal val coordinator = StyleAnalysisCoordinator(journal, OpenAiStyleAnalysisGateway(credentials))
     internal fun hasOpenAiKey() = credentials.hasKey(AiSettings.OPENAI)
 }
