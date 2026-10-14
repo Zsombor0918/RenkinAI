@@ -11,6 +11,12 @@ in [change notes](docs/changes/README.md). No release is published by this PR.
 
 ## Unreleased
 
+- Guide project/source, style, one-to-three trial apps and completion through four steps.
+- Advance after durable style/target saves and restore current saved target choices.
+- Separate current errors/results from expandable history and require every current
+  successful trial to be reviewed before shared approval. Keep classic editing and
+  explicit paid consent; completion does not apply, build or install icons.
+
 - Require one standalone OpenAI trial icon from the target original, using reference
   images only for visual style; prevent saved-style prompt overrides from dropping
   the identity/output contract. Legacy AI1/AI2 and Stability request bytes stay intact.

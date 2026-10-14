@@ -1,5 +1,41 @@
 # Current implementation
 
+## Guided workflow on the local Windows branch
+
+Stage 0/1 implements Project/source -> Style -> Trials -> Completion on
+`feat/ux-flow-stabilization`, based on verified Style DNA head
+`2f422ca8dbd58174491c954826350bac29bc6dd2`. PR6/PR7 are draft, open and unmerged;
+accepted main remains `af7bdb104869b0d0dded2acdf020fc030642dcf9`.
+
+Regression acceptance is BLOCKED at the usage-limit checkpoint: integration compiled
+and ran98 tests with26 failures, concentrated at pre-existing Windows AtomicFile
+replacement plus new fixture interactions. The one-method journal probe confirmed
+the Windows base/`.new` mismatch. Full final-head/all23 checks have not passed.
+See the [continuation handoff](HANDOFF.md) for exact classification and next commands.
+
+Fresh DNA-capable projects recommend Quick; historic aggregate/manual styles retain
+Legacy. One reviewed save advances only after immutable persistence. Current saved
+targets hydrate without a write; guided trials use one to three eligible named apps.
+Current results, all successful variants requiring review and current context proof
+determine approval; complete history remains expandable. Completion distinguishes
+saved style, reviewed trials and approval from Apply/build/install, which remain separate.
+Current preparation failures no longer masquerade as historical result validity.
+Pending project switches queue only a local read, never another provider request.
+
+Room21, backup formats, original IMAGE1/style-only references, legacy AI1/AI2/Stability,
+identities, original editor, immutable assets and consumed request evidence remain.
+No SDK/dependency/provider/schema/signing/install change is introduced by the source.
+Stages 2 fidelity and 3 cleanup are planned only. No live or paid API call occurred.
+See [audit](../changes/2026-10-14-guided-ux-audit.md),
+[implementation](../changes/2026-10-14-guided-ux-implementation.md) and
+[owner acceptance and later plans](../qa/GUIDED_UX_OWNER_CHECK.md).
+Fresh exact-final-commit checks and APK identity belong in the stacked PR audit;
+physical Flip8/TalkBack/fold and installed-signature compatibility remain unverified.
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Closing-head legacy rejection-journey readiness
 
 Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered

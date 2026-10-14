@@ -36,6 +36,16 @@ If the hooks resolve another Python first, fix PATH to select Python 3. Check
 `git config --get core.hooksPath`. Hooks are deliberately not installed by running
 Gradle and can be skipped by Git; required server checks provide the merge gate.
 
+The complete regression runner also works in native PowerShell:
+`python scripts/run_compose_regressions.py` selects the absolute batch wrapper on
+Windows and retains `./gradlew` elsewhere. It runs all isolated groups followed by
+unfiltered compilation/tests/debug assembly and checks actual XML results. Set
+`JAVA_HOME` and the Android SDK path in the current process or ignored
+`local.properties`; portable tools need no global configuration. Keep Git's shell
+and the intended Python on PATH for native hook tests. Windows Developer Mode or
+equivalent symbolic-link privilege is required by the retained asset-security test;
+do not skip that test when the permission is absent.
+
 ## Commit and review
 
 Allowed types: `feat`, `fix`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`,
@@ -69,3 +79,5 @@ Complete every audit section and select `PASS`, `PASS WITH RISKS`, or `BLOCKED`.
 Record device tests as not run when no device was used. The precise path rules and
 small-change exceptions live in [WORKFLOW](docs/agent/WORKFLOW.md), not ad-hoc bypasses.
 Main protection is an external setting; follow and verify the instructions there.
+For a stacked PR, use its verified actual target branch as the guard base, such as
+`origin/feat/style-dna-v1`; do not validate unrelated unmerged base history as new commits.

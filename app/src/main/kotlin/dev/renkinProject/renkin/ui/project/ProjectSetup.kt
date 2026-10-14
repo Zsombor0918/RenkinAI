@@ -184,13 +184,14 @@ internal fun ProjectSetup(
     mode: ProjectSetupMode, page: ProjectSetupPage, profileId: Long?, source: String?,
     state: ProjectHomeState, data: ProjectSetupData,
     onSource: (String) -> Unit, onProfile: (Long) -> Unit, onNewProfile: () -> Unit,
-    onBack: () -> Unit, onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}, onTrials: () -> Unit = {}
+    onBack: () -> Unit, onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}, onTrials: () -> Unit = {},
+    guidedStep: Int? = null, onContinue: () -> Unit = onStyle
 ) {
     if (page == ProjectSetupPage.TARGETS) {
         val ready = state.actionsEnabled && profileId == state.activeProfileId && data.catalogReady
         TargetSelection(mode, profileId ?: state.activeProfileId,
             state.profiles.find { it.id == profileId }?.name.orEmpty(), source,
-            data, ready, onBack, onChangeSource, onEditor, onStyle, onTrials)
+            data, ready, onBack, onChangeSource, onEditor, onStyle, onTrials, guidedStep, onContinue)
         return
     }
     CenteredFullscreenContent {
@@ -198,9 +199,11 @@ internal fun ProjectSetup(
             modifier = Modifier.testTag(if (page == ProjectSetupPage.SOURCE) "setup-source" else "setup-profile")) {
             item {
                 SetupHeading(stringResource(if (page == ProjectSetupPage.SOURCE) R.string.setupSourceTitle else R.string.setupProfileTitle), onBack)
-                Text(stringResource(R.string.setupReadOnly))
-                Text(stringResource(R.string.setupPreparationOnly))
-                if (source != null) Text(source)
+                if (guidedStep == null) {
+                    Text(stringResource(R.string.setupReadOnly))
+                    Text(stringResource(R.string.setupPreparationOnly))
+                    if (source != null) Text(source)
+                } else Text(stringResource(R.string.workflowSourceLocal))
                 if (!data.catalogReady || state.busy) WavyLoadingBar(Modifier.fillMaxWidth())
                 if (data.catalogFailed || state.operationFailed || state.operationInterrupted) {
                     Text(stringResource(R.string.setupUnavailable))
@@ -225,8 +228,10 @@ internal fun ProjectSetup(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-source-${pack.packageName}")) {
                         Column {
                             Text(pack.applicationName)
-                            Text(pack.packageName)
-                            Text(stringResource(R.string.setupSourceVersion, pack.versionCode))
+                            if (guidedStep == null) {
+                                Text(pack.packageName)
+                                Text(stringResource(R.string.setupSourceVersion, pack.versionCode))
+                            }
                         }
                     }
                 }
@@ -241,7 +246,7 @@ internal fun ProjectSetup(
                 items(state.profiles, key = { it.id }) { profile ->
                     OutlinedButton(onClick = { onProfile(profile.id) }, enabled = state.actionsEnabled,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-profile-${profile.id}")) {
-                        Column { Text(profile.name); Text(stringResource(R.string.projectIdentity, profile.id)) }
+                        Column { Text(profile.name); if (guidedStep == null) Text(stringResource(R.string.projectIdentity, profile.id)) }
                     }
                 }
             }

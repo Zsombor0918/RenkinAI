@@ -1,5 +1,32 @@
 # Agent, Git and review workflow
 
+## Native Windows guided UX verification
+
+The complete Compose runner now has 23 groups, retaining all 22 previous groups and
+selectors and adding five guided classes. Windows invokes the absolute native
+`gradlew.bat`; POSIX still invokes `./gradlew`. Task/selector/XML/skipped/error/exit
+requirements are unchanged. The final full-suite group compiles, tests and assembles
+on the exact committed HEAD after the isolated runs.
+
+Git snapshot reads normalize CRLF before matching the same exact four impact
+declarations. Strict declaration/body/path/link requirements remain; a retained test
+proves native Windows blobs work. Hook fixture text explicitly uses LF matching
+`.gitattributes`, so the real pre-commit whitespace gate is still exercised.
+All three workflows additionally trigger for PRs targeting `feat/style-dna-v1`.
+No required job or guard was removed and no server protection setting was changed.
+See [ADR0009](../decisions/0009-guided-project-workflow.md).
+
+Local setup is process-scoped via portable `env.ps1` (JDK17/API36/build-tools35.0.0,
+Python3.14/Git shell on PATH). Run `python -m unittest discover -s scripts/tests -v`,
+`python scripts/run_compose_regressions.py`, `python scripts/check_docs.py --base
+origin/feat/style-dna-v1 --head HEAD`, and the commit range/PR audit guards.
+Record final-head evidence externally; do not substitute earlier remote CI or a stale APK.
+The stacked PR stays draft; PASS WITH RISKS still requires explicit owner review.
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Closing-head legacy rejection-journey readiness
 
 Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered

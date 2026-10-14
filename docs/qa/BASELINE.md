@@ -1,5 +1,47 @@
 # Verification baseline
 
+## Local Windows guided UX evidence
+
+Source baseline `2f422ca8dbd58174491c954826350bac29bc6dd2`; dedicated local worktree
+`RenkinAI-ux`, branch `feat/ux-flow-stabilization`. Windows11 build26200, native
+PowerShell5.1, VS Code1.141, Python3.14, Temurin17.0.20.1+1, Gradle8.11.1,
+Android API36 r2/build-tools35.0.0/platform-tools37.0.1. Portable tools and ignored
+SDK settings do not modify system configuration. The owner enabled Developer Mode;
+the exact Java Files.createSymbolicLink probe passed before the retained security test.
+
+Before runtime edits, actual Gradle production/test compilation plus four selected
+suites produced 17 testcase nodes/11 failures/0 errors/0 skips. The second narrow
+controller/currentness run produced 3 testcase nodes/3 failures/0 errors/0 skips.
+Original logs/commands/XML remain outside Git under `RenkinAI-TaskTools/2026-10-14`
+in `ux-red-baseline` and `ux-red-owned-baseline`; see the [audit](../changes/2026-10-14-guided-ux-audit.md).
+The complete native Python governance run passed55 tests in107.949s after the strict
+CRLF input/fixture correction. The first integration attempt compiled production
+Kotlin/resources but failed new test compilation on a missing semantics extension
+import; that import was corrected before any test result was claimed.
+Integration run2 compiled production/tests and produced12 XML/98 tests/26 failures/
+0 errors/0 skips. A separate one-method native AtomicFile probe failed its second
+committed-write assertion, retaining old base and new `.new` bytes and a failed-rename
+log. This demonstrates the pre-existing Windows test-environment replacement boundary.
+Its original XML/log remains outside Git in `windows-atomic-probe`. Full acceptance
+is BLOCKED; corrected fixture edits and test-harness work require fresh execution.
+
+Final-head required verification is native `gradlew.bat compileDebugKotlin
+testDebugUnitTest assembleDebug`, all23 groups via `python scripts/run_compose_regressions.py`,
+all Python governance tests, staged/range docs and commit/PR guards. Inspect actual
+testcase nodes against declared and summary counts, every selector, genuine Room19/20/21
+bytes and the newly produced debug APK. Exact final SHA/counts/commands, APK bytes,
+SHA256, package and certificate belong in the external stacked PR audit.
+
+No live/paid calls or Android device installation occurred. `adb devices -l` returned
+no devices. Robolectric SDK33/native/320dp is local Android unit/Compose execution,
+not an instrumented Flip8/emulator or screenshot-golden test. Physical upgrade,
+TalkBack/fold/rotation and generated visual fidelity remain NOT RUN. The new local
+debug certificate must be compared with the installed app before any update.
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Closing-head legacy rejection-journey readiness
 
 Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered

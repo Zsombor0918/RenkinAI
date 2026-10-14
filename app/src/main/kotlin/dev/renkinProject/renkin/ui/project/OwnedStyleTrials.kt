@@ -35,6 +35,9 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     private val chosenOptions = ConcurrentHashMap<Long, Triple<String, String, String>>()
     private val images = ConcurrentHashMap<Long, Map<String, ByteArray>>()
     private val verifiedOriginalPlans = ConcurrentHashMap<Long, String>()
+    // Coalesce local reads blocked by another profile's already-confirmed job.
+    // These entries can only call load/recovery, never prepare or submit a request.
+    private val pendingLoads = ConcurrentHashMap<Long, Pair<ProjectSetupMode, String?>>()
     private fun matchesRoute(c: TrialContext) = routes[c.profileId]?.let { it.first.name == c.mode && it.second == c.sourcePackage } == true
     private fun flow(id: Long) = states.getOrPut(id) { MutableStateFlow(ProjectTrialState()) }
     override fun state(id: Long): StateFlow<ProjectTrialState> = flow(id)
@@ -54,7 +57,16 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             catch (failure: TrialPrerequisite) { flow(id).value = flow(id).value.copy(error = failure.reason) }
             catch (_: UnverifiedTrialOriginal) { flow(id).value = flow(id).value.copy(error = "unverified_original") }
             catch (_: Exception) { flow(id).value = flow(id).value.copy(error = "trial_context_or_storage") }
-            finally { jobs.remove(id); flow(id).value = flow(id).value.copy(busy = false, network = false) }
+            finally {
+                jobs.remove(id)
+                flow(id).value = flow(id).value.copy(busy = false, network = false)
+                val waiting = pendingLoads.toMap()
+                waiting.forEach { (profile, route) ->
+                    if (pendingLoads.remove(profile, route) && routes[profile] == route) {
+                        load(profile, route.first, route.second)
+                    }
+                }
+            }
         }
     }
     private suspend fun preparation(id: Long): TrialPreparation = owner.owned(id) {
@@ -98,6 +110,11 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     override fun load(id: Long, mode: ProjectSetupMode, source: String?) {
         bindContext(id, mode, source)
         if (flow(id).value.network) return
+        if (states.values.any { it.value.busy }) {
+            pendingLoads[id] = mode to source
+            return
+        }
+        pendingLoads.remove(id)
         start(id) {
             flow(id).value = flow(id).value.copy(plan = null, preparation = null, ready = false)
             images.remove(id)
@@ -175,7 +192,10 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     }
     override fun cancelPreparation(id: Long) { if (!flow(id).value.network) { images.remove(id); verifiedOriginalPlans.remove(id); flow(id).value = flow(id).value.copy(plan = null) } }
     override fun stop(id: Long) { jobs[id]?.cancel() }
-    override fun release(id: Long) { if (!flow(id).value.network) { jobs[id]?.cancel(); cancelPreparation(id) } }
+    override fun release(id: Long) {
+        pendingLoads.remove(id)
+        if (!flow(id).value.network) { jobs[id]?.cancel(); cancelPreparation(id) }
+    }
     private suspend fun currentOriginals(p: TrialPreparation, keys: List<String>): Map<String, Pair<String, String>> = owner.owned(p.context.profileId) {
         check(keys.all { key -> p.candidates.any { it.target.key == key && it.eligible } }) { "A trial target is no longer eligible." }
         keys.distinct().associateWith { key -> owner.original(key).let { it.hash to it.origin } }

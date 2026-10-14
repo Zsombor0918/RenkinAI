@@ -15,7 +15,9 @@ internal data class ProjectAnalysisState(val busy: Boolean = false, val network:
     val preparedDraftHash: String? = null,
     val dnaPlan: dev.renkinProject.renkin.ai.style.StyleDnaPlan? = null,
     val dnaRecord: dev.renkinProject.renkin.ai.style.StyleDnaRecord? = null,
-    val savedDna: dev.renkinProject.renkin.ai.style.SavedStyleDna? = null)
+    val savedDna: dev.renkinProject.renkin.ai.style.SavedStyleDna? = null,
+    val legacyValidity: AnalysisValidity? = null,
+    val dnaValidity: AnalysisValidity? = null)
 
 internal fun analysisDraftHash(draft: ProjectStyleDraft) = dev.renkinProject.renkin.data.project.sha256(
     dev.renkinProject.renkin.ai.style.canonicalJson(dev.renkinProject.renkin.ai.style.json("description" to draft.specification,

@@ -1,5 +1,34 @@
 # Architecture
 
+## Guided presentation and ownership
+
+`RenkinAiRoot` enables the four-step shell without changing classic editor or intent
+priority. The shell stores routes only. `ProjectWorkflow` derives source readiness
+and completion from existing metadata, saved revisions and owned trial state.
+`TargetSelection` hydrates current saved keys and awaits the existing durable save
+before advancing. Default API-compatible shell consumers remain supported.
+
+`ProjectStylePanel` owns the local editable draft; the selected aggregate/DNA child
+propagates dirty and saving state. DNA/aggregate saves return a persisted
+`SavedProjectStyle` before parent synchronization/navigation. Per-record source
+validity is separate from current operation errors. Nothing converts legacy styles.
+`trialReviewSummary` checks all current successful variants, owner/context/request
+proof and current failures before exposing approval. History presentation does not
+remove journal or Room evidence. Completion performs read-only local revalidation.
+
+Owned controllers remain the only async request owners. `OwnedStyleTrials` coalesces
+a latest local load for another profile while its authorized network operation runs;
+release/context guards drop obsolete routes. The drain calls only `load`, never
+prepare/submit. Existing session mutexes, consumed markers, uncertain recovery,
+immutable original/RAW assets, repository transactions and one-shot gateways remain.
+No database, global lifecycle singleton or second request coordinator was added.
+See [ADR0009](decisions/0009-guided-project-workflow.md) and the
+[implementation inventory](changes/2026-10-14-guided-ux-implementation.md).
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Current opt-in Style DNA architecture
 
 Separate stacked PR7 adds diagnostics, individually labeled reports, independently validated

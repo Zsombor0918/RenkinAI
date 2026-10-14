@@ -194,6 +194,27 @@ class OwnedStyleAnalysisTest {
         assertNull(recreated.state(1).value.preparation); assertEquals(1, calls)
         recreated.discardCandidate(1, record.requestId); assertNull(repo.load(1).revision); assertEquals(1, calls)
     }
+    @Test fun staleDnaHistoryDoesNotInvalidateACurrentLegacyCandidate() = runBlocking {
+        val dnaJournal = StyleDnaJournal(analysisFixtureContext(temporary.root))
+        val dnaCoordinator = StyleDnaCoordinator(dnaJournal, StyleDnaGateway { _, _ -> error("Viewing history must not submit") })
+        val controller = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(),
+            StyleAnalysisCoordinator(journal, gateway), { key }, owner, dnaCoordinator)
+        val legacy = result(controller)
+        val (fixture, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val stale = fixture.copy(context = checkNotNull(legacy.context).copy(catalogStamp = sha256("old catalog".toByteArray())))
+        assertTrue(dnaJournal.claim(stale, images))
+        dnaJournal.failed(stale, "STALE_SOURCE", false); dnaJournal.release(stale)
+        controller.refresh(1)
+        val state = controller.state(1).value
+        assertEquals(legacy.requestId, state.record!!.requestId)
+        assertEquals(stale.id, state.dnaRecord!!.plan.id)
+        assertEquals("The legacy candidate must keep its own current validity", AnalysisValidity.CURRENT, state.validity)
+        assertEquals(AnalysisValidity.CURRENT, state.legacyValidity)
+        assertEquals(AnalysisValidity.PREPARATION_CHANGED, state.dnaValidity)
+        assertEquals(legacy.requestId, controller.use(1, legacy.requestId, legacy.hashes, false).requestId)
+        assertEquals(1, calls)
+        assertNull(repo.load(1).revision)
+    }
     @Test fun rejectedAnalysisKeepsSafeReasonAndNeedsFreshPreparationUuidAndExplicitConfirmation() = runBlocking {
         okhttp3.mockwebserver.MockWebServer().use { server ->
             server.enqueue(okhttp3.mockwebserver.MockResponse().setResponseCode(400).setBody("private payload and identifiers"))

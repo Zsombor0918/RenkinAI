@@ -1,5 +1,84 @@
 # Agent handoff — Codex 05 style trials, owner acceptance pending
 
+## Stage 0/1 checkpoint: regression acceptance is blocked
+
+The owner requested a safe checkpoint as the session approached its usage limit.
+Production and test compilation succeeded in integration run2; actual12 XML/98
+tests had26 failures/0 errors/0 skips. No complete final-head suite or all23 regression
+groups have passed locally. This checkpoint preserves implementation, not approval.
+
+Failure classification:12 owned-analysis and7 owned-trial failures plus3 retained
+routed analysis/trial failures share the pre-existing Windows AtomicFile replacement
+boundary. A one-test native probe reproduced it independently: the second finishWrite
+left the first base value and the second value in `.new`, with an Android failed-rename
+log. Android/Linux production storage semantics must remain unchanged. Three new
+Room journeys targeted a nonexistent Advanced button in the direct manual fallback;
+those fixture taps were corrected. One new style assertion required substring matching
+against the actual longer error text; it was corrected. These22 shared-cause and4
+fixture-related classifications are supported by XML and the probe, but their complete
+corrected rerun is still required. All11 guided trial tests passed in that run.
+
+The added real-Room decline/approval preservation regression is not yet executed.
+It addresses an observed conservative readiness reset after cancelling local preparation;
+its runtime fix must wait for the shared journal boundary to be tested correctly.
+Keep the branch intact and use the exact continuation commands below. A successful
+debug APK compilation/assembly does not make the regression gate pass.
+
+```powershell
+. 'C:\Users\zsomb\AppData\Local\RenkinAI-TaskTools\2026-10-14\env.ps1'
+python -m unittest discover -s scripts/tests -v
+python scripts/check_docs.py --base origin/feat/style-dna-v1 --head HEAD
+python scripts/check_commit_messages.py --base origin/feat/style-dna-v1 --head HEAD
+.\gradlew.bat testDebugUnitTest --tests dev.renkinProject.renkin.ui.project.OwnedStyleAnalysisTest.useChangesOnlyDraftAndExplicitSavePreservesInstructionAndImmutableHistory --tests dev.renkinProject.renkin.ui.project.OwnedStyleTrialsTest.doubleTapAcceptApproveAndM6ReadOnlyReuseNeedNoAdditionalGeneration --console=plain
+```
+
+First finish and verify the narrow Windows test-harness AtomicFile replacement fix,
+preserving crash/orphan/security assertions. Once these actual journal/controller
+boundaries pass, rerun the five guided classes and retained style/trial/controller
+classes from the recorded `ux-green-targeted-2/command.txt`. Only after targeted
+green, run `python scripts/run_compose_regressions.py` and fresh exact-final-head
+debug assembly/package/signature verification. Publish the stacked draft with the
+complete audit if GitHub access permits; keep BLOCKED while mandatory tests fail.
+
+## Guided UX scope and preserved baseline
+
+Worktree: `C:\Users\zsomb\Documents\Github\RenkinAI-ux`, branch
+`feat/ux-flow-stabilization`, verified base
+`2f422ca8dbd58174491c954826350bac29bc6dd2` (`feat/style-dna-v1`, draft PR7).
+PR7 remains stacked on draft PR6 `454bd5ec`; original main/work directories are
+preserved. This scope implements the four-step guided presentation and demonstrated
+save/currentness/local-load defects; Stage2/3 are plans only.
+
+All eight owner screenshots and the execution contract were read before source edits.
+Actual pre-edit native tests: 17/11 failures, then three targeted tests/three failures,
+zero errors/skips. The Windows guard's strict impact declarations also had a real
+CRLF reproduction; Git snapshot normalization preserves all checks. Native batch
+wrapper support retains every previous Compose group and adds guided real-Room journeys.
+Final commit SHA, complete final-head results and fresh APK digest/certificate are
+recorded externally in the stacked draft PR audit, since a file cannot contain its own SHA.
+
+The owner authorized portable JDK17/Android SDK setup in a separate task folder and
+enabled Windows Developer Mode. Source the task folder's `env.ps1` for native local
+checks. No physical device/emulator is attached or installed. A new local debug key
+does not establish compatibility with any installed CI-signed debug build; preserve
+all owner data and keys and inspect certificates before attempting an update.
+
+Run the [15-action Flip8/Lux owner check](../qa/GUIDED_UX_OWNER_CHECK.md). Its optional
+paid steps require separate owner consent. Free local preparation, manual style Save,
+target persistence/reopen and history inspection need no provider call. Current errors
+must never show Ready; all current successful variants must be reviewed before approval.
+The completion overview does not Apply accepted trials or build/install a pack.
+
+Next safe task: owner free phone/navigation/accessibility verification, followed by a
+separately authorized Stage2 fixed-three-original blind visual comparison proposal.
+Stage3 caller-proven cleanup is separate. No main write, merge, force push, live request,
+user-data deletion or device install happened. Owner review/merge and release approval
+remain separate from automated success.
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Closing-head legacy rejection-journey readiness
 
 Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered

@@ -266,6 +266,7 @@ class ProjectStyleTrialJourneyComposeTest {
     @Test fun changedSourceOnReloadOffersTargetsRemediationWithoutAnyGeneration() {
         compose.setContent { Content() }; open(extend = true); saveTargets(); style(); manualSave(); back(); enterTrials()
         reader = FixtureReferenceReader(mapOf("replacement" to analysisFixturePng(2, 91)))
+        click("project-trials-1", "trial-options-toggle")
         click("project-trials-1", "trial-reload")
         assertEquals("stale_targets", trials.state(1).value.error)
         compose.onNodeWithTag("trial-error").assertTextContains("saved targets or source changed", substring = true)

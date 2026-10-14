@@ -2,7 +2,7 @@ name: Governance
 
 on:
   pull_request:
-    branches: [main, dev, "feat/style-trials-m5"]
+    branches: [main, dev, "feat/style-trials-m5", "feat/style-dna-v1"]
     types: [opened, synchronize, reopened, edited, ready_for_review]
 
 permissions:

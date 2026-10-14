@@ -1,5 +1,32 @@
 # Regression and test matrix
 
+## Guided UX additions and retained gates
+
+All old tests/assertions/selectors remain. Guided coverage adds first-use Quick and
+Legacy fallback, separate selected paths, DNA save completion/parent busy/dirty state,
+current error versus retained history and restored current targets. Retained history
+must still block approval for any current unreviewed successful variant.
+
+`GuidedProjectRoomJourneyComposeTest` traverses the production shell/panels for CREATE
+and EXTEND with real Room, immutable style/selection writes, asset/journal/controller,
+explicit synthetic consent, per-image review, shared approval and completion/reopen.
+Its delayed-save gate proves no route change or trial preparation before durable
+target persistence. Only provider/session/artwork ports are synthetic; actual
+MainViewModel/Hilt/device integration and provider image quality are not certified.
+Owned controller tests additionally prove profile switching during an already
+confirmed fake request eventually loads locally without a second submission.
+
+The guided runner group adds five classes, alongside all22 prior groups and the
+unfiltered compile/test/APK gate. Existing reload tests expand Details before the
+same selector and unchanged assertions; timeouts/idling/security checks stay intact.
+Python faults cover native wrapper selection, additive groups and CRLF declarations.
+Physical/device/live boundaries and Stage2/3 proposals are in the
+[owner check](GUIDED_UX_OWNER_CHECK.md).
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## October 14 — verified Style DNA code and remaining acceptance
 
 Code89eacb0d: Android38477038060 and all22 commands38477037827 passed;

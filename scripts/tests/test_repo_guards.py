@@ -42,7 +42,8 @@ class RepoGuardsTest(unittest.TestCase):
     def write(self, path, text):
         target = self.root / path
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(text, encoding="utf-8")
+        # Match the repository's eol=lf contract; CRLF audit cases use explicit bytes.
+        target.write_text(text, encoding="utf-8", newline="\n")
 
     def cli(self, script, *args):
         return subprocess.run([sys.executable, str(REPO / "scripts" / script), "--repo", str(self.root), *args],
@@ -137,6 +138,15 @@ class RepoGuardsTest(unittest.TestCase):
     def test_documented_change_passes(self):
         self.write(CODE, "fun screen() = 2\n")
         self.documented()
+        self.stage()
+        result = self.check_staged()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_crlf_change_note_preserves_exact_impact_declarations(self):
+        self.write(CODE, "fun screen() = 2\n")
+        self.documented()
+        note = self.root / "docs/changes/2026-10-11-test-change.md"
+        note.write_bytes(note.read_text(encoding="utf-8").replace("\n", "\r\n").encode("utf-8"))
         self.stage()
         result = self.check_staged()
         self.assertEqual(result.returncode, 0, result.stderr)

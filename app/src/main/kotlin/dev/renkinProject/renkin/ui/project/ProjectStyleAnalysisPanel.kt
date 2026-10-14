@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import dev.renkinProject.renkin.R
 import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.packages.PackageResourceResolver
@@ -32,20 +34,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** Suggestions are reviewable, never active on arrival. Use changes only the protected draft;
- * the existing explicit style Save performs durable acceptance. Small previews are disposed. */
+/** Suggestions are never active on arrival. Guided review awaits the existing local Save;
+ * compatibility routes can still import an editable draft first. Small previews are disposed. */
 @Composable
 internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source: String?, stamp: String?,
     enabled: Boolean, backend: ProjectAnalysisBackend, expected: Long?, draft: ProjectStyleDraft,
     dirty: Boolean, advanced: Boolean, onAdvanced: (Boolean) -> Unit,
     onBusy: (Boolean) -> Unit, onUse: (AnalyzedDraft, Boolean) -> Unit,
-    onDnaSaved: (dev.renkinProject.renkin.data.project.SavedProjectStyle) -> Unit = {}) {
+    onDnaSaved: (dev.renkinProject.renkin.data.project.SavedProjectStyle) -> Unit = {},
+    selectedPath: String? = null, onPathChanged: (String) -> Unit = {},
+    onDnaDirty: (Boolean) -> Unit = {},
+    onReviewedSave: (suspend (AnalyzedDraft, Boolean) -> Unit)? = null, guided: Boolean = false) {
     val state by backend.state(id).collectAsState()
     var invalidation by remember { mutableIntStateOf(0) }
     val theme = PackageResourceResolver.displayedNightMode
     var readError by remember(id) { mutableStateOf(false) }
     ObserveCoverageInvalidation(source) { invalidation++ }
-    LaunchedEffect(id, mode, source, invalidation, theme) {
+    LaunchedEffect(id, mode, source, invalidation, theme, expected) {
         backend.bindContext(id, mode, source)
         try { backend.refresh(id); readError = false } catch (cancel: CancellationException) { throw cancel }
         catch (_: Exception) { readError = true }
@@ -56,12 +61,18 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
     var useConfirm by rememberSaveable(id) { mutableStateOf(false) }
     var using by remember { mutableStateOf(false) }
     var useError by remember { mutableStateOf(false) }
+    var saveOnUse by rememberSaveable(id) { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val path = selectedPath ?: initialStyleAnalysisPath(expected, state)
     Column(Modifier.fillMaxWidth().testTag("style-analysis-$id"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (backend.supportsDna) ProjectStyleDnaPanel(id,mode,source,stamp,enabled,backend,expected,draft,onDnaSaved)
+        if (backend.supportsDna) ProjectStyleDnaPanel(id, mode, source, stamp, enabled, backend, expected, draft, onDnaSaved,
+            selectedPath = path, onPathChanged = onPathChanged, onBusy = onBusy, onDirty = onDnaDirty, guided = guided)
+        if (!backend.supportsDna || path == "LEGACY") {
         Text(stringResource(R.string.styleAnalysisTitle))
-        Text(stringResource(if (mode == ProjectSetupMode.CREATE) R.string.styleAnalysisCreate else R.string.styleAnalysisExtend))
-        Text(stringResource(R.string.styleAnalysisManualFallback))
+        if (guided) Text(stringResource(R.string.uxStyleLegacyHelp)) else {
+            Text(stringResource(if (mode == ProjectSetupMode.CREATE) R.string.styleAnalysisCreate else R.string.styleAnalysisExtend))
+            Text(stringResource(R.string.styleAnalysisManualFallback))
+        }
         OutlinedButton(onClick = { backend.prepare(id, mode, source, stamp, expected, draft) },
             enabled = enabled && !state.busy && !using,
             modifier = Modifier.heightIn(min = 48.dp).testTag("style-analysis-prepare")) {
@@ -75,17 +86,22 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
             }
         }
         if (!state.hasKey) Text(stringResource(R.string.styleAnalysisNoKey), Modifier.testTag("style-analysis-no-key"))
-        if (state.error != null || useError || readError) Text(stringResource(
-            if (state.error == "empty") R.string.styleAnalysisEmpty else R.string.styleAnalysisLocalError), Modifier.testTag("style-analysis-error"))
+        if (state.error != null || useError || readError) Text(stringResource(when {
+            state.error == "empty" -> R.string.styleAnalysisEmpty
+            guided && state.record?.style != null -> R.string.uxStyleCurrentAttemptFailed
+            else -> R.string.styleAnalysisLocalError
+        }), Modifier.testTag("style-analysis-error"))
         state.samples?.let { samples ->
-            Text(stringResource(R.string.styleAnalysisSamples, samples.samples.size, samples.report.examined, samples.report.duplicates,
+            if (guided) Text(stringResource(R.string.uxStyleSamples, samples.samples.size),
+                Modifier.testTag("style-analysis-sample-count"))
+            else Text(stringResource(R.string.styleAnalysisSamples, samples.samples.size, samples.report.examined, samples.report.duplicates,
                 samples.report.unsupported, samples.report.broken), Modifier.testTag("style-analysis-sample-count"))
-            if (samples.sourceIdentity != null) Text(stringResource(R.string.styleAnalysisSourceIdentity,
+            if (samples.sourceIdentity != null && (!guided || advanced)) Text(stringResource(R.string.styleAnalysisSourceIdentity,
                 samples.sourceIdentity.packageName, samples.sourceIdentity.versionCode.toString(), samples.sourceIdentity.theme.toString()))
             if (samples.report.lowSample) Text(stringResource(R.string.styleAnalysisLowSamples))
             if (samples.report.mixedStyleSuspected) Text(stringResource(R.string.styleAnalysisMixed), Modifier.testTag("style-analysis-mixed"))
             samples.report.evidence?.let { evidence ->
-                Text(stringResource(R.string.styleAnalysisLocalPolicy, evidence.colorPolicy.name), Modifier.testTag("style-analysis-local-policy"))
+                if (!guided || advanced) Text(stringResource(R.string.styleAnalysisLocalPolicy, evidence.colorPolicy.name), Modifier.testTag("style-analysis-local-policy"))
                 TextButton(onClick = { onAdvanced(!advanced) }, modifier = Modifier.heightIn(min = 48.dp).testTag("style-analysis-local-details")) {
                     Text(stringResource(R.string.styleAnalysisAdvanced))
                 }
@@ -101,13 +117,15 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
         val matchesDraft = prepared != null && prepared.context.matchesRoute(mode, source) &&
             state.preparedDraftHash == analysisDraftHash(draft)
         if (prepared != null && !matchesDraft) Text(stringResource(R.string.styleAnalysisDraftChanged))
-        OutlinedButton(onClick = { if (prepared != null) { confirmedId = prepared.requestId; confirm = true } },
+        if (!guided || prepared != null) OutlinedButton(onClick = { if (prepared != null) { confirmedId = prepared.requestId; confirm = true } },
             enabled = enabled && !state.busy && matchesDraft && state.hasKey,
             modifier = Modifier.heightIn(min = 48.dp).testTag("style-analysis-start")) { Text(stringResource(R.string.styleAnalysisStart)) }
         val record = state.record
         if (record != null) {
-            val validity = if (record.context?.matchesRoute(mode, source) == true) state.validity else AnalysisValidity.PREPARATION_CHANGED
-            Text(stringResource(R.string.styleAnalysisRequestStatus, record.status.name), Modifier.testTag("style-analysis-request-status"))
+            val validity = if (record.context?.matchesRoute(mode, source) == true)
+                state.legacyValidity ?: state.validity else AnalysisValidity.PREPARATION_CHANGED
+            if (!guided || advanced) Text(stringResource(R.string.styleAnalysisRequestStatus, record.status.name), Modifier.testTag("style-analysis-request-status"))
+            else if (record.status == AnalysisStatus.RESULT_SAVED) Text(stringResource(R.string.uxStyleReady))
             if (record.status == AnalysisStatus.UNCERTAIN || record.status == AnalysisStatus.PREPARED || record.status == AnalysisStatus.REQUESTING) {
                 Text(stringResource(R.string.styleAnalysisUncertain), Modifier.testTag("style-analysis-uncertain"))
             }
@@ -128,7 +146,9 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
             }
             if (validity != AnalysisValidity.CURRENT) Text(stringResource(R.string.styleAnalysisStale), Modifier.testTag("style-analysis-stale"))
             record.style?.let { style ->
-                Text(style.shortStyleDescription, Modifier.testTag("style-analysis-suggestion"))
+                Text(style.shortStyleDescription, Modifier.testTag("style-analysis-suggestion"),
+                    maxLines = if (guided && !advanced) 5 else Int.MAX_VALUE, overflow = TextOverflow.Ellipsis)
+                if (!guided || advanced) {
                 Text(stringResource(R.string.styleAnalysisSummary, style.archetype.name, style.backgroundMode.name,
                     style.stroke.name, style.cornerTreatment.name, style.opticalPadding.name, style.detailLevel.name))
                 Text(stringResource(R.string.styleAnalysisPalette, style.paletteArgb.joinToString(", ").ifEmpty { "unknown" }))
@@ -137,6 +157,7 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                 if (style.mixedStyleWarning || record.localReport?.mixedStyleSuspected == true) Text(stringResource(R.string.styleAnalysisMixed), Modifier.testTag("style-analysis-mixed-result"))
                 if (record.hashes.size < 8) Text(stringResource(R.string.styleAnalysisLowSamples))
                 record.usage?.let { Text(stringResource(R.string.styleAnalysisUsage, it.inputTokens, it.outputTokens)) }
+                }
             }
             if (record.status == AnalysisStatus.RESULT_SAVED) {
                 var selected by rememberSaveable(id, record.requestId) { mutableStateOf(ArrayList(record.hashes.take(5))) }
@@ -163,10 +184,18 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                         }
                     }
                 }
-                OutlinedButton(onClick = { useConfirm = true }, enabled = enabled && !using &&
+                val alreadyInDraft = draft.analysisRequestId == record.requestId
+                if (!guided || !alreadyInDraft) Button(onClick = { saveOnUse = guided; useConfirm = true }, enabled = enabled && !using &&
                     validity in setOf(AnalysisValidity.CURRENT, AnalysisValidity.SOURCE_STALE),
-                    modifier = Modifier.heightIn(min = 48.dp).testTag("style-analysis-use")) { Text(stringResource(R.string.styleAnalysisUseDraft)) }
-                Text(stringResource(R.string.styleAnalysisSaveSeparately))
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-analysis-use")) {
+                    Text(stringResource(if (guided) R.string.uxStyleSaveContinue else R.string.styleAnalysisUseDraft))
+                }
+                if (!guided) Text(stringResource(R.string.styleAnalysisSaveSeparately))
+                else if (!alreadyInDraft) TextButton(onClick = { saveOnUse = false; useConfirm = true },
+                    enabled = enabled && !using && validity in setOf(AnalysisValidity.CURRENT, AnalysisValidity.SOURCE_STALE),
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("style-analysis-edit-draft")) {
+                    Text(stringResource(R.string.uxStyleEditDraft))
+                }
                 TextButton(onClick = {
                     if (!using) { using = true; onBusy(true); scope.launch {
                         try { backend.discardCandidate(id, record.requestId); useError = false }
@@ -178,7 +207,7 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                     Text(stringResource(R.string.styleAnalysisDiscardCandidate))
                 }
                 if (useConfirm) RenkinAlertDialog(onDismissRequest = { useConfirm = false },
-                    title = { Text(stringResource(R.string.styleAnalysisReviewTitle)) },
+                    title = { Text(stringResource(if (saveOnUse) R.string.uxStyleReviewSaveTitle else R.string.styleAnalysisReviewTitle)) },
                     text = { Text(stringResource(when {
                         validity == AnalysisValidity.SOURCE_STALE -> R.string.styleAnalysisUseStaleText
                         dirty -> R.string.styleAnalysisReplaceDirtyText
@@ -189,18 +218,26 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                             val staleAccepted = validity == AnalysisValidity.SOURCE_STALE
                             using = true; onBusy(true); useConfirm = false
                             scope.launch {
-                                try { onUse(backend.use(id, record.requestId, selected, staleAccepted), staleAccepted); useError = false }
+                                try {
+                                    val reviewed = backend.use(id, record.requestId, selected, staleAccepted)
+                                    if (saveOnUse && onReviewedSave != null) onReviewedSave(reviewed, staleAccepted)
+                                    else { onUse(reviewed, staleAccepted); if (guided) onAdvanced(true) }
+                                    useError = false
+                                }
                                 catch (cancel: CancellationException) { throw cancel }
                                 catch (_: Exception) { useError = true }
                                 finally { using = false; onBusy(false) }
                             }
                         }
                     }, enabled = enabled && !using && validity in setOf(AnalysisValidity.CURRENT, AnalysisValidity.SOURCE_STALE),
-                        modifier = Modifier.testTag("style-analysis-confirm-use")) { Text(stringResource(R.string.styleAnalysisUseDraft)) } },
+                        modifier = Modifier.testTag("style-analysis-confirm-use")) {
+                        Text(stringResource(if (saveOnUse) R.string.uxStyleSaveContinue else R.string.styleAnalysisUseDraft))
+                    } },
                     dismissButton = { TextButton(onClick = { useConfirm = false }, modifier = Modifier.testTag("style-analysis-keep-draft")) {
                         Text(stringResource(R.string.colorizeCancel))
                     } })
             }
+        }
         }
     }
     if (confirm) {
@@ -220,6 +257,16 @@ internal fun ProjectStyleAnalysisPanel(id: Long, mode: ProjectSetupMode, source:
                 Text(stringResource(R.string.colorizeCancel))
             } })
     }
+}
+
+/** Existing results choose their compatible presentation; selecting a path never submits. */
+internal fun initialStyleAnalysisPath(expected: Long?, state: ProjectAnalysisState): String = when {
+    state.dnaPlan != null -> state.dnaPlan.mode.name
+    state.dnaRecord?.status == DnaStatus.RESULT_SAVED -> state.dnaRecord.plan.mode.name
+    state.savedDna != null -> "QUICK"
+    expected != null || state.record != null -> "LEGACY"
+    state.dnaRecord != null -> state.dnaRecord.plan.mode.name
+    else -> "QUICK"
 }
 
 @Composable

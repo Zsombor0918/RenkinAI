@@ -2,6 +2,13 @@
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 
+Current local guided UX Stage0/1: [evidence audit](changes/2026-10-14-guided-ux-audit.md),
+[implementation and checks](changes/2026-10-14-guided-ux-implementation.md),
+[ownership ADR0009](decisions/0009-guided-project-workflow.md) and
+[Flip8 owner check / Stage2+3 plans](qa/GUIDED_UX_OWNER_CHECK.md).
+The branch is `feat/ux-flow-stabilization`, stacked on verified PR7 `2f422ca8`;
+PR6/PR7 remain draft/unmerged. Older checkpoint prose below is historical evidence.
+
 Current Style DNA scope, complete changed-file inventory and genuinely executed red/green
 evidence: [October14 verification](changes/2026-10-14-style-dna-verification.md).
 Current facts come from the checked-out source; inherited prose is not a substitute.

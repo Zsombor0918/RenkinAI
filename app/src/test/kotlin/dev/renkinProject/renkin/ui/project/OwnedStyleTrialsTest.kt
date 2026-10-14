@@ -113,6 +113,33 @@ class OwnedStyleTrialsTest {
         assertFalse(c.state(1).value.hasKey); c.submit(1, p.id); c.cancelPreparation(1); loaded(c)
         assertEquals(0, calls); assertTrue(f.journal.records(1).isEmpty())
     }
+
+    @Test fun openingAnotherProjectDuringAConfirmedRequestEventuallyLoadsItLocally() = runBlocking {
+        f.repo.saveStyle(2, null, "other manual style", "", emptyList(), "CREATE", null, null)
+        f.repo.saveSelection(2, 1, ProjectSelection("CREATE", null, null,
+            projectCatalogStamp(f.targets), listOf("b/Main")))
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        gateway = IconGenerationGateway { request ->
+            calls++; request.beforeEndpoint(1); entered.complete(Unit); release.await()
+            IconGenerationOutcome.Generated(projectTestPng(size = 1024), request.requestId,
+                request.provider, 1024, 1024, 1)
+        }
+        val c = controller()
+        val plan = prepared(c)
+        c.submit(1, plan.id)
+        withTimeout(10000) { entered.await() }
+        mutex.withLock { active = 2 }
+        c.load(2, ProjectSetupMode.CREATE, null)
+        assertNull(c.state(2).value.plan)
+        release.complete(Unit)
+        idle(c)
+        val other = withTimeout(10000) { c.state(2).first { it.preparation != null && !it.busy } }
+        assertNull(other.error)
+        assertEquals(listOf("b/Main"), other.preparation!!.candidates.map { it.target.key })
+        assertEquals(1, calls)
+        assertTrue(f.journal.records(2).isEmpty())
+    }
     @Test fun doubleTapAcceptApproveAndM6ReadOnlyReuseNeedNoAdditionalGeneration() = runBlocking {
         val c = controller(); val p = prepared(c); c.submit(1, p.id); c.submit(1, p.id); idle(c)
         val row = c.state(1).value.variants.single(); c.review(1, row.id, true); idle(c)

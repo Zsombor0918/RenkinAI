@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -35,6 +36,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.renkinProject.renkin.R
+import dev.renkinProject.renkin.ai.trial.StyleTrialTargetSelector
 import dev.renkinProject.renkin.data.project.ProjectSelection
 import dev.renkinProject.renkin.apk.CoverageEntry
 import dev.renkinProject.renkin.apk.CoverageReason
@@ -58,7 +60,8 @@ internal fun ProjectOriginalIcon(drawable: Drawable?) {
 internal fun TargetSelection(
     mode: ProjectSetupMode, profileId: Long, profileName: String, source: String?,
     data: ProjectSetupData, ready: Boolean, onBack: () -> Unit,
-    onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}, onTrials: () -> Unit = {}
+    onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}, onTrials: () -> Unit = {},
+    guidedStep: Int? = null, onContinue: () -> Unit = onStyle
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selected by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
@@ -87,13 +90,29 @@ internal fun TargetSelection(
     val filtered = filterCoverageTargets(targets, query).filter {
         mode == ProjectSetupMode.CREATE || !missingOnly || byKey[it.key]?.source in setOf(SourceCoverage.UNMAPPED, SourceCoverage.DECLARED_BROKEN)
     }
-    val validSelected = selected.filter { key -> targets.any { it.key == key && it.selectable } }.toSet()
+    val trialCandidates = if (guidedStep == 3)
+        StyleTrialTargetSelector.candidates(mode.name, targets, targets.map { it.key }, snapshot) else emptyList()
+    val eligibleTrialKeys = trialCandidates.filter { it.eligible }.map { it.target.key }.toSet()
+    val validSelected = selected.filter { key -> targets.any { it.key == key && it.selectable } &&
+        (guidedStep != 3 || key in eligibleTrialKeys) }.toSet()
     val coverageReady = mode == ProjectSetupMode.CREATE || snapshot != null
     val savedSelection = remember(data.savedMetadata?.selectionJson) {
         runCatching { ProjectSelection.decode(data.savedMetadata?.selectionJson.orEmpty()) }.getOrNull()
     }
     val safeKeys = targets.filter { target -> target.selectable && (mode == ProjectSetupMode.CREATE ||
-        byKey[target.key]?.source in setOf(SourceCoverage.RESOLVABLE, SourceCoverage.UNMAPPED, SourceCoverage.DECLARED_BROKEN)) }.map { it.key }.toSet()
+        byKey[target.key]?.source in setOf(SourceCoverage.RESOLVABLE, SourceCoverage.UNMAPPED, SourceCoverage.DECLARED_BROKEN)) &&
+        (guidedStep != 3 || target.key in eligibleTrialKeys) }.map { it.key }.toSet()
+    LaunchedEffect(profileId, mode, source, stamp, guidedStep, data.savedMetadata?.selectionJson, data.metadataLoading) {
+        if (!data.metadataLoading && !selectionEdited && !invalidated && stamp != null &&
+            savedSelection?.isCurrent(mode.name, source, sourceStamp, catalogStamp, safeKeys) == true) {
+            val restored = if (guidedStep == 3 && savedSelection.componentKeys.size > 3)
+                StyleTrialTargetSelector.recommend(trialCandidates.filter { it.target.key in savedSelection.componentKeys })
+                else savedSelection.componentKeys
+            selected = ArrayList(restored)
+            if (restored != savedSelection.componentKeys) selectionEdited = true
+            selectedStamp = stamp
+        }
+    }
     val persistReady = ready && !data.metadataLoading && !data.metadataFailed && !selectionBusy && coverageReady &&
         (mode == ProjectSetupMode.CREATE || (snapshot?.index?.state == dev.renkinProject.renkin.apk.CoverageIndexState.READY && snapshot.index.stamp.versionCode != null))
     val trialReason = when {
@@ -102,6 +121,136 @@ internal fun TargetSelection(
         savedSelection == null || savedSelection.componentKeys.isEmpty() || selectionEdited -> R.string.trialSaveTargets
         !savedSelection.isCurrent(mode.name, source, sourceStamp, catalogStamp, safeKeys) || invalidated -> R.string.trialStaleTargets
         else -> null
+    }
+    if (guidedStep == 1) {
+        ProjectSourceSummary(mode, profileId, profileName, source, data, ready, onBack, onChangeSource,
+            onContinue, onStyle, onEditor)
+        return
+    }
+    if (guidedStep == 3) {
+        var targetDetails by rememberSaveable(profileId, mode, source) { mutableStateOf<String?>(null) }
+        var details by rememberSaveable(profileId, mode, source) { mutableStateOf(false) }
+        val savedCurrent = savedSelection?.isCurrent(mode.name, source, sourceStamp, catalogStamp, safeKeys) == true &&
+            savedSelection.componentKeys.toSet() == validSelected && !invalidated
+        val selectionReady = persistReady && validSelected.size in 1..3 && validSelected.all { it in safeKeys } &&
+            data.savedMetadata?.activeRevision != null
+        CenteredFullscreenContent {
+            LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.testTag("project-targets")) {
+                item {
+                    SetupHeading(stringResource(R.string.workflowChooseApps), onBack)
+                    Text(profileName, style = MaterialTheme.typography.titleLarge)
+                    data.savedMetadata?.activeRevision?.let { Text(stringResource(R.string.workflowSavedRevision, it)) }
+                    if (!persistReady) {
+                        Text(stringResource(if (data.metadataFailed || data.catalogFailed || data.coverage is CoverageUiState.Failed)
+                            R.string.setupUnavailable else R.string.projectInitializing), Modifier.testTag("setup-loading"))
+                    }
+                    if (invalidated || savedSelection != null &&
+                        !savedSelection.isCurrent(mode.name, source, sourceStamp, catalogStamp, safeKeys)) {
+                        Text(stringResource(R.string.setupSavedSelectionStale), Modifier.testTag("setup-saved-selection"))
+                    }
+                    if (selectionError) Text(stringResource(R.string.setupSelectionSaveError), Modifier.testTag("setup-selection-error"))
+                    if (selectionSaved) Text(stringResource(R.string.setupSelectionSaved), Modifier.testTag("setup-selection-saved"))
+                    Text(stringResource(R.string.setupSelectedCounts, validSelected.size, targets.size),
+                        Modifier.testTag("setup-selection-count"))
+                    Button(onClick = {
+                        if (selectionReady) {
+                            if (savedCurrent) {
+                                selectionEdited = false
+                                onTrials()
+                            } else {
+                                selectionBusy = true
+                                val version = data.savedMetadata?.version ?: 0
+                                val selection = ProjectSelection(mode.name, source, sourceStamp, catalogStamp, validSelected.sorted())
+                                scope.launch {
+                                    try {
+                                        data.onSaveSelection(version, selection)
+                                        selectionSaved = true; selectionError = false
+                                        invalidated = false; selectionEdited = false
+                                        onTrials()
+                                    } catch (cancel: CancellationException) { throw cancel }
+                                    catch (_: Exception) { selectionError = true; selectionSaved = false }
+                                    finally { selectionBusy = false }
+                                }
+                            }
+                        }
+                    }, enabled = selectionReady,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-save-selection")) {
+                        Text(stringResource(if (savedCurrent) R.string.workflowSavedTargetsContinue else R.string.workflowSaveTargets))
+                    }
+                    if (!selectionReady && persistReady) Text(stringResource(if (data.savedMetadata?.activeRevision == null)
+                        R.string.trialSaveStyle else R.string.workflowChooseReason), Modifier.testTag("setup-trials-reason"))
+                    OutlinedTextField(query, { query = it }, label = { Text(stringResource(R.string.setupSearch)) },
+                        modifier = Modifier.fillMaxWidth().testTag("setup-search"), singleLine = true)
+                    TextButton(onClick = {
+                        selected = ArrayList(StyleTrialTargetSelector.recommend(trialCandidates))
+                        selectionEdited = true; selectionSaved = false
+                    }, enabled = persistReady, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-select-all")) {
+                        Text(stringResource(R.string.workflowRecommendApps))
+                    }
+                    if (mode == ProjectSetupMode.EXTEND) TextButton(onClick = { missingOnly = !missingOnly },
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("setup-filter")) {
+                        Text(stringResource(if (missingOnly) R.string.setupShowAll else R.string.setupShowMissing))
+                    }
+                    if (filtered.isEmpty()) Text(stringResource(R.string.setupNoTargets))
+                }
+                if (ready && coverageReady) items(filtered, key = { it.key }) { target ->
+                    val key = target.key
+                    val eligible = key in eligibleTrialKeys && !selectionBusy &&
+                        (key in validSelected || validSelected.size < 3)
+                    val entry = byKey[key]
+                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(
+                            value = key in validSelected, enabled = eligible, role = Role.Checkbox) {
+                            selected = ArrayList(if (it) validSelected + key else validSelected - key)
+                            selectionEdited = true; selectionSaved = false
+                        }.testTag("setup-target-$key"), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            data.appIcon(key)
+                            Checkbox(key in validSelected, onCheckedChange = null, enabled = eligible)
+                            Text(target.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                        }
+                        if (key !in eligibleTrialKeys) Text(stringResource(when {
+                            target.locked -> R.string.setupLocked
+                            target.ambiguousUser -> R.string.setupUserWarning
+                            target.local == LocalIconState.CUSTOM_OR_MANUAL -> R.string.setupLocalManual
+                            target.local == LocalIconState.OTHER_APPLIED -> R.string.setupLocalApplied
+                            else -> R.string.workflowAppUnavailable
+                        }))
+                        else if (!eligible && key !in validSelected && validSelected.size >= 3)
+                            Text(stringResource(R.string.workflowMaximumApps))
+                        if (entry?.source == SourceCoverage.RESOLVABLE) Text(stringResource(R.string.workflowCoveredReason))
+                        TextButton(onClick = { targetDetails = if (targetDetails == key) null else key },
+                            modifier = Modifier.heightIn(min = 48.dp).testTag("setup-target-details-$key")) {
+                            Text(stringResource(R.string.workflowDetails))
+                        }
+                        if (targetDetails == key) {
+                            Text(key, style = MaterialTheme.typography.bodySmall)
+                            entry?.let { SourceEntryText(it) }
+                        }
+                    }
+                }
+                item {
+                    TextButton(onClick = onStyle, enabled = ready && !selectionBusy,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("setup-project-style")) {
+                        Text(stringResource(R.string.workflowReviewStyle))
+                    }
+                    TextButton(onClick = { details = !details }, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-details")) {
+                        Text(stringResource(R.string.workflowDetails))
+                    }
+                    if (details) {
+                        source?.let { Text(it) }
+                        TextButton(onClick = { selected = arrayListOf(); selectionEdited = true; selectionSaved = false },
+                            enabled = !selectionBusy, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-clear")) {
+                            Text(stringResource(R.string.setupClear))
+                        }
+                        TextButton(onClick = data.onRescan, enabled = ready) { Text(stringResource(R.string.setupRescan)) }
+                        TextButton(onClick = onChangeSource, enabled = ready) { Text(stringResource(R.string.setupChangeSource)) }
+                        TextButton(onClick = onEditor, enabled = ready) { Text(stringResource(R.string.projectClassicEditor)) }
+                    }
+                }
+            }
+        }
+        return
     }
     CenteredFullscreenContent {
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp),

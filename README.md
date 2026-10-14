@@ -1,5 +1,17 @@
 # Renkin AI – personal fork
 
+Local guided UX development now presents **Project/source -> Style -> Trials ->
+Completion** on `feat/ux-flow-stabilization`, stacked above draft PR7. A fresh project
+recommends Quick DNA; Legacy/manual editing remains available. Save advances only
+after persistence, one to three named targets feed separate trial consent, and
+completion reports review/approval without automatically applying or building icons.
+Advanced sections retain source/request details and full history. No paid call occurs
+from navigation, local preparation or Save. [Owner phone check and later plans](docs/qa/GUIDED_UX_OWNER_CHECK.md);
+[implementation evidence](docs/changes/2026-10-14-guided-ux-implementation.md).
+Device, signing-update and actual generated style quality remain owner acceptance gates.
+
+The following Style DNA/M5 checkpoint descriptions retain their earlier evidence.
+
 Opt-in Style DNA D0–D3 is developed in stacked draft [PR #7](https://github.com/Zsombor0918/RenkinAI/pull/7)
 above working PR #6. Code tests pass925/925 and all22 regression groups; final-head
 evidence is in the PR audit. In Project AI style choose Legacy, Quick or Standard,

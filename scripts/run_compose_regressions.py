@@ -51,8 +51,18 @@ CASES = {
                               "dev.renkinProject.renkin.ai.style.StyleDnaGatewayTest",
                               "dev.renkinProject.renkin.data.project.StyleDnaPersistenceTest",
                               PACKAGE + "StyleDnaComposeTest"],
+    "guided-ux": [PACKAGE + "ProjectStyleGuidedFlowComposeTest",
+                        PACKAGE + "GuidedTrialComposeTest",
+                        PACKAGE + "ProjectSelectionComposeTest",
+                        PACKAGE + "ProjectGuidedNavigationComposeTest",
+                        PACKAGE + "GuidedProjectRoomJourneyComposeTest"],
     "full-suite": [],
 }
+
+
+def gradle_wrapper():
+    """Run the native wrapper without changing any Gradle task or selector."""
+    return str(ROOT / "gradlew.bat") if sys.platform == "win32" else "./gradlew"
 
 
 def check_reports(reports, selectors, exit_code):
@@ -90,7 +100,7 @@ def main():
             shutil.rmtree(destination)
         destination.mkdir(exist_ok=True)
         tasks = ["compileDebugKotlin", "testDebugUnitTest", "assembleDebug"] if name == "full-suite" else ["testDebugUnitTest"]
-        command = ["./gradlew", *tasks, "--console=plain"]
+        command = [gradle_wrapper(), *tasks, "--console=plain"]
         for selector in selectors:
             command.extend(["--tests", selector])
         # Prior run XML must never substitute for a command which produced no results.

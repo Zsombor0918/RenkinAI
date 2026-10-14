@@ -15,6 +15,12 @@ SELECTOR = "dev.renkinProject.renkin.ui.project.ProjectStyleAnalysisComposeTest"
 
 
 class ComposeRunnerFaultTests(unittest.TestCase):
+    def test_native_windows_uses_batch_wrapper_and_posix_retains_shell_wrapper(self):
+        with mock.patch.object(RUNNER.sys, "platform", "win32"):
+            self.assertEqual(str(RUNNER.ROOT / "gradlew.bat"), RUNNER.gradle_wrapper())
+        with mock.patch.object(RUNNER.sys, "platform", "linux"):
+            self.assertEqual("./gradlew", RUNNER.gradle_wrapper())
+
     def execute(self, mode="pass"):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -60,7 +66,8 @@ class ComposeRunnerFaultTests(unittest.TestCase):
                 result = RUNNER.main()
             summary = json.loads((root / "evidence/summary.json").read_text())
             self.assertEqual("final-synthetic-head", summary["head"])
-            self.assertEqual(["./gradlew", "compileDebugKotlin", "testDebugUnitTest", "assembleDebug", "--console=plain"], commands[-1])
+            wrapper = str(root / "gradlew.bat") if RUNNER.sys.platform == "win32" else "./gradlew"
+            self.assertEqual([wrapper, "compileDebugKotlin", "testDebugUnitTest", "assembleDebug", "--console=plain"], commands[-1])
             return result, summary
 
     def test_new_required_selector_and_full_suite_pass_with_real_case_counts(self):
@@ -117,6 +124,16 @@ class ComposeRunnerFaultTests(unittest.TestCase):
         code, summary = self.execute("missing_schema")
         self.assertNotEqual(0, code)
         self.assertFalse(summary["room_schema_21_exported"])
+
+    def test_guided_journeys_add_to_all_retained_groups(self):
+        self.assertEqual([RUNNER.PACKAGE + name for name in (
+            "ProjectStyleGuidedFlowComposeTest", "GuidedTrialComposeTest",
+            "ProjectSelectionComposeTest", "ProjectGuidedNavigationComposeTest",
+            "GuidedProjectRoomJourneyComposeTest"
+        )], RUNNER.CASES["guided-ux"])
+        self.assertEqual([RUNNER.PACKAGE + "StyleTrialComposeTest",
+                          RUNNER.PACKAGE + "ProjectStyleTrialJourneyComposeTest"], RUNNER.CASES["trial-ui"])
+        self.assertEqual([], RUNNER.CASES["full-suite"])
 
 
 if __name__ == "__main__":

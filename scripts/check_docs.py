@@ -54,7 +54,9 @@ class Snapshot:
     def read(self, path):
         if path not in self.cache:
             spec = f"{self.ref}:{path}" if self.ref else f":{path}"
-            self.cache[path] = git(self.root, "show", spec).decode("utf-8")
+            # Git blobs may retain CRLF (for example core.autocrlf=false on Windows).
+            # Match normal text-file universal newline reading without relaxing fields.
+            self.cache[path] = git(self.root, "show", spec).decode("utf-8").replace("\r\n", "\n")
         return self.cache[path]
 
 
