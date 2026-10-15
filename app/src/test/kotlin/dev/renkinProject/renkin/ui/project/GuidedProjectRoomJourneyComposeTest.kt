@@ -207,7 +207,12 @@ class GuidedProjectRoomJourneyComposeTest {
             assertEquals(0, providerCalls)
         }
         scan()
+        val frozenBeforeRecreation = checkNotNull(analysis!!.state(1).value.dnaPlan)
         restoration.emulateSavedInstanceStateRestore()
+        compose.waitForIdle()
+        assertEquals("Recreating the real panel must retain the unsubmitted current frozen plan",
+            frozenBeforeRecreation, analysis!!.state(1).value.dnaPlan)
+        assertEquals(0, providerCalls)
         scan()
         compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("setup-back"))
         compose.onNodeWithTag("setup-back").performClick()
