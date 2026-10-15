@@ -1,5 +1,25 @@
 # Verification baseline
 
+## PR8 full REST envelope red evidence
+
+Baseline86c95e9d, existing Windows11/Temurin17.0.20.1+1/API36/build-tools35,
+Gradle8.11.1/caches/Python3.14. Actual envelope-red selects the new six-image full
+envelope test and the whole StyleDnaPersistenceTest class: production/test compile,
+5 tests/2 failures/0 errors/skips in239.106s. The first test confirms14, rejects at12,
+and accepts Legacy's actual shallower schema before failing with ENVELOPE_INVALID.
+The existing real Room Quick/Standard Save/reload test, now using full envelopes,
+fails expected RESULT_SAVED/actual FAILED. Three retained persistence tests pass.
+Original XML/log/commands remain outside Git in task tools2026-10-15/envelope-red.
+Original successful-result and security assertions remain; exact invalid-envelope
+expectations are strengthened to the new fixed diagnostic categories.
+Corrected envelope-green-1 executes44/44,0 failures/errors/skips in1624.412s:
+complete DNA gateway/persistence, Legacy gateway/schema and DNA Compose classes.
+Both red assertions pass; full Quick12/Standard24/five-step Save/reload and exact
+rejection/consumed-marker checks pass. This source was uncommitted during the run;
+it is focused proof, not a final-head full-suite or device acceptance claim.
+Final-head focused/full23/unfiltered/Python/docs/CI/schema/APK results belong on
+PR8 after execution. Physical and live testing NOT RUN; the pasted key is unused.
+
 ## Latest PR8 provider-result RED and final-head boundary
 
 Test-only61e7b166 compiles/runs978/4 RED in Android38761014578; downloaded

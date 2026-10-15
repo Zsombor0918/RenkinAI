@@ -17,6 +17,25 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.util.concurrent.TimeUnit
 
+/** Representative REST response, not a capture from the owner's phone. The response
+ * text.format includes the request's structured-output configuration in the official
+ * Response/ResponseTextConfig contract. No invented nested metadata is needed. */
+internal fun dnaFullResponseFixture(request: DnaCall, text: String): String = json(
+    "id" to "resp_full_fixture", "object" to "response", "created_at" to 1780000000,
+    "status" to "completed", "error" to null, "incomplete_details" to null,
+    "model" to request.plan.model, "instructions" to "offline fixture",
+    "max_output_tokens" to 12288, "parallel_tool_calls" to true, "previous_response_id" to null,
+    "reasoning" to json("effort" to "none", "summary" to null), "store" to false,
+    "temperature" to 1, "text" to dnaBody(request).getJSONObject("text"),
+    "tool_choice" to "auto", "tools" to JSONArray(), "top_p" to 1, "truncation" to "disabled",
+    "metadata" to json(), "usage" to json("input_tokens" to 40, "output_tokens" to 50,
+        "input_tokens_details" to json("cached_tokens" to 0), "output_tokens_details" to json("reasoning_tokens" to 0), "total_tokens" to 90),
+    "output" to JSONArray().put(json("type" to "reasoning", "id" to "rs_fixture", "summary" to JSONArray()))
+        .put(json("type" to "message", "id" to "msg_fixture", "status" to "completed", "role" to "assistant",
+            "content" to JSONArray().put(json("type" to "output_text", "text" to text,
+                "annotations" to JSONArray(), "logprobs" to JSONArray()))))
+).toString()
+
 @RunWith(RobolectricTestRunner::class)
 @Config(application=Application::class,sdk=[33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -28,6 +47,39 @@ class StyleDnaGatewayTest {
     private fun call(mode: DnaAnalysisMode = DnaAnalysisMode.STANDARD): DnaCall {
         val (p,images)=dnaFixturePlan(mode,if(mode==DnaAnalysisMode.QUICK)12 else 24);val step=p.steps.first()
         return DnaCall(p,step,step.samples.associate { p.bindings.getValue(it) to images.getValue(p.bindings.getValue(it)) },emptyList())
+    }
+    @Test fun returnedReportFormatSchemaExceedsOldEnvelopeDepthButSixReportsAreValid() = runBlocking {
+        val request = call()
+        val expected = dnaReportsBody(dnaFixtureReports(request.plan, request.step.samples))
+        val raw = dnaFullResponseFixture(request, expected)
+        fun depth(value: Any?, level: Int = 0): Int = when (value) {
+            is JSONObject -> value.keys().asSequence().map { depth(value.get(it), level + 1) }.maxOrNull() ?: level
+            is JSONArray -> (0 until value.length()).maxOfOrNull { depth(value.get(it), level + 1) } ?: level
+            else -> level
+        }
+        assertEquals(14, depth(JSONObject(raw)))
+        assertThrows(IllegalArgumentException::class.java) { strictObject(raw, 128 * 1024, 12) }
+        // The unchanged Legacy parser accepts the same outer response shape with its
+        // own shallower real schema. This is a structural difference, not a model guess.
+        val legacy = JSONObject(raw).put("text", analysisBody(analysisFixtureRequest()).getJSONObject("text"))
+        legacy.getJSONArray("output").getJSONObject(1).getJSONArray("content").getJSONObject(0)
+            .put("text", analysisFixtureStyle().encode())
+        assertTrue(parseAnalysisResponse(legacy.toString()) is StyleAnalysisOutcome.Suggested)
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody(raw))
+            var markers = 0
+            val outcome = client(server).call(request) { markers++ }
+            assertEquals(1, markers); assertEquals(1, server.requestCount)
+            assertTrue("valid six-image REST envelope was rejected: $outcome", outcome is DnaCallResult.Received)
+            outcome as DnaCallResult.Received
+            assertEquals(expected, outcome.text)
+            val bindings = request.step.samples.associateWith { request.plan.bindings.getValue(it) }
+            val reports = StyleDnaCodec.parseReports(outcome.text, bindings)
+            assertEquals(6, reports.size); assertEquals(bindings.keys.toList(), reports.map { it.sampleId })
+            assertEquals(bindings.values.toList(), reports.map { it.sampleHash })
+            assertEquals("resp_full_fixture", outcome.responseId)
+            assertEquals(AnalysisUsage(40, 50), outcome.usage)
+        }
     }
     @Test fun realWireHasIndividuallyLabeledImagesStrictReportsAndNoLocalIdentity()=runBlocking {
         for(mode in DnaAnalysisMode.entries) for(detail in listOf("low","high")) {
@@ -108,13 +160,62 @@ class StyleDnaGatewayTest {
             val received = client(server).call(request) {} as DnaCallResult.Received
             assertEquals(expected, received.text)
             assertEquals(request.plan.samples.map { it.id }, StyleDnaCodec.parseReports(received.text, request.plan.bindings).map { it.sampleId })
-            for (raw in listOf("{truncated", JSONObject(envelope.toString()).put("output", JSONArray().put(
-                json("type" to "function_call", "name" to "untrusted"))).toString())) {
+            for ((raw, reason) in listOf("{truncated" to "ENVELOPE_JSON_INVALID", JSONObject(envelope.toString()).put("output", JSONArray().put(
+                json("type" to "function_call", "name" to "untrusted"))).toString() to "ENVELOPE_OUTPUT_ITEM")) {
                 server.enqueue(MockResponse().setBody(raw))
-                assertEquals(DnaCallResult.Failed("ENVELOPE_INVALID"), client(server).call(request) {})
+                assertEquals(DnaCallResult.Failed(reason), client(server).call(request) {})
             }
             assertEquals(3, server.requestCount)
         }
+    }
+
+    @Test fun scopedSchemaDepthAndFixedEnvelopeReasonsKeepEveryRejectionAndOneShotMarker() = runBlocking {
+        val request = call()
+        val valid = dnaFullResponseFixture(request, dnaReportsBody(dnaFixtureReports(request.plan, request.step.samples)))
+        fun modified(action: (JSONObject) -> Unit) = JSONObject(valid).also(action).toString()
+        fun nested(levels: Int): Any = if (levels == 0) "leaf" else json("nested" to nested(levels - 1))
+        fun part(root: JSONObject) = root.getJSONArray("output").getJSONObject(1).getJSONArray("content").getJSONObject(0)
+        val failures = listOf(
+            "{truncated" to "ENVELOPE_JSON_INVALID",
+            valid.replaceFirst("{", "{\"status\":\"completed\",") to "ENVELOPE_JSON_DUPLICATE",
+            modified { it.put("status", "queued") } to "ENVELOPE_ROOT_STATUS",
+            modified { it.put("error", json("message" to "private response prose")) } to "ENVELOPE_ROOT_ERROR",
+            modified { it.remove("output") } to "ENVELOPE_OUTPUT",
+            modified { it.put("output", JSONArray((0..32).map { json("type" to "reasoning") })) } to "ENVELOPE_OUTPUT",
+            modified { it.put("output", JSONArray().put(json("type" to "function_call", "arguments" to "private"))) } to "ENVELOPE_OUTPUT_ITEM",
+            modified { it.getJSONArray("output").getJSONObject(1).put("status", "in_progress") } to "ENVELOPE_MESSAGE_STATUS",
+            modified { part(it).put("type", "untrusted_content") } to "ENVELOPE_CONTENT",
+            modified { part(it).put("text", "") } to "ENVELOPE_TEXT_EMPTY",
+            modified { it.put("id", "private\ninvalid") } to "ENVELOPE_RESPONSE_ID",
+            modified { it.put("metadata", nested(12)) } to "ENVELOPE_JSON_DEPTH",
+            modified { it.getJSONObject("text").getJSONObject("format").put("schema", nested(12)) } to "ENVELOPE_JSON_DEPTH",
+            // A lookalike path under an array must not activate the root-only allowance.
+            modified { it.put("text", JSONArray().put(json("format" to json("schema" to nested(10))))) } to "ENVELOPE_JSON_DEPTH",
+            modified { it.getJSONObject("text").getJSONObject("format").getJSONObject("schema")
+                .put("enum", JSONArray((0..128).map { it })) } to "ENVELOPE_JSON_INVALID",
+            valid.replaceFirst("\"strict\":true", "\"strict\":true,\"strict\":false") to "ENVELOPE_JSON_DUPLICATE",
+            modified { it.getJSONObject("text").getJSONObject("format").getJSONObject("schema").put("description", "BAD_SURROGATE") }
+                .replace("BAD_SURROGATE", "\\uD800") to "ENVELOPE_JSON_INVALID"
+        )
+        MockWebServer().use { server ->
+            var markers = 0
+            for ((raw, reason) in failures) {
+                server.enqueue(MockResponse().setBody(raw))
+                val result = client(server).call(request) { markers++ }
+                assertEquals(reason, DnaCallResult.Failed(reason), result)
+                assertEquals(markers, server.requestCount)
+                assertFalse(result.toString().contains("private"))
+            }
+            assertEquals(failures.size, markers)
+            val refusal = modified { part(it).put("type", "refusal").put("refusal", "private prose") }
+            server.enqueue(MockResponse().setBody(refusal))
+            assertEquals(DnaCallResult.Failed("REFUSED"), client(server).call(request) { markers++ })
+            assertEquals(markers, server.requestCount)
+        }
+        // Default parser and byte limits remain unchanged; no global depth increase.
+        assertThrows(StrictJsonRejected::class.java) { strictObject(valid, 128 * 1024, 12) }
+        val oversized = "{\"value\":\"" + "x".repeat(128 * 1024) + "\"}"
+        assertEquals(DnaCallResult.Failed("ENVELOPE_JSON_SIZE"), parseDnaResponse(oversized))
     }
 
     @Test fun boundedBodyFaultsAndUnavailableCredentialNeverImplyAValidStyleOrAutomaticRetry() = runBlocking {

@@ -1,5 +1,23 @@
 # Current implementation
 
+## PR8 first-submission envelope correction
+
+The owner now reports Standard FAILED: ENVELOPE_INVALID,0/24 analyzed and1/5
+submission markers after successful local sampling. The raw phone body is unavailable;
+the new screenshots are not mounted locally, so these facts are quoted from the
+owner's new execution contract. A full REST fixture with the exact returned DNA
+text.format.schema measures depth14, fails the old depth12 envelope parser, and
+passes the unchanged Legacy parser with Legacy's shallower schema. Actual local
+red execution:5 tests/2 failures/0 errors/skips, before runtime edits.
+
+Only the exact root text.format.schema subtree now permits depth14. Default12,
+other envelope paths,128KiB, arrays128, duplicate/surrogate/number rules and the
+actual report/grammar validators remain. Fixed ENVELOPE_* categories diagnose
+future2xx rejections without raw response content; old records are unchanged.
+Final-head checks/APK are recorded on PR8 after execution. This proves a supported
+envelope incompatibility, not the unique original Samsung exception. Physical and
+live verification are NOT RUN; zero live requests. See [record](../changes/2026-10-15-dna-response-envelope.md).
+
 ## PR8 provider-result and retained-plan correction
 
 Test-only61e7b166 genuinely runs978/4 RED;2207f82d adds actual retained-controller

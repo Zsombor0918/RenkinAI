@@ -1,5 +1,20 @@
 # Regression and test matrix
 
+## Full Responses envelope and scoped depth
+
+MockWebServer fixtures include the exact outbound report/synthesis text.format,
+real-shaped model/status/usage/reasoning/message fields and six bound reports.
+The fixture reaches14; Legacy's actual schema fits12. Real Room exercises Quick12
+and all Standard24/five steps through separate human Save/reload without replay.
+Wrong hash/ID/count/extra/duplicate reports inside a valid full envelope remain
+REPORT_SCHEMA_INVALID with one consumed step and unchanged Room. Negative envelope
+cases cover fixed JSON/status/output/item/message/content/text/ID diagnostics,
+duplicates inside the allowed schema, surplus arrays, malformed surrogates, excess
+schema depth, ordinary metadata and array-lookalike paths. Other strict callers,
+Legacy and all23 original groups/selectors/assertions/timeouts/idling stay retained.
+HTTP/auth/refusal/split text/cancellation/transport/size guards remain mandatory.
+No fixture is a recovered phone response; owner-device acceptance stays NOT RUN.
+
 ## PR8 provider-result and frozen-plan identity additions
 
 Actual RED4 then RED5 precede narrow runtime changes. Existing required DNA/owned/

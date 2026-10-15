@@ -2,6 +2,9 @@
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 
+Latest real-device report and narrow offline correction:
+[first-submission Responses envelope](changes/2026-10-15-dna-response-envelope.md).
+
 Latest PR8 provider-result correction: [reproduction, state/event table and narrow fix](changes/2026-10-15-dna-provider-result-correction.md).
 Retained-controller recreation loses a frozen plan on the starting source; old
 failure prose also conflates envelope/reports/synthesis. Final-head evidence and

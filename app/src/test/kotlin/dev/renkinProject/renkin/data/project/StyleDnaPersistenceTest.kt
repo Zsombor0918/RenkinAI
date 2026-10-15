@@ -101,6 +101,38 @@ class StyleDnaPersistenceTest {
         } finally {scope.cancel()}
     }
 
+    @Test fun validFullEnvelopeWithInvalidReportKeepsFirstStepConsumedWithoutSaveOrReplay() = runBlocking {
+        okhttp3.mockwebserver.MockWebServer().use { server ->
+            val journal = StyleDnaJournal(context)
+            val coordinator = StyleDnaCoordinator(journal, OpenAiStyleDnaGateway({ "offline_fixture_no_real_credential" },
+                okhttp3.OkHttpClient(), server.url("/v1/responses")))
+            val before = repo.snapshot()
+            for (fault in listOf("hash", "id", "missing", "extra", "duplicate")) {
+                val (plan, images) = dnaFixturePlan()
+                val step = plan.steps.first()
+                val data = org.json.JSONObject(dnaReportsBody(dnaFixtureReports(plan, step.samples)))
+                val reports = data.getJSONArray("reports")
+                when (fault) {
+                    "hash" -> reports.getJSONObject(0).put("sample_hash", "0".repeat(64))
+                    "id" -> reports.getJSONObject(0).put("sample_id", "foreign")
+                    "missing" -> reports.remove(0)
+                    "extra" -> reports.getJSONObject(0).put("extra", true)
+                    "duplicate" -> reports.put(1, reports.getJSONObject(0))
+                }
+                server.enqueue(okhttp3.mockwebserver.MockResponse().setBody(dnaFullResponseFixture(DnaCall(plan, step,
+                    step.samples.associate { plan.bindings.getValue(it) to images.getValue(plan.bindings.getValue(it)) }, emptyList()), data.toString())))
+                val count = server.requestCount
+                val record = coordinator.submit(plan, images, true, { true })!!
+                assertEquals("REPORT_SCHEMA_INVALID", record.reason)
+                assertEquals(DnaStatus.UNCERTAIN, record.status)
+                assertEquals(0, record.reports.size); assertEquals(1, record.submitted)
+                assertEquals(count + 1, server.requestCount); assertEquals(before, repo.snapshot())
+                assertEquals(record, coordinator.submit(plan, images, true, { true }))
+                assertFalse(journal.claim(plan, images)); assertEquals(count + 1, server.requestCount)
+            }
+        }
+    }
+
     @Test fun quickAndStandardUseRealResponsesWireThenReviewSaveAndReloadWithoutReplay() = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val server = okhttp3.mockwebserver.MockWebServer()
@@ -150,11 +182,10 @@ class StyleDnaPersistenceTest {
                 for (step in plan.steps) {
                     val text = if (step.synthesis) synthesizeDnaLocally(reports, images).encode()
                         else dnaReportsBody(dnaFixtureReports(plan, step.samples))
-                    val response = json("id" to "resp_offline_${step.id}", "status" to "completed",
-                        "usage" to json("input_tokens" to 40, "output_tokens" to 50), "output" to org.json.JSONArray().put(
-                            json("type" to "message", "status" to "completed", "content" to org.json.JSONArray().put(
-                                json("type" to "output_text", "text" to text)))))
-                    server.enqueue(okhttp3.mockwebserver.MockResponse().setBody(response.toString()))
+                    val response = dnaFullResponseFixture(DnaCall(plan, step,
+                        step.samples.associate { plan.bindings.getValue(it) to images.getValue(plan.bindings.getValue(it)) },
+                        if (step.synthesis) reports else emptyList()), text)
+                    server.enqueue(okhttp3.mockwebserver.MockResponse().setBody(response))
                 }
                 submitting = plan
                 controller.submitDna(1, plan.id)

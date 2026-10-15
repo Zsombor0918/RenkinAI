@@ -1,5 +1,16 @@
 # Guided workflow owner check and later-stage plans
 
+## First Standard envelope failure (physical retest NOT RUN)
+
+Keep the18:55 failed record and1/5 marker; no automatic retry or replay is allowed.
+Use only PR8's final-source APK ZIP/checksum and confirm signer compatibility while
+preserving data/keys. The offline full-envelope regression proves a depth mismatch,
+not the exact old Samsung response or its charges. A later owner-chosen paid call
+requires separate explicit frozen consent; this task issues none. If a new approved
+request fails, return only the fixed ENVELOPE_* code and displayed counts, never
+the key, raw response, prompts, images or inventories. Free preparation may still
+be retested without a key; it does not verify the remote response parser.
+
 ## Latest provider-result and recreation retest (physical test NOT RUN)
 
 Use only the final commit/artifact/SHA256 recorded directly on PR8. Confirm

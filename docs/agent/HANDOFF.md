@@ -1,5 +1,30 @@
 # Agent handoff — guided UX Stage 1
 
+## Latest: first Standard ENVELOPE_INVALID on Flip8
+
+Continue existing PR8 only, baseline86c95e9d9241d3552022a8ed709553601a046605,
+clean Windows RenkinAI-ux worktree. The new contract quotes18:55–18:56 Budapest
+FAILED: ENVELOPE_INVALID,0/24 analyzed,6 images submitted,1/5 markers. Three new
+screenshots are not available as local attachments; the raw response is unavailable.
+Do not infer exact POST completion/billing from pre-network markers or project totals.
+
+Full REST fixture/real Room red runs5/2 before runtime edits: returned DNA format
+schema reaches14 and is rejected by whole-envelope12; Legacy's real schema fits.
+The narrow correction permits14 only below exact root text.format.schema, retains
+all other limits, and supplies fixed future envelope categories. Reports/synthesis
+remain separately strict; failed history and consumed UUIDs cannot replay. Legacy,
+outbound wire/model, ownership, Room/backup, features and signing are preserved.
+
+Run final committed-head all23/unfiltered/assemble, Python/docs/hooks/audit and
+independent CI/XML/schema/APK checks. Publish actual final-source artifact ZIP link,
+APK SHA256/size/manifest/signature and observed results directly on PR8 after commit.
+The scoped [diagnosis](../changes/2026-10-15-dna-response-envelope.md) and ADR0008
+explain the measured exception. Exact phone trigger remains unproven; physical
+verification NOT RUN. No connected device is required. The pasted key is unused;
+no live call or automatic retry is authorized. Keep draft/open/unmerged, unchanged
+base feat/style-dna-v1, main/PR6/PR7 intact. Owner later verifies compatible signing
+and any separately chosen request; do not clear data or replay the failed plan.
+
 ## Latest PR8 provider-result handoff
 
 Continue only existing feat/ux-flow-stabilization from1bf21f0e. Three new owner

@@ -22,6 +22,13 @@ internal sealed interface DnaCallResult {
     data class Failed(val reason: String,val billingUnknown: Boolean = false) : DnaCallResult
 }
 internal fun interface StyleDnaGateway { suspend fun call(request: DnaCall,beforeSubmit: suspend ()->Unit): DnaCallResult }
+/** Fixed reasons only; emitted after a decoded 2xx, never raw provider content. */
+internal enum class DnaEnvelopeFailure {
+    JSON_INVALID, JSON_SIZE, JSON_DEPTH, JSON_DUPLICATE, ROOT_STATUS, ROOT_ERROR,
+    OUTPUT, OUTPUT_ITEM, MESSAGE_STATUS, CONTENT, TEXT_EMPTY, RESPONSE_ID;
+    val code get() = "ENVELOPE_$name"
+}
+internal val DNA_ENVELOPE_FAILURE_CODES = DnaEnvelopeFailure.entries.map { it.code }.toSet()
 
 /** Additive Responses transport. Legacy analysisBody and all image-client wire bytes stay unchanged. */
 internal class OpenAiStyleDnaGateway(private val key: ()->String, client: OkHttpClient, private val endpoint: HttpUrl) : StyleDnaGateway {
@@ -86,18 +93,30 @@ internal fun dnaBody(call: DnaCall): org.json.JSONObject {
         "text" to json("format" to json("type" to "json_schema","name" to if(synthesis) "renkin_style_dna_v1" else "renkin_icon_reports_v1",
             "strict" to true,"schema" to if(synthesis) StyleDnaV1.schema() else StyleDnaCodec.reportsSchema(call.step.samples.size))))
 }
-internal fun parseDnaResponse(raw: String): DnaCallResult = try {
-    val r=strictObject(raw,128*1024,12)
+internal fun parseDnaResponse(raw: String): DnaCallResult {
+    var stage = DnaEnvelopeFailure.JSON_INVALID
+    return try {
+    // Returned format.schema echoes our deeper report/grammar schema. Only this
+    // exact path needs depth14; output, metadata and every other path retain12.
+    val r=strictObject(raw,128*1024,12,JsonDepthAllowance(listOf("text","format","schema"),14))
+    stage = DnaEnvelopeFailure.ROOT_STATUS
     when (r.stringValue("status")) {
         "incomplete" -> DnaCallResult.Failed("RESPONSE_INCOMPLETE",true)
         "failed" -> DnaCallResult.Failed("RESPONSE_FAILED",true)
         "completed" -> {
+            stage = DnaEnvelopeFailure.ROOT_ERROR
             require(!r.has("error") || r.isNull("error"))
+            stage = DnaEnvelopeFailure.OUTPUT
             val output=r.getJSONArray("output");require(output.length()<=32);val texts=mutableListOf<String>();var refusal=false
-            for(i in 0 until output.length()) {val item=output.getJSONObject(i)
+            for(i in 0 until output.length()) {
+                stage = DnaEnvelopeFailure.OUTPUT_ITEM
+                val item=output.getJSONObject(i)
                 when(item.stringValue("type")) {
                     "reasoning"->Unit
-                    "message"->{if(item.has("status")) require(item.stringValue("status")=="completed")
+                    "message"->{
+                        stage = DnaEnvelopeFailure.MESSAGE_STATUS
+                        if(item.has("status")) require(item.stringValue("status")=="completed")
+                        stage = DnaEnvelopeFailure.CONTENT
                         val parts=item.getJSONArray("content");require(parts.length()<=32)
                         for(j in 0 until parts.length()) {val part=parts.getJSONObject(j);when(part.stringValue("type")) {
                             "refusal"->refusal=true;"output_text"->texts+=part.stringValue("text");else->error("Unexpected output") } } }
@@ -105,7 +124,9 @@ internal fun parseDnaResponse(raw: String): DnaCallResult = try {
                 }
             }
             if(refusal) DnaCallResult.Failed("REFUSED") else {
-                require(texts.isNotEmpty()); val text=texts.joinToString("");require(text.toByteArray().size<=128*1024)
+                stage = DnaEnvelopeFailure.TEXT_EMPTY
+                require(texts.isNotEmpty()); val text=texts.joinToString("");require(text.isNotBlank() && text.toByteArray().size<=128*1024)
+                stage = DnaEnvelopeFailure.RESPONSE_ID
                 val id=r.stringValue("id");require(id.matches(Regex("[A-Za-z0-9_-]{1,128}")))
                 val usage=r.optJSONObject("usage")?.let { u->runCatching { AnalysisUsage(u.longValue("input_tokens"),u.longValue("output_tokens")) }.getOrNull() }
                 DnaCallResult.Received(text,id,usage)
@@ -113,4 +134,11 @@ internal fun parseDnaResponse(raw: String): DnaCallResult = try {
         }
         else -> error("Unexpected response status")
     }
-} catch (_: Exception) { DnaCallResult.Failed("ENVELOPE_INVALID") }
+    } catch (failure: StrictJsonRejected) {
+        DnaCallResult.Failed(when (failure.failure) {
+            StrictJsonFailure.SIZE -> DnaEnvelopeFailure.JSON_SIZE
+            StrictJsonFailure.DEPTH -> DnaEnvelopeFailure.JSON_DEPTH
+            StrictJsonFailure.DUPLICATE -> DnaEnvelopeFailure.JSON_DUPLICATE
+        }.code)
+    } catch (_: Exception) { DnaCallResult.Failed(stage.code) }
+}

@@ -1,5 +1,18 @@
 # Architecture
 
+## DNA returned-format envelope depth
+
+The DNA response parser uses the strict reader's optional single exact object-path
+allowance for root text.format.schema only (depth14). Its actual report and grammar
+schemas require14 when echoed in a full Responses envelope; Legacy's shallower
+schema fits the unchanged12. Other paths, array lookalikes and all default callers
+retain12. Whole-envelope128KiB/array128, duplicate/surrogate/number validation and
+actual output/report/grammar/security conditions remain. No ignored subtree skips
+validation. Only fixed rejection categories enter the existing reason field; no
+raw response, new persisted field, journal/schema/transport change or retry exists.
+See [ADR0008](decisions/0008-style-dna-stacked-development.md) and
+[evidence](changes/2026-10-15-dna-response-envelope.md). Device cause is not uniquely proven.
+
 ## DNA plan lifetime and diagnostic stages
 
 Composition disposal does not consume/invalidate a ready unsubmitted DNA plan.

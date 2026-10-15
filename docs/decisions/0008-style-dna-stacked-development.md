@@ -22,6 +22,19 @@ The draft cannot merge without completed mandatory gates and owner acceptance. A
 
 ## Additive grammar and paid-step decision
 
+October15 bounded envelope addendum: a full REST response containing the actual
+text.format.schema reaches depth14 and is genuinely rejected before valid reports
+by the old whole-envelope12 check. Permit14 only under that exact root object path;
+default callers and other paths keep12, including array lookalikes. Continue strict
+JSON duplicate/surrogate/number,128KiB and array128 checks inside the allowance.
+The returned schema is ignored configuration, never authority for accepting output;
+the frozen per-image IDs/hashes/count and independent grammar/evidence validators
+are unchanged. Fixed ENVELOPE_* reason codes diagnose future2xx failures without
+raw data or retry. Old histories/markers remain unchanged. A global depth increase
+or skipping returned metadata validation is rejected. The exact phone body is
+unavailable; this measured incompatibility does not uniquely identify its exception.
+See [regression evidence](../changes/2026-10-15-dna-response-envelope.md).
+
 Persist typed per-image reports and StyleDnaV1 inside an explicit style_dna tagged payload in the existing nullable StyleRevision.analysisProfileJson. Existing V1 records are decoded through their unchanged schema; do not rewrite old rows or fingerprints. Reuse ReviewedAnalysisEvidence with a conditional24-sample bound. Full/share format6 already carries these nullable strings and its validators reject unsupported grammar before writes; no Room schema migration or handwritten export. A grammar Save creates a new immutable revision; explicit main manual Save may create a USER prose revision while previous DNA remains in history.
 
 Use an independent AtomicFile noBackup StyleDnaJournal with256 bounded256KiB records/profile,16MiB staged thumbnails/profile,72MiB total profile journal bound and8192 global consumed plan/step IDs. Frozen plans name each charged endpoint and stop on partial, malformed, refused, stale, canceled or uncertain outcomes. Cold recovery retains partial reports but never resumes any endpoint. Delete/restore rotate existing analysis epochs, remove owner-local data safely and retain consumed IDs. Quick local recurrence is conservative and often UNKNOWN; Standard synthesis is cross-checked for evidence IDs, counts, repeated tile/depth and measured family palette. These checks do not prove logo recognition or human style fidelity.
