@@ -1,5 +1,16 @@
 # Architecture
 
+## DNA report contract and safe rejection
+
+Image-step request schemas bind count exactly and constrain IDs/hashes to the
+frozen step's allowed sets. Nonempty observation text includes a bounded pattern;
+UNKNOWN remains explicit text. Client validation still verifies exact field/type,
+enum/provenance/text, unique membership and ID/hash pairs independently. A swapped
+hash remains rejected even though it belongs to the allowed set. REPORT_* codes
+only refine the existing journal reason; no raw content/cause, persisted field,
+schema migration, retry or recovery permission is added. Existing generic records
+remain readable and unchanged. See [record](changes/2026-10-15-dna-report-contract.md).
+
 ## DNA returned-format envelope depth
 
 The DNA response parser uses the strict reader's optional single exact object-path

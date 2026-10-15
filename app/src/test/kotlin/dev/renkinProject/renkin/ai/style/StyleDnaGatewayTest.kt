@@ -54,9 +54,47 @@ class StyleDnaGatewayTest {
             val observation = properties.getJSONObject("traits").getJSONObject("properties")
                 .getJSONObject("corners").getJSONObject("properties").getJSONObject("value")
             val pattern = Regex(observation.getString("pattern"))
-            for (bad in listOf("", "   ", "private\ntext", "x".repeat(241))) assertFalse(pattern.containsMatchIn(bad))
+            fun allowed(value: String) = value.length <= observation.getInt("maxLength") && pattern.containsMatchIn(value)
+            for (bad in listOf("", "   ", "private\ntext", "x".repeat(241))) assertFalse(allowed(bad))
             for (good in listOf("Unknown", "rounded ends", "slight gradient")) assertTrue(pattern.containsMatchIn(good))
         }
+    }
+    @Test fun reportFaultsUseFixedCategoriesWhileReorderingAndUnknownRemainValid() {
+        val request = call()
+        val bindings = request.step.samples.associateWith { request.plan.bindings.getValue(it) }
+        val valid = dnaReportsBody(dnaFixtureReports(request.plan, request.step.samples))
+        fun modified(action: (JSONObject) -> Unit) = JSONObject(valid).also(action).toString()
+        fun first(root: JSONObject) = root.getJSONArray("reports").getJSONObject(0)
+        fun observation(root: JSONObject) = first(root).getJSONObject("traits").getJSONObject("corners")
+        val faults = listOf(
+            "{truncated" to "REPORT_JSON_INVALID",
+            "{\"schema\":1,\"schema\":1,\"reports\":[]}" to "REPORT_JSON_DUPLICATE",
+            ("x".repeat(128*1024+1)) to "REPORT_JSON_SIZE",
+            ("{\"x\":".repeat(10) + "0" + "}".repeat(10)) to "REPORT_JSON_DEPTH",
+            modified { it.put("schema", 2) } to "REPORT_ROOT",
+            modified { it.getJSONArray("reports").remove(0) } to "REPORT_COUNT",
+            modified { it.getJSONArray("reports").put(first(it)) } to "REPORT_COUNT",
+            modified { first(it).remove("traits") } to "REPORT_FIELDS",
+            modified { first(it).put("schema", "1") } to "REPORT_SCHEMA",
+            modified { first(it).put("family_vote", "private invalid enum") } to "REPORT_ENUM",
+            modified { observation(it).put("provenance", "private invalid provenance") } to "REPORT_PROVENANCE",
+            modified { observation(it).put("value", "") } to "REPORT_TEXT",
+            modified { observation(it).put("value", " ") } to "REPORT_TEXT",
+            modified { observation(it).put("value", "x".repeat(241)) } to "REPORT_TEXT",
+            modified { first(it).put("sample_id", "PRIVATE BAD ID") } to "REPORT_BINDING_FORMAT",
+            modified { first(it).put("sample_id", "foreign") } to "REPORT_MEMBERSHIP",
+            modified { it.getJSONArray("reports").put(1, first(it)) } to "REPORT_DUPLICATE_ID",
+            modified { first(it).put("sample_hash", it.getJSONArray("reports").getJSONObject(1).getString("sample_hash")) } to "REPORT_HASH"
+        )
+        faults.forEach { (raw, expected) ->
+            val failure = assertThrows(IllegalArgumentException::class.java) { StyleDnaCodec.parseReports(raw, bindings) }
+            assertEquals(expected, failure.message)
+            assertFalse(failure.toString().contains("private"))
+        }
+        assertEquals(bindings.keys.toList(), StyleDnaCodec.parseReports(
+            dnaReportsBody(dnaFixtureReports(request.plan, request.step.samples).reversed()), bindings).map { it.sampleId })
+        val unknown = modified { observation(it).put("provenance", "UNKNOWN").put("value", "Unknown") }
+        assertEquals(DnaProvenance.UNKNOWN, StyleDnaCodec.parseReports(unknown, bindings).first().traits.getValue("corners").provenance)
     }
     private fun response(text: String)=json("id" to "resp_mock","status" to "completed","usage" to json("input_tokens" to 40,"output_tokens" to 50),
         "output" to JSONArray().put(json("type" to "reasoning")).put(json("type" to "message","status" to "completed","content" to JSONArray().put(json("type" to "output_text","text" to text))))).toString()

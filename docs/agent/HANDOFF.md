@@ -1,5 +1,18 @@
 # Agent handoff — guided UX Stage 1
 
+## Current reliability continuation
+
+Start from existing PR8/feat/ux-flow-stabilization, clean baseline71b7bce. Entire
+October15 reliability/fidelity contract and21 supplied screenshots were inspected.
+Test-only b7a30380 preserves actual2/2 RED. Corrected focused19/19 passes in108.762s;
+Standard third-batch count failure retains12 reports/3 consumed markers and no replay.
+The precise phone report is unavailable; never claim its cause conclusively fixed.
+Outbound exact count/binding/nonblank constraints plus fixed report diagnostics
+preserve all strict checks, saved evidence and request boundaries. Next bounded
+work concerns derived pack guidance and family/reference consistency, followed by
+final-head all23/CI/APK/audit. No paid calls or phone access are needed/authorized.
+Publish verified final-head artifact URL/hash on PR8; leave draft/open/unmerged.
+
 ## Latest: first Standard ENVELOPE_INVALID on Flip8
 
 Continue existing PR8 only, baseline86c95e9d9241d3552022a8ed709553601a046605,

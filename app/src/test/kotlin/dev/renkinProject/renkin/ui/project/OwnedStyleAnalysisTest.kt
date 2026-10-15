@@ -198,7 +198,7 @@ class OwnedStyleAnalysisTest {
                 assertNull(failed.error); assertNull(failed.dnaPlan)
                 val record = failed.dnaRecord!!
                 assertEquals(if (failure == "auth") DnaStatus.FAILED else DnaStatus.UNCERTAIN, record.status)
-                assertEquals(when (failure) { "auth" -> "UNAUTHORIZED"; "schema" -> "REPORT_SCHEMA_INVALID"; else -> "UNCERTAIN" }, record.reason)
+                assertEquals(when (failure) { "auth" -> "UNAUTHORIZED"; "schema" -> "REPORT_ROOT"; else -> "UNCERTAIN" }, record.reason)
                 assertEquals(1, record.submitted); assertEquals(count + 1, server.requestCount)
                 assertFalse(record.encode().contains("private provider message")); assertEquals(before, repo.snapshot())
                 controller.submitDna(1, plan.id); controller.refresh(1)

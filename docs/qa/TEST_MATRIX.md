@@ -1,5 +1,16 @@
 # Regression and test matrix
 
+## Report contract parity and third-batch recovery
+
+Existing mandatory DNA gateway/workflow/real Room selectors now assert exact
+min/max count, frozen allowed ID/hash enums and nonblank/control-free bounded
+observations. Typed fixtures cover JSON invalid/size/depth/duplicate, root,
+fields/schema/enum/provenance/text, missing/extra counts, malformed/foreign/duplicate
+IDs and mismatched hashes. Reordered reports bind safely; explicit UNKNOWN stays
+valid. Third Standard batch failure retains the first twelve reports, three
+consumed steps and immutable recovery without replay. Legacy selectors, atomic,
+symlink/security, persistence and all23 runner groups remain unchanged.
+
 ## Full Responses envelope and scoped depth
 
 MockWebServer fixtures include the exact outbound report/synthesis text.format,

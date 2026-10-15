@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 private class DnaResultValidation(val reason: String) : IllegalArgumentException()
 private inline fun <T> validateDnaResult(reason: String, action: () -> T): T = try { action() }
 catch (cancel: CancellationException) { throw cancel }
+catch (rejected: DnaReportRejected) { throw DnaResultValidation(rejected.failure.code) }
 catch (_: Exception) { throw DnaResultValidation(reason) }
 
 internal class StyleDnaCoordinator(val journal: StyleDnaJournal,private val gateway: StyleDnaGateway) {

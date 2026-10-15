@@ -1,5 +1,18 @@
 # Current implementation
 
+## PR8 report contract reliability
+
+The twenty-one supplied Flip8 images now show Standard stopping after12 accepted
+reports/18 submitted images/3 markers, and one successful Quick12. The rejected
+body is unavailable, so its exact semantic defect is unknown. Offline red2/2
+reproduces the weaker outbound count contract and undifferentiated third-batch
+failure. Requests now constrain exact count and allowed frozen IDs/hashes and
+nonblank control-free observations. Client count/pairing/security checks remain.
+Fixed REPORT_* reasons distinguish future faults without retaining provider prose.
+Focused Windows correction passes19/19; final-head acceptance belongs on PR8.
+No live request, data rewrite or physical verification occurred. See
+[report correction](../changes/2026-10-15-dna-report-contract.md).
+
 ## PR8 first-submission envelope correction
 
 The owner now reports Standard FAILED: ENVELOPE_INVALID,0/24 analyzed and1/5

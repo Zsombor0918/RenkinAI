@@ -195,6 +195,7 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                             "ENVELOPE_INVALID" -> R.string.uxStyleEnvelopeInvalid
                             in DNA_ENVELOPE_FAILURE_CODES -> R.string.uxStyleEnvelopeInvalid
                             "REPORT_SCHEMA_INVALID" -> R.string.uxStyleReportsInvalid
+                            in DNA_REPORT_FAILURE_CODES -> R.string.uxStyleReportsInvalid
                             "SYNTHESIS_INVALID" -> R.string.uxStyleSynthesisInvalid
                             "INVALID_RESPONSE", "INVALID_OR_INTERRUPTED" -> R.string.uxStyleHistoricalCauseUnknown
                             "STALE_SOURCE" -> R.string.styleAnalysisStale

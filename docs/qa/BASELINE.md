@@ -1,5 +1,16 @@
 # Verification baseline
 
+## PR8 report contract execution
+
+Windows JDK17/SDK36/Gradle8.11.1, existing caches: reliability-a-red compiles and
+runs2 tests/2 assertion failures/0 errors/skips in22.920s before runtime changes.
+reliability-a-green runs19/19,0 failures/errors/skips in108.762s: complete DNA
+gateway and real Room persistence, third-batch and retained fault/recovery tests,
+owned auth/schema/timeout. Eighteen report fault fixtures retain strict rejection;
+reordering/nonempty UNKNOWN remain accepted. Evidence is outside Git in task tools
+2026-10-15/reliability-a-*. These are focused uncommitted-source results, not final
+HEAD/full regression or phone acceptance. Final exact evidence belongs on PR8.
+
 ## PR8 full REST envelope red evidence
 
 Baseline86c95e9d, existing Windows11/Temurin17.0.20.1+1/API36/build-tools35,

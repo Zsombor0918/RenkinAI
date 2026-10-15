@@ -123,7 +123,13 @@ class StyleDnaPersistenceTest {
                     step.samples.associate { plan.bindings.getValue(it) to images.getValue(plan.bindings.getValue(it)) }, emptyList()), data.toString())))
                 val count = server.requestCount
                 val record = coordinator.submit(plan, images, true, { true })!!
-                assertEquals("REPORT_SCHEMA_INVALID", record.reason)
+                assertEquals(when(fault) {
+                    "hash" -> "REPORT_HASH"
+                    "id" -> "REPORT_MEMBERSHIP"
+                    "missing" -> "REPORT_COUNT"
+                    "extra" -> "REPORT_FIELDS"
+                    else -> "REPORT_DUPLICATE_ID"
+                }, record.reason)
                 assertEquals(DnaStatus.UNCERTAIN, record.status)
                 assertEquals(0, record.reports.size); assertEquals(1, record.submitted)
                 assertEquals(count + 1, server.requestCount); assertEquals(before, repo.snapshot())

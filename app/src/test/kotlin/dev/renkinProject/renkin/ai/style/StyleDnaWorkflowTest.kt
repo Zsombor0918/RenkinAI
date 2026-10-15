@@ -188,7 +188,13 @@ class StyleDnaWorkflowTest {
                 val coordinator = StyleDnaCoordinator(journal(), gateway)
                 val result = coordinator.submit(plan, images, true, { true })!!
                 val synthesis = standard || fault == "quick_local_synthesis"
-                assertEquals(fault, if (synthesis) "SYNTHESIS_INVALID" else "REPORT_SCHEMA_INVALID", result.reason)
+                assertEquals(fault, if (synthesis) "SYNTHESIS_INVALID" else when(fault) {
+                    "missing", "extra_report" -> "REPORT_COUNT"
+                    "hash" -> "REPORT_HASH"
+                    "extra_field" -> "REPORT_FIELDS"
+                    "duplicate" -> "REPORT_DUPLICATE_ID"
+                    else -> "REPORT_SCHEMA"
+                }, result.reason)
                 assertEquals(fault, if (fault == "quick_local_synthesis") DnaStatus.FAILED else DnaStatus.UNCERTAIN, result.status)
                 assertNull(result.result)
                 assertEquals(if (standard) 24 else if (fault == "quick_local_synthesis") 12 else 0, result.reports.size)
