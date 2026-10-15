@@ -117,15 +117,21 @@ class StyleDnaComposeTest {
 
     @Test fun settingsKeyChangesRefreshOnResumeWithoutRepreparingOrSubmitting() {
         lateinit var lifecycle: LifecycleRegistry
+        val resumeEvents = java.util.concurrent.atomic.AtomicInteger()
+        val directInvalidations = java.util.concurrent.atomic.AtomicInteger()
         storedKey = false
         compose.setContent {
             lifecycle = LocalLifecycleOwner.current.lifecycle as LifecycleRegistry
+            ObserveCoverageInvalidation(source) { directInvalidations.incrementAndGet() }
             RenkinTheme(false) { Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 ProjectStyleAnalysisPanel(1, mode, source, null, true, backend, null, draft, false, false,
                     {}, {}, { _, _ -> })
             } }
         }
         compose.waitUntil(10000) { refreshes > 0 && !flow.value.hasKey }
+        compose.runOnIdle { lifecycle.addObserver(androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) resumeEvents.incrementAndGet()
+        }) }
         compose.onNodeWithTag("style-dna-no-key").assertExists()
         compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
         compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsNotEnabled()
@@ -133,6 +139,7 @@ class StyleDnaComposeTest {
         val frozen = flow.value.dnaPlan
         fun resumeWithKey(present: Boolean) {
             val count = refreshes
+            val events = resumeEvents.get(); val invalidations = directInvalidations.get()
             compose.runOnIdle {
                 assertTrue("Use the actual composed Activity lifecycle with registered observers", lifecycle.observerCount > 0)
                 assertEquals(Lifecycle.State.RESUMED, lifecycle.currentState)
@@ -142,7 +149,11 @@ class StyleDnaComposeTest {
                 assertEquals(Lifecycle.State.STARTED, lifecycle.currentState)
                 storedKey = present; lifecycle.currentState = Lifecycle.State.RESUMED
             }
-            compose.waitUntil(10000) { refreshes > count && flow.value.hasKey == present }
+            try { compose.waitUntil(10000) { refreshes > count && flow.value.hasKey == present } }
+            catch (failure: androidx.compose.ui.test.ComposeTimeoutException) {
+                throw AssertionError("Resume events $events->${resumeEvents.get()}, direct invalidation $invalidations->${directInvalidations.get()}, " +
+                    "refresh $count->$refreshes, presence=${flow.value.hasKey}, expected=$present", failure)
+            }
             assertEquals(frozen, flow.value.dnaPlan)
         }
         resumeWithKey(true)
