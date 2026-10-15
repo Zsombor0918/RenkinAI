@@ -32,6 +32,26 @@ internal fun dnaReportsBody(reports: List<DnaIconReport>)=canonicalJson(json("sc
 @Config(application=Application::class,sdk=[33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleDnaWorkflowTest {
+    @Test fun thirdStandardBatchCountFailureRetainsTwelveReportsAndSpecificReasonWithoutReplay() = runBlocking {
+        val (plan, images) = dnaFixturePlan()
+        var calls = 0
+        val j = journal()
+        val coordinator = StyleDnaCoordinator(j, StyleDnaGateway { request, before ->
+            before(); calls++
+            val reports = dnaFixtureReports(plan, request.step.samples)
+            DnaCallResult.Received(dnaReportsBody(if (calls == 3) reports.dropLast(1) else reports), "resp_fixture_$calls", null)
+        })
+        val record = coordinator.submit(plan, images, true, { true })!!
+        assertEquals("REPORT_COUNT", record.reason)
+        assertEquals(DnaStatus.UNCERTAIN, record.status)
+        assertEquals(12, record.reports.size); assertEquals(3, record.submitted)
+        assertEquals(dnaFixtureReports(plan, plan.steps.take(2).flatMap { it.samples }), record.reports)
+        assertNull(record.result)
+        val durable = record.encode()
+        assertEquals(record, journal().latest(1))
+        assertEquals(record, coordinator.submit(plan, images, true, { true }))
+        assertEquals(durable, j.record(1, plan.id)!!.encode()); assertEquals(3, calls)
+    }
     @get:Rule val temporary=TemporaryFolder()
     private fun journal()=StyleDnaJournal(analysisFixtureContext(temporary.root))
 

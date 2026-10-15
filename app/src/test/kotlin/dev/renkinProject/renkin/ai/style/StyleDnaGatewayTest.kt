@@ -40,6 +40,24 @@ internal fun dnaFullResponseFixture(request: DnaCall, text: String): String = js
 @Config(application=Application::class,sdk=[33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleDnaGatewayTest {
+    @Test fun frozenReportSchemaMatchesNonemptyTextExactCountAndAllowedBindings() {
+        for (mode in DnaAnalysisMode.entries) {
+            val request = call(mode)
+            val schema = dnaBody(request).getJSONObject("text").getJSONObject("format").getJSONObject("schema")
+            val reports = schema.getJSONObject("properties").getJSONObject("reports")
+            assertEquals(request.step.samples.size, reports.optInt("minItems", -1))
+            assertEquals(request.step.samples.size, reports.getInt("maxItems"))
+            val properties = reports.getJSONObject("items").getJSONObject("properties")
+            assertEquals(request.step.samples, dnaStrings(properties.getJSONObject("sample_id").getJSONArray("enum"), 24, 48))
+            assertEquals(request.step.samples.map { request.plan.bindings.getValue(it) },
+                dnaStrings(properties.getJSONObject("sample_hash").getJSONArray("enum"), 24, 64))
+            val observation = properties.getJSONObject("traits").getJSONObject("properties")
+                .getJSONObject("corners").getJSONObject("properties").getJSONObject("value")
+            val pattern = Regex(observation.getString("pattern"))
+            for (bad in listOf("", "   ", "private\ntext", "x".repeat(241))) assertFalse(pattern.containsMatchIn(bad))
+            for (good in listOf("Unknown", "rounded ends", "slight gradient")) assertTrue(pattern.containsMatchIn(good))
+        }
+    }
     private fun response(text: String)=json("id" to "resp_mock","status" to "completed","usage" to json("input_tokens" to 40,"output_tokens" to 50),
         "output" to JSONArray().put(json("type" to "reasoning")).put(json("type" to "message","status" to "completed","content" to JSONArray().put(json("type" to "output_text","text" to text))))).toString()
     private fun client(server: MockWebServer,timeout: Long = 2000)=OpenAiStyleDnaGateway({"offline_fixture_${java.util.UUID.randomUUID()}"},
