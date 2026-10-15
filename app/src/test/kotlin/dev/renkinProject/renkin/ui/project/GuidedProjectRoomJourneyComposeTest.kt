@@ -131,8 +131,20 @@ class GuidedProjectRoomJourneyComposeTest {
         compose.waitForIdle()
     }
     private fun settled() {
-        compose.waitUntil(10000) { !trials.state(1).value.busy }
+        // Let request-completion effects start the local context recheck first.
         compose.waitForIdle()
+        compose.waitUntil(10000) {
+            trials.state(1).value.let { !it.busy && !it.network && it.preparation != null }
+        }
+        compose.waitForIdle()
+    }
+    private fun enterManualStyle() {
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
+        // The real independent Room load keeps the field disabled until its base is known.
+        compose.waitUntil(10000) {
+            compose.onAllNodes(hasTestTag("project-style-description") and isEnabled()).fetchSemanticsNodes().size == 1
+        }
+        compose.onNodeWithTag("project-style-description").assertIsEnabled().performTextInput("manual centered outline")
     }
     private fun journey(extend: Boolean) {
         compose.setContent { Content() }
@@ -145,8 +157,7 @@ class GuidedProjectRoomJourneyComposeTest {
         compose.onNodeWithTag("workflow-step").assertTextContains("1 of 4", substring = true)
         assertEquals(0, providerCalls)
         click("project-targets", "setup-project-style")
-        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
-        compose.onNodeWithTag("project-style-description").performTextInput("manual centered outline")
+        enterManualStyle()
         click("project-style-1", "project-style-save")
         compose.waitUntil(10000) { compose.onAllNodesWithTag("setup-target-app/Main").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("workflow-step").assertTextContains("3 of 4", substring = true)
@@ -219,8 +230,7 @@ class GuidedProjectRoomJourneyComposeTest {
         click("project-home", "project-setup-1")
         compose.waitUntil(10000) { compose.onAllNodesWithTag("setup-project-style").fetchSemanticsNodes().isNotEmpty() }
         click("project-targets", "setup-project-style")
-        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
-        compose.onNodeWithTag("project-style-description").performTextInput("manual centered outline")
+        enterManualStyle()
         click("project-style-1", "project-style-save")
         compose.waitUntil(10000) { compose.onAllNodesWithTag("setup-target-app/Main").fetchSemanticsNodes().isNotEmpty() }
         click("project-targets", "setup-target-app/Main")

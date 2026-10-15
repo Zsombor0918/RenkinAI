@@ -6,6 +6,9 @@ on:
     paths:
       - 'app/src/main/kotlin/dev/renkinProject/renkin/ui/**'
       - 'app/src/test/kotlin/dev/renkinProject/renkin/ui/**'
+      - 'app/src/test/kotlin/dev/renkinProject/renkin/testing/**'
+      - 'app/src/test/java/**'
+      - 'app/src/test/resources/**'
       - 'app/src/main/kotlin/dev/renkinProject/renkin/ai/**'
       - 'app/src/main/kotlin/dev/renkinProject/renkin/data/project/**'
       - 'app/src/main/kotlin/dev/renkinProject/renkin/data/transfer/**'

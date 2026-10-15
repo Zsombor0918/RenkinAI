@@ -11,7 +11,8 @@ must still block approval for any current unreviewed successful variant.
 and EXTEND with real Room, immutable style/selection writes, asset/journal/controller,
 explicit synthetic consent, per-image review, shared approval and completion/reopen.
 Its delayed-save gate proves no route change or trial preparation before durable
-target persistence. Only provider/session/artwork ports are synthetic; actual
+target persistence. An already approved set also survives free prepare/decline with
+identical approval, variants, journal records and provider-call count. Only provider/session/artwork ports are synthetic; actual
 MainViewModel/Hilt/device integration and provider image quality are not certified.
 Owned controller tests additionally prove profile switching during an already
 confirmed fake request eventually loads locally without a second submission.

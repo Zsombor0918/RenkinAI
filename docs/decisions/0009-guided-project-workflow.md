@@ -61,3 +61,7 @@ The real write/read/failed-write paths and all production journal predicates rem
 Four mandatory harness tests and retained backup/orphan/consumed-marker/controller
 tests prove this bounded correction. Complete suites and hosted Linux execution
 remain acceptance requirements; this is platform fidelity, not permission to skip tests.
+
+Declining or dismissing an unsubmitted trial plan cancels it and reloads the existing
+local approval proof. Presentation never restores ready directly; source/owner/catalog/
+original/context validation remains authoritative and no new paid permission is granted.

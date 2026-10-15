@@ -1,48 +1,44 @@
 # Verification baseline
 
-## Local Windows guided UX evidence
+## Guided UX local Windows continuation
 
-Source baseline `2f422ca8dbd58174491c954826350bac29bc6dd2`; dedicated local worktree
-`RenkinAI-ux`, branch `feat/ux-flow-stabilization`. Windows11 build26200, native
-PowerShell5.1, VS Code1.141, Python3.14, Temurin17.0.20.1+1, Gradle8.11.1,
-Android API36 r2/build-tools35.0.0/platform-tools37.0.1. Portable tools and ignored
-SDK settings do not modify system configuration. The owner enabled Developer Mode;
-the exact Java Files.createSymbolicLink probe passed before the retained security test.
+Source baseline2f422ca8, feature checkpoint3ee52fa1, Windows harness861ac270. Host:
+Windows11 build26200/PowerShell5.1, portable Temurin17.0.20.1+1/Gradle8.11.1,
+Android API36/build-tools35.0.0, Python3.14. Existing caches/tools are reused.
 
-Before runtime edits, actual Gradle production/test compilation plus four selected
-suites produced 17 testcase nodes/11 failures/0 errors/0 skips. The second narrow
-controller/currentness run produced 3 testcase nodes/3 failures/0 errors/0 skips.
-Original logs/commands/XML remain outside Git under `RenkinAI-TaskTools/2026-10-14`
-in `ux-red-baseline` and `ux-red-owned-baseline`; see the [audit](../changes/2026-10-14-guided-ux-audit.md).
-The complete native Python governance run passed55 tests in107.949s after the strict
-CRLF input/fixture correction. The first integration attempt compiled production
-Kotlin/resources but failed new test compilation on a missing semantics extension
-import; that import was corrected before any test result was claimed.
-Integration run2 compiled production/tests and produced12 XML/98 tests/26 failures/
-0 errors/0 skips. A separate one-method native AtomicFile probe failed its second
-committed-write assertion, retaining old base and new `.new` bytes and a failed-rename
-log. This demonstrates the pre-existing Windows test-environment replacement boundary.
-Its original XML/log remains outside Git in `windows-atomic-probe`. Full acceptance
-is BLOCKED; corrected fixture edits and test-harness work require fresh execution.
-The bounded test-only Windows AtomicFile correction subsequently passed8 actual
-tests/0 failures/0 errors/0 skips in34s, including four durable-file guards, both
-real owned controllers and retained backup/orphan consumed-marker guards. Source
-compilation passed. Evidence is in `windows-atomic-harness-1` outside Git; see the
-[correction note](../changes/2026-10-14-windows-atomic-test-harness.md). Checkpoint
-full Python55 also passed in105.263s; full Android/all23 acceptance remains deferred.
+| Executed checkpoint | Actual testcase counts / observed result |
+| --- | --- |
+| Pre-edit guided reproduction |17 tests/11 failures/0 errors/skips; production/test compilation passed |
+| Pre-edit owned/currentness subset |3 tests/3 failures; two owned cases stopped before intended assertions at journal setup |
+| First integration | Production compiled; new test import failed before JUnit |
+| Corrected integration2 |12 XML/98 tests/26 failures/0 errors/skips |
+| Native AtomicFile probe |1 test/1 failure; first base retained and second `.new` bytes prove failed Windows replacement |
+| Test-only harness correction |8 tests/0 failures/errors/skips, including retained backup/orphan/controller guards |
+| Resumed focus |10 tests/4 failures; Atomic4, Legacy phrase and cross-profile case pass; Room fixtures act before actual readiness |
+| Synchronized Room journeys |4 tests/1 failure, exact decline readiness boundary |
+| Local decline revalidation fix |4 tests/0 failures/errors/skips |
+| Complete guided/retained targeted set |103 tests /0 failures /0 errors /0 skips |
 
-Final-head required verification is native `gradlew.bat compileDebugKotlin
-testDebugUnitTest assembleDebug`, all23 groups via `python scripts/run_compose_regressions.py`,
-all Python governance tests, staged/range docs and commit/PR guards. Inspect actual
-testcase nodes against declared and summary counts, every selector, genuine Room19/20/21
-bytes and the newly produced debug APK. Exact final SHA/counts/commands, APK bytes,
-SHA256, package and certificate belong in the external stacked PR audit.
+Original commands/log/XML remain outside Git in task tools `2026-10-14` and
+`2026-10-15`; the continuation paths are `resume-focused-red`, `room-journey-red`,
+`room-journey-green` and `targeted-guided-retained`. Full Python55 passed at the
+earlier checkpoint; the final committed head requires its own complete guards.
 
-No live/paid calls or Android device installation occurred. `adb devices -l` returned
-no devices. Robolectric SDK33/native/320dp is local Android unit/Compose execution,
-not an instrumented Flip8/emulator or screenshot-golden test. Physical upgrade,
-TalkBack/fold/rotation and generated visual fidelity remain NOT RUN. The new local
-debug certificate must be compared with the installed app before any update.
+Required final commands are `python scripts/run_compose_regressions.py` (all23,
+ending in unfiltered compileDebugKotlin/testDebugUnitTest/assembleDebug), full Python
+governance, committed-range docs/subjects and complete PR-event audit. Actual final
+HEAD/testcase counts/selector checks/schema byte comparisons and fresh APK certificate,
+size and SHA256 are recorded in the external draft audit after execution. Inspect
+actual XML, not historical counts or a terminal-only green message.
+
+The API30+ Windows AtomicFile shadow only adapts private rename; non-Windows calls
+Android's original method. Successive/failed/interrupted/first-orphan/backup semantics
+remain guarded. Original production storage, symlink checks and consumed markers are
+unchanged. The owner enabled Developer Mode and the actual Java link probe passed.
+No attached device; instrumented/Flip8/Theme Park/TalkBack/fold/signature upgrade and
+live visual/provider acceptance are NOT RUN. Native SDK33/320dp Robolectric is local
+Android testing, not device or screenshot-golden evidence. Zero paid/live API calls.
+See [closing correction](../changes/2026-10-15-guided-ux-stabilization.md).
 
 ## Earlier checkpoint records
 

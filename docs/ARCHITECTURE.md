@@ -14,7 +14,8 @@ propagates dirty and saving state. DNA/aggregate saves return a persisted
 validity is separate from current operation errors. Nothing converts legacy styles.
 `trialReviewSummary` checks all current successful variants, owner/context/request
 proof and current failures before exposing approval. History presentation does not
-remove journal or Room evidence. Completion performs read-only local revalidation.
+remove journal or Room evidence. Completion performs read-only local revalidation. Trial confirmation decline/dismiss
+also requests existing local approval proof, without setting ready or authorizing a request.
 
 Owned controllers remain the only async request owners. `OwnedStyleTrials` coalesces
 a latest local load for another profile while its authorized network operation runs;

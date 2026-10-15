@@ -26,6 +26,8 @@ The stacked PR stays draft; PASS WITH RISKS still requires explicit owner review
 The Windows-only API30+ AtomicFile shadow preserves Android atomic replacement in
 Robolectric; non-Windows invokes the original method. Four mandatory harness guards
 and unchanged journal/controller guards verify base/backup/unfinished-write durability.
+Changes to shared Java shadows, test resources and the harness-test package also trigger
+the same mandatory isolated workflow, preserving coverage for harness-only corrections.
 Its narrow8-test pass does not replace the unfiltered/all23 gates; see the
 [platform correction](../changes/2026-10-14-windows-atomic-test-harness.md).
 

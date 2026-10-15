@@ -338,7 +338,14 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
     val plan = state.plan
     var originalsVerified by remember(plan?.id) { mutableStateOf(false) }
     var consentDetails by remember(plan?.id) { mutableStateOf(false) }
-    if (plan != null) RenkinAlertDialog(onDismissRequest = { if (!state.network) backend.cancelPreparation(id) },
+    val declinePreparation = {
+        if (!state.network) {
+            backend.cancelPreparation(id)
+            // Re-read the unchanged durable approval; cancellation grants no request consent.
+            reload++
+        }
+    }
+    if (plan != null) RenkinAlertDialog(onDismissRequest = declinePreparation,
         title = { Text(stringResource(R.string.trialConsentTitle)) },
         text = { Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()).testTag("trial-frozen-confirmation"),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -387,7 +394,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
         confirmButton = { TextButton(onClick = { backend.submit(id, plan.id) }, enabled = enabled && state.hasKey && p?.context == plan.context &&
             state.error == null && (plan.inputs.none { it.originalEvidence != null } || originalsVerified),
             modifier = Modifier.heightIn(min = 48.dp).testTag("trial-confirm-paid")) { Text(stringResource(R.string.trialConfirmPaid)) } },
-        dismissButton = { TextButton(onClick = { backend.cancelPreparation(id) }, enabled = !state.network,
+        dismissButton = { TextButton(onClick = declinePreparation, enabled = !state.network,
             modifier = Modifier.heightIn(min = 48.dp).testTag("trial-decline")) { Text(stringResource(R.string.colorizeCancel)) } })
 }
 

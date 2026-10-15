@@ -29,7 +29,9 @@ no phone installation, uninstall, data clear or paid request.
    override in the existing trial confirmation path. Save selection and continue directly.
 10. Prepare frozen trial inputs locally. Compare the **Original app icon** against the
     genuine target; image1 must be that app alone. Lux/DNA examples supply style only.
-    Decline a themed/untrusted/missing original before any paid confirmation.
+    Decline a themed/untrusted/missing original before any paid confirmation. If this
+    set was already approved, cancel local preparation and verify it becomes ready
+    again with unchanged history and no request, then prepare again only if desired.
 11. **Optional paid trials; separate owner consent required:** review provider/model/
     quality, app count, privacy and endpoint maximum, then explicitly confirm only desired
     requests. Regenerate needs a new independently confirmed plan and keeps older variants.

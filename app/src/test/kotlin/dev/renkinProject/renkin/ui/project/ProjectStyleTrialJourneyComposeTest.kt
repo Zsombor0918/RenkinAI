@@ -199,6 +199,12 @@ class ProjectStyleTrialJourneyComposeTest {
         assertEquals(1, trials.state(1).value.plan!!.inputs.size); assertEquals(0, imageCalls)
         compose.onNodeWithTag("trial-confirm-paid").performClick(); settle()
         val row = trials.state(1).value.variants.single()
+        // The finished request starts a separate local context recheck. Wait for
+        // this current review proof before materializing the retained Accept action.
+        compose.waitUntil(10000) {
+            val state = trials.state(1).value
+            !state.busy && trialReviewSummary(state).unreviewed.any { it.id == row.id }
+        }
         click("project-trials-1", "trial-accept-${row.id}")
         assertFalse(trials.state(1).value.ready)
         click("project-trials-1", "trial-approve-style")

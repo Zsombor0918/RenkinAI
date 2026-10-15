@@ -1,36 +1,38 @@
 # Current implementation
 
-## Guided workflow on the local Windows branch
+## Guided UX Stage 1
 
-Stage 0/1 implements Project/source -> Style -> Trials -> Completion on
-`feat/ux-flow-stabilization`, based on verified Style DNA head
-`2f422ca8dbd58174491c954826350bac29bc6dd2`. PR6/PR7 are draft, open and unmerged;
-accepted main remains `af7bdb104869b0d0dded2acdf020fc030642dcf9`.
+The local `feat/ux-flow-stabilization` branch implements Project/source -> Style ->
+Trials -> Completion from verified Style DNA base
+`2f422ca8dbd58174491c954826350bac29bc6dd2`. PR6/PR7 remain draft/open/unmerged;
+accepted main is `af7bdb104869b0d0dded2acdf020fc030642dcf9`.
 
-Regression acceptance is BLOCKED at the usage-limit checkpoint: integration compiled
-and ran98 tests with26 failures, concentrated at pre-existing Windows AtomicFile
-replacement plus new fixture interactions. The one-method journal probe confirmed
-the Windows base/`.new` mismatch. Full final-head/all23 checks have not passed.
-See the [continuation handoff](HANDOFF.md) for exact classification and next commands.
+Fresh DNA-capable projects recommend Quick; aggregate/manual projects retain Legacy.
+Style Save advances after immutable persistence and parent synchronization. Current
+saved targets restore without a write; guided trials use one to three eligible named
+apps. Current errors remain separate from saved analysis/history. All current successful
+variants require review before common approval, including variants under history.
+Completion distinguishes saved style, reviewed trials and approval from Apply/build/install.
 
-Fresh DNA-capable projects recommend Quick; historic aggregate/manual styles retain
-Legacy. One reviewed save advances only after immutable persistence. Current saved
-targets hydrate without a write; guided trials use one to three eligible named apps.
-Current results, all successful variants requiring review and current context proof
-determine approval; complete history remains expandable. Completion distinguishes
-saved style, reviewed trials and approval from Apply/build/install, which remain separate.
-Current preparation failures no longer masquerade as historical result validity.
-Pending project switches queue only a local read, never another provider request.
+Declining or dismissing a locally frozen trial now reloads the existing approval proof.
+An unchanged approved set becomes ready again without altering approval/variants/journal
+records or submitting a provider request. Changed or unavailable inputs still fail closed.
+Cross-profile refreshes after an owned request are local reads only. Existing repositories,
+session ownership, immutable assets, Room21/backups, consumed markers, legacy clients,
+component identity, app/pack IDs and signing/install paths remain.
 
-Room21, backup formats, original IMAGE1/style-only references, legacy AI1/AI2/Stability,
-identities, original editor, immutable assets and consumed request evidence remain.
-No SDK/dependency/provider/schema/signing/install change is introduced by the source.
-Stages 2 fidelity and 3 cleanup are planned only. No live or paid API call occurred.
-See [audit](../changes/2026-10-14-guided-ux-audit.md),
-[implementation](../changes/2026-10-14-guided-ux-implementation.md) and
-[owner acceptance and later plans](../qa/GUIDED_UX_OWNER_CHECK.md).
-Fresh exact-final-commit checks and APK identity belong in the stacked PR audit;
-physical Flip8/TalkBack/fold and installed-signature compatibility remain unverified.
+Source checkpoint targeted verification passed 103 tests /0 failures /0 errors /0 skips. The new real-Room
+CREATE/EXTEND/save-delay/cancellation journeys passed4/4 after actual failing reproduction.
+The Windows-only Robolectric AtomicFile adaptation preserves Android atomic replacement;
+production journals and all security/durability assertions are unchanged. Final committed
+HEAD, complete23-group/unfiltered results and fresh APK measurements belong in the
+stacked draft PR audit after execution; checkpoint counts are not a substitute.
+
+See the [closing correction](../changes/2026-10-15-guided-ux-stabilization.md),
+[ownership ADR0009](../decisions/0009-guided-project-workflow.md) and
+[owner phone check and later-stage plans](../qa/GUIDED_UX_OWNER_CHECK.md).
+Physical Flip8/TalkBack/fold, installed-signature upgrade and actual generated visual
+fidelity remain NOT RUN. Stages2/3 are plans only; zero live/paid API calls occurred.
 
 ## Earlier checkpoint records
 
