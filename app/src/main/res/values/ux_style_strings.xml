@@ -14,7 +14,7 @@
     <string name="uxStylePlanNeedsKey">Local samples are ready. Add an OpenAI key in AI settings, then return to review the paid plan. No request has been sent for this plan.</string>
     <string name="uxStylePlanChanged">Inputs or analysis options changed. Scan and freeze fresh samples before paid review. No request has been sent for this plan.</string>
     <string name="uxStylePrepareNext">Scan and freeze local samples to prepare a new analysis. Previous attempts remain in Details.</string>
-    <string name="uxStyleHistory">Previous submitted analysis · separate from the current local preparation</string>
+    <string name="uxStyleHistory">Previous analysis attempt · separate from the current local preparation</string>
     <string name="uxStylePreviousFailed">The previous analysis did not complete. Its history is preserved. A new attempt needs fresh samples and separate confirmation.</string>
     <string name="uxStyleCostUnknown">Exact cost and model availability are unknown. Review the frozen paid plan before sending.</string>
     <string name="uxStyleReady">Analysis ready for review</string>

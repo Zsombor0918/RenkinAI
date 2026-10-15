@@ -2,6 +2,10 @@
 
 ## Final PR8 corrective handoff
 
+The history heading says analysis attempt: reservation can fail with zero submitted
+steps. The retained zero-step fixture asserts this wording; do not infer a phone POST
+or charge from record existence or the old failure sentence.
+
 Authorized scope is complete in source: post-read atomic controller merges retain
 current plans/job state/live progress, history has separate presentation, paid
 review/disabled reasons appear before samples, and provider/journal/data/signing

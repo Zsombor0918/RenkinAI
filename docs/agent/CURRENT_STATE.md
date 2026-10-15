@@ -2,6 +2,10 @@
 
 ## PR8 final corrective scope
 
+History is labeled an analysis attempt, including FAILED records with zero submitted
+steps. A journal reservation or failure sentence does not establish a provider POST;
+the stored submitted-step count and actual transport boundary remain authoritative.
+
 The controller refresh race and current-plan/history confusion are reproduced and
 corrected; runtime remains `4be6ad63`. At `6fd75af2`, Android passes all974 tests
 and assembles the APK. Key add/replace/remove on actual resume is now verified
