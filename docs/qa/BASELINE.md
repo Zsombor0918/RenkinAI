@@ -10,6 +10,14 @@ The new loading-source/owned-DNA regression checkpoint awaits hosted execution.
 Local Gradle download fails before configuration with Network is unreachable;
 no Android assertion or build success is claimed locally. Production is unchanged.
 
+Reproduction876ad51e subsequently ran958 tests/2 failures in Android38664556204,
+with successful production/test compilation. Only the new guided source-loading
+and owned source_required/operation assertions failed; HTML artifact11940622007
+SHA25664b79d6e54e0fac4ee5a359803510bcc656833014d22f27779cd4812855f6190
+was downloaded and inspected. Production edits start only after this actual red.
+Local55 governance tests passed in25.928s. Corrective green/final-head results are
+pending and must replace no historical failure. No live/paid request is made.
+
 ## Guided UX local Windows continuation
 
 Source baseline2f422ca8, feature checkpoint3ee52fa1, Windows harness861ac270. Host:

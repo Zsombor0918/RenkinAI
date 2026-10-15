@@ -89,6 +89,14 @@ class StyleDnaComposeTest {
         compose.runOnIdle {mode=ProjectSetupMode.EXTEND;source="different.pack"}
         compose.onNodeWithTag("style-dna-confirm-paid").assertIsNotEnabled();assertEquals(0,consents)
     }
+    @Test fun missingExtendStampExplainsDisabledScanAndManualPathStaysAvailable() {
+        mode = ProjectSetupMode.EXTEND; source = "fixture.pack"
+        compose.setContent {Content()}
+        compose.onNodeWithTag("style-dna-prepare").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("style-dna-source-required").assertTextContains("Return to Project/source", substring=true)
+        compose.onNodeWithTag("style-dna-manual").performScrollTo().assertIsEnabled()
+        assertEquals(0,prepares);assertEquals(0,consents);assertEquals(0,saves)
+    }
     @Test fun restorationAndDarkNarrowUiNeverSubmitAndDeepRemainsDisabled() {
         val restoration=StateRestorationTester(compose);restoration.setContent {Content()};prepare("QUICK")
         restoration.emulateSavedInstanceStateRestore();assertEquals(0,consents)

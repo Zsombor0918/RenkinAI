@@ -73,7 +73,8 @@ internal fun ProjectSourceSummary(mode: ProjectSetupMode, id: Long, name: String
                 }
                 if (!ready || data.metadataLoading) Text(stringResource(R.string.projectInitializing))
                 if (data.metadataFailed) Text(stringResource(R.string.setupSelectionSaveError))
-                Button(onClick = onContinue, enabled = ready && !data.metadataLoading && !data.metadataFailed,
+                Button(onClick = onContinue, enabled = ready && !data.metadataLoading && !data.metadataFailed &&
+                    (mode != ProjectSetupMode.EXTEND || sourceReady),
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-project-style")) {
                     Text(stringResource(if (saved) R.string.workflowContinueTargets else R.string.workflowContinueStyle))
                 }

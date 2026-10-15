@@ -15,6 +15,12 @@ no phone installation, uninstall, data clear or paid request.
    aggregate/manual style remains available through its explicit Legacy path.
 4. Prepare samples locally and inspect the thumbnails. This sends zero provider calls;
    Details contains source/exclusion/hash evidence and unknown measurements.
+   PR8 corrective acceptance: on a new EXTEND project, Continue must wait while the
+   source is checking. With no saved style and no key, the first Quick scan must
+   show current thumbnails/count and keep paid review disabled. Back/reopen and
+   rotate/recreate, then scan again. A missing/changed source must give specific
+   return/rescan feedback, never a claimed successful plan. Record actual result;
+   this owner failure remains unverified on the corrective phone build.
 5. Deliberately compare Quick, Standard under Advanced, and Legacy. Standard's frozen
    plan can list up to five submissions; Deep remains disabled. Switching a choice is free.
 6. **Optional paid analysis; separate owner consent required:** inspect the frozen

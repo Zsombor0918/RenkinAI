@@ -108,6 +108,42 @@ class OwnedStyleAnalysisTest {
         assertEquals(0, calls)
     }
 
+    @Test fun quickPreparationDiagnosesStaleEmptyAndStorageWithoutLeakingExceptionText() = runBlocking {
+        val controller = newController(dna = true)
+        val before = repo.snapshot()
+        val draft = ProjectStyleDraft("", "", emptyList())
+        suspend fun attempt(reason: String) {
+            controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+                draft, DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+            val state = controller.state(1).first { !it.busy }
+            assertEquals(reason, state.error)
+            assertNull(state.dnaPlan)
+            assertEquals(before, repo.snapshot())
+            assertEquals(0, calls)
+        }
+        sourceOverride = object : CoverageSourceReader by reader {
+            override val index = reader.index.copy(stamp = reader.index.stamp.copy(versionCode = 8))
+        }
+        attempt("source_changed")
+        controller.releasePreview(1)
+        assertNull(controller.state(1).value.error)
+        sourceOverride = FixtureReferenceReader(emptyMap())
+        attempt("references_empty")
+        controller.bindContext(1, ProjectSetupMode.EXTEND, "other.pack")
+        assertNull(controller.state(1).value.error)
+        sourceOverride = object : CoverageSourceReader by reader {
+            override val index get() = throw java.io.IOException("private path /fixture/secret and private content")
+        }
+        attempt("storage")
+        sourceOverride = null
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+            draft, DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+        val recovered = controller.state(1).first { !it.busy }
+        assertNull(recovered.error)
+        assertNotNull(recovered.dnaPlan)
+        assertEquals(0, calls)
+    }
+
     @Test fun prepareAndReopenAreLocalAndMissingKeyDoesNotBlockManualSave() = runBlocking {
         key = false; val controller = newController(); val request = prepare(controller)
         assertFalse(controller.state(1).value.hasKey); assertEquals(0, calls)

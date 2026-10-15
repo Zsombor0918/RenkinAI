@@ -72,6 +72,7 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
         baselineKey = null; edit = false; review = false; onDirty(false)
     }
     val editable = needsReview || edit
+    val sourcePrepared = mode != ProjectSetupMode.EXTEND || !source.isNullOrBlank() && stamp != null
     val candidate = suggestion?.let { saved -> runCatching {
         saved.copy(dna = StyleDnaV1.parse(grammar), selectedFamily = family).also {
             it.encode(); StyleDnaCompiler.specification(it)
@@ -115,6 +116,7 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
             Text(stringResource(if (selectedMode == "STANDARD") R.string.styleDnaStandard else R.string.styleDnaQuick))
             Text(stringResource(R.string.uxStyleCostUnknown))
             if (!state.hasKey) Text(stringResource(R.string.styleAnalysisNoKey), Modifier.testTag("style-dna-no-key"))
+            if (!sourcePrepared) Text(stringResource(R.string.styleDnaSourceRequired), Modifier.testTag("style-dna-source-required"))
             TextButton(onClick = { choose("LEGACY") }, enabled = enabled && !state.busy && !saving,
                 modifier = Modifier.heightIn(min = 48.dp).testTag("style-dna-manual")) { Text(stringResource(R.string.uxStyleManual)) }
             val prepare = {
@@ -122,11 +124,11 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                 backend.prepareDna(id, mode, source, stamp, expected, draft, DnaAnalysisMode.valueOf(selectedMode), model, detail)
             }
             if (state.dnaPlan == null && suggestion == null) Button(onClick = prepare,
-                enabled = enabled && !state.busy && !saving,
+                enabled = enabled && sourcePrepared && !state.busy && !saving,
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-dna-prepare")) {
                 Text(stringResource(R.string.styleDnaPrepare))
             }
-            else OutlinedButton(onClick = prepare, enabled = enabled && !state.busy && !saving,
+            else OutlinedButton(onClick = prepare, enabled = enabled && sourcePrepared && !state.busy && !saving,
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-dna-prepare")) { Text(stringResource(R.string.styleDnaPrepare)) }
             if (state.busy) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -300,8 +302,16 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                     }
                 }
             }
-            if (error || state.error != null) Text(stringResource(if (suggestion != null)
-                R.string.uxStyleCurrentAttemptFailed else R.string.styleDnaLocalError), Modifier.testTag("style-dna-error"))
+            if (error || state.error != null) Text(stringResource(when (state.error) {
+                "source_required" -> R.string.styleDnaSourceRequired
+                "source_changed" -> R.string.styleDnaSourceChanged
+                "references_empty" -> R.string.styleAnalysisEmpty
+                "samples_unavailable" -> R.string.styleDnaSamplesUnavailable
+                "storage" -> R.string.styleDnaStorageError
+                "inputs_changed" -> R.string.styleDnaInputsChanged
+                "invalid_plan", "payload_size" -> R.string.styleDnaInvalidPlan
+                else -> if (suggestion != null) R.string.uxStyleCurrentAttemptFailed else R.string.styleDnaLocalError
+            }), Modifier.testTag("style-dna-error"))
         }
     }
     val plan = state.dnaPlan

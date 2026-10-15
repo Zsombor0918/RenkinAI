@@ -9,6 +9,14 @@ hosted red evidence is pending, not claimed. Local Gradle distribution download
 fails before configuration with Network is unreachable. No live calls or other
 branch writes are authorized. See [reproduction](../changes/2026-10-15-dna-local-preparation-reproduction.md).
 
+Hosted red876ad51e now genuinely compiles958 tests and fails exactly the two new
+source-readiness/diagnostic assertions (Android38664556204). The correction waits
+for verified EXTEND coverage, guards restored missing stamps and emits safe local
+reasons while preserving every validator. Real owned Quick/no-key/empty/stale/storage,
+restoration/navigation and all retained tests require next-head CI verification.
+The full23-command runner and final source/APK/audit evidence remain required;
+phone/Lux acceptance and generated style fidelity stay separate owner gates.
+
 ## Closed implementation scope
 
 Continue only in `C:\Users\zsomb\Documents\Github\RenkinAI-ux`, branch

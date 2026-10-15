@@ -1,5 +1,19 @@
 # Current implementation
 
+## PR8 Quick DNA first local scan correction
+
+The guided EXTEND source page now waits for its matching verified coverage snapshot
+before opening Style. Previously, navigation while coverage was Loading froze a
+null setup stamp; the enabled Quick scan rejected it and displayed operation.
+Actual test-first876ad51e compiled958 tests with exactly those two new failures.
+DNA scan also explains/disables a missing stamp on restored/alternate entry paths.
+Owned preparation retains all original guards with bounded local reason codes;
+retry/source navigation clears free-operation errors without changing history or
+request markers. No-key local scanning/manual Save and Legacy remain available.
+Corrective final-head automated results belong in PR8's audit after execution;
+physical Flip8/Lux acceptance is still NOT RUN. See the
+[scoped correction](../changes/2026-10-15-dna-local-preparation-fix.md).
+
 ## Guided UX Stage 1
 
 The local `feat/ux-flow-stabilization` branch implements Project/source -> Style ->

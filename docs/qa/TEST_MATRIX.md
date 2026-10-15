@@ -1,5 +1,19 @@
 # Regression and test matrix
 
+## PR8 first Quick local preparation
+
+The additive real-Room guided regression delays coverage independently of metadata,
+requires source readiness before navigation, then scans a fresh unsaved EXTEND style
+with different installed/all-reference indexes and no API key. It validates plan
+stamps, null revision, unchanged version/selection and zero gateway calls across
+restoration and Back/reopen. Owned tests diagnose missing stamp, changed source,
+empty references and storage without exception-text leakage, then retry locally.
+The direct panel additionally requires missing-stamp feedback and disabled scan
+while manual style stays accessible. Existing Legacy and all23 runner groups remain.
+Red876ad51e genuinely failed the two new prerequisite assertions; corrective green
+is an execution requirement, not inferred from source. Actual Flip8/Lux and paid
+style fidelity remain owner NOT RUN gates in [the checklist](GUIDED_UX_OWNER_CHECK.md).
+
 ## Guided UX additions and retained gates
 
 All old tests/assertions/selectors remain. Guided coverage adds first-use Quick and
