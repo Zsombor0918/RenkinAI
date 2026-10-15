@@ -2,6 +2,9 @@
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 
+PR8 final verification source: [observed974-test success and closing gates](changes/2026-10-15-dna-final-verification.md).
+Its own final SHA/checks/APK are recorded externally on draft PR8 after execution.
+
 Latest PR8 end-to-end follow-up: [current frozen plan, history and refresh race](changes/2026-10-15-dna-plan-refresh.md).
 Exact final-head verification and APK evidence are recorded on draft PR8.
 

@@ -1,5 +1,30 @@
 # Agent handoff — guided UX Stage 1
 
+## Final PR8 corrective handoff
+
+Authorized scope is complete in source: post-read atomic controller merges retain
+current plans/job state/live progress, history has separate presentation, paid
+review/disabled reasons appear before samples, and provider/journal/data/signing
+contracts remain. Runtime4be6ad63 passes all974 Android cases at6fd75af2. Key resume
+is verified with real event/invalidation counts, ordinary Compose idling and the
+same plan/zero-call assertions; failed fixture hypotheses remain dated evidence.
+
+Final verification source additionally fixes the actually missing runner rg utility
+and one full-order restored-layout scroll assertion, retaining every gate/assertion.
+Run final exact-head Android/all23/Python/docs/subjects/event audit; download and
+independently verify XML/schemas and APK against SDK identity/signature/hash output.
+Only those actual results justify changing BLOCKED to PASS WITH RISKS. Publish
+the exact final source/artifact/SHA256 on PR8; do not reuse any checkpoint APK.
+See [record](../changes/2026-10-15-dna-final-verification.md).
+
+Next safe owner task after delivery: free Quick/Standard freeze, current-ready
+versus Details history, Settings key recognition, manual Save and Back/reopen/source
+switches. A later Quick paid analysis remains the owner's separate decision.
+No live call occurred; no secure Work credential/verified spend control exists.
+Actual phone POST/billing/event order, Keystore and installed-signer compatibility
+remain unproven; physical acceptance NOT RUN. Preserve data/keys, leave PR8 draft/
+open, and do not merge, force-push, change main/PR6/PR7 or start Stage2/3.
+
 ## Current PR8 end-to-end diagnosis
 
 Start from verified76387e2e on existing feat/ux-flow-stabilization. Six supplied

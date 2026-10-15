@@ -1,5 +1,11 @@
 # PR8 current DNA preparation, history and Responses verification
 
+Later verification: runtime4be6ad63 passes all974 Android tests at6fd75af2,
+including actual key resume once the fixture observes the composed effect. The
+separate full-order scroll and CI utility findings, retained assertions and final
+delivery gates are in [the closing record](2026-10-15-dna-final-verification.md).
+Earlier checkpoint statements below describe their actual execution time.
+
 ## Summary
 
 Continue only draft PR8 from verified remote76387e2e. Separate a current frozen

@@ -1,5 +1,23 @@
 # Current implementation
 
+## PR8 final corrective scope
+
+The controller refresh race and current-plan/history confusion are reproduced and
+corrected; runtime remains `4be6ad63`. At `6fd75af2`, Android passes all974 tests
+and assembles the APK. Key add/replace/remove on actual resume is now verified
+offline, with the exact frozen plan and zero submissions retained. Earlier fixture
+timeouts were observation-before-composition; explicit ordinary idling resolves
+them without a runtime lifecycle rewrite or relaxed assertions.
+
+Independent all23 evidence passes all22 isolated groups and finds one retained
+full-order guided scroll assertion after restoration. Its helper now commits the
+awaited layout and realigns the same control before unchanged displayed/enabled/
+click assertions. The additive APK verifier also uses available standard grep
+after the runner proved rg absent. Final-head CI/XML/schema/signature/APK evidence
+belongs in PR8 before acceptance. See [verification](../changes/2026-10-15-dna-final-verification.md).
+Phone submission history/event order and physical acceptance remain unproven/NOT RUN;
+live test SKIPPED because secure Work credentials/spend controls are unavailable.
+
 ## PR8 current frozen plan and historical analysis
 
 Test-only948f805d genuinely compiles and runs969 tests with precisely three new

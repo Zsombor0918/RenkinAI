@@ -2,10 +2,14 @@
 
 ## Current PR8 plan/history retest (NOT RUN on a physical phone)
 
+Automated runtime/key-resume coverage passes974 tests at6fd75af2. Final source
+checks and the exact downloadable APK/hash are recorded on PR8; these are not
+physical Settings, Keystore, signer-upgrade or provider acceptance.
+
 Use the final-commit artifact linked on PR8 and preserve installed data/keys.
 Confirm signer compatibility before an in-place update; do not uninstall/clear.
 
-1. Freeze Quick12 and Standard24 locally with two installed packs; there must be no
+1. Freeze Quick (up to12) and Standard (up to24) locally with two installed packs; there must be no
    paid request. The current ready status and Review paid analysis plan are above thumbnails.
 2. Old FAILED/UNCERTAIN history remains under Details and must not label a new plan
    failed or leave preparation running after completion.

@@ -1,5 +1,28 @@
 # Verification baseline
 
+## PR8 automated runtime verified; final source gates required
+
+At `6fd75af26fe04595719bf618b19b173b96084f53`, Android38711653859 passes
+compilation, **974/974 unit tests** and assembleDebug. The additive verifier stops
+at the missing rg executable before signing/hash/upload; this is not a verified
+APK artifact. Test-report11961232344 has221888bytes, SHA256
+a45ef56f42e8ff7363b635f89f0a1a48fb5a45aff952ca527fd61d49eb31f205.
+
+Independent all23 run38711653794 artifact11961372299 has683404bytes, SHA256
+46a04221c7e134f5f6812dec67f761501114c7d46bedcce3b76e366abc35a234.
+Actual154 full XML/974 tests have one retained guided displayed assertion failure,
+zero errors/skips; all22 isolated groups pass (DNA34, analysis persistence/session31,
+guided35). All selectors/counts match; retained19/20 and KSP21 bytes equal source.
+The final helper realigns after awaited restored-layout readiness; the CI command
+uses available grep. No assertion/selector/timeout/idling rule is weakened.
+
+Actual key event/invalidation/refresh acceptance now passes after normal Compose
+effect synchronization. The earlier8ee/350 failures remain historical below and
+in their notes, not relabeled as product fixes. The final commit requires its own
+complete gates and newly verified APK, recorded on PR8 after execution; the974
+standalone pass cannot substitute for its final all23 result. Physical acceptance
+NOT RUN, live API SKIPPED/zero calls. See [record](../changes/2026-10-15-dna-final-verification.md).
+
 ## PR8 key-resume verification checkpoint
 
 Implementation4be6ad63 passes production/test compilation and973 of974 tests in

@@ -132,6 +132,9 @@ class GuidedProjectRoomJourneyComposeTest {
         compose.onNodeWithTag(list).performScrollToNode(hasTestTag(tag))
         val node = compose.onNodeWithTag(tag)
         compose.waitUntil(10000) { node.fetchSemanticsNode().config.getOrNull(SemanticsProperties.Disabled) == null }
+        compose.waitForIdle()
+        // An awaited Room load/restored layout can move the materialized control.
+        compose.onNodeWithTag(list).performScrollToNode(hasTestTag(tag))
         node.assertIsDisplayed().assertIsEnabled().performClick()
         compose.waitForIdle()
     }

@@ -1,5 +1,17 @@
 # Regression and test matrix
 
+## PR8 final verification boundary
+
+Source6fd75af2 passes974 Android tests and all22 isolated groups; its later full974
+order exposes one retained post-restoration control reflow. Keep displayed/enabled/
+click and all source/version/selection/zero-call assertions; commit readiness/layout
+then realign that same control. Lifecycle event/invalidation/refresh counts and
+key add/replace/remove now pass without changing runtime or timeouts. The final
+commit must independently pass Android and all23, with actual XML/schema recount
+and SDK-verified fresh APK. An unavailable CI search utility is fixed with standard
+grep; no gate or signing configuration changes. Owner-device/API boundaries remain
+NOT RUN/SKIPPED as described in [the final record](../changes/2026-10-15-dna-final-verification.md).
+
 ## PR8 current plan, credential refresh and real offline Responses
 
 Deterministic barriers reproduce a delayed history/key read erasing a new frozen

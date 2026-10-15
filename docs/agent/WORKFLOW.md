@@ -5,6 +5,8 @@
 The existing CI compile/unit/assemble/upload sequence retains every task. After
 assembly an additive SDK35 aapt/apksigner/sha256sum step verifies the debug package
 hu.zsombor.renkinai.dev, nonempty APK, complete signature and certificate/hash.
+The hosted6fd75af2 run proved rg unavailable after a successful974-test/assemble
+run; package matching therefore uses standard grep with an anchored exact pattern.
 Download that exact run's artifact and compare its APK SHA256 to this output.
 This verifies the artifact, not installed-certificate compatibility or phone
 acceptance. No signing configuration, dependency, required gate or protection rule
