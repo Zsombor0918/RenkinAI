@@ -1,5 +1,24 @@
 # Agent handoff — guided UX Stage 1
 
+## Current PR8 corrective handoff
+
+Continue only feat/ux-flow-stabilization / draft PR8, stacked on unchanged
+PR7 2f422ca8. The verified correction is f788b62b0cebe387c1c444b797831ac7bda66c6f:
+Android38665453196 and all23 regressions38665453253 pass. Independent154 XML
+contain960 tests/zero failures/errors/skips; source/owned preparation24, DNA27,
+guided35 pass. Generated Room19/20/21 bytes match tracked files. Local Python55
+and committed-range docs54paths/subjects5 pass. Zero live/paid requests.
+
+This closing documentation commit requires its own fresh Android/all23/governance
+and APK on its exact SHA, recorded externally in PR8 to avoid self-hash claims.
+The old BLOCKED audit failure remains evidence; change the declaration only after
+complete exact-head checks. Keep draft/open/unmerged for owner free Flip8/Lux scan,
+Back/reopen/rotation/manual Save and installed-signature acceptance. The original
+phone exception is not recoverable from the two screenshots; the matching null-stamp
+path is reproduced and fixed, with actionable reasons for other local failures.
+Earlier Windows continuation and pending checkpoints below remain historical.
+See [verification](../changes/2026-10-15-dna-local-preparation-verification.md).
+
 ## October15 PR8 local scan reproduction
 
 Work continues on the existing remote feat/ux-flow-stabilization from ecff4e5f.

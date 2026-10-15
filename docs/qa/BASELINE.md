@@ -1,12 +1,44 @@
 # Verification baseline
 
+## Verified PR8 corrective code checkpoint
+
+Code f788b62b0cebe387c1c444b797831ac7bda66c6f passed
+[Android38665453196](https://github.com/Zsombor0918/RenkinAI/actions/runs/38665453196)
+and [all23 commands38665453253](https://github.com/Zsombor0918/RenkinAI/actions/runs/38665453253).
+Independently downloaded675222-byte regression artifact11942105251, ZIP SHA256
+51ecf1158245f175720ac9b0e3865871d1249f78de1473bec2a7701f33c36b46:
+exact HEAD,154 full-suite XML/960 actual tests/zero failures/errors/skips, every
+selector present and counts matching actual testcase nodes. Owned analysis24,
+DNA27 and guided35 pass; all original groups remain. Room19/20/21 bytes match
+source, including unchanged v21 SHA25611912e933464d86952e3c70ced6ceb2e7506fe3407ac44f3425ebed9a89e0dad.
+
+The same two red assertions now pass without modification. Red876ad51e retains
+958/2 and artifact11940906530, ZIP SHA2569624deacda309f8161ac89e18ea4cb1f52407aaa95610758573d176afd767047.
+The additional direct missing-stamp/empty/stale/storage tests also pass, with zero
+live calls. Local Linux/Python3.12.14/OpenJDK17.0.20: Python55 passed23.020s,
+range docs54paths/subjects5 and real commit hooks passed. Local Android remains
+blocked before configuration at Gradle download; hosted native SDK33/Room/fixtures
+supply Android evidence. CI's merge checkout tree equals the exact source head.
+
+Checkpoint APK11940927063 has37203290 bytes, SHA256
+0797baaf08d36abece0e6b0adb21aeeecaa027e75c608984af7726402b3161eb;
+actual binary manifest is hu.zsombor.renkinai.dev/version56/2026.10.04-ai2.
+Public debug signer SHA256044b533ad0962676a8ddf9dc97c218cee3ccbe5576210cc058943d70ddc89c44
+was extracted; full APK signature verification and installed-certificate match
+are NOT RUN. This checkpoint APK is not substituted for the closing-head delivery.
+
+The closing documentation head requires its own complete checks and fresh APK;
+exact SHA/artifact/hash/latest audit declaration belong in PR8 after execution.
+Physical corrective Flip8/Lux, TalkBack/fold, signing/data upgrade and live visual
+fidelity remain NOT RUN. No main/PR6/PR7 change, merge or paid request occurred.
+
 ## October15 PR8 first local Quick scan
 
 Remote source ecff4e5f has successful Android38661004421 and all23 regression
 commands38661004416. Governance38661004446 failed solely because the PR body
 declares BLOCKED; its55 offline guards passed. This historical automated success
 does not resolve the owner's observed Flip8 free-scan failure.
-The new loading-source/owned-DNA regression checkpoint awaits hosted execution.
+At the initial test-only checkpoint, hosted loading-source/owned-DNA execution was pending.
 Local Gradle download fails before configuration with Network is unreachable;
 no Android assertion or build success is claimed locally. Production is unchanged.
 

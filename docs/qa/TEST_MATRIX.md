@@ -10,8 +10,10 @@ restoration and Back/reopen. Owned tests diagnose missing stamp, changed source,
 empty references and storage without exception-text leakage, then retry locally.
 The direct panel additionally requires missing-stamp feedback and disabled scan
 while manual style stays accessible. Existing Legacy and all23 runner groups remain.
-Red876ad51e genuinely failed the two new prerequisite assertions; corrective green
-is an execution requirement, not inferred from source. Actual Flip8/Lux and paid
+Red876ad51e genuinely failed the two new prerequisite assertions; unchanged tests
+pass at f788b62b, independently verified960/960 and all23 commands. The owned
+analysis group24, DNA27 and guided35 have zero failures/errors/skips. The closing
+documentation SHA requires its own checks in PR8's audit. Actual Flip8/Lux and paid
 style fidelity remain owner NOT RUN gates in [the checklist](GUIDED_UX_OWNER_CHECK.md).
 
 ## Guided UX additions and retained gates

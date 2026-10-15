@@ -10,8 +10,11 @@ DNA scan also explains/disables a missing stamp on restored/alternate entry path
 Owned preparation retains all original guards with bounded local reason codes;
 retry/source navigation clears free-operation errors without changing history or
 request markers. No-key local scanning/manual Save and Legacy remain available.
-Corrective final-head automated results belong in PR8's audit after execution;
-physical Flip8/Lux acceptance is still NOT RUN. See the
+Corrective code f788b62b0cebe387c1c444b797831ac7bda66c6f passed960/960 tests and
+all23 retained commands. Independent154 XML counts/selectors and generated
+Room19/20/21 bytes were verified. The closing documentation head's own checks,
+exact SHA and fresh APK belong in PR8's audit; physical Flip8/Lux is still NOT RUN.
+See the [verification record](../changes/2026-10-15-dna-local-preparation-verification.md) and
 [scoped correction](../changes/2026-10-15-dna-local-preparation-fix.md).
 
 ## Guided UX Stage 1

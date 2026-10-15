@@ -7,6 +7,11 @@ Preserve installed data and both original signing keys. Verify that the debug AP
 certificate matches the installed app before an in-place update. This task performs
 no phone installation, uninstall, data clear or paid request.
 
+Corrective source f788b62b passed the actual delayed-source/first-Quick/recreation
+Room journey and all23 offline commands (960 tests). This is automated evidence;
+the corrective build's physical Flip8/Lux acceptance remains NOT RUN. Final source
+SHA, fresh APK and certificate measurements are in draft PR8's current audit.
+
 1. Open the fresh debug app and choose **Extend**. Select Lux Free as the style/coverage
    source and the intended project/profile. The chosen source never becomes target identity.
 2. Inspect the project/source summary. Coverage is local; unavailable/broken mappings
