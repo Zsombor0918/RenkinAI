@@ -1,5 +1,17 @@
 # Architecture
 
+## DNA private storage and local diagnostics
+
+StyleDnaJournal canonicalizes only the Context-owned no-backup parent before
+constructing its existing root. Root/profile/record/backup/new descendants retain
+canonical-versus-absolute and containment checks; child links are never normalized
+into trust. Aliases share locks, bytes and the consumed ledger. There is no format
+change, history reset or speculative corruption recovery.
+OwnedStyleAnalysis exposes only ephemeral allowlisted stage/category enums for
+free-preparation errors. History integrity/read errors stay fail closed; a source
+read is not evidence of low disk space. No raw exception/path/ID is exposed or
+persisted. Separate paid consent, ownership, quotas and no-replay remain authoritative.
+
 ## Guided presentation and ownership
 
 `RenkinAiRoot` enables the four-step shell without changing classic editor or intent

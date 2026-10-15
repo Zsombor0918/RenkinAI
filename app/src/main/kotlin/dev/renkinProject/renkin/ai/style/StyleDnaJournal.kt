@@ -41,7 +41,9 @@ internal data class StyleDnaRecord(val plan: StyleDnaPlan,val status: DnaStatus,
 }
 /** Independent bounded AtomicFile journal; no credentials and no automatic resume capability. */
 internal class StyleDnaJournal(context: Context,private val fault: (String)->Unit = {}) {
-    private val root=File(context.noBackupFilesDir,"style_dna").absoluteFile
+    // Context's private directory may have a platform alias. Trust only that parent;
+    // never canonicalize away a link in style_dna, a profile, or a record companion.
+    private val root=File(context.noBackupFilesDir.canonicalFile,"style_dna").absoluteFile
     private val shared=locks.getOrPut(root.path) { Shared() }
     private class Shared { val lock=Any();val active=mutableSetOf<String>();val invalidated=mutableSetOf<Long>() }
     companion object { private val locks=ConcurrentHashMap<String,Shared>() }

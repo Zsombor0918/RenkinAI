@@ -1,5 +1,19 @@
 # Regression and test matrix
 
+## Cross-pack free DNA preparation and integrity
+
+Existing required classes add two independent outline/color readers, theme/source
+switches, Quick12/Standard24, real Room existing/fresh profiles and no key. Trusted
+Context aliases preserve saved data/history and the same consumed ledger. Backup
+and unfinished-write recovery retain submitted/uncertain evidence without replay.
+Linked journal/profile descendants must still fail. Corrupt shared history blocks
+both packs/modes, reports history_read/invalid_data, preserves exact bytes and rights,
+and leaves a fresh profile independent. Source I/O/permission faults expose only
+fixed categories; retry clears them with zero gateway calls. Compose verifies
+specific history remediation, no paid gate and an available free retry. Every old
+selector/assertion/timeout/idling rule and all23 groups remain. Windows JDK link
+semantics do not replace independent Linux security or owner-device acceptance.
+
 ## PR8 first Quick local preparation
 
 The additive real-Room guided regression delays coverage independently of metadata,

@@ -991,7 +991,9 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="styleDnaSourceRequired">Return to Project/source, wait for the source check, then reopen Style to scan. No request was sent.</string>
     <string name="styleDnaSourceChanged">The source changed. Return to Project/source and rescan, then reopen Style. No request was sent.</string>
     <string name="styleDnaSamplesUnavailable">References could not be read. Retry the scan or inspect the source in Project/source. No request was sent.</string>
-    <string name="styleDnaStorageError">Local files could not be read. Check available storage, then retry the scan. No request was sent.</string>
+    <string name="styleDnaStorageError">A local read or write failed. Retry the free scan; if it persists, report the diagnostic code below. No request was sent.</string>
+    <string name="styleDnaHistoryError">Previous analysis history could not be verified. It has been preserved, and requests remain blocked. Report the diagnostic code below; do not clear app data.</string>
+    <string name="styleDnaLocalDiagnostic">Local diagnostic: %1$s. No private file or source details are included.</string>
     <string name="styleDnaInputsChanged">Project inputs changed. Reopen Style and scan again. No request was sent.</string>
     <string name="styleDnaInvalidPlan">These samples or settings cannot form an analysis plan. Prepare fresh samples and review the settings. No request was sent.</string>
     <string name="styleDnaConsent">Send %1$d separate labeled style images using %2$s, detail=%3$s. Authorize only the following frozen steps, maximum %4$d charged endpoint submissions. Uploaded content is style evidence only; no target identity is analyzed here.</string>

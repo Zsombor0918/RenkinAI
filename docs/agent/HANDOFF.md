@@ -1,5 +1,28 @@
 # Agent handoff — guided UX Stage 1
 
+## Latest PR8 all-pack storage follow-up
+
+Baseline f46115f10090f04651994e521f10e899871970fc, clean existing Windows
+RenkinAI-ux / feat/ux-flow-stabilization. The owner reports the same free-scan
+storage error on every tested pack in both modes. No new image/phone trace is
+mounted. Physical verification is NOT RUN; no phone will be connected.
+
+Actual test-first2/2 red identifies trusted Context alias rejection and shared
+history error misclassification. The correction normalizes only the trusted parent,
+preserves every child/companion/AtomicFile/consumed guard and supplies fixed diagnostic
+codes. Corrupt history stays blocked/preserved, with no speculative repair. The
+precise Samsung cause is unproven. Focused24/24 pass; separate20/1 retains a new
+security assertion failing on Windows File symlink semantics, to verify on Linux.
+
+Run the existing portable env.ps1, full23 runner, Python and stacked range/event
+guards on final HEAD; publish that SHA's fresh verified GitHub APK ZIP link/hash
+directly on PR8. Final results belong in its audit after commit (no self-hash claim).
+Keep PR8 draft/open targeting feat/style-dna-v1; main/PR6/PR7 remain unchanged.
+Owner retest: two packs × Quick/Standard × existing/fresh project, no key/paid
+confirmation; return only the displayed fixed code if free preparation fails.
+See [record](../changes/2026-10-15-dna-shared-storage.md) and
+[owner check](../qa/GUIDED_UX_OWNER_CHECK.md). Earlier closure below is historical.
+
 ## Current PR8 corrective handoff
 
 Continue only feat/ux-flow-stabilization / draft PR8, stacked on unchanged

@@ -71,6 +71,19 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
         compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled().performClick()
     }
+    @Test fun historyFailurePreservesRequestGateAndDisplaysOnlyBoundedDiagnostic() {
+        flow.value = ProjectAnalysisState(error = "history_unreadable",
+            dnaLocalDiagnostic = DnaLocalDiagnostic(DnaLocalStage.HISTORY_READ, DnaLocalCategory.INVALID_DATA))
+        compose.setContent { Content() }
+        compose.onNodeWithTag("style-dna-error").performScrollTo()
+            .assertTextContains("history could not be verified", substring = true)
+            .assertTextContains("do not clear app data", substring = true)
+        compose.onNodeWithTag("style-dna-local-diagnostic").performScrollTo()
+            .assertTextContains("history_read/invalid_data", substring = true)
+        compose.onNodeWithTag("style-dna-start").assertDoesNotExist()
+        compose.onNodeWithTag("style-dna-prepare").performScrollTo().assertIsEnabled()
+        assertEquals(0, consents); assertEquals(0, prepares); assertEquals(0, saves)
+    }
     @Test fun standardConsentListsFiveStepsAndSavingRequiresSeparateHumanReview() {
         compose.setContent {Content()};assertEquals(0,consents)
         compose.onNodeWithTag("style-dna-mode-DEEP").assertIsNotEnabled()

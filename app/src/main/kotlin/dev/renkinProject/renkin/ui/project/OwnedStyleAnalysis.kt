@@ -27,19 +27,35 @@ internal interface AnalysisSessionOwner {
 
 /** Allowlisted local boundaries only. Exception prose never enters state, UI or journals. */
 private val dnaLocalReasons = setOf("source_required", "source_changed", "references_empty", "samples_unavailable",
-    "storage", "inputs_changed", "invalid_plan", "payload_size")
-private class DnaLocalFailure(val reason: String, cause: Exception? = null) : IllegalStateException(cause) {
+    "storage", "history_unreadable", "inputs_changed", "invalid_plan", "payload_size")
+private class DnaLocalFailure(val reason: String, cause: Exception? = null,
+    val diagnostic: DnaLocalDiagnostic? = null) : IllegalStateException(cause) {
     init { require(reason in dnaLocalReasons) }
 }
 private fun dnaRequire(condition: Boolean, reason: String) {
     if (!condition) throw DnaLocalFailure(reason)
 }
-private suspend fun <T> dnaLocal(reason: String, action: suspend () -> T): T = try { action() }
+private suspend fun <T> dnaLocal(reason: String, stage: DnaLocalStage, action: suspend () -> T): T = try { action() }
 catch (cancel: CancellationException) { throw cancel }
-catch (failure: DnaLocalFailure) { throw failure }
-catch (stale: StaleReferenceSource) { throw DnaLocalFailure("source_changed", stale) }
-catch (storage: IOException) { throw DnaLocalFailure("storage", storage) }
-catch (failure: Exception) { throw DnaLocalFailure(reason, failure) }
+catch (failure: DnaLocalFailure) { throw if (failure.diagnostic != null) failure else
+    DnaLocalFailure(failure.reason, failure, DnaLocalDiagnostic(stage, DnaLocalCategory.INVALID_DATA)) }
+catch (failure: Exception) {
+    val category = when (failure) {
+        is StaleReferenceSource -> DnaLocalCategory.SOURCE_STALE
+        is SecurityException -> DnaLocalCategory.PERMISSION
+        is IOException -> DnaLocalCategory.IO
+        is IllegalArgumentException, is org.json.JSONException -> DnaLocalCategory.INVALID_DATA
+        is IllegalStateException -> DnaLocalCategory.LOCAL_STATE
+        else -> DnaLocalCategory.UNEXPECTED
+    }
+    val code = when {
+        failure is StaleReferenceSource -> "source_changed"
+        stage == DnaLocalStage.HISTORY_READ -> "history_unreadable"
+        failure is IOException || failure is SecurityException -> "storage"
+        else -> reason
+    }
+    throw DnaLocalFailure(code, failure, DnaLocalDiagnostic(stage, category))
+}
 
 internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val repository: ProjectAiRepository,
     private val journal: StyleAnalysisJournal, private val sampler: ReferenceSampler,
@@ -53,7 +69,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         val route = mode to source
         val previous = routes.put(id, route)
         if (previous != null && previous != route && !flow(id).value.busy)
-            flow(id).value = flow(id).value.copy(error = flow(id).value.error?.takeUnless { it in dnaLocalReasons })
+            flow(id).value = flow(id).value.copy(error = flow(id).value.error?.takeUnless { it in dnaLocalReasons }, dnaLocalDiagnostic = null)
     }
     private fun matchesRoute(context: AnalysisContext) = routes[context.profileId]?.let {
         context.matchesRoute(it.first, it.second)
@@ -62,7 +78,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
     private fun start(id: Long, network: Boolean = false, action: suspend () -> Unit) {
         if (flow(id).value.busy) return
         if (states.values.any { it.value.busy }) { flow(id).value = flow(id).value.copy(error = "busy_other"); return }
-        flow(id).value = flow(id).value.copy(busy = true, network = network, error = null)
+        flow(id).value = flow(id).value.copy(busy = true, network = network, error = null, dnaLocalDiagnostic = null)
         jobs[id] = scope.launch {
             try { action() }
             catch (cancel: CancellationException) {
@@ -71,7 +87,8 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
                 }
                 throw cancel
             }
-            catch (failure: DnaLocalFailure) { flow(id).value = flow(id).value.copy(error = failure.reason) }
+            catch (failure: DnaLocalFailure) { flow(id).value = flow(id).value.copy(error = failure.reason,
+                dnaLocalDiagnostic = failure.diagnostic ?: DnaLocalDiagnostic(DnaLocalStage.VALIDATION, DnaLocalCategory.INVALID_DATA)) }
             catch (_: Exception) { flow(id).value = flow(id).value.copy(error = "operation") }
             finally { jobs.remove(id); flow(id).value = flow(id).value.copy(busy = false, network = false) }
         }
@@ -84,18 +101,19 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         bindContext(id, mode, source)
         start(id) {
             flow(id).value = flow(id).value.copy(preparation = null, dnaPlan = null)
-            val samples = dnaLocal("samples_unavailable") {
+            val samples = dnaLocal("samples_unavailable", DnaLocalStage.SAMPLE_RENDER) {
                 if (mode == ProjectSetupMode.EXTEND) {
                     dnaRequire(!source.isNullOrBlank() && setupStamp != null, "source_required")
-                    sampler.sample(owner.reader(checkNotNull(source),true), candidateLimit = 600,
+                    val reader = dnaLocal("samples_unavailable", DnaLocalStage.SOURCE_OPEN) { owner.reader(checkNotNull(source),true) }
+                    sampler.sample(reader, candidateLimit = 600,
                         sampleLimit = if (analysisMode == DnaAnalysisMode.STANDARD) 24 else 12)
                 } else sampler.manual(owner.owned(id) { draft.hashes.map { it to repository.referenceBytes(id,it) } })
             }
             dnaRequire(samples.samples.isNotEmpty(), "references_empty")
-            val context = dnaLocal("inputs_changed") { owner.owned(id) {
+            val context = dnaLocal("inputs_changed", DnaLocalStage.METADATA_READ) { owner.owned(id) {
                 val saved = repository.load(id); dnaRequire(saved.revision?.revision == expected, "inputs_changed")
                 if (mode == ProjectSetupMode.EXTEND) {
-                    dnaLocal("source_changed") {
+                    dnaLocal("source_changed", DnaLocalStage.SOURCE_RECHECK) {
                         val setup = owner.reader(checkNotNull(source),false); val refs = owner.reader(source,true)
                         dnaRequire(setup.isCurrent() && projectSourceStamp(setup.index) == setupStamp && refs.isCurrent() &&
                             projectSourceStamp(refs.index) == samples.sourceStamp, "source_changed")
@@ -103,26 +121,27 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
                 }
                 AnalysisContext(id,mode.name,source,setupStamp,samples.sourceStamp,saved.metadata?.version ?: 0L,
                     sha256(saved.metadata?.selectionJson.orEmpty().toByteArray()),owner.catalogStamp(),expected,
-                    withContext(Dispatchers.IO) { journal.epoch(id) },samples.sourceIdentity)
+                    dnaLocal("storage", DnaLocalStage.EPOCH_READ) { withContext(Dispatchers.IO) { journal.epoch(id) } },samples.sourceIdentity)
             } }
-            val plan = dnaLocal("invalid_plan") {
+            val plan = dnaLocal("invalid_plan", DnaLocalStage.VALIDATION) {
                 StyleDnaPlan(context,analysisMode,samples.samples.mapIndexed { i,s -> DnaSampleBinding("s%02d".format(i+1),s.hash) },
                     samples.report,draft.specification,draft.instruction,analysisDraftHash(draft),model,detail).also { it.validate() }
             }
             val images = samples.samples.associate { it.hash to it.png }
-            dnaLocal("samples_unavailable") { validateDnaImages(plan,images) }
+            dnaLocal("samples_unavailable", DnaLocalStage.VALIDATION) { validateDnaImages(plan,images) }
             plan.steps.filter { !it.synthesis }.forEach { step ->
-                dnaLocal("invalid_plan") {
+                dnaLocal("invalid_plan", DnaLocalStage.VALIDATION) {
                     dnaRequire(dnaBody(DnaCall(plan,step,step.samples.associate { plan.bindings.getValue(it) to images.getValue(plan.bindings.getValue(it)) },emptyList()))
                         .toString().toByteArray().size <= 5*1024*1024, "payload_size")
                 }
             }
-            val cached = dnaLocal("storage") { withContext(Dispatchers.IO) {
+            val cached = dnaLocal("history_unreadable", DnaLocalStage.HISTORY_READ) { withContext(Dispatchers.IO) {
                 dnaCoordinator.journal.records(id).lastOrNull { it.plan.fingerprint == plan.fingerprint && it.result != null }
             } }
             dnaRequire(validity(context) == AnalysisValidity.CURRENT, "inputs_changed")
             flow(id).value = flow(id).value.copy(samples = samples, dnaPlan = if (cached == null) plan else null,
-                dnaRecord = cached, preparedDraftHash = analysisDraftHash(draft), hasKey = withContext(Dispatchers.IO) { hasKey() },
+                dnaRecord = cached, preparedDraftHash = analysisDraftHash(draft),
+                hasKey = dnaLocal("storage", DnaLocalStage.KEY_READ) { withContext(Dispatchers.IO) { hasKey() } },
                 dnaValidity = AnalysisValidity.CURRENT, validity = flow(id).value.legacyValidity ?: AnalysisValidity.CURRENT)
         }
     }
@@ -244,6 +263,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         val state = flow(id).value
         if (!state.network) jobs[id]?.cancel()
         flow(id).value = flow(id).value.copy(samples = null, preparation = null, dnaPlan = null,
+            dnaLocalDiagnostic = state.dnaLocalDiagnostic.takeIf { state.network },
             error = state.error?.takeUnless { !state.network && it in dnaLocalReasons })
     }
     override suspend fun refresh(id: Long) {

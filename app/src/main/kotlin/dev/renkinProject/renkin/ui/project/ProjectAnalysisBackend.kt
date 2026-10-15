@@ -7,6 +7,12 @@ import dev.renkinProject.renkin.ai.style.StyleAnalysisRequest
 import kotlinx.coroutines.flow.StateFlow
 
 internal enum class AnalysisValidity { CURRENT, SOURCE_STALE, PREPARATION_CHANGED, RESTORED, WRONG_PROFILE }
+/** Ephemeral allowlisted diagnostics, containing no paths, IDs or exception prose. */
+internal enum class DnaLocalStage { SOURCE_OPEN, SAMPLE_RENDER, METADATA_READ, SOURCE_RECHECK, EPOCH_READ, VALIDATION, HISTORY_READ, KEY_READ }
+internal enum class DnaLocalCategory { IO, PERMISSION, INVALID_DATA, SOURCE_STALE, LOCAL_STATE, UNEXPECTED }
+internal data class DnaLocalDiagnostic(val stage: DnaLocalStage, val category: DnaLocalCategory) {
+    val code get() = stage.name.lowercase(java.util.Locale.ROOT) + "/" + category.name.lowercase(java.util.Locale.ROOT)
+}
 internal fun AnalysisContext.matchesRoute(mode: ProjectSetupMode, source: String?) =
     this.mode == mode.name && sourcePackage == source
 internal data class ProjectAnalysisState(val busy: Boolean = false, val network: Boolean = false, val preparation: StyleAnalysisRequest? = null,
@@ -17,7 +23,8 @@ internal data class ProjectAnalysisState(val busy: Boolean = false, val network:
     val dnaRecord: dev.renkinProject.renkin.ai.style.StyleDnaRecord? = null,
     val savedDna: dev.renkinProject.renkin.ai.style.SavedStyleDna? = null,
     val legacyValidity: AnalysisValidity? = null,
-    val dnaValidity: AnalysisValidity? = null)
+    val dnaValidity: AnalysisValidity? = null,
+    val dnaLocalDiagnostic: DnaLocalDiagnostic? = null)
 
 internal fun analysisDraftHash(draft: ProjectStyleDraft) = dev.renkinProject.renkin.data.project.sha256(
     dev.renkinProject.renkin.ai.style.canonicalJson(dev.renkinProject.renkin.ai.style.json("description" to draft.specification,

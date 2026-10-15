@@ -2,6 +2,9 @@
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 
+Latest PR8 owner finding: [cross-pack local storage and diagnostics](changes/2026-10-15-dna-shared-storage.md).
+Exact final-source checks and downloadable APK evidence are in the draft PR audit.
+
 Current local guided UX Stage0/1: [evidence audit](changes/2026-10-14-guided-ux-audit.md),
 [implementation and checks](changes/2026-10-14-guided-ux-implementation.md),
 [closing readiness correction](changes/2026-10-15-guided-ux-stabilization.md),

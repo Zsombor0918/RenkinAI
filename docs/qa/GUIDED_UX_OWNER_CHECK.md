@@ -1,5 +1,17 @@
 # Guided workflow owner check and later-stage plans
 
+## All-pack free-scan retest (physical testing NOT RUN)
+
+Use the final GitHub ZIP/APK linked directly on draft PR8. Compare its certificate
+with the installed build; preserve data/keys and do not uninstall or clear data for
+a different CI signer. Rebuild with the existing compatible key when necessary.
+Test two unrelated packs × Quick/Standard × existing/fresh project without a key
+or paid confirmation. Check previews/counts/current plan, Back/reopen, theme/source
+switch and retry, preserving saved styles/targets/trials/history. If it fails,
+return only the fixed displayed diagnostic and which of these eight cases failed;
+do not send inventories, journals/images, private paths or credentials. History
+errors remain blocked/preserved. The exact Samsung cause is still unconfirmed.
+
 ## Galaxy Z Flip8 / Lux Free walkthrough
 
 These checks are owner acceptance, not automated or already executed phone evidence.

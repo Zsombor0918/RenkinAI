@@ -49,9 +49,9 @@ class OwnedStyleAnalysisTest {
         override suspend fun catalogStamp() = catalog
         override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader = sourceOverride ?: reader
     }
-    private fun newController(dna: Boolean = false) = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(),
+    private fun newController(dna: Boolean = false, dnaContext: Context = analysisFixtureContext(temporary.root)) = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(),
         StyleAnalysisCoordinator(journal, gateway), { key }, owner,
-        if (dna) StyleDnaCoordinator(StyleDnaJournal(analysisFixtureContext(temporary.root)), StyleDnaGateway { _, _ ->
+        if (dna) StyleDnaCoordinator(StyleDnaJournal(dnaContext), StyleDnaGateway { _, _ ->
             calls++; error("Local preparation must not submit")
         }) else null)
     @Before fun setup() = runBlocking {
@@ -78,6 +78,99 @@ class OwnedStyleAnalysisTest {
     }
     private fun draft(used: AnalyzedDraft, instruction: String = "do not lose my instruction", stale: Boolean = false) =
         ProjectStyleDraft(used.specification, instruction, used.hashes, used.requestId, used.reviewedAt, stale, used.reviewedSourceStamp)
+
+    @Test fun trustedContextAliasPreparesBothModesAcrossPacksWithoutChangingHistoryOrRoom() = runBlocking {
+        key = false
+        repo.saveStyle(1, null, "keep saved style", "keep instruction", emptyList())
+        val dnaJournal = StyleDnaJournal(analysisFixtureContext(temporary.root))
+        val (historic, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        assertTrue(dnaJournal.claim(historic, images))
+        dnaJournal.submitted(historic, historic.steps.first())
+        dnaJournal.failed(historic, "NETWORK", true)
+        dnaJournal.release(historic)
+        val before = repo.snapshot()
+        val historicBytes = File(temporary.root, "style_dna/1/plan-${historic.id}.json").readBytes()
+        // Context owns its directory. Normalize its alias, never a child journal symlink.
+        val contextAlias = analysisFixtureContext(File(temporary.root, "."))
+        assertNotEquals(contextAlias.noBackupFilesDir.absolutePath, contextAlias.noBackupFilesDir.canonicalPath)
+        val controller = newController(dna = true, dnaContext = contextAlias)
+        for (profile in listOf(1L, 2L)) for (pack in listOf("outline.pack", "color.pack")) {
+            active = profile
+            val fixture = FixtureReferenceReader((0 until 30).associate { "art$it" to analysisFixturePng(if (pack == "outline.pack") 0 else 2, it) })
+            sourceOverride = object : CoverageSourceReader by fixture {
+                override val index = fixture.index.copy(stamp = fixture.index.stamp.copy(packageName = pack, theme = pack == "color.pack"))
+            }
+            for (mode in listOf(DnaAnalysisMode.QUICK, DnaAnalysisMode.STANDARD)) {
+                controller.prepareDna(profile, ProjectSetupMode.EXTEND, pack, projectSourceStamp(sourceOverride!!.index),
+                    repo.load(profile).revision?.revision, ProjectStyleDraft("", "", emptyList()), mode, DEFAULT_ANALYSIS_MODEL, "low")
+                val state = controller.state(profile).first { !it.busy }
+                assertNull("$profile/$pack/$mode local failure", state.error)
+                val plan = checkNotNull(state.dnaPlan)
+                plan.validate()
+                assertEquals(pack, plan.context.sourcePackage)
+                assertEquals(mode, plan.mode)
+                assertTrue(plan.samples.size in 1..if (mode == DnaAnalysisMode.QUICK) 12 else 24)
+                assertFalse(state.hasKey)
+                assertEquals(0, calls)
+                assertEquals(before, repo.snapshot())
+                assertArrayEquals(historicBytes, File(temporary.root, "style_dna/1/plan-${historic.id}.json").readBytes())
+            }
+        }
+        assertFalse(dnaJournal.claim(historic, images))
+    }
+
+    @Test fun corruptSharedHistoryFailsClosedAcrossPacksButReportsHistoryInsteadOfDiskSpace() = runBlocking {
+        val (historic, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        val dnaJournal = StyleDnaJournal(analysisFixtureContext(temporary.root))
+        assertTrue(dnaJournal.claim(historic, images)); dnaJournal.release(historic)
+        val file = File(temporary.root, "style_dna/1/plan-${historic.id}.json")
+        val damaged = "{truncated private journal content".toByteArray()
+        file.writeBytes(damaged)
+        val before = repo.snapshot()
+        val controller = newController(dna = true)
+        for (pack in listOf("outline.pack", "color.pack")) for (mode in DnaAnalysisMode.entries) {
+            sourceOverride = object : CoverageSourceReader by reader {
+                override val index = reader.index.copy(stamp = reader.index.stamp.copy(packageName = pack))
+            }
+            controller.prepareDna(1, ProjectSetupMode.EXTEND, pack, projectSourceStamp(sourceOverride!!.index), null,
+                ProjectStyleDraft("", "", emptyList()), mode, DEFAULT_ANALYSIS_MODEL, "low")
+            val state = controller.state(1).first { !it.busy }
+            assertNull(state.dnaPlan)
+            assertEquals("history_unreadable", state.error)
+            assertEquals("history_read/invalid_data", state.dnaLocalDiagnostic!!.code)
+            assertEquals(0, calls); assertEquals(before, repo.snapshot()); assertArrayEquals(damaged, file.readBytes())
+        }
+        assertFalse(dnaJournal.claim(historic, images))
+        active = 2
+        controller.prepareDna(2, ProjectSetupMode.EXTEND, "color.pack", projectSourceStamp(sourceOverride!!.index), null,
+            ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+        val fresh = controller.state(2).first { !it.busy }
+        assertNull(fresh.error); assertNotNull(fresh.dnaPlan); assertEquals(0, calls)
+    }
+
+    @Test fun sourceIoAndPermissionFailuresExposeOnlyFixedStageCodesAndRetryFreely() = runBlocking {
+        val controller = newController(dna = true)
+        key = false
+        val before = repo.snapshot()
+        for (failure in listOf(java.io.IOException("secret path and inventory"), SecurityException("private permission details"))) {
+            sourceOverride = object : CoverageSourceReader by reader { override val index get() = throw failure }
+            controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+                ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.STANDARD, DEFAULT_ANALYSIS_MODEL, "low")
+            val failed = controller.state(1).first { !it.busy }
+            assertEquals("storage", failed.error)
+            assertEquals(DnaLocalStage.SAMPLE_RENDER, failed.dnaLocalDiagnostic!!.stage)
+            assertEquals(if (failure is SecurityException) DnaLocalCategory.PERMISSION else DnaLocalCategory.IO,
+                failed.dnaLocalDiagnostic.category)
+            assertFalse(failed.toString().contains("secret")); assertFalse(failed.toString().contains("private"))
+            assertNull(failed.dnaPlan); assertEquals(before, repo.snapshot()); assertEquals(0, calls)
+        }
+        sourceOverride = null
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+            ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.STANDARD, DEFAULT_ANALYSIS_MODEL, "low")
+        val retried = controller.state(1).first { !it.busy }
+        assertNull(retried.error); assertNull(retried.dnaLocalDiagnostic); assertNotNull(retried.dnaPlan)
+        assertFalse(retried.hasKey); assertEquals(before, repo.snapshot()); assertEquals(0, calls)
+    }
 
     @Test fun firstQuickScanWithoutSetupStampReportsPrerequisiteAndRetryIsLocal() = runBlocking {
         key = false

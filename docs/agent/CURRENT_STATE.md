@@ -1,5 +1,20 @@
 # Current implementation
 
+## PR8 all-pack free-scan report and bounded correction
+
+The owner reports identical Quick/Standard storage errors across all tested packs
+on f46115f1. Two local regressions reproduce trusted Context alias rejection and
+corrupt shared history mislabeled as storage (2/2 red). DNA now canonicalizes only
+the Context-owned parent, matching Legacy; descendant checks and consumed evidence
+remain. History errors stay blocked/preserved with specific feedback. Fixed ephemeral
+stage/category codes expose no private paths, IDs or exception prose.
+Focused Room/controller/Compose/atomic-recovery passes24/24. One new security
+assertion reproduces the native Windows canonical-symlink limitation and remains
+mandatory on Linux. Final-head all23/unfiltered/CI/APK evidence belongs in PR8's
+audit after commit. The Samsung cause is NOT conclusively established; physical
+testing is NOT RUN. No schema, backup, transport, identity, legacy/editor, signing,
+new stage or paid behavior changes. See [the scoped record](../changes/2026-10-15-dna-shared-storage.md).
+
 ## PR8 Quick DNA first local scan correction
 
 The guided EXTEND source page now waits for its matching verified coverage snapshot

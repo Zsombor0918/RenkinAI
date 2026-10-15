@@ -307,11 +307,16 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                 "source_changed" -> R.string.styleDnaSourceChanged
                 "references_empty" -> R.string.styleAnalysisEmpty
                 "samples_unavailable" -> R.string.styleDnaSamplesUnavailable
-                "storage" -> R.string.styleDnaStorageError
+                "history_unreadable" -> R.string.styleDnaHistoryError
+                "storage" -> if (state.dnaLocalDiagnostic?.stage in setOf(DnaLocalStage.SOURCE_OPEN, DnaLocalStage.SAMPLE_RENDER,
+                    DnaLocalStage.SOURCE_RECHECK)) R.string.styleDnaSamplesUnavailable else R.string.styleDnaStorageError
                 "inputs_changed" -> R.string.styleDnaInputsChanged
                 "invalid_plan", "payload_size" -> R.string.styleDnaInvalidPlan
                 else -> if (suggestion != null) R.string.uxStyleCurrentAttemptFailed else R.string.styleDnaLocalError
             }), Modifier.testTag("style-dna-error"))
+            if (state.error != null) state.dnaLocalDiagnostic?.let { diagnostic ->
+                Text(stringResource(R.string.styleDnaLocalDiagnostic, diagnostic.code), Modifier.testTag("style-dna-local-diagnostic"))
+            }
         }
     }
     val plan = state.dnaPlan

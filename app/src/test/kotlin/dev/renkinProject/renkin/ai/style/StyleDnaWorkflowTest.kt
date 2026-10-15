@@ -35,6 +35,43 @@ class StyleDnaWorkflowTest {
     @get:Rule val temporary=TemporaryFolder()
     private fun journal()=StyleDnaJournal(analysisFixtureContext(temporary.root))
 
+    @Test fun trustedParentAliasKeepsAtomicRecoveryAndConsumedReservations() {
+        val canonical = journal()
+        assertTrue(canonical.records(1).isEmpty())
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        assertTrue(canonical.claim(plan, images)); canonical.submitted(plan, plan.steps.first()); canonical.release(plan)
+        val file = File(temporary.root, "style_dna/1/plan-${plan.id}.json")
+        val durable = file.readBytes()
+        assertTrue(file.renameTo(File(file.path + ".bak")))
+        File(file.path + ".new").writeText("unfinished private bytes")
+        val aliased = StyleDnaJournal(analysisFixtureContext(File(temporary.root, ".")))
+        val recovered = aliased.records(1).single()
+        assertEquals(DnaStatus.UNCERTAIN, recovered.status)
+        assertEquals(1, recovered.submitted)
+        assertEquals(plan, recovered.plan)
+        assertFalse(aliased.claim(plan, images))
+        assertFalse(canonical.claim(plan, images))
+        assertNotNull(StyleDnaRecord.parse(String(durable)))
+        assertEquals(recovered, canonical.latest(1))
+        val orphan = plan.copy(id = java.util.UUID.randomUUID().toString(),
+            samples = plan.samples) // New plan ID, still consumed step IDs.
+        File(file.parentFile, "plan-${orphan.id}.json.new").writeText("interrupted")
+        assertFalse(aliased.claim(orphan, images))
+        assertEquals(recovered, aliased.latest(1))
+    }
+
+    @Test fun canonicalContextStillRejectsLinkedJournalAndProfileDirectories() {
+        val outside = temporary.newFolder("outside")
+        val root = File(temporary.root, "style_dna")
+        java.nio.file.Files.createSymbolicLink(root.toPath(), outside.toPath())
+        assertTrue(runCatching { journal().records(1) }.isFailure)
+        java.nio.file.Files.delete(root.toPath()) // Only remove the fixture link, never its target.
+        assertTrue(root.mkdir())
+        java.nio.file.Files.createSymbolicLink(File(root, "1").toPath(), outside.toPath())
+        assertTrue(runCatching { journal().records(1) }.isFailure)
+        assertTrue(outside.listFiles()!!.isEmpty())
+    }
+
     @Test fun safeRendererSeparatesDeliberateStatefulExclusionsFromDarkVisibleAndBrokenArt() {
         val resources=org.robolectric.RuntimeEnvironment.getApplication().resources
         val bitmap=Bitmap.createBitmap(256,256,Bitmap.Config.ARGB_8888)

@@ -1,5 +1,21 @@
 # Verification baseline
 
+## PR8 all-pack storage investigation (Windows local)
+
+Baseline f46115f1, Windows11/Temurin17.0.20.1+1/SDK36/build-tools35/Gradle8.11.1.
+Actual red selects the two new OwnedStyleAnalysisTest alias/shared-history methods:
+compilation passes,2 tests/2 failures/0 errors/skips; both assert actual storage.
+Original XML/log/commands remain outside Git under task tools2026-10-15/allpacks-red.
+After correction allpacks-green-1 executes20/1: both red cases and retained controller
+tests pass; the new linked-directory guard fails at native Windows canonical-path
+semantics. Its security assertion remains unchanged for Linux execution.
+allpacks-focused executes24/24,0 failures/errors/skips in30.365s: entire owned/DNA
+Compose classes plus backup/orphan/alias durability. These uncommitted-source subsets
+do not replace final acceptance. Final-head local23/unfiltered/Python, hosted Linux
+XML/schema/APK and checks are recorded in PR8 after committing. Earlier Windows5
+failures comprise four native filesystem cases and one HU decimal expectation.
+Physical Samsung/storage/signature verification is NOT RUN; zero live/paid calls.
+
 ## Verified PR8 corrective code checkpoint
 
 Code f788b62b0cebe387c1c444b797831ac7bda66c6f passed
