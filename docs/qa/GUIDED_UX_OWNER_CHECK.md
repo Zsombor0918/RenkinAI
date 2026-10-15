@@ -1,5 +1,21 @@
 # Guided workflow owner check and later-stage plans
 
+## Reliability and overall-style retest (NOT RUN physically)
+
+Use the final-commit artifact/checksum published on PR8 and preserve installed data/
+compatible signing. Free preparation, Back/Settings/reopen and declined consent must
+send nothing. A new successful candidate recommends Overall pack style, with a
+short inferred summary and actual matching references. Optional families/raw
+reports/technical diagnostics remain in Details. Small groups are provisional.
+Saving awaits durability; changing family clears review and chooses only its own
+available refs. A family incompatible with saved trial refs blocks before billing;
+return to Style, review matching images and Save. Original/type/color policy and
+full frozen recipe/hashes remain inspectable before paid consent. UNKNOWN type is
+a conservative explicit fallback, not a detector claim. Any new remote attempt
+requires your separate approval, never a replay of the12/24 failed Standard plan.
+If it fails, share only the fixed REPORT_* code/counts. See the
+[no-cost visual rubric](STYLE_DNA_FIDELITY.md); new visual scores are NOT RUN.
+
 ## First Standard envelope failure (physical retest NOT RUN)
 
 Keep the18:55 failed record and1/5 marker; no automatic retry or replay is allowed.

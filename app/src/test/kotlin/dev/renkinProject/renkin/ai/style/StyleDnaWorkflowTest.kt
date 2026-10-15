@@ -51,6 +51,18 @@ class StyleDnaWorkflowTest {
         assertFalse(recipe.contains("PRIVATE_SOURCE_IDENTITY"))
         assertEquals(bytes, SavedStyleDna.parse(bytes).encode())
         assertEquals(raw, global.dna); assertEquals(reports, global.reports)
+        assertNotEquals("rounded terminals and softened corners", normalizedDnaObservation("corners","no rounded terminals"))
+        assertNotEquals("solid filled shapes without an outline", normalizedDnaObservation("stroke_fill","not solid fills with no outline"))
+        assertNotEquals("rounded terminals and softened corners", normalizedDnaObservation("corners","rounded terminals except sharp corners"))
+        assertTrue(StyleDnaCompiler.family(global).json().getJSONArray("evidence_ids").length() == reports.size)
+        val selected = dnaReferenceHashes(global,DNA_PACK_STYLE,plan.samples.map { it.hash })
+        assertEquals(5,selected.size); assertEquals(5,selected.distinct().size)
+        assertEquals(selected,dnaReferenceHashes(global,DNA_PACK_STYLE,plan.samples.map { it.hash }))
+        val small = raw.families.first { it.observedCount < 3 }
+        val smallRefs = dnaReferenceHashes(global,small.id,plan.samples.map { it.hash })
+        assertEquals(small.observedCount,smallRefs.size)
+        assertTrue(dnaReferencesMatch(global,small.id,smallRefs))
+        assertFalse(dnaReferencesMatch(global,small.id,plan.samples.take(5).map { it.hash }))
     }
     @Test fun thirdStandardBatchCountFailureRetainsTwelveReportsAndSpecificReasonWithoutReplay() = runBlocking {
         val (plan, images) = dnaFixturePlan()

@@ -2,6 +2,11 @@
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 
+Current PR8 reliability/fidelity follow-up: [report contract and diagnostics](changes/2026-10-15-dna-report-contract.md),
+[derived overall guidance and matching references](changes/2026-10-15-dna-overall-guidance.md),
+and [no-cost visual acceptance rubric](qa/STYLE_DNA_FIDELITY.md). Exact final source,
+all checks and verified fresh APK evidence belong directly on draft PR8 after execution.
+
 Latest real-device report and narrow offline correction:
 [first-submission Responses envelope](changes/2026-10-15-dna-response-envelope.md).
 

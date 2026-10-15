@@ -1,5 +1,24 @@
 # Architecture
 
+## Derived overall DNA view and reference membership
+
+StyleDnaReview derives a pack-wide DnaFamily without inserting it into the stored
+V1 partition. The reserved __pack__ selection is independent of valid family IDs;
+new candidates default to it, while old selected IDs and compiled specifications
+are unchanged. Conservative finite synonyms merge only supported observations;
+60% and at least two OBSERVED reports produce INFERRED global rules. Conflicting
+surface/palette observations cannot impose a universal tile/recoloring policy.
+This is an additive compatible-reader capability, not a Room/backup format migration.
+
+Reference recommendation round-robins observed construction/type groups inside the
+selected evidence set, retaining source order, uniqueness and a five-image bound.
+Save checks membership. Existing shared-reference trial plans keep their exact
+hashes/order; an incompatible per-target family is rejected before staging or any
+paid endpoint. Changed family/type still invalidates context and consent through
+the retained fingerprint/recipe guards. Original extraction and native multipart
+assembly stay intact. Saved previews fall back to owner-checked immutable assets
+after journal thumbnail collection. See [ADR0008](decisions/0008-style-dna-stacked-development.md).
+
 ## DNA report contract and safe rejection
 
 Image-step request schemas bind count exactly and constrain IDs/hashes to the

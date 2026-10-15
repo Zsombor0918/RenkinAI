@@ -22,6 +22,26 @@ The draft cannot merge without completed mandatory gates and owner acceptance. A
 
 ## Additive grammar and paid-step decision
 
+October15 overall-view addendum: derive the global recipe from retained reports
+and measured family policies instead of rewriting the V1 family partition. New
+results select reserved __pack__; old family selections/bytes/specifications remain
+unchanged. Explicit small synonym tables avoid an unverified semantic classifier.
+At least two observed reports and60% support establish a derived INFERRED rule;
+raw prose/unknowns remain auditable. No reference silhouette enters the compiler.
+No new paid synthesis or retry is introduced. New overall selections require this
+reader; older readers safely reject them. Rollback must keep a compatible forward
+reader and saved data rather than force a downgrade. Full/share formats and Room21
+remain unchanged, with round-trip coverage.
+
+References must belong to the reviewed style selection. Recommend up to five by
+stable observed construction/type diversity; keep smaller families honestly smaller.
+The current M5 plan shares its ordered references across targets, so a per-target
+override incompatible with those references fails closed and asks for a new reviewed
+Style Save. Per-item reference stores or automatic replacement would expand persistence
+and request ownership and are deferred. Existing original verification, choice/type
+fingerprints and one-shot paid consent stay authoritative. No brand detector is
+claimed; UNKNOWN is a visible conservative fallback with existing human correction.
+
 October15 bounded envelope addendum: a full REST response containing the actual
 text.format.schema reaches depth14 and is genuinely rejected before valid reports
 by the old whole-envelope12 check. Permit14 only under that exact root object path;

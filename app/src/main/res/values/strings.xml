@@ -999,4 +999,12 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="styleDnaConsent">Send %1$d separate labeled style images using %2$s, detail=%3$s. Authorize only the following frozen steps, maximum %4$d charged endpoint submissions. Uploaded content is style evidence only; no target identity is analyzed here.</string>
     <string name="styleDnaConfirm">Authorize only these paid analysis steps</string>
     <string name="styleDnaTargetHelp">Use the reviewed family for this original target. Choose its symbol type from the genuine original preview; UNKNOWN keeps essential geometry and wording. Package names never determine symbol type. References supply style only.</string>
+    <string name="styleDnaOverall">Overall pack style · recommended</string>
+    <string name="styleDnaProvisionalFamily">Fewer than three samples: a provisional observation group, not an established pack-wide style.</string>
+    <string name="styleDnaUncertainSummary">These are inferred drawing instructions. Uncertain details keep the original icon’s identifying shapes; inspect all evidence in Details.</string>
+    <string name="styleDnaReferenceMismatch">The saved reference images do not match this style family. Return to Style, review matching references and save before preparing a paid trial.</string>
+    <string name="styleDnaChosenFamily">Reviewed style family: %1$s</string>
+    <string name="styleDnaChosenType">Reviewed symbol type: %1$s</string>
+    <string name="styleDnaTypeUnknown">Symbol type is unclassified. Preserve the original identity; you can choose a type under Advanced options before preparing again.</string>
+    <string name="styleDnaFrozenPolicy">Reviewed color policy: %1$s</string>
 </resources>

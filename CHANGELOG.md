@@ -1,5 +1,11 @@
 # Changelog
 
+PR8 follow-up: Style DNA requests now bind exact report counts/allowed sample
+labels and expose safe rejection categories. New candidates offer an overall
+pack recipe; optional families retain raw evidence. Reviewed references follow
+the selected family, and incompatible trial overrides block before billing.
+No generated visual-fidelity improvement is claimed without owner acceptance.
+
 - Add opt-in per-icon Style DNA diagnostics, Quick/Standard reports, editable family grammar and frozen target recipes on stacked draft PR7.
 - Repair optional recipe compilation and measured duotone paint classification; verified code passes925 tests and all22 regression groups. Deep and live/device visual quality remain unverified.
 

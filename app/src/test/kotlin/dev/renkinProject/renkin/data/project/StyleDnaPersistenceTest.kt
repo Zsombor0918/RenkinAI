@@ -43,14 +43,28 @@ class StyleDnaPersistenceTest {
     }
     @After fun close(){source.close();target.close();sourceWatch.close();targetWatch.close();File(context.filesDir,"project_ai_assets").deleteRecursively()}
     private fun manager(db: RenkinPackDatabase,w: WatchDatabase)=BackupManager(context,RenkinPackRepository(db),WatchRepository(w))
-    private suspend fun save(): SavedProjectStyle {
+    private suspend fun save(overall: Boolean = false): SavedProjectStyle {
         val (p,images)=dnaFixturePlan(DnaAnalysisMode.QUICK,12);val reports=dnaFixtureReports(p)
-        val saved=SavedStyleDna(synthesizeDnaLocally(reports,images),reports,p.model,p.detail,p.algorithm,"family1")
+        val saved=SavedStyleDna(synthesizeDnaLocally(reports,images),reports,p.model,p.detail,p.algorithm,if(overall) DNA_PACK_STYLE else "family1")
         val assets=repo.importReferences(1,p.samples.take(5).map { s->{ByteArrayInputStream(images.getValue(s.hash))} })
         val payload=saved.encode()
         val evidence=ReviewedAnalysisEvidence(p.id,p.fingerprint,p.promptHash,p.context,p.model,reports.map {it.sampleHash},assets.map {it.hash},
             "resp_dna",sha256(payload.toByteArray()),System.currentTimeMillis(),false,false)
         return repo.saveAnalyzedStyle(1,null,0,StyleDnaCompiler.specification(saved),"manual instruction preserved",assets.map {it.hash},payload,evidence)
+    }
+    @Test fun derivedOverallSelectionSurvivesFullAndSharedBackupWithoutRewritingEvidence() = runBlocking {
+        val saved = save(overall=true)
+        val payload = saved.revision!!.analysisProfileJson!!
+        assertEquals(DNA_PACK_STYLE,SavedStyleDna.parse(payload).selectedFamily)
+        val full = ByteArrayOutputStream().also { output -> manager(source,sourceWatch).exportBackup { output } }.toByteArray()
+        manager(target,targetWatch).importBackup { ByteArrayInputStream(full) }
+        assertEquals(payload,restored.load(1).revision!!.analysisProfileJson)
+        val shared = ByteArrayOutputStream().also { output -> manager(source,sourceWatch).exportProfile(1) { output } }.toByteArray()
+        val id = manager(target,targetWatch).importFile { ByteArrayInputStream(shared) }.importedProfileId!!
+        assertNotEquals(1L,id)
+        assertEquals(payload,restored.load(id).revision!!.analysisProfileJson)
+        assertTrue(ReviewedAnalysisEvidence.parse(restored.load(id).revision!!.analysisEvidenceJson!!).needsRevalidation)
+        assertEquals(12,SavedStyleDna.parse(payload).reports.size)
     }
     @Test fun taggedGrammarHistoryAndLegacyV1RemainImmutableAndFullBackupPreservesBoth()=runBlocking {
         val first=save();val payload=first.revision!!.analysisProfileJson!!

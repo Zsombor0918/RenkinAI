@@ -3,6 +3,7 @@ package dev.renkinProject.renkin.ui.project
 import android.app.Application
 import dev.renkinProject.renkin.ai.*
 import dev.renkinProject.renkin.ai.trial.*
+import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.apk.*
 import dev.renkinProject.renkin.data.project.*
 import kotlinx.coroutines.*
@@ -52,6 +53,48 @@ class OwnedStyleTrialsTest {
     }
     private suspend fun generated(c: OwnedStyleTrials): StyleTrialPlan {
         val plan = prepared(c); c.submit(1, plan.id); idle(c).also { assertNull(it.error) }; return plan
+    }
+    @Test fun dnaFamilyReferenceMismatchBlocksAndChangedChoiceInvalidatesFrozenOriginalFirstRequest() = runBlocking {
+        val (analysis, art) = dnaFixturePlan(DnaAnalysisMode.QUICK,12)
+        val reports = dnaFixtureReports(analysis).mapIndexed { index, r -> if(index < 6) r else r.copy(familyVote=DnaFamilyVote.SOLID) }
+        val raw = synthesizeDnaLocally(reports,art)
+        val dna = SavedStyleDna(raw,reports,analysis.model,analysis.detail,analysis.algorithm,"family1")
+        val hashes = dnaReferenceHashes(dna,"family1",analysis.samples.map { it.hash })
+        f.repo.importReferences(1,hashes.map { hash -> { java.io.ByteArrayInputStream(art.getValue(hash)) } })
+        val before = f.repo.load(1)
+        val meta = before.metadata!!
+        val analysisContext = AnalysisContext(1,"CREATE",null,null,null,meta.version,sha256(meta.selectionJson.toByteArray()),
+            projectCatalogStamp(f.targets),before.revision!!.revision)
+        val payload = dna.encode()
+        val evidence = ReviewedAnalysisEvidence(analysis.id,analysis.fingerprint,analysis.promptHash,analysisContext,analysis.model,
+            reports.map { it.sampleHash },hashes,"resp_fixture",sha256(payload.toByteArray()),System.currentTimeMillis(),false,false)
+        f.repo.saveAnalyzedStyle(1,before.revision!!.revision,meta.version,StyleDnaCompiler.specification(dna),"",hashes,payload,evidence)
+        val requests = mutableListOf<IconGenerationRequest>()
+        gateway = f.successful { calls++; requests += it }
+        val c = controller()
+        val first = prepared(c)
+        assertEquals(hashes,first.referenceHashes)
+        c.dnaChoice(1,"a/Main","family2",DnaSymbolType.WORDMARK); idle(c)
+        c.submit(1,first.id); assertEquals(0,calls)
+        c.prepare(1,listOf("a/Main"),false)
+        assertEquals("dna_reference_mismatch",idle(c).error); assertNull(c.state(1).value.plan); assertEquals(0,calls)
+        c.dnaChoice(1,"a/Main",DNA_PACK_STYLE,DnaSymbolType.WORDMARK); idle(c)
+        c.prepare(1,listOf("a/Main"),false)
+        val frozen = idle(c).plan!!
+        assertNotEquals(first.context.dnaFingerprint,frozen.context.dnaFingerprint)
+        assertTrue(frozen.drawingRecipes.getValue("a/Main").contains("WORDMARK"))
+        c.submit(1,frozen.id); assertNull(idle(c).error)
+        val request = requests.single()
+        assertArrayEquals(f.originals.getValue("a/Main").png,request.originalPng)
+        assertEquals(hashes,request.referencePngs.map(::sha256))
+        val settings = AiSettings(request.provider,request.specification,request.model,request.quality,
+            request.referencePngs.indices.map { "img_0_$it.png" },request.appInstruction)
+        val body = buildImageEditRequest("offline_fixture_not_real",settings,listOf(request.originalPng)+request.referencePngs,
+            request.composedPrompt).body as okhttp3.MultipartBody
+        val parts = body.parts.filter { it.headers?.get("Content-Disposition")?.contains("name=\"image[]\"") == true }
+        (listOf(request.originalPng)+request.referencePngs).forEachIndexed { index, bytes ->
+            assertArrayEquals(bytes,okio.Buffer().also { parts[index].body.writeTo(it) }.readByteArray()) }
+        assertEquals(1,calls)
     }
     @Test fun resourceOriginalVerificationIsPlanSpecificAndChangedEvidencePreventsAPost() = runBlocking {
         val value = f.originals.getValue("a/Main")

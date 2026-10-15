@@ -136,7 +136,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val p=flow(id).value.preparation ?: return
         require(p.candidates.any { it.target.key==key && it.eligible })
         val dna=checkNotNull(SavedStyleDna.optional(p.style.revision?.analysisProfileJson))
-        require(dna.dna.families.any { it.id==family })
+        require(family == DNA_PACK_STYLE || dna.dna.families.any { it.id==family })
         val choices=dnaChoices[id].orEmpty()+ (key to (family to type));require(choices.size<=1000)
         dnaChoices[id]=choices;routes[id]?.let {load(id,it.first,it.second)}
     }
@@ -146,6 +146,10 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val p = preparation(id)
         StyleTrialTargetSelector.validateChoice(p.candidates, keys, allowCovered)
         trialRequire(p.context.provider != AiSettings.STABILITY || p.style.references.size == 1, "stability_references")
+        SavedStyleDna.optional(p.style.revision?.analysisProfileJson)?.let { dna ->
+            keys.forEach { key -> trialRequire(dnaReferencesMatch(dna,p.dnaChoices[key]?.first ?: dna.selectedFamily,
+                p.style.references.map { it.hash }),"dna_reference_mismatch") }
+        }
         val originals = owner.owned(id) { keys.map { key -> key to owner.original(key) } }
         val inputs = originals.map { (key, original) -> TrialInput(key, p.candidates.single { it.target.key == key }.target.name,
             original.hash, original.origin, originalEvidence = original.evidence) }
@@ -155,7 +159,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             p.style.revision.userInstruction, p.style.references.map { it.hash }, inputs,
             drawingRecipes = SavedStyleDna.optional(p.style.revision.analysisProfileJson)?.let { dna -> keys.associateWith { key ->
                 val choice=p.dnaChoices[key] ?: (dna.selectedFamily to DnaSymbolType.UNKNOWN)
-                StyleDnaCompiler.recipe(dna.dna,choice.second,choice.first)
+                StyleDnaCompiler.recipe(dna,choice.second,choice.first)
             } }.orEmpty())
         check(current(plan))
         images[id] = bytes
@@ -167,7 +171,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val dna=SavedStyleDna.optional(p.style.revision?.analysisProfileJson)
         val expectedRecipes=dna?.let { saved -> plan.inputs.associate { input ->
             val choice=p.dnaChoices[input.key] ?: (saved.selectedFamily to DnaSymbolType.UNKNOWN)
-            input.key to StyleDnaCompiler.recipe(saved.dna,choice.second,choice.first) } }.orEmpty()
+            input.key to StyleDnaCompiler.recipe(saved,choice.second,choice.first) } }.orEmpty()
         if (p.context != plan.context || plan.drawingRecipes != expectedRecipes) false else owner.owned(plan.context.profileId) {
             plan.inputs.all { input -> owner.original(input.key).let { it.hash == input.originalHash && it.origin == input.origin &&
                 (input.originalEvidence == null || it.evidence == input.originalEvidence) } }

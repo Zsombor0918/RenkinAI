@@ -165,7 +165,9 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         }
     }
     override suspend fun dnaPreview(id: Long, hash: String): ByteArray = withContext(Dispatchers.IO) {
-        checkNotNull(dnaCoordinator).journal.image(id,hash)
+        try { checkNotNull(dnaCoordinator).journal.image(id,hash) }
+        catch (cancel: CancellationException) { throw cancel }
+        catch (_: Exception) { owner.owned(id) { repository.referenceBytes(id,hash) } }
     }
     override suspend fun discardDna(id: Long, planId: String) {
         withContext(Dispatchers.IO) { val j = checkNotNull(dnaCoordinator).journal; val r = checkNotNull(j.record(id,planId)); j.discard(r.plan) }; refresh(id)
@@ -193,6 +195,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         val reviewed = sourceDna.copy(dna = StyleDnaV1.parse(grammar), selectedFamily = selectedFamily)
         val encoded = reviewed.encode(); val specification = StyleDnaCompiler.specification(reviewed)
         require(hashes.size <= 5 && hashes.distinct().size == hashes.size)
+        require(dnaReferencesMatch(reviewed,selectedFamily,hashes))
         val selected = if (record != null) {
             require(hashes.all { hash -> record.plan.samples.any { it.hash == hash } })
             repository.importReferences(id,hashes.map { hash -> { ByteArrayInputStream(coordinator.journal.image(id,hash)) } }).map { it.hash }

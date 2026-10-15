@@ -46,7 +46,8 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
     val sourceKey = if (needsReview) record?.plan?.id else suggestion?.let { sha256(it.encode().toByteArray()) }
     val initialGrammar = suggestion?.dna?.encode().orEmpty()
     val initialFamily = suggestion?.selectedFamily.orEmpty()
-    val initialRefs = if (needsReview) record?.plan?.samples?.take(5)?.map { it.hash }.orEmpty() else draft.hashes
+    val initialRefs = if (needsReview && suggestion != null) dnaReferenceHashes(suggestion,suggestion.selectedFamily,
+        record?.plan?.samples?.map { it.hash }.orEmpty()) else draft.hashes
     // Stable primitives survive an initially empty controller and subsequent journal loading.
     // A hash avoids saving a second copy of the potentially 64 KiB grammar in the Bundle.
     var grammar by rememberSaveable(id) { mutableStateOf(initialGrammar) }
@@ -158,7 +159,7 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                     enabled = enabled && matches && state.hasKey && !state.busy && !saving,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-dna-start")) { Text(stringResource(R.string.styleDnaAnalyze)) }
             }
-            state.samples?.let { samples ->
+            state.samples?.takeIf { suggestion == null || details }?.let { samples ->
                 Text(stringResource(R.string.uxStyleSamples, samples.samples.size))
                 samples.samples.chunked(4).forEach { row ->
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -245,23 +246,29 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
             }
             if (suggestion != null) {
                 Text(stringResource(R.string.uxStyleSummary)); Text(stringResource(R.string.uxStyleInferredHelp))
+                fun selectFamily(next: String) {
+                    family = next; review = false
+                    if(needsReview) refs = ArrayList(dnaReferenceHashes(suggestion,next,record?.plan?.samples?.map { it.hash }.orEmpty()))
+                }
+                if(editable) TextButton(onClick = { selectFamily(DNA_PACK_STYLE) },enabled = enabled && !saving && !state.busy,
+                    modifier = Modifier.fillMaxWidth().heightIn(min=48.dp).semantics { selected = family == DNA_PACK_STYLE }
+                        .testTag("style-dna-pack")) { Text(stringResource(R.string.styleDnaOverall)) }
                 suggestion.dna.families.forEachIndexed { index, f ->
-                    if (editable) TextButton(onClick = { family = f.id; review = false },
+                    if (editable && details) TextButton(onClick = { selectFamily(f.id) },
                         enabled = enabled && !saving && !state.busy,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics { selected = family == f.id }
                             .testTag("style-dna-family-" + f.id)) {
                         Text((if (family == f.id) "✓ " else "") +
                             stringResource(R.string.uxStyleFamily, index + 1, f.observedCount, suggestion.reports.size))
                     }
+                    if(details && f.observedCount < 3) Text(stringResource(R.string.styleDnaProvisionalFamily))
                 }
-                val displayedFamily = candidate?.dna?.families?.firstOrNull { it.id == family }
-                    ?: suggestion.dna.families.firstOrNull { it.id == suggestion.selectedFamily }
+                val displayedFamily = runCatching { StyleDnaCompiler.family(candidate ?: suggestion) }.getOrNull()
                 displayedFamily?.let { f ->
-                    val unknown = stringResource(R.string.uxStyleUnknown)
-                    fun display(key: String) = f.drawing.getValue(key).takeUnless { it.provenance == DnaProvenance.UNKNOWN }?.value ?: unknown
-                    Text(stringResource(R.string.uxStyleLineFill, display("stroke_fill")), maxLines = 3, overflow = TextOverflow.Ellipsis)
-                    Text(stringResource(R.string.uxStyleGeometry, display("geometry")), maxLines = 3, overflow = TextOverflow.Ellipsis)
-                    Text(stringResource(R.string.uxStylePadding, display("scale_padding")), maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    listOf("stroke_fill","rounding","simplification","scale_padding","negative_space").mapNotNull { key ->
+                        f.drawing.getValue(key).takeUnless { it.provenance == DnaProvenance.UNKNOWN }?.value
+                    }.distinct().take(4).forEach { Text(it,maxLines=3,overflow=TextOverflow.Ellipsis) }
+                    Text(stringResource(R.string.styleDnaUncertainSummary))
                     Text(stringResource(R.string.uxStyleSurface, friendlyStyleValue(f.tile.name), friendlyStyleValue(f.depth.name)))
                     Text(stringResource(when (f.colorPolicy) {
                         PackColorPolicy.ADAPT_BRAND_COLORS -> R.string.uxStyleBrandColors
@@ -270,6 +277,12 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                         PackColorPolicy.FIXED_PALETTE -> R.string.uxStyleFixedPalette
                         else -> R.string.uxStyleMixedColors
                     }))
+                    Text(stringResource(R.string.uxStyleReferences,if(needsReview) refs.size else draft.hashes.size))
+                    (if(needsReview) refs else draft.hashes).chunked(5).forEach { row ->
+                        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                            row.forEach { hash -> DnaThumbnail(hash,{ backend.dnaPreview(id,hash) }) }
+                        }
+                    }
                     if (details) {
                         f.drawing.forEach { (key, drawing) ->
                             Text(friendlyStyleValue(key) + " · " + stringResource(when (drawing.provenance) {
@@ -298,7 +311,8 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                                 review = false
                                 refs = ArrayList(if (checked) { if (refs.size < 5) refs + sample.hash else refs }
                                     else refs.filter { it != sample.hash })
-                            }, enabled = enabled && !saving, modifier = Modifier.size(48.dp).testTag("style-dna-ref-" + sample.id))
+                            }, enabled = enabled && !saving && candidate?.let { dnaReferencesMatch(it,family,listOf(sample.hash)) } == true,
+                                modifier = Modifier.size(48.dp).testTag("style-dna-ref-" + sample.id))
                             DnaThumbnail(sample.hash, { backend.dnaPreview(id, sample.hash) }); Text(sample.id)
                         }
                         val position = refs.indexOf(sample.hash)

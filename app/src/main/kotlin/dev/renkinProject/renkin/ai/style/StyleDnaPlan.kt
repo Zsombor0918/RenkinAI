@@ -68,7 +68,8 @@ internal data class SavedStyleDna(val dna: StyleDnaV1, val reports: List<DnaIcon
     val algorithm: String, val selectedFamily: String, val promptVersion: String = DNA_PROMPT_VERSION) {
     fun encode(): String {
         dna.encode(); require(reports.size in 1..24 && reports.map { it.sampleId }.distinct().size==reports.size && reports.map { it.sampleHash }.distinct().size==reports.size)
-        require(dna.families.flatMap { it.evidenceIds }.toSet()==reports.map { it.sampleId }.toSet() && dna.families.any { it.id==selectedFamily })
+        require(dna.families.flatMap { it.evidenceIds }.toSet()==reports.map { it.sampleId }.toSet() &&
+            (selectedFamily == DNA_PACK_STYLE || dna.families.any { it.id==selectedFamily }))
         require(model in ANALYSIS_MODELS && detail in setOf("low","high") && algorithm==REFERENCE_ALGORITHM && promptVersion==DNA_PROMPT_VERSION)
         return canonicalJson(json("kind" to "style_dna","schema" to 1,"dna" to dna.json(),"reports" to JSONArray(reports.map { it.json() }),
             "model" to model,"detail" to detail,"algorithm" to algorithm,"selectedFamily" to selectedFamily,"promptVersion" to promptVersion))

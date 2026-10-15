@@ -1,5 +1,18 @@
 # Regression and test matrix
 
+## Overall review and family-bound generation
+
+New test-first pack-wide and actual Compose Save regressions guard synonymous
+fill/rounding rules without changing raw V1 evidence, and switching to the second
+family without saving the first family's refs. Negative/provisional examples keep
+negation/conflicts and actual smaller reference counts. Real Room full/shared backup
+round-trips new overall selection alongside retained legacy-family tests. An owned
+trial fixture verifies incompatible family blocks before requests, changed family/
+type invalidates a frozen plan, global recipe/type is frozen, and actual multipart
+parts remain original IMAGE1 plus byte-identical ordered style-only refs. Retained
+source-B/display-A/genuine-C, immutable recipe, refusal, paid-rights and all23
+selectors stay. Visual grading is separate in [the no-cost rubric](STYLE_DNA_FIDELITY.md).
+
 ## Report contract parity and third-batch recovery
 
 Existing mandatory DNA gateway/workflow/real Room selectors now assert exact

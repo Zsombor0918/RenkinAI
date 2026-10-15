@@ -1,5 +1,22 @@
 # Current implementation
 
+## PR8 overall guidance and reference consistency
+
+New successful Quick/Standard candidates recommend a derived overall pack recipe.
+Raw V1 families/reports remain intact; existing saved selections/text round-trip
+unchanged. Two explicit synonym vocabularies normalize solid fill and rounded
+terminals only; recurring observed evidence requires at least two reports and60%
+support, labeled inference. Unknown/contradictory traits remain conservative.
+Optional raw families stay in Details with sample counts/provisional warnings.
+Style selection chooses up-to-five deterministic matching references, without
+padding a small family with unrelated art. Local Save and trial preparation verify
+membership; unsupported per-target family/reference combinations block before any
+paid marker, with return-to-Style guidance. Original-first transport is unchanged.
+Summary, actual refs, chosen policy/type and full recipe remain inspectable before
+consent. Unclassified target types explicitly use human review, not claimed brand
+recognition. Physical/generated visual acceptance remains NOT RUN. See
+[bounded implementation](../changes/2026-10-15-dna-overall-guidance.md).
+
 ## PR8 report contract reliability
 
 The twenty-one supplied Flip8 images now show Standard stopping after12 accepted

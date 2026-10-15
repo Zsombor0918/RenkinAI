@@ -1,5 +1,18 @@
 # Verification baseline
 
+## PR8 derived guidance execution
+
+Existing Windows/JDK17/SDK36/Gradle8.11.1: fidelity-bc-red runs2/2 assertion failures
+in22.025s, preserving raw runtime04dfa532. First corrected focused execution runs
+28/28,zero failures/errors/skips in150.409s. An added real-controller/native-factory
+fixture then runs8/1 in67.139s: its multipart settings omit referenceNames for five
+actual refs, correctly rejected by the unchanged native factory. Every preceding
+runtime/choice/membership/original assertion passes. Fix only fixture settings;
+fidelity-bc-green-3 then passes9/9 in37.463s,zero failures/errors/skips, adding real
+Room full/shared overall-selection round trips. Logs/XML remain outside Git in
+task tools2026-10-15/fidelity-bc-*. These are focused source checks, not final-head
+all23 or generated-artwork acceptance. Exact final evidence belongs on draft PR8.
+
 ## PR8 report contract execution
 
 Windows JDK17/SDK36/Gradle8.11.1, existing caches: reliability-a-red compiles and

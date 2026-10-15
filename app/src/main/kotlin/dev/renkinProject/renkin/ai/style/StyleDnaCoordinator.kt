@@ -32,7 +32,7 @@ internal class StyleDnaCoordinator(val journal: StyleDnaJournal,private val gate
                         StyleDnaV1.parse(result.text).also { validateDnaSynthesis(it,prior.reports,images) }
                     }
                     journal.completed(plan,step,result,emptyList())
-                    journal.result(plan,SavedStyleDna(dna,prior.reports,plan.model,plan.detail,plan.algorithm,dna.recommendedFamily))
+                    journal.result(plan,SavedStyleDna(dna,prior.reports,plan.model,plan.detail,plan.algorithm,DNA_PACK_STYLE))
                 } else {
                     val reports=validateDnaResult("REPORT_SCHEMA_INVALID") {
                         StyleDnaCodec.parseReports(result.text,step.samples.associateWith { plan.bindings.getValue(it) })
@@ -42,7 +42,7 @@ internal class StyleDnaCoordinator(val journal: StyleDnaJournal,private val gate
                         val dna=validateDnaResult("SYNTHESIS_INVALID") {
                             synthesizeDnaLocally(reports,images).also { validateDnaSynthesis(it,reports,images) }
                         }
-                        journal.result(plan,SavedStyleDna(dna,reports,plan.model,plan.detail,plan.algorithm,dna.recommendedFamily))
+                        journal.result(plan,SavedStyleDna(dna,reports,plan.model,plan.detail,plan.algorithm,DNA_PACK_STYLE))
                     }
                 }
                 progress(checkNotNull(journal.record(plan.context.profileId,plan.id)))

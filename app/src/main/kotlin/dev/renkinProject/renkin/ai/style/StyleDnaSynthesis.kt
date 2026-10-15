@@ -90,6 +90,14 @@ internal object StyleDnaCompiler {
     }
     fun recipe(dna: StyleDnaV1,target: DnaSymbolType,familyId: String? = null): String {
         val f=family(dna,target,familyId)
+        return recipe(f,target)
+    }
+    fun family(saved: SavedStyleDna, familyId: String = saved.selectedFamily): DnaFamily {
+        saved.encode()
+        return if(familyId == DNA_PACK_STYLE) packDnaFamily(saved) else family(saved.dna,DnaSymbolType.UNKNOWN,familyId)
+    }
+    fun recipe(saved: SavedStyleDna,target: DnaSymbolType,familyId: String = saved.selectedFamily): String = recipe(family(saved,familyId),target)
+    private fun recipe(f: DnaFamily,target: DnaSymbolType): String {
         fun instruction(key: String): String = f.drawing.getValue(key).let { r ->
             if(r.provenance==DnaProvenance.UNKNOWN) "UNKNOWN: preserve target geometry; do not invent this trait"
             else "${r.provenance.name}: ${r.value}" }
@@ -111,5 +119,5 @@ internal object StyleDnaCompiler {
             append("No reference symbols, collages, generic modernization or arbitrary dark rounded tiles. Unknown/mixed depth is not permission for glow, 3D, gradients or shadows.")
         }.also { require(it.length<=6000) { "Reviewed recipe exceeds the bounded generation budget." } }
     }
-    fun specification(saved: SavedStyleDna) = recipe(saved.dna,DnaSymbolType.UNKNOWN,saved.selectedFamily)
+    fun specification(saved: SavedStyleDna) = recipe(saved,DnaSymbolType.UNKNOWN)
 }

@@ -1,5 +1,21 @@
 # Agent handoff — guided UX Stage 1
 
+## Overall guidance and fidelity verification boundary
+
+P0 correction04dfa532 follows actual b7a30380 red2/2. Test-only95762f1a next
+preserves fidelity-bc-red2/2 in22.025s. Derived overall selection and matching
+family references fix both; first focused run passes28/28 in150.409s. A subsequent
+new native multipart fixture fails because its referenceNames count is zero for
+five references; all runtime/mismatch/choice/identity assertions reached success.
+Correct only the fixture settings, keeping exact byte assertions and factory guards.
+That bounded fixture correction now passes fidelity-bc-green-3:9/9,zero failures/
+errors/skips in37.463s, including new real full/shared overall-selection backups.
+Raw V1 families/reports, old selections and histories stay unchanged. New overall
+selection requires this compatible reader, including on rollback/full/share restore.
+Do not claim measured visual improvement. See owner no-cost rubric and remaining
+physical/provider checks. Final exact-head all23/local/Python/docs/CI/APK evidence
+must be recorded on PR8 after commit; no subset is final acceptance. No live calls.
+
 ## Current reliability continuation
 
 Start from existing PR8/feat/ux-flow-stabilization, clean baseline71b7bce. Entire
