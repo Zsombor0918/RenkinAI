@@ -128,6 +128,62 @@ class StyleDnaWorkflowTest {
         val r=c.submit(plan,images,true,{true})!!
         assertEquals(1,calls);assertEquals(12,r.reports.size);assertEquals(DnaStatus.RESULT_SAVED,r.status)
     }
+    @Test fun completedHttpReportSchemaAndSynthesisFailuresKeepDistinctStagesAndConsumedRights() = runBlocking {
+        for (fault in listOf("missing", "hash", "extra_field", "extra_report", "duplicate", "wrong_type",
+            "quick_local_synthesis", "standard_schema", "standard_evidence")) {
+            val standard = fault.startsWith("standard")
+            val (plan, images) = dnaFixturePlan(if (standard) DnaAnalysisMode.STANDARD else DnaAnalysisMode.QUICK,
+                if (standard) 24 else 12)
+            okhttp3.mockwebserver.MockWebServer().use { server ->
+                for (step in plan.steps) {
+                    val reports = dnaFixtureReports(plan, step.samples)
+                    val text = when {
+                        step.synthesis && fault == "standard_schema" -> "{}"
+                        step.synthesis -> {
+                            val valid = synthesizeDnaLocally(dnaFixtureReports(plan), images)
+                            valid.copy(families = valid.families.map { it.copy(tile = DnaTile.ROUND) }).encode()
+                        }
+                        fault == "quick_local_synthesis" -> dnaReportsBody(reports.mapIndexed { i, r ->
+                            r.copy(familyVote = DnaFamilyVote.entries[i % DnaFamilyVote.entries.size],
+                                tileVote = DnaTile.entries[i / DnaFamilyVote.entries.size])
+                        }) // Schema-valid reports with >8 distinct groups exceed the local synthesis bound.
+                        standard -> dnaReportsBody(reports.reversed())
+                        else -> org.json.JSONObject(dnaReportsBody(reports)).also { root ->
+                            val a = root.getJSONArray("reports")
+                            when (fault) {
+                                "missing" -> a.remove(a.length() - 1)
+                                "hash" -> a.getJSONObject(0).put("sample_hash", "f".repeat(64))
+                                "extra_field" -> a.getJSONObject(0).put("untrusted", "private provider prose")
+                                "extra_report" -> a.put(a.getJSONObject(0))
+                                "duplicate" -> a.put(1, a.getJSONObject(0))
+                                "wrong_type" -> a.getJSONObject(0).put("schema", "1")
+                            }
+                        }.toString()
+                    }
+                    server.enqueue(okhttp3.mockwebserver.MockResponse().setBody(json("id" to "resp_simulated_${step.id}",
+                        "status" to "completed", "output" to JSONArray().put(json("type" to "message", "status" to "completed",
+                            "content" to JSONArray().put(json("type" to "output_text", "text" to text))))).toString()))
+                }
+                val gateway = OpenAiStyleDnaGateway({ "offline_fixture_no_real_credential" }, okhttp3.OkHttpClient(), server.url("/v1/responses"))
+                val coordinator = StyleDnaCoordinator(journal(), gateway)
+                val result = coordinator.submit(plan, images, true, { true })!!
+                val synthesis = standard || fault == "quick_local_synthesis"
+                assertEquals(fault, if (synthesis) "SYNTHESIS_INVALID" else "REPORT_SCHEMA_INVALID", result.reason)
+                assertEquals(fault, if (fault == "quick_local_synthesis") DnaStatus.FAILED else DnaStatus.UNCERTAIN, result.status)
+                assertNull(result.result)
+                assertEquals(if (standard) 24 else if (fault == "quick_local_synthesis") 12 else 0, result.reports.size)
+                assertEquals(if (standard) 5 else 1, result.submitted)
+                assertEquals(result.submitted, server.requestCount)
+                val durable = result.encode()
+                assertFalse(durable.contains("private provider prose"))
+                val recreated = StyleDnaCoordinator(journal(), gateway)
+                assertEquals(result, recreated.submit(plan, images, true, { true }))
+                assertEquals(durable, journal().record(1, plan.id)!!.encode())
+                assertEquals(result.submitted, server.requestCount)
+            }
+        }
+    }
+
     @Test fun partialSixImageFailureRetainsOnlyCompletedReportsAndCannotResumeOrReplay()=runBlocking {
         val (plan,images)=dnaFixturePlan();var calls=0
         val c=StyleDnaCoordinator(journal(),StyleDnaGateway { request,before->before();calls++

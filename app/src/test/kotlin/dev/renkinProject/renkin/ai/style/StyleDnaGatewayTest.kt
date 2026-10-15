@@ -62,7 +62,7 @@ class StyleDnaGatewayTest {
         assertTrue(runCatching {dnaBody(DnaCall(p,p.steps.last(),emptyMap(),reports.dropLast(1)))}.isFailure)
     }
     @Test fun allRejectionsAndRetryAfter503HaveExactlyOneSubmissionAndNoFallback()=runBlocking {
-        for(status in listOf(400,401,403,429,503)) {
+        for(status in listOf(400,401,402,403,422,429,500,503)) {
             val server=MockWebServer();server.start()
             try {
                 server.enqueue(MockResponse().setResponseCode(status).addHeader("Retry-After","0").setBody("{\"error\":{\"message\":\"private provider prose\"}}"))
@@ -74,6 +74,44 @@ class StyleDnaGatewayTest {
             } finally {server.shutdown()}
         }
     }
+    @Test fun documentedIncompleteAndFailedResponsesHaveDistinctSafeCodesWithoutReplay() = runBlocking {
+        for (status in listOf("incomplete", "failed")) {
+            MockWebServer().use { server ->
+                server.enqueue(MockResponse().setBody(json("id" to "resp_unfinished", "status" to status,
+                    "incomplete_details" to json("reason" to "max_output_tokens"),
+                    "error" to json("message" to "private provider prose"), "output" to JSONArray()).toString()))
+                var markers = 0
+                val outcome = client(server).call(call()) { markers++ }
+                assertEquals(DnaCallResult.Failed(if (status == "incomplete") "RESPONSE_INCOMPLETE" else "RESPONSE_FAILED", true), outcome)
+                assertEquals(1, markers); assertEquals(1, server.requestCount)
+                assertFalse(outcome.toString().contains("private"))
+            }
+        }
+    }
+
+    @Test fun completedEnvelopeAllowsMetadataReasoningOrderAndSplitTextButRejectsToolsAndBadJson() = runBlocking {
+        val request = call(DnaAnalysisMode.QUICK)
+        val expected = dnaReportsBody(dnaFixtureReports(request.plan).reversed())
+        val cut = expected.length / 2
+        val envelope = JSONObject(response(expected)).put("metadata", json("irrelevant" to "ignored"))
+        envelope.put("output", JSONArray().put(json("type" to "message", "role" to "assistant", "content" to JSONArray()
+            .put(json("type" to "output_text", "text" to expected.take(cut), "annotations" to JSONArray()))
+            .put(json("type" to "output_text", "text" to expected.drop(cut), "logprobs" to JSONArray()))))
+            .put(json("type" to "reasoning", "summary" to JSONArray())))
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody(envelope.toString()))
+            val received = client(server).call(request) {} as DnaCallResult.Received
+            assertEquals(expected, received.text)
+            assertEquals(request.plan.samples.map { it.id }, StyleDnaCodec.parseReports(received.text, request.plan.bindings).map { it.sampleId })
+            for (raw in listOf("{truncated", JSONObject(envelope.toString()).put("output", JSONArray().put(
+                json("type" to "function_call", "name" to "untrusted"))).toString())) {
+                server.enqueue(MockResponse().setBody(raw))
+                assertEquals(DnaCallResult.Failed("ENVELOPE_INVALID"), client(server).call(request) {})
+            }
+            assertEquals(3, server.requestCount)
+        }
+    }
+
     @Test fun refusalMalformedPartialOversizeAndTimeoutDoNotResubmit()=runBlocking {
         val refused=json("id" to "resp_refused","status" to "completed","output" to JSONArray().put(json("type" to "message","content" to JSONArray().put(json("type" to "refusal","refusal" to "private"))))).toString()
         for(raw in listOf(refused,"not json",response("{}"),"x".repeat(128*1024+1))) {

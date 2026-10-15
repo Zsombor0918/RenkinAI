@@ -76,6 +76,36 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
         compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled().performClick()
     }
+    @Test fun previewSamplesWithoutCurrentPlanKeepAmbiguousOldFailureOnlyInDetails() {
+        val (historic, _) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        val old = StyleDnaRecord(historic, DnaStatus.FAILED, historic.steps.map { DnaStepState(it.id) },
+            reason = "INVALID_OR_INTERRUPTED")
+        val bytes = old.encode()
+        compose.setContent { Content() }
+        for (choice in DnaAnalysisMode.entries) {
+            val (p, images) = dnaFixturePlan(choice, if (choice == DnaAnalysisMode.QUICK) 12 else 24)
+            compose.runOnIdle { flow.value = flow.value.copy(dnaPlan = null, dnaRecord = old,
+                samples = ReferenceSamples(null, null, p.samples.map { s ->
+                    SampledReference(s.id, "fixture", s.hash, images.getValue(s.hash), referenceFeatures(images.getValue(s.hash)))
+                }, p.report)) }
+            compose.onNodeWithTag("style-dna-current-status").performScrollTo()
+                .assertTextContains("No current frozen plan", substring = true)
+                .assertTextContains("preview", substring = true)
+            compose.onNodeWithTag("style-dna-start").assertDoesNotExist()
+            compose.onNodeWithTag("style-dna-last-outcome").assertDoesNotExist()
+            compose.onNodeWithTag("style-dna-outcome-reason").assertDoesNotExist()
+            compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+            compose.onNodeWithTag("style-dna-history").performScrollTo().assertTextContains("Previous", substring = true)
+            compose.onNodeWithTag("style-dna-outcome-reason").performScrollTo()
+                .assertTextContains("cause was not recorded", substring = true)
+            compose.onNodeWithTag("style-dna-status").performScrollTo()
+                .assertTextContains("INVALID_OR_INTERRUPTED", substring = true)
+            assertEquals(bytes, flow.value.dnaRecord!!.encode())
+            compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        }
+        assertEquals(0, old.submitted); assertEquals(0, prepares); assertEquals(0, consents); assertEquals(0, saves)
+    }
+
     @Test fun freshPlanIsReadyWhileFailedOrUncertainHistoryStaysUnderDetails() {
         val (historic, _) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
         val old = StyleDnaRecord(historic, DnaStatus.FAILED, historic.steps.map { DnaStepState(it.id) }, reason = "UNAUTHORIZED")
