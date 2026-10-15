@@ -1,5 +1,22 @@
 # Regression and test matrix
 
+## PR8 provider-result and frozen-plan identity additions
+
+Actual RED4 then RED5 precede narrow runtime changes. Existing required DNA/owned/
+guided groups cover preview-only12/24 plus untouched old history, current ready
+action/key presence, exact plan after real parent restoration, direct release/key
+refresh and refusal to submit to another route. Real Responses/Room Quick12 and
+Standard24/five-step explicit Save/reload tests remain.
+
+Faults independently cover incomplete/failed envelope, metadata/reasoning/order/
+split text, HTTP400/401/402/403/422/429/500/503, refusal, malformed envelope,
+missing/hash/extra/duplicate/type reports, valid reports rejected by conservative
+local synthesis, Standard grammar/evidence, UTF-8/oversize/truncated transport,
+unreadable key/pre-marker cancellation and retained after-marker/cold/no-replay
+guards. Original selectors/assertions/timeouts/idling/security/schema bounds remain.
+Full final-head evidence/exact APK is on PR8 after execution; physical/provider
+unknowns remain in [the state table](../changes/2026-10-15-dna-provider-result-correction.md).
+
 ## PR8 final verification boundary
 
 Source6fd75af2 passes974 Android tests and all22 isolated groups; its later full974

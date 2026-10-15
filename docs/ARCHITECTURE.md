@@ -1,5 +1,21 @@
 # Architecture
 
+## DNA plan lifetime and diagnostic stages
+
+Composition disposal does not consume/invalidate a ready unsubmitted DNA plan.
+The existing VM retains its bounded samples/plan while idle; preparation replaces
+it and explicit submission consumes it. Busy local preparation still cancels;
+process loss never restores executable consent. Every endpoint independently
+rechecks the existing full context and durable consumed marker before transport.
+No second owner or new storage exists.
+
+Envelope/status validation, report decoding/binding and synthesis/evidence
+validation have distinct allowlisted codes. Cancellation/local persistence retain
+prior recovery. Historical generic reasons are read without reinterpretation or
+mutation; UI keeps them under Details and labels no-plan thumbnails as previews.
+Wire/model/schema/quotas, Room19/20/21, fingerprints, key presence semantics and
+signing remain. See [reproduced boundaries](changes/2026-10-15-dna-provider-result-correction.md).
+
 ## DNA refresh and current-plan presentation
 
 OwnedStyleAnalysis performs suspending local reads before atomic StateFlow merges.

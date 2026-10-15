@@ -70,7 +70,12 @@ class StyleDnaGatewayTest {
                 var posts=0;val outcome=client(server).call(call()){posts++}
                 assertTrue(outcome is DnaCallResult.Failed);assertEquals(1,posts);assertEquals(1,server.requestCount)
                 assertFalse(outcome.toString().contains("private provider prose"))
-                if(status==503)assertTrue((outcome as DnaCallResult.Failed).billingUnknown)
+                assertEquals(DnaCallResult.Failed(when (status) {
+                    400,402,422 -> "REQUEST_REJECTED_$status"
+                    401,403 -> "UNAUTHORIZED"
+                    429 -> "RATE_LIMITED"
+                    else -> "UNCERTAIN"
+                }, status >= 500), outcome)
             } finally {server.shutdown()}
         }
     }
@@ -109,6 +114,32 @@ class StyleDnaGatewayTest {
                 assertEquals(DnaCallResult.Failed("ENVELOPE_INVALID"), client(server).call(request) {})
             }
             assertEquals(3, server.requestCount)
+        }
+    }
+
+    @Test fun boundedBodyFaultsAndUnavailableCredentialNeverImplyAValidStyleOrAutomaticRetry() = runBlocking {
+        val request = call(DnaAnalysisMode.QUICK)
+        MockWebServer().use { server ->
+            var markers = 0
+            val unavailable = OpenAiStyleDnaGateway({ error("private decryption exception") }, OkHttpClient(), server.url("/v1/responses"))
+            assertEquals(DnaCallResult.Failed("UNAUTHORIZED"), unavailable.call(request) { markers++ })
+            assertEquals(0, markers); assertEquals(0, server.requestCount)
+            val cancelled = runCatching { client(server).call(request) { throw CancellationException("cancel before durable marker") } }
+            assertTrue(cancelled.exceptionOrNull() is CancellationException)
+            assertEquals(0, markers); assertEquals(0, server.requestCount)
+            val valid = response(dnaReportsBody(dnaFixtureReports(request.plan)))
+            val faults = listOf(
+                MockResponse().setBody(okio.Buffer().write(byteArrayOf(0xc3.toByte(), 0x28))),
+                MockResponse().setBody(valid).setHeader("Content-Length", valid.toByteArray().size + 128)
+                    .setSocketPolicy(SocketPolicy.DISCONNECT_AT_END),
+                MockResponse().setBody("x".repeat(128*1024+1)))
+            for (fault in faults) {
+                val count = server.requestCount
+                server.enqueue(fault)
+                assertEquals(DnaCallResult.Failed("UNCERTAIN", true), client(server).call(request) { markers++ })
+                assertEquals(count + 1, server.requestCount)
+            }
+            assertEquals(3, markers); assertEquals(3, server.requestCount)
         }
     }
 

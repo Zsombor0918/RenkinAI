@@ -2,6 +2,11 @@
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 
+Latest PR8 provider-result correction: [reproduction, state/event table and narrow fix](changes/2026-10-15-dna-provider-result-correction.md).
+Retained-controller recreation loses a frozen plan on the starting source; old
+failure prose also conflates envelope/reports/synthesis. Final-head evidence and
+exact APK link/hash belong in the draft PR audit after execution.
+
 PR8 final verification source: [observed974-test success and closing gates](changes/2026-10-15-dna-final-verification.md).
 Its own final SHA/checks/APK are recorded externally on draft PR8 after execution.
 

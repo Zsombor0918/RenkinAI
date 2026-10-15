@@ -1,5 +1,21 @@
 # Verification baseline
 
+## Latest PR8 provider-result RED and final-head boundary
+
+Test-only61e7b166 compiles/runs978/4 RED in Android38761014578; downloaded
+225955-byte HTML artifact11985886299 SHA256
+7b66da1d42c222416406be006a7b6bd269eadd7aaf167d6b38fe24e2e20ea67f confirms
+exact four new assertions. Test-only2207f82d compiles/runs978/5 in Android38761504726:
+real parent restoration loses the plan before re-scan. Artifact11985728802 is
+229111bytes, SHA25680078f95930cdd9c33e6517e248b2a7b3c4f3d195dbf144bf0a5a72a8a5791c8.
+
+Original RED assertions, strict validation and all23 groups remain. Final-head
+Android/unfiltered/all23 XML/schema, Python/docs/subjects/PR audit and verified APK
+are recorded externally on PR8 after execution; RED/checkpoints are not final
+passes. Local Gradle is blocked before configuration by download network access.
+Physical/live testing NOT RUN; zero paid/live calls. See
+[the correction record](../changes/2026-10-15-dna-provider-result-correction.md).
+
 ## PR8 automated runtime verified; final source gates required
 
 At `6fd75af26fe04595719bf618b19b173b96084f53`, Android38711653859 passes

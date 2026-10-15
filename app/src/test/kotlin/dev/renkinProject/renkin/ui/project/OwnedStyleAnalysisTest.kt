@@ -83,6 +83,33 @@ class OwnedStyleAnalysisTest {
     private fun draft(used: AnalyzedDraft, instruction: String = "do not lose my instruction", stale: Boolean = false) =
         ProjectStyleDraft(used.specification, instruction, used.hashes, used.requestId, used.reviewedAt, stale, used.reviewedSourceStamp)
 
+    @Test fun readyQuickAndStandardPlansSurvivePreviewReleaseAndKeyRefreshButCannotSubmitToAnotherRoute() = runBlocking {
+        reader = FixtureReferenceReader((0 until 50).associate { "draw$it" to analysisFixturePng(2, it) })
+        val controller = newController(dna = true)
+        val before = repo.snapshot()
+        for (mode in DnaAnalysisMode.entries) {
+            key = false
+            controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+                ProjectStyleDraft("", "", emptyList()), mode, DEFAULT_ANALYSIS_MODEL, "high")
+            val prepared = withTimeout(10000) { controller.state(1).first { !it.busy } }
+            assertNull(prepared.error)
+            val frozen = checkNotNull(prepared.dnaPlan)
+            assertEquals(if (mode == DnaAnalysisMode.QUICK) 12 else 24, frozen.samples.size)
+            assertFalse(prepared.hasKey)
+            controller.releasePreview(1)
+            assertEquals(frozen, controller.state(1).value.dnaPlan)
+            assertSame(prepared.samples, controller.state(1).value.samples)
+            key = true; controller.refresh(1)
+            assertTrue(controller.state(1).value.hasKey)
+            assertEquals(frozen, controller.state(1).value.dnaPlan)
+            assertFalse(controller.state(1).value.busy); assertFalse(controller.state(1).value.network)
+            controller.bindContext(1, ProjectSetupMode.EXTEND, "different.pack")
+            controller.submitDna(1, frozen.id)
+            assertTrue(StyleDnaJournal(analysisFixtureContext(temporary.root)).records(1).isEmpty())
+            assertEquals(0, calls); assertEquals(before, repo.snapshot())
+        }
+    }
+
     @Test fun refreshOverlappingLocalFreezeCannotLoseTheNewPlanOrRestoreBusyState() = runBlocking {
         val sourceEntered = CompletableDeferred<Unit>(); val sourceRelease = CompletableDeferred<Unit>()
         val keyEntered = CompletableDeferred<Unit>(); val keyRelease = java.util.concurrent.CountDownLatch(1)
@@ -171,7 +198,7 @@ class OwnedStyleAnalysisTest {
                 assertNull(failed.error); assertNull(failed.dnaPlan)
                 val record = failed.dnaRecord!!
                 assertEquals(if (failure == "auth") DnaStatus.FAILED else DnaStatus.UNCERTAIN, record.status)
-                assertEquals(when (failure) { "auth" -> "UNAUTHORIZED"; "schema" -> "INVALID_OR_INTERRUPTED"; else -> "UNCERTAIN" }, record.reason)
+                assertEquals(when (failure) { "auth" -> "UNAUTHORIZED"; "schema" -> "REPORT_SCHEMA_INVALID"; else -> "UNCERTAIN" }, record.reason)
                 assertEquals(1, record.submitted); assertEquals(count + 1, server.requestCount)
                 assertFalse(record.encode().contains("private provider message")); assertEquals(before, repo.snapshot())
                 controller.submitDna(1, plan.id); controller.refresh(1)

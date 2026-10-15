@@ -14,6 +14,14 @@
     <string name="uxStylePlanNeedsKey">Local samples are ready. Add an OpenAI key in AI settings, then return to review the paid plan. No request has been sent for this plan.</string>
     <string name="uxStylePlanChanged">Inputs or analysis options changed. Scan and freeze fresh samples before paid review. No request has been sent for this plan.</string>
     <string name="uxStylePrepareNext">Scan and freeze local samples to prepare a new analysis. Previous attempts remain in Details.</string>
+    <string name="uxStylePreviewOnly">No current frozen plan. The images below are preview samples. Scan and freeze locally to prepare a new plan. Previous attempts remain in Details.</string>
+    <string name="uxStyleHistoricalCauseUnknown">The exact cause was not recorded for this previous attempt. Its code does not distinguish a provider response from local validation or interruption. Saved style and request history are preserved.</string>
+    <string name="uxStyleKeyUnavailableOrRejected">The OpenAI key was unavailable or rejected for this attempt. Check AI settings. A stored key does not prove successful decryption or authentication; no automatic retry was made.</string>
+    <string name="uxStyleResponseIncomplete">This attempt received an incomplete response. It was not accepted as a style. Submission history is preserved; it will not be retried automatically.</string>
+    <string name="uxStyleResponseFailed">This attempt received a failed response. No style was accepted. Submission history is preserved; it will not be retried automatically.</string>
+    <string name="uxStyleEnvelopeInvalid">The response envelope could not be validated. No style was accepted. Submission history is preserved; it will not be retried automatically.</string>
+    <string name="uxStyleReportsInvalid">The per-image reports did not pass the required schema, count or sample binding checks. No style was accepted. Submission history is preserved.</string>
+    <string name="uxStyleSynthesisInvalid">The drawing rules could not pass synthesis and evidence checks. This can happen after valid per-image reports. No style was accepted; completed reports and submission history are preserved.</string>
     <string name="uxStyleHistory">Previous analysis attempt · separate from the current local preparation</string>
     <string name="uxStylePreviousFailed">The previous analysis did not complete. Its history is preserved. A new attempt needs fresh samples and separate confirmation.</string>
     <string name="uxStyleCostUnknown">Exact cost and model availability are unknown. Review the frozen paid plan before sending.</string>

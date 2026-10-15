@@ -1,5 +1,23 @@
 # Agent handoff — guided UX Stage 1
 
+## Latest PR8 provider-result handoff
+
+Continue only existing feat/ux-flow-stabilization from1bf21f0e. Three new owner
+images/full spec were read. Actual RED61e7b166 runs978/4;2207f82d runs978/5, adding
+expected-plan/actual-null after real parent restoration. Keep all failed reports
+and history. Ready unsubmitted plans now survive disposal in the same VM; current
+previews/history and envelope/report/synthesis codes are truthful. Rejection,
+security/no-replay/source/context/signing bounds remain.
+
+Final exact-head Android/all23/Python/docs/subjects/full PR audit, XML/schema and
+SDK-verified fresh APK evidence belong on PR8 after execution. Keep BLOCKED until
+automated gates pass; physical/live acceptance is separate. Owner retest: compatible
+signing, free Quick/Standard READY versus old Details, Settings return, declined
+consent and explicit reviewed Save/reload. Any later live call requires a separate
+owner decision. ZERO live/paid calls here; no phone key is accessible. No main/
+PR6/PR7 write, merge, force-push or release; leave draft/open/unmerged. See
+[scope and state table](../changes/2026-10-15-dna-provider-result-correction.md).
+
 ## Final PR8 corrective handoff
 
 The history heading says analysis attempt: reservation can fail with zero submitted

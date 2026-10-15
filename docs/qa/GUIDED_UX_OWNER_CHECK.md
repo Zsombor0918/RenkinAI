@@ -1,5 +1,29 @@
 # Guided workflow owner check and later-stage plans
 
+## Latest provider-result and recreation retest (physical test NOT RUN)
+
+Use only the final commit/artifact/SHA256 recorded directly on PR8. Confirm
+compatible signing and preserve installed data/keys; never uninstall/clear to
+work around a different debug certificate.
+
+1. In an installed pack, freeze Quick for12 or Standard for24 samples. Verify
+   current READY/key-required status above thumbnails, separately from old Details.
+2. Scroll away/back and return from Settings. With the same inputs and retained
+   session, the same unsubmitted plan remains ready; no request follows key refresh.
+3. Open the paid plan, decline, reopen and change options/source. Decline sends
+   nothing; mismatching inputs disable confirmation until a new local freeze.
+4. This Work run authorizes zero live calls. A later explicitly chosen Quick
+   request is your independent decision; old FAILED history is not its outcome.
+5. Review/Edit/Save a valid candidate, reopen and verify the immutable revision,
+   then continue toward trials. Save does not generate or apply icons.
+6. If blocked, share only current-plan status and visible safe stage/code in
+   Details. Never share the key or raw provider response. Old generic codes say
+   their exact cause was not recorded; no-plan images are explicitly previews.
+
+The exact source cause of the old phone request remains unknown. Offline RED
+proves retained-panel plan loss and diagnostic ambiguity, not phone/provider
+quality. See [state table and evidence](../changes/2026-10-15-dna-provider-result-correction.md).
+
 ## Current PR8 plan/history retest (NOT RUN on a physical phone)
 
 Automated runtime/key-resume coverage passes974 tests at6fd75af2. Final source

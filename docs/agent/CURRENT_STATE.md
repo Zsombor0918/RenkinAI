@@ -1,5 +1,23 @@
 # Current implementation
 
+## PR8 provider-result and retained-plan correction
+
+Test-only61e7b166 genuinely runs978/4 RED;2207f82d adds actual retained-controller
+restoration loss for978/5 RED. A ready unsubmitted DNA plan now survives preview
+disposal in the existing VM, preserving exact image bytes; busy scans, consumption,
+cold recovery and all fresh context guards retain their behavior. No-plan thumbnails
+say preview only. Old failure details stay under Details; ambiguous old codes do
+not accuse the provider or mutate history. New fixed codes separate incomplete/
+failed envelope, invalid envelope, per-image reports and synthesis rejection
+without accepting any previously rejected style data.
+
+Key presence refresh remains distinct from decryption/auth. Local synthesis
+diversity and strict report/hash/evidence bounds stay. Final exact-head Android/
+all23/XML/schema/governance/APK evidence is recorded on PR8 after execution, not
+inferred from RED/checkpoints. Physical phone cause, installed signer and account/
+billing remain unknown; LIVE TEST NOT RUN, zero paid/live calls. See
+[the state/event record](../changes/2026-10-15-dna-provider-result-correction.md).
+
 ## PR8 final corrective scope
 
 History is labeled an analysis attempt, including FAILED records with zero submitted

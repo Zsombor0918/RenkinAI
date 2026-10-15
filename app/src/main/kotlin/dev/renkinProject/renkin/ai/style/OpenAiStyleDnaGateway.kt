@@ -87,22 +87,30 @@ internal fun dnaBody(call: DnaCall): org.json.JSONObject {
             "strict" to true,"schema" to if(synthesis) StyleDnaV1.schema() else StyleDnaCodec.reportsSchema(call.step.samples.size))))
 }
 internal fun parseDnaResponse(raw: String): DnaCallResult = try {
-    val r=strictObject(raw,128*1024,12); require(r.stringValue("status")=="completed")
-    val output=r.getJSONArray("output");require(output.length()<=32);val texts=mutableListOf<String>();var refusal=false
-    for(i in 0 until output.length()) {val item=output.getJSONObject(i)
-        when(item.stringValue("type")) {
-            "reasoning"->Unit
-            "message"->{if(item.has("status")) require(item.stringValue("status")=="completed")
-                val parts=item.getJSONArray("content");require(parts.length()<=32)
-                for(j in 0 until parts.length()) {val part=parts.getJSONObject(j);when(part.stringValue("type")) {
-                    "refusal"->refusal=true;"output_text"->texts+=part.stringValue("text");else->error("Unexpected output") } } }
-            else->error("Unexpected tool output")
+    val r=strictObject(raw,128*1024,12)
+    when (r.stringValue("status")) {
+        "incomplete" -> DnaCallResult.Failed("RESPONSE_INCOMPLETE",true)
+        "failed" -> DnaCallResult.Failed("RESPONSE_FAILED",true)
+        "completed" -> {
+            require(!r.has("error") || r.isNull("error"))
+            val output=r.getJSONArray("output");require(output.length()<=32);val texts=mutableListOf<String>();var refusal=false
+            for(i in 0 until output.length()) {val item=output.getJSONObject(i)
+                when(item.stringValue("type")) {
+                    "reasoning"->Unit
+                    "message"->{if(item.has("status")) require(item.stringValue("status")=="completed")
+                        val parts=item.getJSONArray("content");require(parts.length()<=32)
+                        for(j in 0 until parts.length()) {val part=parts.getJSONObject(j);when(part.stringValue("type")) {
+                            "refusal"->refusal=true;"output_text"->texts+=part.stringValue("text");else->error("Unexpected output") } } }
+                    else->error("Unexpected tool output")
+                }
+            }
+            if(refusal) DnaCallResult.Failed("REFUSED") else {
+                require(texts.isNotEmpty()); val text=texts.joinToString("");require(text.toByteArray().size<=128*1024)
+                val id=r.stringValue("id");require(id.matches(Regex("[A-Za-z0-9_-]{1,128}")))
+                val usage=r.optJSONObject("usage")?.let { u->runCatching { AnalysisUsage(u.longValue("input_tokens"),u.longValue("output_tokens")) }.getOrNull() }
+                DnaCallResult.Received(text,id,usage)
+            }
         }
+        else -> error("Unexpected response status")
     }
-    if(refusal) DnaCallResult.Failed("REFUSED") else {
-        require(texts.isNotEmpty()); val text=texts.joinToString("");require(text.toByteArray().size<=128*1024)
-        val id=r.stringValue("id");require(id.matches(Regex("[A-Za-z0-9_-]{1,128}")))
-        val usage=r.optJSONObject("usage")?.let { u->runCatching { AnalysisUsage(u.longValue("input_tokens"),u.longValue("output_tokens")) }.getOrNull() }
-        DnaCallResult.Received(text,id,usage)
-    }
-} catch (_: Exception) { DnaCallResult.Failed("INVALID_RESPONSE") }
+} catch (_: Exception) { DnaCallResult.Failed("ENVELOPE_INVALID") }

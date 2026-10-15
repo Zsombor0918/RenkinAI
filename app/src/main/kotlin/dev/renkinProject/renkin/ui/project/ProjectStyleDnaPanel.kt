@@ -148,6 +148,7 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                 plan != null -> R.string.uxStylePlanReady
                 needsReview -> R.string.uxStyleReady
                 suggestion != null -> R.string.uxStylePreviousUsed
+                state.samples != null -> R.string.uxStylePreviewOnly
                 else -> R.string.uxStylePrepareNext
             }), Modifier.testTag("style-dna-current-status"))
             // Keep the next action above the thumbnail grid, independently of older history.
@@ -156,20 +157,6 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                 Button(onClick = { confirmation = plan.id },
                     enabled = enabled && matches && state.hasKey && !state.busy && !saving,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-dna-start")) { Text(stringResource(R.string.styleDnaAnalyze)) }
-            }
-            if (!state.busy && plan == null && record?.status in setOf(DnaStatus.FAILED, DnaStatus.UNCERTAIN)) {
-                Text(stringResource(R.string.uxStylePreviousFailed), Modifier.testTag("style-dna-last-outcome"))
-                Text(stringResource(when (record?.reason) {
-                    "UNAUTHORIZED" -> R.string.styleAnalysisUnauthorized
-                    "RATE_LIMITED" -> R.string.styleAnalysisRateLimited
-                    "REQUEST_REJECTED_402" -> R.string.styleAnalysisQuotaExceeded
-                    "REQUEST_REJECTED_400", "REQUEST_REJECTED_422" -> R.string.styleAnalysisRequestRejected
-                    "REFUSED" -> R.string.styleAnalysisRefused
-                    "INVALID_RESPONSE", "INVALID_OR_INTERRUPTED" -> R.string.styleAnalysisInvalidResponse
-                    "STALE_SOURCE" -> R.string.styleAnalysisStale
-                    else -> R.string.styleDnaNoReplay
-                }), Modifier.testTag("style-dna-outcome-reason"))
-                if (record?.status == DnaStatus.UNCERTAIN) Text(stringResource(R.string.uxStyleUncertain))
             }
             state.samples?.let { samples ->
                 Text(stringResource(R.string.uxStyleSamples, samples.samples.size))
@@ -195,6 +182,24 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
             if (record != null) {
                 if (details) {
                     Text(stringResource(R.string.uxStyleHistory), Modifier.testTag("style-dna-history"))
+                    if (!state.busy && record.status in setOf(DnaStatus.FAILED, DnaStatus.UNCERTAIN)) {
+                        Text(stringResource(R.string.uxStylePreviousFailed), Modifier.testTag("style-dna-last-outcome"))
+                        Text(stringResource(when (record.reason) {
+                            "UNAUTHORIZED" -> R.string.uxStyleKeyUnavailableOrRejected
+                            "RATE_LIMITED" -> R.string.styleAnalysisRateLimited
+                            "REQUEST_REJECTED_402" -> R.string.styleAnalysisQuotaExceeded
+                            "REQUEST_REJECTED_400", "REQUEST_REJECTED_422" -> R.string.styleAnalysisRequestRejected
+                            "REFUSED" -> R.string.styleAnalysisRefused
+                            "RESPONSE_INCOMPLETE" -> R.string.uxStyleResponseIncomplete
+                            "RESPONSE_FAILED" -> R.string.uxStyleResponseFailed
+                            "ENVELOPE_INVALID" -> R.string.uxStyleEnvelopeInvalid
+                            "REPORT_SCHEMA_INVALID" -> R.string.uxStyleReportsInvalid
+                            "SYNTHESIS_INVALID" -> R.string.uxStyleSynthesisInvalid
+                            "INVALID_RESPONSE", "INVALID_OR_INTERRUPTED" -> R.string.uxStyleHistoricalCauseUnknown
+                            "STALE_SOURCE" -> R.string.styleAnalysisStale
+                            else -> R.string.styleDnaNoReplay
+                        }), Modifier.testTag("style-dna-outcome-reason"))
+                    }
                     Text(stringResource(when (record.status) {
                         DnaStatus.RESULT_SAVED -> R.string.uxStyleReady
                         DnaStatus.REVIEWED -> R.string.uxStylePreviousUsed

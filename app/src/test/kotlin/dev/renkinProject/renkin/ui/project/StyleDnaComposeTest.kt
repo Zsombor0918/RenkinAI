@@ -123,6 +123,8 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-history").performScrollTo().assertTextContains("Previous", substring = true)
             .assertTextContains("analysis attempt", substring = true)
         compose.onNodeWithTag("style-dna-status").performScrollTo().assertTextContains("FAILED", substring = true)
+        compose.onNodeWithTag("style-dna-outcome-reason").performScrollTo()
+            .assertTextContains("unavailable or rejected", substring = true)
         compose.runOnIdle { flow.value = flow.value.copy(dnaRecord = old.copy(status = DnaStatus.UNCERTAIN, reason = "INTERRUPTED_NO_REPLAY")) }
         compose.onNodeWithTag("style-dna-status").performScrollTo().assertTextContains("UNCERTAIN", substring = true)
         compose.onNodeWithTag("style-dna-current-status").performScrollTo().assertTextContains("ready", substring = true)

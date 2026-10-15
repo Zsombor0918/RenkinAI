@@ -266,6 +266,10 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
     override fun cancel(id: Long) { jobs[id]?.cancel() }
     override fun releasePreview(id: Long) {
         val state = flow(id).value
+        // A lazy item or recreated panel can be disposed while its VM still owns a
+        // ready, unsubmitted plan. Retain that bounded plan and its exact image bytes;
+        // replacement, consumption and every fresh context check remain unchanged.
+        if (!state.busy && state.dnaPlan != null) return
         if (!state.network) jobs[id]?.cancel()
         flow(id).update { it.copy(samples = null, preparation = null, dnaPlan = null,
             dnaLocalDiagnostic = it.dnaLocalDiagnostic.takeIf { _ -> it.network },
