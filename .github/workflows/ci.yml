@@ -37,6 +37,17 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug
 
+      - name: Verify debug APK identity, signature and SHA-256
+        run: |
+          for apk in app/build/outputs/apk/debug/*.apk; do
+            test -s "$apk"
+            "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk" > /tmp/renkinai-debug-badging.txt
+            cat /tmp/renkinai-debug-badging.txt
+            rg "^package: name='hu.zsombor.renkinai.dev' " /tmp/renkinai-debug-badging.txt
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk"
+            sha256sum "$apk"
+          done
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:

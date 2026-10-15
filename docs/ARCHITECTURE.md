@@ -1,5 +1,16 @@
 # Architecture
 
+## DNA refresh and current-plan presentation
+
+OwnedStyleAnalysis performs suspending local reads before atomic StateFlow merges.
+History/credential refresh never restores preparation or job/network flags; live
+record updates that changed since the read began take precedence. Free preparation
+retains older history, while the panel presents the new plan and its own disabled
+reason separately. Existing source/lifecycle invalidation still refreshes key
+presence locally; there is no second session owner or new credential channel.
+Paid consent, context rechecks, one-shot transport, journal formats/consumed IDs
+and reviewed immutable Save remain unchanged. See [evidence](changes/2026-10-15-dna-plan-refresh.md).
+
 ## DNA private storage and local diagnostics
 
 StyleDnaJournal canonicalizes only the Context-owned no-backup parent before

@@ -10,6 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.junit4.StateRestorationTester
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.data.project.*
 import dev.renkinProject.renkin.ui.theme.RenkinTheme
@@ -29,6 +33,8 @@ class StyleDnaComposeTest {
     @get:Rule val compose=createComposeRule()
     private val flow=MutableStateFlow(ProjectAnalysisState(hasKey=true))
     private var prepares=0;private var consents=0;private var saves=0
+    private var storedKey = true
+    private var refreshes = 0
     private var source:String? by mutableStateOf(null)
     private var mode:ProjectSetupMode by mutableStateOf(ProjectSetupMode.CREATE)
     private var dark by mutableStateOf(false)
@@ -40,7 +46,7 @@ class StyleDnaComposeTest {
         override fun prepare(id:Long,mode:ProjectSetupMode,source:String?,setupStamp:String?,expected:Long?,draft:ProjectStyleDraft) {error("Legacy is independent")}
         override fun submit(id:Long,requestId:String){error("Legacy is independent")}
         override fun cancel(id:Long){}
-        override suspend fun refresh(id:Long){}
+        override suspend fun refresh(id:Long){refreshes++;flow.value=flow.value.copy(hasKey=storedKey)}
         override suspend fun preview(id:Long,requestId:String,hash:String)=error("Legacy preview")
         override suspend fun use(id:Long,requestId:String,hashes:List<String>,allowStaleSource:Boolean)=error("Legacy use")
         override suspend fun discardCandidate(id:Long,requestId:String){}
@@ -90,6 +96,12 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-status").performScrollTo().assertTextContains("UNCERTAIN", substring = true)
         compose.onNodeWithTag("style-dna-current-status").performScrollTo().assertTextContains("ready", substring = true)
         compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled()
+        compose.runOnIdle { flow.value = flow.value.copy(busy = true, network = false, dnaPlan = null) }
+        compose.onNodeWithTag("style-dna-current-status").performScrollTo()
+            .assertTextContains("Preparing local reference samples", substring = true)
+        compose.onNodeWithTag("style-dna-last-outcome").assertDoesNotExist()
+        compose.onNodeWithTag("style-dna-start").assertDoesNotExist()
+        assertNotNull(flow.value.samples); assertEquals(DnaStatus.UNCERTAIN, flow.value.dnaRecord!!.status)
         assertEquals(0, consents); assertEquals(0, saves)
     }
 
@@ -102,6 +114,39 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-current-status").performScrollTo()
             .assertTextContains("changed", substring = true)
         assertEquals(0, consents); assertEquals(0, saves)
+    }
+
+    @Test fun settingsKeyChangesRefreshOnResumeWithoutRepreparingOrSubmitting() {
+        val owner = object : LifecycleOwner { override val lifecycle = LifecycleRegistry(this) }
+        storedKey = false
+        compose.runOnUiThread { owner.lifecycle.currentState = Lifecycle.State.RESUMED }
+        compose.setContent { CompositionLocalProvider(LocalLifecycleOwner provides owner) {
+            RenkinTheme(false) { Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                ProjectStyleAnalysisPanel(1, mode, source, null, true, backend, null, draft, false, false,
+                    {}, {}, { _, _ -> })
+            } }
+        } }
+        compose.waitUntil(10000) { refreshes > 0 && !flow.value.hasKey }
+        compose.onNodeWithTag("style-dna-no-key").assertExists()
+        compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("style-dna-current-status").assertTextContains("Add an OpenAI key", substring = true)
+        val frozen = flow.value.dnaPlan
+        fun resumeWithKey(present: Boolean) {
+            val count = refreshes
+            compose.runOnUiThread { owner.lifecycle.currentState = Lifecycle.State.STARTED; storedKey = present
+                owner.lifecycle.currentState = Lifecycle.State.RESUMED }
+            compose.waitUntil(10000) { refreshes > count && flow.value.hasKey == present }
+            assertEquals(frozen, flow.value.dnaPlan)
+        }
+        resumeWithKey(true)
+        compose.onNodeWithTag("style-dna-no-key").assertDoesNotExist()
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled()
+        resumeWithKey(true) // Replacing a present key still refreshes its presence, without submitting.
+        resumeWithKey(false)
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("style-dna-no-key").assertExists()
+        assertEquals(1, prepares); assertEquals(0, consents); assertEquals(0, saves)
     }
     @Test fun historyFailurePreservesRequestGateAndDisplaysOnlyBoundedDiagnostic() {
         flow.value = ProjectAnalysisState(error = "history_unreadable",

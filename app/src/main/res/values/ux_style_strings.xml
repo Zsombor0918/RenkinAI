@@ -10,6 +10,12 @@
     <string name="uxStyleLegacyHelp">Legacy analysis and manual style editing. Existing results stay available; changing analysis mode makes no request.</string>
     <string name="uxStyleSamples">Style samples: %1$d</string>
     <string name="uxStylePlan">%1$d style images · maximum %2$d paid requests · %3$s</string>
+    <string name="uxStylePlanReady">Local samples are ready. No request has been sent for this plan. Review the paid analysis plan to continue.</string>
+    <string name="uxStylePlanNeedsKey">Local samples are ready. Add an OpenAI key in AI settings, then return to review the paid plan. No request has been sent for this plan.</string>
+    <string name="uxStylePlanChanged">Inputs or analysis options changed. Scan and freeze fresh samples before paid review. No request has been sent for this plan.</string>
+    <string name="uxStylePrepareNext">Scan and freeze local samples to prepare a new analysis. Previous attempts remain in Details.</string>
+    <string name="uxStyleHistory">Previous submitted analysis · separate from the current local preparation</string>
+    <string name="uxStylePreviousFailed">The previous analysis did not complete. Its history is preserved. A new attempt needs fresh samples and separate confirmation.</string>
     <string name="uxStyleCostUnknown">Exact cost and model availability are unknown. Review the frozen paid plan before sending.</string>
     <string name="uxStyleReady">Analysis ready for review</string>
     <string name="uxStylePreviousUsed">Earlier analysis was used to save a style</string>

@@ -41,7 +41,7 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
     var error by remember(id) { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val record = state.dnaRecord
-    val needsReview = record?.status == DnaStatus.RESULT_SAVED
+    val needsReview = record?.status == DnaStatus.RESULT_SAVED && state.dnaPlan == null
     val suggestion = record?.takeIf { needsReview }?.result ?: state.savedDna
     val sourceKey = if (needsReview) record?.plan?.id else suggestion?.let { sha256(it.encode().toByteArray()) }
     val initialGrammar = suggestion?.dna?.encode().orEmpty()
@@ -73,6 +73,11 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
     }
     val editable = needsReview || edit
     val sourcePrepared = mode != ProjectSetupMode.EXTEND || !source.isNullOrBlank() && stamp != null
+    val plan = state.dnaPlan
+    val matches = plan != null && plan.mode.name == selectedMode && plan.model == model && plan.detail == detail &&
+        plan.context.matchesRoute(mode, source) && plan.context.baseRevision == expected &&
+        (mode != ProjectSetupMode.EXTEND || plan.context.setupStamp == stamp) &&
+        plan.draftHash == analysisDraftHash(draft) && plan.samples.map { it.hash } == state.samples?.samples?.map { it.hash }
     val candidate = suggestion?.let { saved -> runCatching {
         saved.copy(dna = StyleDnaV1.parse(grammar), selectedFamily = family).also {
             it.encode(); StyleDnaCompiler.specification(it)
@@ -132,10 +137,39 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-dna-prepare")) { Text(stringResource(R.string.styleDnaPrepare)) }
             if (state.busy) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
-                Text(stringResource(if (state.network) R.string.styleAnalysisRunning else R.string.styleAnalysisPreparing))
+                Text(stringResource(if (state.network) R.string.styleAnalysisRunning else R.string.styleAnalysisPreparing),
+                    Modifier.testTag("style-dna-current-status"))
                 TextButton(onClick = { backend.cancel(id) }, modifier = Modifier.heightIn(min = 48.dp).testTag("style-dna-cancel")) {
                     Text(stringResource(R.string.styleAnalysisCancel))
                 }
+            } else Text(stringResource(when {
+                plan != null && !matches -> R.string.uxStylePlanChanged
+                plan != null && !state.hasKey -> R.string.uxStylePlanNeedsKey
+                plan != null -> R.string.uxStylePlanReady
+                needsReview -> R.string.uxStyleReady
+                suggestion != null -> R.string.uxStylePreviousUsed
+                else -> R.string.uxStylePrepareNext
+            }), Modifier.testTag("style-dna-current-status"))
+            // Keep the next action above the thumbnail grid, independently of older history.
+            if (plan != null) {
+                Text(stringResource(R.string.uxStylePlan, plan.samples.size, plan.endpointMaximum, plan.model))
+                Button(onClick = { confirmation = plan.id },
+                    enabled = enabled && matches && state.hasKey && !state.busy && !saving,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-dna-start")) { Text(stringResource(R.string.styleDnaAnalyze)) }
+            }
+            if (!state.busy && plan == null && record?.status in setOf(DnaStatus.FAILED, DnaStatus.UNCERTAIN)) {
+                Text(stringResource(R.string.uxStylePreviousFailed), Modifier.testTag("style-dna-last-outcome"))
+                Text(stringResource(when (record?.reason) {
+                    "UNAUTHORIZED" -> R.string.styleAnalysisUnauthorized
+                    "RATE_LIMITED" -> R.string.styleAnalysisRateLimited
+                    "REQUEST_REJECTED_402" -> R.string.styleAnalysisQuotaExceeded
+                    "REQUEST_REJECTED_400", "REQUEST_REJECTED_422" -> R.string.styleAnalysisRequestRejected
+                    "REFUSED" -> R.string.styleAnalysisRefused
+                    "INVALID_RESPONSE", "INVALID_OR_INTERRUPTED" -> R.string.styleAnalysisInvalidResponse
+                    "STALE_SOURCE" -> R.string.styleAnalysisStale
+                    else -> R.string.styleDnaNoReplay
+                }), Modifier.testTag("style-dna-outcome-reason"))
+                if (record?.status == DnaStatus.UNCERTAIN) Text(stringResource(R.string.uxStyleUncertain))
             }
             state.samples?.let { samples ->
                 Text(stringResource(R.string.uxStyleSamples, samples.samples.size))
@@ -158,23 +192,17 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                     }
                 }
             }
-            val plan = state.dnaPlan
-            val matches = plan != null && plan.mode.name == selectedMode && plan.model == model && plan.detail == detail &&
-                plan.context.matchesRoute(mode, source) && plan.draftHash == analysisDraftHash(draft)
-            if (plan != null) Text(stringResource(R.string.uxStylePlan, plan.samples.size, plan.endpointMaximum, plan.model))
-            if (plan != null) Button(onClick = { confirmation = plan.id },
-                enabled = enabled && matches && state.hasKey && !state.busy && !saving,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("style-dna-start")) { Text(stringResource(R.string.styleDnaAnalyze)) }
             if (record != null) {
-                Text(stringResource(when (record.status) {
-                    DnaStatus.RESULT_SAVED -> R.string.uxStyleReady
-                    DnaStatus.REVIEWED -> R.string.uxStylePreviousUsed
-                    DnaStatus.FAILED -> R.string.uxStyleFailed
-                    DnaStatus.UNCERTAIN -> R.string.uxStyleUncertain
-                    else -> R.string.styleAnalysisRunning
-                }))
-                if (record.status in setOf(DnaStatus.UNCERTAIN, DnaStatus.FAILED)) Text(stringResource(R.string.styleDnaNoReplay))
                 if (details) {
+                    Text(stringResource(R.string.uxStyleHistory), Modifier.testTag("style-dna-history"))
+                    Text(stringResource(when (record.status) {
+                        DnaStatus.RESULT_SAVED -> R.string.uxStyleReady
+                        DnaStatus.REVIEWED -> R.string.uxStylePreviousUsed
+                        DnaStatus.FAILED -> R.string.uxStylePreviousFailed
+                        DnaStatus.UNCERTAIN -> R.string.uxStyleUncertain
+                        else -> R.string.styleAnalysisRunning
+                    }))
+                    Text(stringResource(R.string.styleDnaNoReplay))
                     val uploaded = record.plan.steps.filter { step ->
                         record.steps.single { it.id == step.id }.status in setOf("SUBMITTED", "DONE")
                     }.sumOf { it.samples.size }
@@ -319,7 +347,6 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
             }
         }
     }
-    val plan = state.dnaPlan
     if (confirmation != null) RenkinAlertDialog(onDismissRequest = { confirmation = null },
         title = { Text(stringResource(R.string.styleAnalysisConsentTitle)) },
         text = { Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
@@ -332,13 +359,10 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
         } },
         confirmButton = { TextButton(onClick = {
             val selected = confirmation; confirmation = null
-            if (plan != null && plan.context.matchesRoute(mode, source) && selected == plan.id &&
-                plan.mode.name == selectedMode && plan.model == model && plan.detail == detail &&
-                plan.draftHash == analysisDraftHash(draft)) backend.submitDna(id, plan.id)
+            if (enabled && !state.busy && !saving && state.hasKey && matches && plan != null && selected == plan.id)
+                backend.submitDna(id, plan.id)
         }, enabled = enabled && !state.busy && !saving && state.hasKey &&
-            plan?.context?.matchesRoute(mode, source) == true && plan.id == confirmation &&
-            plan.mode.name == selectedMode && plan.model == model && plan.detail == detail &&
-            plan.draftHash == analysisDraftHash(draft),
+            matches && plan?.id == confirmation,
             modifier = Modifier.testTag("style-dna-confirm-paid")) { Text(stringResource(R.string.styleDnaConfirm)) } },
         dismissButton = { TextButton(onClick = { confirmation = null }, modifier = Modifier.testTag("style-dna-decline")) {
             Text(stringResource(R.string.colorizeCancel))

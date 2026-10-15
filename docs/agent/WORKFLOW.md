@@ -1,5 +1,15 @@
 # Agent, Git and review workflow
 
+## PR8 final APK verification
+
+The existing CI compile/unit/assemble/upload sequence retains every task. After
+assembly an additive SDK35 aapt/apksigner/sha256sum step verifies the debug package
+hu.zsombor.renkinai.dev, nonempty APK, complete signature and certificate/hash.
+Download that exact run's artifact and compare its APK SHA256 to this output.
+This verifies the artifact, not installed-certificate compatibility or phone
+acceptance. No signing configuration, dependency, required gate or protection rule
+changes. Final exact-head all23/XML/schema and audit checks remain mandatory.
+
 ## Native Windows guided UX verification
 
 The complete Compose runner now has 23 groups, retaining all 22 previous groups and

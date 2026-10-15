@@ -100,4 +100,102 @@ class StyleDnaPersistenceTest {
             assertEquals(DnaStatus.REVIEWED,dj.latest(1)!!.status)
         } finally {scope.cancel()}
     }
+
+    @Test fun quickAndStandardUseRealResponsesWireThenReviewSaveAndReloadWithoutReplay() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val server = okhttp3.mockwebserver.MockWebServer()
+        server.start()
+        try {
+            val reader = FixtureReferenceReader((0 until 50).associate { "draw$it" to analysisFixturePng(2, it) })
+            val j = StyleAnalysisJournal(context); val dj = StyleDnaJournal(context)
+            var keyPresent = false
+            var submitting: StyleDnaPlan? = null
+            val marked = java.util.concurrent.atomic.AtomicInteger()
+            val http = okhttp3.OkHttpClient.Builder().eventListener(object : okhttp3.EventListener() {
+                override fun requestHeadersStart(call: okhttp3.Call) {
+                    val plan = checkNotNull(submitting)
+                    val step = plan.steps.single { it.id == call.request().header("X-Client-Request-Id") }
+                    assertEquals("SUBMITTED", dj.record(1, plan.id)!!.steps.single { it.id == step.id }.status)
+                    marked.incrementAndGet()
+                }
+            }).build()
+            val owner = object : AnalysisSessionOwner {
+                override suspend fun <T> owned(id: Long, operation: suspend () -> T): T { check(id == 1L); return operation() }
+                override suspend fun catalogStamp() = sha256("catalog".toByteArray())
+                override suspend fun reader(source: String, referenceIndex: Boolean) = reader
+            }
+            fun controller() = OwnedStyleAnalysis(scope, repo, j, ReferenceSampler(),
+                StyleAnalysisCoordinator(j, StyleAnalysisGateway { error("Legacy must stay independent") }),
+                { keyPresent }, owner, StyleDnaCoordinator(dj,
+                    OpenAiStyleDnaGateway({ "offline_fixture_no_real_credential" }, http, server.url("/v1/responses"))))
+            val controller = controller()
+            val draft = ProjectStyleDraft("", "manual instruction preserved", emptyList())
+            for (mode in DnaAnalysisMode.entries) {
+                val previous = repo.load(1).revision?.revision
+                val before = repo.snapshot(); val callsBefore = server.requestCount
+                keyPresent = false; controller.refresh(1)
+                controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), previous,
+                    draft, mode, DEFAULT_ANALYSIS_MODEL, "low")
+                val prepared = withTimeout(10000) { controller.state(1).first { !it.busy } }
+                assertNull(prepared.error)
+                val plan = checkNotNull(prepared.dnaPlan)
+                assertEquals(if (mode == DnaAnalysisMode.QUICK) 12 else 24, plan.samples.size)
+                assertFalse(prepared.hasKey); assertEquals(callsBefore, server.requestCount)
+                controller.submitDna(1, plan.id); assertEquals(callsBefore, server.requestCount)
+                keyPresent = true; controller.refresh(1)
+                assertEquals(plan, controller.state(1).value.dnaPlan)
+                assertTrue(controller.state(1).value.hasKey); assertEquals(before, repo.snapshot())
+                val images = prepared.samples!!.samples.associate { it.hash to it.png }
+                val reports = dnaFixtureReports(plan)
+                for (step in plan.steps) {
+                    val text = if (step.synthesis) synthesizeDnaLocally(reports, images).encode()
+                        else dnaReportsBody(dnaFixtureReports(plan, step.samples))
+                    val response = json("id" to "resp_offline_${step.id}", "status" to "completed",
+                        "usage" to json("input_tokens" to 40, "output_tokens" to 50), "output" to org.json.JSONArray().put(
+                            json("type" to "message", "status" to "completed", "content" to org.json.JSONArray().put(
+                                json("type" to "output_text", "text" to text)))))
+                    server.enqueue(okhttp3.mockwebserver.MockResponse().setBody(response.toString()))
+                }
+                submitting = plan
+                controller.submitDna(1, plan.id)
+                val result = withTimeout(10000) { controller.state(1).first { !it.busy } }
+                assertNull(result.error); assertNull(result.dnaPlan)
+                val record = result.dnaRecord!!
+                assertEquals(DnaStatus.RESULT_SAVED, record.status)
+                assertEquals(plan.samples.size, record.reports.size)
+                assertEquals(plan.endpointMaximum, record.submitted)
+                assertEquals(callsBefore + plan.endpointMaximum, server.requestCount)
+                assertEquals(server.requestCount, marked.get())
+                assertEquals(before, repo.snapshot()) // A response is a candidate, never an implicit Save.
+                for (step in plan.steps) {
+                    val wire = checkNotNull(server.takeRequest(5, java.util.concurrent.TimeUnit.SECONDS))
+                    assertEquals("POST", wire.method); assertEquals("/v1/responses", wire.path)
+                    assertEquals(step.id, wire.getHeader("X-Client-Request-Id"))
+                    val body = org.json.JSONObject(wire.body.readUtf8())
+                    assertFalse(body.getBoolean("store")); assertFalse(body.getBoolean("stream"))
+                    assertEquals(plan.model, body.getString("model"))
+                    val content = body.getJSONArray("input").getJSONObject(0).getJSONArray("content")
+                    assertEquals(1 + 2 * step.samples.size, content.length())
+                    step.samples.forEachIndexed { n, id ->
+                        val label = org.json.JSONObject(content.getJSONObject(1 + 2*n).getString("text"))
+                        assertEquals(id, label.getString("sample_id")); assertEquals(plan.bindings.getValue(id), label.getString("sample_hash"))
+                        val image = content.getJSONObject(2 + 2*n)
+                        assertEquals("input_image", image.getString("type")); assertEquals(plan.detail, image.getString("detail"))
+                        assertArrayEquals(images.getValue(plan.bindings.getValue(id)), android.util.Base64.decode(
+                            image.getString("image_url").substringAfter(','), android.util.Base64.DEFAULT))
+                    }
+                }
+                val saved = controller.saveDna(1, plan.id, record.result!!.dna.encode(), record.result!!.selectedFamily,
+                    plan.samples.take(5).map { it.hash }, previous, draft)
+                assertEquals("manual instruction preserved", saved.revision!!.userInstruction)
+                assertEquals(DnaStatus.REVIEWED, dj.latest(1)!!.status)
+                assertEquals(plan.samples.size, SavedStyleDna.parse(saved.revision!!.analysisProfileJson!!).reports.size)
+                controller.releasePreview(1)
+                val reopened = controller(); reopened.bindContext(1, ProjectSetupMode.EXTEND, "fixture.pack"); reopened.refresh(1)
+                assertEquals(saved, repo.load(1)); assertEquals(record.result, reopened.state(1).value.savedDna)
+                reopened.submitDna(1, plan.id); assertFalse(dj.claim(plan, images))
+                assertEquals(callsBefore + plan.endpointMaximum, server.requestCount)
+            }
+        } finally { scope.cancel(); server.shutdown() }
+    }
 }

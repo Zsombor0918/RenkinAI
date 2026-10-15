@@ -12,6 +12,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
@@ -69,7 +70,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         val route = mode to source
         val previous = routes.put(id, route)
         if (previous != null && previous != route && !flow(id).value.busy)
-            flow(id).value = flow(id).value.copy(error = flow(id).value.error?.takeUnless { it in dnaLocalReasons }, dnaLocalDiagnostic = null)
+            flow(id).update { it.copy(error = it.error?.takeUnless { error -> error in dnaLocalReasons }, dnaLocalDiagnostic = null) }
     }
     private fun matchesRoute(context: AnalysisContext) = routes[context.profileId]?.let {
         context.matchesRoute(it.first, it.second)
@@ -77,20 +78,21 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
     private fun flow(id: Long) = states.getOrPut(id) { MutableStateFlow(ProjectAnalysisState()) }
     private fun start(id: Long, network: Boolean = false, action: suspend () -> Unit) {
         if (flow(id).value.busy) return
-        if (states.values.any { it.value.busy }) { flow(id).value = flow(id).value.copy(error = "busy_other"); return }
-        flow(id).value = flow(id).value.copy(busy = true, network = network, error = null, dnaLocalDiagnostic = null)
+        if (states.values.any { it.value.busy }) { flow(id).update { it.copy(error = "busy_other") }; return }
+        flow(id).update { it.copy(busy = true, network = network, error = null, dnaLocalDiagnostic = null) }
         jobs[id] = scope.launch {
             try { action() }
             catch (cancel: CancellationException) {
                 if (network) withContext(NonCancellable + Dispatchers.IO) {
-                    flow(id).value = flow(id).value.copy(record = journal.latest(id), preparation = null, dnaPlan = null)
+                    val record = journal.latest(id)
+                    flow(id).update { it.copy(record = record, preparation = null, dnaPlan = null) }
                 }
                 throw cancel
             }
-            catch (failure: DnaLocalFailure) { flow(id).value = flow(id).value.copy(error = failure.reason,
-                dnaLocalDiagnostic = failure.diagnostic ?: DnaLocalDiagnostic(DnaLocalStage.VALIDATION, DnaLocalCategory.INVALID_DATA)) }
-            catch (_: Exception) { flow(id).value = flow(id).value.copy(error = "operation") }
-            finally { jobs.remove(id); flow(id).value = flow(id).value.copy(busy = false, network = false) }
+            catch (failure: DnaLocalFailure) { flow(id).update { it.copy(error = failure.reason,
+                dnaLocalDiagnostic = failure.diagnostic ?: DnaLocalDiagnostic(DnaLocalStage.VALIDATION, DnaLocalCategory.INVALID_DATA)) } }
+            catch (_: Exception) { flow(id).update { it.copy(error = "operation") } }
+            finally { jobs.remove(id); flow(id).update { it.copy(busy = false, network = false) } }
         }
     }
 
@@ -100,7 +102,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         if (dnaCoordinator == null) return
         bindContext(id, mode, source)
         start(id) {
-            flow(id).value = flow(id).value.copy(preparation = null, dnaPlan = null)
+            flow(id).update { it.copy(preparation = null, dnaPlan = null) }
             val samples = dnaLocal("samples_unavailable", DnaLocalStage.SAMPLE_RENDER) {
                 if (mode == ProjectSetupMode.EXTEND) {
                     dnaRequire(!source.isNullOrBlank() && setupStamp != null, "source_required")
@@ -139,10 +141,10 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
                 dnaCoordinator.journal.records(id).lastOrNull { it.plan.fingerprint == plan.fingerprint && it.result != null }
             } }
             dnaRequire(validity(context) == AnalysisValidity.CURRENT, "inputs_changed")
-            flow(id).value = flow(id).value.copy(samples = samples, dnaPlan = if (cached == null) plan else null,
-                dnaRecord = cached, preparedDraftHash = analysisDraftHash(draft),
-                hasKey = dnaLocal("storage", DnaLocalStage.KEY_READ) { withContext(Dispatchers.IO) { hasKey() } },
-                dnaValidity = AnalysisValidity.CURRENT, validity = flow(id).value.legacyValidity ?: AnalysisValidity.CURRENT)
+            val keyAvailable = dnaLocal("storage", DnaLocalStage.KEY_READ) { withContext(Dispatchers.IO) { hasKey() } }
+            flow(id).update { current -> current.copy(samples = samples, dnaPlan = if (cached == null) plan else null,
+                dnaRecord = cached ?: current.dnaRecord, preparedDraftHash = analysisDraftHash(draft), hasKey = keyAvailable,
+                dnaValidity = AnalysisValidity.CURRENT, validity = current.legacyValidity ?: AnalysisValidity.CURRENT) }
         }
     }
     override fun submitDna(id: Long, planId: String) {
@@ -150,15 +152,16 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         if (plan.id != planId || !state.hasKey || !matchesRoute(plan.context)) return
         val images = state.samples?.samples?.associate { it.hash to it.png } ?: return
         start(id, network = true) {
-            flow(id).value = flow(id).value.copy(dnaPlan = null)
+            flow(id).update { it.copy(dnaPlan = null) }
             try {
                 val record = coordinator.submit(plan,images,true,{ validity(plan.context) == AnalysisValidity.CURRENT }) { record ->
-                    flow(id).value = flow(id).value.copy(dnaRecord = record) }
+                    flow(id).update { it.copy(dnaRecord = record) } }
                 val current = validity(plan.context)
-                flow(id).value = flow(id).value.copy(dnaRecord = record, dnaValidity = current,
-                    validity = flow(id).value.legacyValidity ?: current)
+                flow(id).update { it.copy(dnaRecord = record, dnaValidity = current,
+                    validity = it.legacyValidity ?: current) }
             } finally { withContext(NonCancellable + Dispatchers.IO) {
-                flow(id).value = flow(id).value.copy(dnaRecord = coordinator.journal.latest(id),dnaPlan = null) } }
+                val latest = coordinator.journal.latest(id)
+                flow(id).update { it.copy(dnaRecord = latest, dnaPlan = null) } } }
         }
     }
     override suspend fun dnaPreview(id: Long, hash: String): ByteArray = withContext(Dispatchers.IO) {
@@ -200,7 +203,7 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
             sha256(encoded.toByteArray()),System.currentTimeMillis(), encoded != sourceDna.encode() || record == null,false)
         val saved = repository.saveAnalyzedStyle(id,expected,current.metadata?.version ?: 0L,specification,draft.instruction,selected,encoded,evidence)
         if (record != null) withContext(NonCancellable + Dispatchers.IO) { coordinator.journal.reviewed(record.plan); coordinator.journal.collect(id) }
-        flow(id).value = flow(id).value.copy(savedDna = reviewed, dnaPlan = null, dnaRecord = record?.copy(status = DnaStatus.REVIEWED))
+        flow(id).update { it.copy(savedDna = reviewed, dnaPlan = null, dnaRecord = record?.copy(status = DnaStatus.REVIEWED)) }
         saved
     }
     private suspend fun validityWithoutOwner(c: AnalysisContext,saved: SavedProjectStyle): AnalysisValidity {
@@ -240,10 +243,12 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
             context.validate()
             val request = if (samples.samples.isEmpty()) null else StyleAnalysisRequest(context,
                 samples.samples.map { AnalysisImage(it.hash, it.png) }, draft.specification, draft.instruction, localReport = samples.report).also { it.validate() }
-            flow(id).value = flow(id).value.copy(samples = samples, preparation = request,
-                dnaPlan = null, hasKey = withContext(Dispatchers.IO) { hasKey() }, validity = AnalysisValidity.CURRENT,
+            val keyAvailable = withContext(Dispatchers.IO) { hasKey() }
+            val legacyValidity = flow(id).value.record?.context?.let { validity(it) } ?: AnalysisValidity.CURRENT
+            flow(id).update { it.copy(samples = samples, preparation = request,
+                dnaPlan = null, hasKey = keyAvailable, validity = AnalysisValidity.CURRENT,
                 error = if (request == null) "empty" else null, preparedDraftHash = analysisDraftHash(draft),
-                legacyValidity = flow(id).value.record?.context?.let { validity(it) } ?: AnalysisValidity.CURRENT)
+                legacyValidity = legacyValidity) }
         }
     }
     /** Called only by the confirmation button with the frozen request ID that was displayed. */
@@ -253,31 +258,40 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         start(id, network = true) {
             val saved = coordinator.submit(request, confirmed = true) { validity(it) == AnalysisValidity.CURRENT }
             val current = saved?.context?.let { validity(it) } ?: AnalysisValidity.PREPARATION_CHANGED
-            flow(id).value = flow(id).value.copy(record = saved, preparation = null,
+            flow(id).update { it.copy(record = saved, preparation = null,
                 validity = current, legacyValidity = current,
-                error = if (saved == null) "stale" else null)
+                error = if (saved == null) "stale" else null) }
         }
     }
     override fun cancel(id: Long) { jobs[id]?.cancel() }
     override fun releasePreview(id: Long) {
         val state = flow(id).value
         if (!state.network) jobs[id]?.cancel()
-        flow(id).value = flow(id).value.copy(samples = null, preparation = null, dnaPlan = null,
-            dnaLocalDiagnostic = state.dnaLocalDiagnostic.takeIf { state.network },
-            error = state.error?.takeUnless { !state.network && it in dnaLocalReasons })
+        flow(id).update { it.copy(samples = null, preparation = null, dnaPlan = null,
+            dnaLocalDiagnostic = it.dnaLocalDiagnostic.takeIf { _ -> it.network },
+            error = it.error?.takeUnless { error -> !it.network && error in dnaLocalReasons }) }
     }
     override suspend fun refresh(id: Long) {
+        val before = flow(id).value
         val record = withContext(Dispatchers.IO) { journal.latest(id) }
         val dnaRecord = withContext(Dispatchers.IO) { dnaCoordinator?.journal?.latest(id) }
         val savedDna = if (dnaCoordinator == null) null else try { owner.owned(id) { SavedStyleDna.optional(repository.load(id).revision?.analysisProfileJson) } }
             catch (cancel: CancellationException) { throw cancel } catch (_: Exception) { null }
         val legacyValidity = record?.context?.let { validity(it) }
         val dnaValidity = dnaRecord?.plan?.context?.let { validity(it) }
-        val v = legacyValidity ?: dnaValidity ?: AnalysisValidity.CURRENT
-        // Existing VM jobs survive Activity recreation. Never replace a running preparation.
-        flow(id).value = flow(id).value.copy(record = record, dnaRecord = dnaRecord, savedDna = savedDna, validity = v,
-            legacyValidity = legacyValidity, dnaValidity = dnaValidity,
-            hasKey = withContext(Dispatchers.IO) { hasKey() })
+        val keyAvailable = withContext(Dispatchers.IO) { hasKey() }
+        // All suspending reads precede the atomic merge. Resume/history refresh owns no
+        // preparation or job flags, and an older disk read cannot replace live progress.
+        flow(id).update { current ->
+            val keepLegacy = current.busy || current.record != before.record
+            val keepDna = current.busy || current.dnaRecord != before.dnaRecord
+            val lv = if (keepLegacy) current.legacyValidity else legacyValidity
+            val dv = if (keepDna) current.dnaValidity else dnaValidity
+            current.copy(record = if (keepLegacy) current.record else record,
+                dnaRecord = if (keepDna) current.dnaRecord else dnaRecord,
+                savedDna = if (current.savedDna == before.savedDna) savedDna else current.savedDna,
+                validity = lv ?: dv ?: AnalysisValidity.CURRENT, legacyValidity = lv, dnaValidity = dv, hasKey = keyAvailable)
+        }
     }
     private suspend fun validity(context: AnalysisContext): AnalysisValidity = try {
         owner.owned(context.profileId) {
@@ -362,7 +376,8 @@ internal class OwnedStyleAnalysis(private val scope: CoroutineScope, private val
         val saved = repository.saveAnalyzedStyle(id, expected, record.context.metadataVersion, draft.specification,
             draft.instruction, draft.hashes, styleJson, evidence)
         withContext(NonCancellable + Dispatchers.IO) { journal.reviewed(id, record.requestId, checkNotNull(saved.revision).revision) }
-        flow(id).value = flow(id).value.copy(record = withContext(Dispatchers.IO) { journal.read(id, record.requestId) })
+        val reviewed = withContext(Dispatchers.IO) { journal.read(id, record.requestId) }
+        flow(id).update { it.copy(record = reviewed) }
         saved
     }
 }

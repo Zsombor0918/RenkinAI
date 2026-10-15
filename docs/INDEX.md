@@ -2,6 +2,9 @@
 
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 
+Latest PR8 end-to-end follow-up: [current frozen plan, history and refresh race](changes/2026-10-15-dna-plan-refresh.md).
+Exact final-head verification and APK evidence are recorded on draft PR8.
+
 Latest PR8 owner finding: [cross-pack local storage and diagnostics](changes/2026-10-15-dna-shared-storage.md).
 Exact final-source checks and downloadable APK evidence are in the draft PR audit.
 

@@ -1,5 +1,20 @@
 # Verification baseline
 
+## PR8 end-to-end plan/history regression
+
+Test-only948f805ddbde3f31c40adaeadae1de07f03b6f83:
+[Android38706159146](https://github.com/Zsombor0918/RenkinAI/actions/runs/38706159146)
+successfully compiles production/tests and executes969 cases with exactly three
+new failures: frozen-plan/busy refresh overlap, current-ready versus historical
+failure presentation, and changed-option recovery. Original cases pass. Retained
+report artifact11958498226 is224150bytes, SHA256
+b3cb901b02a6b9e05eb699a90da7f63af1a7ee5309c4b5e61eb071f0c70b0370.
+Corrective final-head Android/all23/Python/audit/XML/schema and signed APK evidence
+must be observed and recorded on PR8; no subset or ancestor substitutes for them.
+Local Gradle8.11.1 download fails before configuration (Network is unreachable).
+Live test SKIPPED: no approved secure runtime credential or verified budget controls.
+Zero live/paid calls; physical Flip8/Keystore/signature/visual acceptance NOT RUN.
+
 ## PR8 all-pack storage investigation (Windows local)
 
 Baseline f46115f1, Windows11/Temurin17.0.20.1+1/SDK36/build-tools35/Gradle8.11.1.

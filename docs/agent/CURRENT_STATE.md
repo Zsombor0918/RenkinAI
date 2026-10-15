@@ -1,5 +1,20 @@
 # Current implementation
 
+## PR8 current frozen plan and historical analysis
+
+Test-only948f805d genuinely compiles and runs969 tests with precisely three new
+failures. A suspending key read inside a copy argument captures older controller
+state: a late refresh can erase a completed plan and restore busy=true. State
+merges now follow all suspending reads, preserve live progress and never let
+refresh own preparation/job flags. Existing ON_RESUME key refresh is retained.
+Current ready/preparing status and paid review appear before thumbnails; old
+FAILED/UNCERTAIN evidence stays separately labeled under Details. Changed inputs
+disable old consent with recovery text. No journal/provider/schema/signing change.
+Real Responses/Room and lifecycle/fault regressions extend the retained suite;
+final-head execution evidence belongs in PR8. Physical phone history/submission
+is unproven; no secure Work credential/spend control exists, so live testing is
+SKIPPED and phone acceptance NOT RUN. See [the scoped record](../changes/2026-10-15-dna-plan-refresh.md).
+
 ## PR8 all-pack free-scan report and bounded correction
 
 The owner reports identical Quick/Standard storage errors across all tested packs

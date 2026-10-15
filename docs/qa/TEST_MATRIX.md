@@ -1,5 +1,20 @@
 # Regression and test matrix
 
+## PR8 current plan, credential refresh and real offline Responses
+
+Deterministic barriers reproduce a delayed history/key read erasing a new frozen
+plan/restoring busy, and guard newer submitted progress/consumed plans. Existing
+ON_RESUME is exercised with key add/replace/remove while preserving plan identity
+and zero submissions. Narrow Compose distinguishes ready samples from preserved
+FAILED/UNCERTAIN history and explains stale options/disabled confirmation.
+Real controller/coordinator/journal/Room plus loopback MockWebServer verify Quick12
+and Standard24/five steps, exact label/hash/image bytes, durable markers before
+HTTP headers, strict response parsing, candidate review and explicit Save/reload.
+Auth/schema/timeout/cancel/recreation keep consumed IDs and cannot replay. All23
+existing groups and every old selector/assertion/security/timeout/idling guard
+remain. Actual final-head execution is recorded on PR8; phone/provider acceptance
+stays NOT RUN. The eight transition cases are in [the scoped record](../changes/2026-10-15-dna-plan-refresh.md).
+
 ## Cross-pack free DNA preparation and integrity
 
 Existing required classes add two independent outline/color readers, theme/source

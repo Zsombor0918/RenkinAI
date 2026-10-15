@@ -1,5 +1,29 @@
 # Guided workflow owner check and later-stage plans
 
+## Current PR8 plan/history retest (NOT RUN on a physical phone)
+
+Use the final-commit artifact linked on PR8 and preserve installed data/keys.
+Confirm signer compatibility before an in-place update; do not uninstall/clear.
+
+1. Freeze Quick12 and Standard24 locally with two installed packs; there must be no
+   paid request. The current ready status and Review paid analysis plan are above thumbnails.
+2. Old FAILED/UNCERTAIN history remains under Details and must not label a new plan
+   failed or leave preparation running after completion.
+3. Add/replace a key in AI settings and return/reopen. Presence updates and the
+   current plan survives; removal disables paid review. No request follows Settings.
+4. Use Write a style manually and Save without cloud analysis; reopen the saved revision.
+5. Only if separately desired, review the exact Quick plan and explicitly authorize
+   its one paid submission. Declining, Back and reopening never authorize a request.
+6. After a successful analysis, review the candidate/family/at-most-five style-only
+   refs, check review, explicitly Save and reopen to verify durable persistence.
+7. Back/reopen/source/options changes preserve history, invalidate old consent when
+   needed and perform no hidden calls. Do not replay an uncertain submission.
+8. If free preparation fails, report only its fixed diagnostic code and free case.
+   Do not send a key, raw journal, private paths, prompts or source inventory.
+
+Work made zero live/paid requests: no secure runtime credential or verified account
+spend controls were available. Offline success cannot establish phone/account behavior.
+
 ## All-pack free-scan retest (physical testing NOT RUN)
 
 Use the final GitHub ZIP/APK linked directly on draft PR8. Compare its certificate

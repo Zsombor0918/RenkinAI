@@ -1,5 +1,24 @@
 # Agent handoff — guided UX Stage 1
 
+## Current PR8 end-to-end diagnosis
+
+Start from verified76387e2e on existing feat/ux-flow-stabilization. Six supplied
+images and the full owner specification were inspected. Test-only948f805d has
+actual hosted969/3 red, all three new assertions; runtime edits follow that proof.
+The matching defect is a pre-suspension flow snapshot that can lose a frozen plan,
+restore busy and overwrite live progress. Atomic post-read merges and separate
+current-plan/history presentation correct only this scope. Existing resume key
+refresh, provider bytes, journals/rights, Room21 and signing configuration remain.
+
+Continue mandatory final-head Android/all23/Python/docs/hooks verification and fresh
+APK delivery. Added SDK verification checks package/signature/hash before upload;
+publish the exact final artifact link and hash on PR8. Keep BLOCKED until gates
+finish. No secure Work credential or verified spend controls are available: live
+test SKIPPED, zero live calls. The phone's historical POST/billing/event order is
+unproven and physical acceptance NOT RUN. Keep PR8 draft/open and main/PR6/PR7
+unchanged. Next safe step after delivery is the free owner checklist followed only
+by separately chosen paid confirmation. See [record](../changes/2026-10-15-dna-plan-refresh.md).
+
 ## Latest PR8 all-pack storage follow-up
 
 Baseline f46115f10090f04651994e521f10e899871970fc, clean existing Windows
