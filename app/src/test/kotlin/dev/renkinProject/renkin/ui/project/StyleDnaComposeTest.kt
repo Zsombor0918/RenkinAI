@@ -138,6 +138,7 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-current-status").assertTextContains("Add an OpenAI key", substring = true)
         val frozen = flow.value.dnaPlan
         fun resumeWithKey(present: Boolean) {
+            compose.waitForIdle()
             val count = refreshes
             val events = resumeEvents.get(); val invalidations = directInvalidations.get()
             compose.runOnIdle {
@@ -149,6 +150,9 @@ class StyleDnaComposeTest {
                 assertEquals(Lifecycle.State.STARTED, lifecycle.currentState)
                 storedKey = present; lifecycle.currentState = Lifecycle.State.RESUMED
             }
+            compose.waitForIdle() // Commit the observer's state change and its refresh effect.
+            assertEquals(events + 1, resumeEvents.get())
+            assertEquals(invalidations + 1, directInvalidations.get())
             try { compose.waitUntil(10000) { refreshes > count && flow.value.hasKey == present } }
             catch (failure: androidx.compose.ui.test.ComposeTimeoutException) {
                 throw AssertionError("Resume events $events->${resumeEvents.get()}, direct invalidation $invalidations->${directInvalidations.get()}, " +
