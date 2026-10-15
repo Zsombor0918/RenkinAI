@@ -2,6 +2,14 @@
 
 ## Stage 0/1 checkpoint: regression acceptance is blocked
 
+Safe source checkpoint: `3ee52fa19d91c0a921681be01b809aaa502e31b2`.
+The shared Windows AtomicFile issue was subsequently corrected only in the test
+harness: one bounded8-test run passed with zero failures/errors/skips, including
+four atomic durability guards, both real controllers and two retained journal guards.
+The full corrected98/all23 matrix has not been rerun. The full Python checkpoint
+suite passed55/55 in105.263s and committed-range documentation/subject checks passed.
+See the [narrow harness follow-up](../changes/2026-10-14-windows-atomic-test-harness.md).
+
 The owner requested a safe checkpoint as the session approached its usage limit.
 Production and test compilation succeeded in integration run2; actual12 XML/98
 tests had26 failures/0 errors/0 skips. No complete final-head suite or all23 regression
@@ -33,8 +41,8 @@ python scripts/check_commit_messages.py --base origin/feat/style-dna-v1 --head H
 ```
 
 First finish and verify the narrow Windows test-harness AtomicFile replacement fix,
-preserving crash/orphan/security assertions. Once these actual journal/controller
-boundaries pass, rerun the five guided classes and retained style/trial/controller
+preserving crash/orphan/security assertions; the bounded8-test subset now passes.
+Next rerun the five guided classes and retained style/trial/controller
 classes from the recorded `ux-green-targeted-2/command.txt`. Only after targeted
 green, run `python scripts/run_compose_regressions.py` and fresh exact-final-head
 debug assembly/package/signature verification. Publish the stacked draft with the

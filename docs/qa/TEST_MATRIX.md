@@ -16,7 +16,8 @@ MainViewModel/Hilt/device integration and provider image quality are not certifi
 Owned controller tests additionally prove profile switching during an already
 confirmed fake request eventually loads locally without a second submission.
 
-The guided runner group adds five classes, alongside all22 prior groups and the
+The guided runner group adds five UI/state classes and four tests in the required
+WindowsAtomicFileTest harness class, alongside all22 prior groups and the
 unfiltered compile/test/APK gate. Existing reload tests expand Details before the
 same selector and unchanged assertions; timeouts/idling/security checks stay intact.
 Python faults cover native wrapper selection, additive groups and CRLF declarations.

@@ -3,7 +3,7 @@
 ## Native Windows guided UX verification
 
 The complete Compose runner now has 23 groups, retaining all 22 previous groups and
-selectors and adding five guided classes. Windows invokes the absolute native
+selectors and adding five guided classes plus the AtomicFile harness class. Windows invokes the absolute native
 `gradlew.bat`; POSIX still invokes `./gradlew`. Task/selector/XML/skipped/error/exit
 requirements are unchanged. The final full-suite group compiles, tests and assembles
 on the exact committed HEAD after the isolated runs.
@@ -22,6 +22,12 @@ Python3.14/Git shell on PATH). Run `python -m unittest discover -s scripts/tests
 origin/feat/style-dna-v1 --head HEAD`, and the commit range/PR audit guards.
 Record final-head evidence externally; do not substitute earlier remote CI or a stale APK.
 The stacked PR stays draft; PASS WITH RISKS still requires explicit owner review.
+
+The Windows-only API30+ AtomicFile shadow preserves Android atomic replacement in
+Robolectric; non-Windows invokes the original method. Four mandatory harness guards
+and unchanged journal/controller guards verify base/backup/unfinished-write durability.
+Its narrow8-test pass does not replace the unfiltered/all23 gates; see the
+[platform correction](../changes/2026-10-14-windows-atomic-test-harness.md).
 
 ## Earlier checkpoint records
 

@@ -55,7 +55,8 @@ CASES = {
                         PACKAGE + "GuidedTrialComposeTest",
                         PACKAGE + "ProjectSelectionComposeTest",
                         PACKAGE + "ProjectGuidedNavigationComposeTest",
-                        PACKAGE + "GuidedProjectRoomJourneyComposeTest"],
+                        PACKAGE + "GuidedProjectRoomJourneyComposeTest",
+                        "dev.renkinProject.renkin.testing.WindowsAtomicFileTest"],
     "full-suite": [],
 }
 

@@ -130,7 +130,7 @@ class ComposeRunnerFaultTests(unittest.TestCase):
             "ProjectStyleGuidedFlowComposeTest", "GuidedTrialComposeTest",
             "ProjectSelectionComposeTest", "ProjectGuidedNavigationComposeTest",
             "GuidedProjectRoomJourneyComposeTest"
-        )], RUNNER.CASES["guided-ux"])
+        )] + ["dev.renkinProject.renkin.testing.WindowsAtomicFileTest"], RUNNER.CASES["guided-ux"])
         self.assertEqual([RUNNER.PACKAGE + "StyleTrialComposeTest",
                           RUNNER.PACKAGE + "ProjectStyleTrialJourneyComposeTest"], RUNNER.CASES["trial-ui"])
         self.assertEqual([], RUNNER.CASES["full-suite"])

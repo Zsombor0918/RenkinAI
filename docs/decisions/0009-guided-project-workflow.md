@@ -52,3 +52,12 @@ historical items as history rather than current approval failures.
 Native Git snapshots normalize CRLF before strict declaration matching. This is an
 input normalization decision, not a relaxed impact/PR audit rule. Hook fixtures use
 LF matching repository policy; real hook tests and all previous guard assertions remain.
+
+An actual Windows SDK33 AtomicFile two-write probe retains old base bytes and fails
+replacement, unlike Android POSIX rename. Test-only API30+ shadowing therefore adapts
+only private rename on Windows to Files.move with ATOMIC_MOVE and REPLACE_EXISTING.
+Non-Windows uses the original method; no base deletion or copy fallback is allowed.
+The real write/read/failed-write paths and all production journal predicates remain.
+Four mandatory harness tests and retained backup/orphan/consumed-marker/controller
+tests prove this bounded correction. Complete suites and hosted Linux execution
+remain acceptance requirements; this is platform fidelity, not permission to skip tests.

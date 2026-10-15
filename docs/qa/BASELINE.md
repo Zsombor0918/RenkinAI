@@ -24,6 +24,12 @@ committed-write assertion, retaining old base and new `.new` bytes and a failed-
 log. This demonstrates the pre-existing Windows test-environment replacement boundary.
 Its original XML/log remains outside Git in `windows-atomic-probe`. Full acceptance
 is BLOCKED; corrected fixture edits and test-harness work require fresh execution.
+The bounded test-only Windows AtomicFile correction subsequently passed8 actual
+tests/0 failures/0 errors/0 skips in34s, including four durable-file guards, both
+real owned controllers and retained backup/orphan consumed-marker guards. Source
+compilation passed. Evidence is in `windows-atomic-harness-1` outside Git; see the
+[correction note](../changes/2026-10-14-windows-atomic-test-harness.md). Checkpoint
+full Python55 also passed in105.263s; full Android/all23 acceptance remains deferred.
 
 Final-head required verification is native `gradlew.bat compileDebugKotlin
 testDebugUnitTest assembleDebug`, all23 groups via `python scripts/run_compose_regressions.py`,
