@@ -40,6 +40,7 @@ class OwnedStyleAnalysisTest {
     private var active = 1L
     private var calls = 0
     private var key = true
+    private var beforeReader: suspend () -> Unit = {}
     private var catalog = sha256("catalog".toByteArray())
     private var reader = FixtureReferenceReader((0 until 12).associate { "icon$it" to analysisFixturePng(it % 3, it) })
     private var gateway: StyleAnalysisGateway = StyleAnalysisGateway { calls++; StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_fixture", null) }
@@ -47,10 +48,13 @@ class OwnedStyleAnalysisTest {
     private val owner = object : AnalysisSessionOwner {
         override suspend fun <T> owned(id: Long, operation: suspend () -> T): T = lock.withLock { check(id == active); operation() }
         override suspend fun catalogStamp() = catalog
-        override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader = sourceOverride ?: reader
+        override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader {
+            beforeReader(); return sourceOverride ?: reader
+        }
     }
-    private fun newController(dna: Boolean = false, dnaContext: Context = analysisFixtureContext(temporary.root)) = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(),
-        StyleAnalysisCoordinator(journal, gateway), { key }, owner,
+    private fun newController(dna: Boolean = false, dnaContext: Context = analysisFixtureContext(temporary.root),
+        keyRead: () -> Boolean = { key }) = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(),
+        StyleAnalysisCoordinator(journal, gateway), keyRead, owner,
         if (dna) StyleDnaCoordinator(StyleDnaJournal(dnaContext), StyleDnaGateway { _, _ ->
             calls++; error("Local preparation must not submit")
         }) else null)
@@ -78,6 +82,37 @@ class OwnedStyleAnalysisTest {
     }
     private fun draft(used: AnalyzedDraft, instruction: String = "do not lose my instruction", stale: Boolean = false) =
         ProjectStyleDraft(used.specification, instruction, used.hashes, used.requestId, used.reviewedAt, stale, used.reviewedSourceStamp)
+
+    @Test fun refreshOverlappingLocalFreezeCannotLoseTheNewPlanOrRestoreBusyState() = runBlocking {
+        val sourceEntered = CompletableDeferred<Unit>(); val sourceRelease = CompletableDeferred<Unit>()
+        val keyEntered = CompletableDeferred<Unit>(); val keyRelease = java.util.concurrent.CountDownLatch(1)
+        val blockSource = java.util.concurrent.atomic.AtomicBoolean(true)
+        val blockKey = java.util.concurrent.atomic.AtomicBoolean(true)
+        beforeReader = { if (blockSource.getAndSet(false)) { sourceEntered.complete(Unit); sourceRelease.await() } }
+        val controller = newController(dna = true, keyRead = {
+            if (blockKey.getAndSet(false)) {
+                keyEntered.complete(Unit)
+                check(keyRelease.await(10, java.util.concurrent.TimeUnit.SECONDS))
+            }
+            key
+        })
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+            ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+        withTimeout(10000) { sourceEntered.await() }
+        val refresh = async(Dispatchers.Default) { controller.refresh(1) }
+        try {
+            withTimeout(10000) { keyEntered.await() }
+            sourceRelease.complete(Unit)
+            val prepared = withTimeout(10000) { controller.state(1).first { !it.busy } }
+            assertNull(prepared.error); assertNotNull(prepared.dnaPlan); assertNotNull(prepared.samples)
+            keyRelease.countDown(); withTimeout(10000) { refresh.await() }
+            val refreshed = controller.state(1).value
+            assertFalse("A late credential read must not restore busy=true", refreshed.busy)
+            assertEquals("A late history read must retain the current frozen plan", prepared.dnaPlan, refreshed.dnaPlan)
+            assertEquals(prepared.samples, refreshed.samples); assertTrue(refreshed.hasKey)
+            assertFalse(refreshed.network); assertEquals(0, calls)
+        } finally { sourceRelease.complete(Unit); keyRelease.countDown(); refresh.cancelAndJoin() }
+    }
 
     @Test fun trustedContextAliasPreparesBothModesAcrossPacksWithoutChangingHistoryOrRoom() = runBlocking {
         key = false

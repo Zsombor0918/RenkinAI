@@ -71,6 +71,38 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
         compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled().performClick()
     }
+    @Test fun freshPlanIsReadyWhileFailedOrUncertainHistoryStaysUnderDetails() {
+        val (historic, _) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        val old = StyleDnaRecord(historic, DnaStatus.FAILED, historic.steps.map { DnaStepState(it.id) }, reason = "UNAUTHORIZED")
+        flow.value = flow.value.copy(dnaRecord = old)
+        compose.setContent { Content() }
+        prepare("QUICK")
+        compose.onNodeWithTag("style-dna-decline").performClick()
+        compose.onNodeWithTag("style-dna-current-status").performScrollTo()
+            .assertTextContains("ready", substring = true)
+        compose.onNodeWithText("This analysis did not complete.", substring = true).assertDoesNotExist()
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled()
+        assertEquals(old, flow.value.dnaRecord)
+        compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-history").performScrollTo().assertTextContains("Previous", substring = true)
+        compose.onNodeWithTag("style-dna-status").performScrollTo().assertTextContains("FAILED", substring = true)
+        compose.runOnIdle { flow.value = flow.value.copy(dnaRecord = old.copy(status = DnaStatus.UNCERTAIN, reason = "INTERRUPTED_NO_REPLAY")) }
+        compose.onNodeWithTag("style-dna-status").performScrollTo().assertTextContains("UNCERTAIN", substring = true)
+        compose.onNodeWithTag("style-dna-current-status").performScrollTo().assertTextContains("ready", substring = true)
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled()
+        assertEquals(0, consents); assertEquals(0, saves)
+    }
+
+    @Test fun changedOptionsExplainWhyFrozenPlanNeedsFreshPreparation() {
+        compose.setContent { Content() }; prepare("QUICK")
+        compose.onNodeWithTag("style-dna-decline").performClick()
+        compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-detail-high").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("style-dna-current-status").performScrollTo()
+            .assertTextContains("changed", substring = true)
+        assertEquals(0, consents); assertEquals(0, saves)
+    }
     @Test fun historyFailurePreservesRequestGateAndDisplaysOnlyBoundedDiagnostic() {
         flow.value = ProjectAnalysisState(error = "history_unreadable",
             dnaLocalDiagnostic = DnaLocalDiagnostic(DnaLocalStage.HISTORY_READ, DnaLocalCategory.INVALID_DATA))
