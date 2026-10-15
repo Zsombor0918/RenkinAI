@@ -1,5 +1,18 @@
 # Verification baseline
 
+## PR8 key-resume verification checkpoint
+
+Implementation4be6ad63 passes production/test compilation and973 of974 tests in
+[Android38708500788](https://github.com/Zsombor0918/RenkinAI/actions/runs/38708500788).
+The only failure is the new key-resume fixture's first10000ms resume wait. Original
+red cases and new real-wire/Room/fault/cancel/progress tests pass. Downloaded report
+11959118399 is223270bytes, SHA256
+e4ab841572b85ff19542c253ac741e3280a8089efc7bfe1ce181831f6a318c44.
+The fixture follow-up uses the actual composed lifecycle and separately observed
+pause/resume events, retaining every assertion and timeout. No runtime or idling
+change; key refresh remains unverified until actual execution. See
+[record](../changes/2026-10-15-dna-resume-verification.md).
+
 ## PR8 end-to-end plan/history regression
 
 Test-only948f805ddbde3f31c40adaeadae1de07f03b6f83:

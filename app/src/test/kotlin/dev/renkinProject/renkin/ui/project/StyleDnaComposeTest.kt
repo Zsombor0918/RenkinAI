@@ -11,7 +11,6 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.renkinProject.renkin.ai.style.*
@@ -117,15 +116,15 @@ class StyleDnaComposeTest {
     }
 
     @Test fun settingsKeyChangesRefreshOnResumeWithoutRepreparingOrSubmitting() {
-        val owner = object : LifecycleOwner { override val lifecycle = LifecycleRegistry(this) }
+        lateinit var lifecycle: LifecycleRegistry
         storedKey = false
-        compose.runOnUiThread { owner.lifecycle.currentState = Lifecycle.State.RESUMED }
-        compose.setContent { CompositionLocalProvider(LocalLifecycleOwner provides owner) {
+        compose.setContent {
+            lifecycle = LocalLifecycleOwner.current.lifecycle as LifecycleRegistry
             RenkinTheme(false) { Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 ProjectStyleAnalysisPanel(1, mode, source, null, true, backend, null, draft, false, false,
                     {}, {}, { _, _ -> })
             } }
-        } }
+        }
         compose.waitUntil(10000) { refreshes > 0 && !flow.value.hasKey }
         compose.onNodeWithTag("style-dna-no-key").assertExists()
         compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
@@ -134,8 +133,15 @@ class StyleDnaComposeTest {
         val frozen = flow.value.dnaPlan
         fun resumeWithKey(present: Boolean) {
             val count = refreshes
-            compose.runOnUiThread { owner.lifecycle.currentState = Lifecycle.State.STARTED; storedKey = present
-                owner.lifecycle.currentState = Lifecycle.State.RESUMED }
+            compose.runOnIdle {
+                assertTrue("Use the actual composed Activity lifecycle with registered observers", lifecycle.observerCount > 0)
+                assertEquals(Lifecycle.State.RESUMED, lifecycle.currentState)
+                lifecycle.currentState = Lifecycle.State.STARTED
+            }
+            compose.runOnIdle {
+                assertEquals(Lifecycle.State.STARTED, lifecycle.currentState)
+                storedKey = present; lifecycle.currentState = Lifecycle.State.RESUMED
+            }
             compose.waitUntil(10000) { refreshes > count && flow.value.hasKey == present }
             assertEquals(frozen, flow.value.dnaPlan)
         }
