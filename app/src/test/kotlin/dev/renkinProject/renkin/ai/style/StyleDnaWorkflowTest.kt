@@ -32,6 +32,26 @@ internal fun dnaReportsBody(reports: List<DnaIconReport>)=canonicalJson(json("sc
 @Config(application=Application::class,sdk=[33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleDnaWorkflowTest {
+    @Test fun packWideDerivedReviewNormalizesSynonymsWithoutRewritingRawFamiliesOrIdentity() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val reports = dnaFixtureReports(plan).mapIndexed { index, report -> report.copy(
+            familyVote = DnaFamilyVote.entries[index % 7],
+            traits = report.traits + mapOf(
+                "stroke_fill" to DnaObservation(listOf("solid fill with smooth edges, no outline", "solid filled shapes with no visible stroke", "solid fills with no outline")[index % 3], DnaProvenance.OBSERVED),
+                "corners" to DnaObservation(listOf("fully rounded ends", "rounded terminals and softened corners")[index % 2], DnaProvenance.OBSERVED),
+                "logo_silhouette" to DnaObservation("PRIVATE_SOURCE_IDENTITY", DnaProvenance.OBSERVED))) }
+        val raw = synthesizeDnaLocally(reports, images)
+        val historical = SavedStyleDna(raw, reports, plan.model, plan.detail, plan.algorithm, raw.recommendedFamily)
+        val bytes = historical.encode()
+        val global = historical.copy(selectedFamily = "__pack__")
+        assertEquals(global, SavedStyleDna.parse(global.encode()))
+        val recipe = StyleDnaCompiler.specification(global)
+        assertTrue(recipe, recipe.contains("solid filled shapes without an outline"))
+        assertTrue(recipe, recipe.contains("rounded terminals and softened corners"))
+        assertFalse(recipe.contains("PRIVATE_SOURCE_IDENTITY"))
+        assertEquals(bytes, SavedStyleDna.parse(bytes).encode())
+        assertEquals(raw, global.dna); assertEquals(reports, global.reports)
+    }
     @Test fun thirdStandardBatchCountFailureRetainsTwelveReportsAndSpecificReasonWithoutReplay() = runBlocking {
         val (plan, images) = dnaFixturePlan()
         var calls = 0

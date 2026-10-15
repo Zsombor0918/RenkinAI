@@ -38,6 +38,7 @@ class StyleDnaComposeTest {
     private var mode:ProjectSetupMode by mutableStateOf(ProjectSetupMode.CREATE)
     private var dark by mutableStateOf(false)
     private var saved:SavedProjectStyle?=null
+    private var savedHashes = emptyList<String>()
     private val draft=ProjectStyleDraft("","separate manual instruction",emptyList())
     private val backend=object:ProjectAnalysisBackend {
         override val supportsDna=true
@@ -63,6 +64,7 @@ class StyleDnaComposeTest {
         }
         override suspend fun dnaPreview(id:Long,hash:String)=flow.value.samples!!.samples.single {it.hash==hash}.png
         override suspend fun saveDna(id:Long,planId:String?,grammar:String,selectedFamily:String,hashes:List<String>,expected:Long?,draft:ProjectStyleDraft):SavedProjectStyle {
+            savedHashes = hashes
             saves++;val r=flow.value.dnaRecord!!;val dna=r.result!!.copy(dna=StyleDnaV1.parse(grammar),selectedFamily=selectedFamily)
             return SavedProjectStyle(ProjectAiMetadata(id,activeRevision=1),StyleRevision(id,1,specification=StyleDnaCompiler.specification(dna),
                 userInstruction=draft.instruction),emptyList()).also {flow.value=flow.value.copy(savedDna=dna,dnaRecord=r.copy(status=DnaStatus.REVIEWED))}
@@ -75,6 +77,25 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-mode-$choice").performClick()
         compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
         compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled().performClick()
+    }
+    @Test fun changingFamilySelectsOnlyItsActualReferenceImagesBeforeReviewAndSave() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val reports = dnaFixtureReports(plan).mapIndexed { index, r ->
+            if(index < 6) r else r.copy(familyVote = DnaFamilyVote.SOLID) }
+        val dna = synthesizeDnaLocally(reports, images)
+        val result = SavedStyleDna(dna, reports, plan.model, plan.detail, plan.algorithm, dna.recommendedFamily)
+        flow.value = ProjectAnalysisState(hasKey=true, validity=AnalysisValidity.CURRENT, dnaValidity=AnalysisValidity.CURRENT,
+            samples=ReferenceSamples(null,null,plan.samples.map { s -> SampledReference(s.id,"fixture",s.hash,images.getValue(s.hash),referenceFeatures(images.getValue(s.hash))) },plan.report),
+            dnaRecord=StyleDnaRecord(plan,DnaStatus.RESULT_SAVED,plan.steps.map { DnaStepState(it.id,"DONE","resp_ui") },reports,result))
+        compose.setContent { Content() }
+        compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-family-family2").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-reviewed").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-save").performScrollTo().assertIsEnabled().performClick()
+        compose.waitUntil(10000) { saves == 1 }
+        assertEquals(5, savedHashes.size)
+        assertTrue(savedHashes.all { hash -> reports.drop(6).any { it.sampleHash == hash } })
+        assertEquals(0, consents)
     }
     @Test fun previewSamplesWithoutCurrentPlanKeepAmbiguousOldFailureOnlyInDetails() {
         val (historic, _) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
