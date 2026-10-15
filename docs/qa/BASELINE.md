@@ -1,5 +1,15 @@
 # Verification baseline
 
+## October15 PR8 first local Quick scan
+
+Remote source ecff4e5f has successful Android38661004421 and all23 regression
+commands38661004416. Governance38661004446 failed solely because the PR body
+declares BLOCKED; its55 offline guards passed. This historical automated success
+does not resolve the owner's observed Flip8 free-scan failure.
+The new loading-source/owned-DNA regression checkpoint awaits hosted execution.
+Local Gradle download fails before configuration with Network is unreachable;
+no Android assertion or build success is claimed locally. Production is unchanged.
+
 ## Guided UX local Windows continuation
 
 Source baseline2f422ca8, feature checkpoint3ee52fa1, Windows harness861ac270. Host:

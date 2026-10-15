@@ -49,7 +49,11 @@ class OwnedStyleAnalysisTest {
         override suspend fun catalogStamp() = catalog
         override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader = sourceOverride ?: reader
     }
-    private fun newController() = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(), StyleAnalysisCoordinator(journal, gateway), { key }, owner)
+    private fun newController(dna: Boolean = false) = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(),
+        StyleAnalysisCoordinator(journal, gateway), { key }, owner,
+        if (dna) StyleDnaCoordinator(StyleDnaJournal(analysisFixtureContext(temporary.root)), StyleDnaGateway { _, _ ->
+            calls++; error("Local preparation must not submit")
+        }) else null)
     @Before fun setup() = runBlocking {
         context = RuntimeEnvironment.getApplication()
         db = Room.inMemoryDatabaseBuilder(context, RenkinPackDatabase::class.java).build()
@@ -74,6 +78,35 @@ class OwnedStyleAnalysisTest {
     }
     private fun draft(used: AnalyzedDraft, instruction: String = "do not lose my instruction", stale: Boolean = false) =
         ProjectStyleDraft(used.specification, instruction, used.hashes, used.requestId, used.reviewedAt, stale, used.reviewedSourceStamp)
+
+    @Test fun firstQuickScanWithoutSetupStampReportsPrerequisiteAndRetryIsLocal() = runBlocking {
+        key = false
+        val before = repo.snapshot()
+        val controller = newController(dna = true)
+        val draft = ProjectStyleDraft("", "", emptyList())
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", null, null, draft,
+            DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "high")
+        val failed = controller.state(1).first { !it.busy }
+        assertNull(failed.dnaPlan)
+        assertEquals(before, repo.snapshot())
+        assertEquals(0, reader.renderCount)
+        assertEquals(0, calls)
+        // The old enabled guided action reaches require(setupStamp != null), then hides its cause.
+        assertEquals("source_required", failed.error)
+
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null, draft,
+            DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "high")
+        val prepared = controller.state(1).first { !it.busy }
+        assertNull(prepared.error)
+        val plan = checkNotNull(prepared.dnaPlan)
+        plan.validate()
+        assertEquals(projectSourceStamp(reader.index), plan.context.setupStamp)
+        assertNull(plan.context.baseRevision)
+        assertFalse(prepared.hasKey)
+        assertEquals(1, plan.endpointMaximum)
+        assertEquals(before, repo.snapshot())
+        assertEquals(0, calls)
+    }
 
     @Test fun prepareAndReopenAreLocalAndMissingKeyDoesNotBlockManualSave() = runBlocking {
         key = false; val controller = newController(); val request = prepare(controller)

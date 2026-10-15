@@ -1,5 +1,14 @@
 # Agent handoff — guided UX Stage 1
 
+## October15 PR8 local scan reproduction
+
+Work continues on the existing remote feat/ux-flow-stabilization from ecff4e5f.
+The owner observes a first Quick scan failure on Flip8. New test-only regressions
+exercise loading coverage/null setup stamp and real owned DNA/Room preparation;
+hosted red evidence is pending, not claimed. Local Gradle distribution download
+fails before configuration with Network is unreachable. No live calls or other
+branch writes are authorized. See [reproduction](../changes/2026-10-15-dna-local-preparation-reproduction.md).
+
 ## Closed implementation scope
 
 Continue only in `C:\Users\zsomb\Documents\Github\RenkinAI-ux`, branch

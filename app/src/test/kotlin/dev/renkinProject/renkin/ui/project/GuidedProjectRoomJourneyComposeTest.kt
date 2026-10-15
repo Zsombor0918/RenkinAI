@@ -8,6 +8,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
+import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.ai.AiSettings
 import dev.renkinProject.renkin.ai.trial.*
 import dev.renkinProject.renkin.apk.*
@@ -46,6 +48,8 @@ class GuidedProjectRoomJourneyComposeTest {
     private var styleSaves = 0
     private var saveGate: CompletableDeferred<Unit>? = null
     private var selectionStarted = false
+    private var coverageLoaded by mutableStateOf(true)
+    private var analysis: OwnedStyleAnalysis? = null
     private suspend fun <T> owned(id: Long, action: suspend () -> T) = mutex.withLock {
         check(id == home.activeProfileId && home.actionsEnabled)
         action()
@@ -68,6 +72,7 @@ class GuidedProjectRoomJourneyComposeTest {
                 override suspend fun settings() = AiSettings()
             })
         style = object : ProjectStyleBackend {
+            override val analysis get() = this@GuidedProjectRoomJourneyComposeTest.analysis
             override suspend fun load(id: Long) = owned(id) { fixture.repo.load(id) }
             override suspend fun importReference(id: Long, uri: Uri): ReferenceAsset = error("No picker in this test")
             override suspend fun copyGlobal(id: Long) = error("No global settings copied")
@@ -95,7 +100,7 @@ class GuidedProjectRoomJourneyComposeTest {
                     ProjectSetupData(targets = fixture.targets,
                         packs = listOf(IconPack("source.pack", "Lux-like fixture", 1, "1", 0)),
                         savedMetadata = metadata,
-                        coverage = CoverageUiState.Ready(CoverageSnapshot(profile, fixture.index, fixture.targets.map {
+                        coverage = if (!coverageLoaded) CoverageUiState.Loading() else CoverageUiState.Ready(CoverageSnapshot(profile, fixture.index, fixture.targets.map {
                             CoverageEntry(it, SourceCoverage.UNMAPPED, null, CoverageReason.NO_MAPPING)
                         })), onSaveSelection = { version, selection ->
                             selectionStarted = true
@@ -145,6 +150,66 @@ class GuidedProjectRoomJourneyComposeTest {
             compose.onAllNodes(hasTestTag("project-style-description") and isEnabled()).fetchSemanticsNodes().size == 1
         }
         compose.onNodeWithTag("project-style-description").assertIsEnabled().performTextInput("manual centered outline")
+    }
+
+    @Test fun firstQuickScanWaitsForVerifiedSourceAndRecreationNeverSubmits() {
+        val artwork = FixtureReferenceReader((0 until 40).associate { "draw$it" to analysisFixturePng(2, it) })
+        val references = object : CoverageSourceReader by artwork {
+            override val index = artwork.index.copy(stamp = fixture.index.stamp)
+        }
+        analysis = OwnedStyleAnalysis(scope, fixture.repo, StyleAnalysisJournal(fixture.context), ReferenceSampler(),
+            StyleAnalysisCoordinator(StyleAnalysisJournal(fixture.context), StyleAnalysisGateway {
+                providerCalls++; error("Legacy sampling must not submit")
+            }), { false }, object : AnalysisSessionOwner {
+                override suspend fun <T> owned(id: Long, operation: suspend () -> T) =
+                    this@GuidedProjectRoomJourneyComposeTest.owned(id, operation)
+                override suspend fun catalogStamp() = projectCatalogStamp(fixture.targets)
+                override suspend fun reader(source: String, referenceIndex: Boolean) =
+                    if (referenceIndex) references else fixture.reader
+            }, StyleDnaCoordinator(StyleDnaJournal(fixture.context), StyleDnaGateway { _, _ ->
+                providerCalls++; error("Free Quick scan must not submit")
+            }))
+        coverageLoaded = false
+        val restoration = StateRestorationTester(compose)
+        restoration.setContent { Content() }
+        click("project-home", "project-extend")
+        click("setup-source", "setup-source-source.pack")
+        click("setup-profile", "setup-profile-1")
+        compose.onNodeWithTag("project-targets").performScrollToNode(hasTestTag("setup-project-style"))
+        compose.onNodeWithTag("setup-project-style").assertIsNotEnabled()
+        assertEquals(0, providerCalls)
+        compose.runOnIdle { coverageLoaded = true }
+        click("project-targets", "setup-project-style")
+        compose.onNodeWithTag("workflow-step").assertTextContains("2 of 4", substring = true)
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-dna-mode-QUICK"))
+        compose.onNodeWithTag("style-dna-mode-QUICK").assertIsSelected()
+        fun scan() {
+            click("project-style-1", "style-dna-prepare")
+            compose.waitUntil(10000) { analysis!!.state(1).value.let { !it.busy && (it.dnaPlan != null || it.error != null) } }
+            val current = analysis!!.state(1).value
+            assertNull(current.error)
+            val plan = checkNotNull(current.dnaPlan)
+            plan.validate()
+            assertEquals(projectSourceStamp(fixture.index), plan.context.setupStamp)
+            assertEquals(projectSourceStamp(references.index), plan.context.referenceStamp)
+            assertNull(plan.context.baseRevision)
+            assertEquals(0L, plan.context.metadataVersion)
+            assertEquals(sha256(ByteArray(0)), plan.context.selectionHash)
+            assertTrue(plan.samples.size in 1..12)
+            assertEquals(1, plan.endpointMaximum)
+            compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-dna-start"))
+            compose.onNodeWithTag("style-dna-start").assertIsNotEnabled()
+            compose.onNodeWithTag("style-dna-no-key").assertExists()
+            assertNull(runBlocking { fixture.repo.load(1).revision })
+            assertEquals(0, providerCalls)
+        }
+        scan()
+        restoration.emulateSavedInstanceStateRestore()
+        scan()
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("setup-back"))
+        compose.onNodeWithTag("setup-back").performClick()
+        click("project-targets", "setup-project-style")
+        scan()
     }
     private fun journey(extend: Boolean) {
         compose.setContent { Content() }
