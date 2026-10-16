@@ -79,6 +79,9 @@ class StyleDnaWorkflowTest {
         assertEquals(before, saved.encode()); assertEquals(saved, SavedStyleDna.parse(before))
         assertEquals(reports, saved.reports); assertEquals(raw, saved.dna)
         assertTrue(recipe.length < 4000)
+        assertNull(abstractDnaSilhouette("FOREIGN_SOURCE_LOGO"))
+        assertNull(abstractDnaSilhouette("not compact geometric masses with soft external contours"))
+        assertNull(abstractDnaSilhouette("compact geometric masses with soft external contours of a reference brand"))
     }
     @Test fun overallUsesSupportedSynthesisRulesWithoutTurningConflictsIntoUniversalRules() {
         val (plan, images) = dnaFixturePlan(DnaAnalysisMode.STANDARD, 12)

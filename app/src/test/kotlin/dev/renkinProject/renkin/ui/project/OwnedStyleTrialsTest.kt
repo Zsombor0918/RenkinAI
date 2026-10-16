@@ -8,6 +8,7 @@ import dev.renkinProject.renkin.apk.*
 import dev.renkinProject.renkin.data.project.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.junit.*
@@ -37,7 +38,7 @@ class OwnedStyleTrialsTest {
         override suspend fun original(key: String) = f.originals.getValue(key)
         override suspend fun settings() = AiSettings()
     }
-    private fun controller() = OwnedStyleTrials(scope, f.repo, f.journal, StyleTrialCoordinator(f.journal, gateway, f.repo), { key }, owner)
+    private fun controller(sessionOwner: TrialSessionOwner = owner) = OwnedStyleTrials(scope, f.repo, f.journal, StyleTrialCoordinator(f.journal, gateway, f.repo), { key }, sessionOwner)
     @Before fun setup() = runBlocking {
         f = StyleTrialFixture(temporary.root); f.initialize()
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default); gateway = f.successful { calls++ }
@@ -53,6 +54,72 @@ class OwnedStyleTrialsTest {
     }
     private suspend fun generated(c: OwnedStyleTrials): StyleTrialPlan {
         val plan = prepared(c); c.submit(1, plan.id); idle(c).also { assertNull(it.error) }; return plan
+    }
+    @Test fun reloadQueuedDuringPrepareKeepsCurrentPlanAndStagedOriginalWithoutSubmission() = runBlocking {
+        val entered=CompletableDeferred<Unit>(); val release=CompletableDeferred<Unit>()
+        val produced=CompletableDeferred<StyleTrialPlan>(); val reloadStarted=CompletableDeferred<Unit>()
+        val c=controller(object : TrialSessionOwner by owner {
+            override suspend fun original(key: String): TrialOriginal {
+                entered.complete(Unit); release.await(); return owner.original(key)
+            }
+        })
+        loaded(c)
+        val observe=launch(Dispatchers.Unconfined,start=CoroutineStart.UNDISPATCHED) {
+            c.state(1).collect { state ->
+                state.plan?.let { produced.complete(it) }
+                if(produced.isCompleted && state.busy && state.preparation==null) reloadStarted.complete(Unit)
+            }
+        }
+        try {
+            c.prepare(1,listOf("a/Main"),false)
+            withTimeout(10000) { entered.await() }
+            assertTrue(c.state(1).value.busy)
+            c.load(1,ProjectSetupMode.CREATE,null) // Exact hosted order: local load queues behind Prepare.
+            release.complete(Unit)
+            val frozen=withTimeout(10000) { produced.await() }
+            withTimeout(10000) { reloadStarted.await() }
+            val after=idle(c)
+            assertNull(after.error)
+            assertEquals("Read-only queued load must retain a still-current prepared plan",frozen,after.plan)
+            assertArrayEquals(f.originals.getValue("a/Main").png,c.preview(1,frozen.inputs.single().originalHash))
+            assertEquals(0,calls); assertTrue(f.journal.records(1).isEmpty())
+            c.submit(1,frozen.id);assertNull(idle(c).error)
+            assertEquals(1,calls);assertEquals(1,f.journal.read(1,frozen.id)!!.items.single().endpointCalls)
+        } finally { release.complete(Unit); observe.cancelAndJoin() }
+    }
+    @Test fun readOnlyReloadInvalidatesChangedOriginalStyleEpochAndRoute() = runBlocking {
+        for(change in listOf("original","style","epoch","route")) {
+            val c=controller(); val frozen=prepared(c)
+            when(change) {
+                "original" -> f.originals["a/Main"]=f.originals.getValue("b/Main")
+                "style" -> { val saved=f.repo.load(1); f.repo.saveStyle(1,saved.revision!!.revision,"changed construction","",emptyList(),"CREATE",null,null) }
+                "epoch" -> f.journal.invalidateAll()
+                "route" -> c.bindContext(1,ProjectSetupMode.EXTEND,"source.pack")
+            }
+            c.load(1,if(change=="route") ProjectSetupMode.EXTEND else ProjectSetupMode.CREATE,if(change=="route") "source.pack" else null)
+            assertNull(idle(c).plan)
+            assertNull(c.preview(1,frozen.inputs.single().originalHash))
+            c.submit(1,frozen.id); assertEquals(0,calls);assertTrue(f.journal.records(1).isEmpty())
+            c.release(1)
+        }
+    }
+    @Test fun decliningWhileReloadRechecksOriginalCannotResurrectThePlan() = runBlocking {
+        val entered=CompletableDeferred<Unit>(); val release=CompletableDeferred<Unit>()
+        var pause=false
+        val c=controller(object : TrialSessionOwner by owner {
+            override suspend fun original(key: String): TrialOriginal {
+                if(pause) { entered.complete(Unit);release.await() }
+                return owner.original(key)
+            }
+        })
+        val frozen=prepared(c);pause=true
+        c.load(1,ProjectSetupMode.CREATE,null)
+        withTimeout(10000) { entered.await() }
+        assertTrue(c.state(1).value.busy)
+        assertEquals(frozen,c.state(1).value.plan)
+        c.cancelPreparation(1);release.complete(Unit)
+        assertNull(idle(c).plan);assertNull(c.preview(1,frozen.inputs.single().originalHash))
+        c.submit(1,frozen.id);assertEquals(0,calls);assertTrue(f.journal.records(1).isEmpty())
     }
     @Test fun dnaFamilyReferenceMismatchBlocksAndChangedChoiceInvalidatesFrozenOriginalFirstRequest() = runBlocking {
         val (analysis, art) = dnaFixturePlan(DnaAnalysisMode.QUICK,12)

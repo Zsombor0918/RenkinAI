@@ -6,7 +6,11 @@ internal fun synthesizeDnaLocally(reports: List<DnaIconReport>, images: Map<Stri
     val families = reports.groupBy { Triple(it.familyVote,it.tileVote,it.depthVote) }.entries.sortedByDescending { it.value.size }.mapIndexed { index,(_,members) ->
         val ids=members.map { it.sampleId }
         fun recurring(trait: String): DnaRule {
-            val groups=members.filter { it.traits.getValue(trait).provenance==DnaProvenance.OBSERVED }.groupBy { it.traits.getValue(trait).value }
+            val groups=members.filter { it.traits.getValue(trait).provenance==DnaProvenance.OBSERVED }.mapNotNull { report ->
+                val raw=report.traits.getValue(trait).value
+                val value=if(trait=="logo_silhouette") abstractDnaSilhouette(raw) else raw
+                value?.let { it to report }
+            }.groupBy({it.first},{it.second})
             val best=groups.maxByOrNull { it.value.size }
             return if(best!=null && best.value.size>=2 && best.value.size*2>=members.size)
                 DnaRule(best.key,DnaProvenance.OBSERVED,best.value.map { it.sampleId })

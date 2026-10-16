@@ -3,6 +3,18 @@ package dev.renkinProject.renkin.ai.style
 /** Reserved selection, not a persisted extra family or a rewrite of provider evidence. */
 internal const val DNA_PACK_STYLE = "__pack__"
 
+/** Per-image silhouettes can describe a source logo's identity. Only these closed,
+ * abstract construction phrases may enter a locally derived generation recipe.
+ * Unrecognized prose stays in raw evidence; Standard can supply abstract drawing rules. */
+internal fun abstractDnaSilhouette(text: String): String? =
+    text.lowercase().trim().replace(Regex("\\s+"), " ").takeIf { it in setOf(
+        "compact geometric masses with soft external contours",
+        "rounded geometric masses with soft external contours",
+        "angular geometric masses with crisp external contours",
+        "bold connected silhouette with open internal counters",
+        "open outline contours with clear internal gaps",
+        "standalone dark silhouette forms") }
+
 /** Small, conservative synonym vocabulary. Conflicting/negated prose stays unnormalized.
  * Raw observations always remain in SavedStyleDna and the journal. */
 internal fun normalizedDnaObservation(trait: String, text: String): String {
@@ -20,7 +32,11 @@ private fun packDrawingRule(saved: SavedStyleDna, trait: String, drawing: String
     val reports = saved.reports
     val threshold = maxOf(2, (reports.size * 3 + 4) / 5)
     val candidates = reports.filter { it.traits.getValue(trait).provenance == DnaProvenance.OBSERVED }
-        .groupBy { normalizedDnaObservation(trait, it.traits.getValue(trait).value) }
+        .mapNotNull { report ->
+            val raw = report.traits.getValue(trait).value
+            val value = if(trait == "logo_silhouette") abstractDnaSilhouette(raw) else normalizedDnaObservation(trait, raw)
+            value?.let { it to report }
+        }.groupBy({ it.first }, { it.second })
     val recurring = candidates.entries.sortedWith(compareByDescending<Map.Entry<String,List<DnaIconReport>>> { it.value.size }.thenBy { it.key }).firstOrNull()
     if (recurring != null && recurring.value.size >= threshold)
         return DnaRule(recurring.key, DnaProvenance.INFERRED, recurring.value.map { it.sampleId })

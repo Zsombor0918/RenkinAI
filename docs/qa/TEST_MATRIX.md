@@ -1,5 +1,9 @@
 # Regression and test matrix
 
+## Prepared trial versus queued read ordering
+
+A deterministic owned-controller regression holds original acquisition with CompletableDeferred, queues the read during Prepare, observes assignment and completed reload, and requires the same frozen plan and original bytes with zero submissions/markers. A later explicit mock Submit proves retained staging usability. Negative refresh cases change original/style/epoch/route; a separate barrier declines while current-original validation is suspended and forbids resurrection. Existing source/owner/recipe/billing/consent regressions remain.
+
 ## Generation-usefulness contract regressions
 
 Existing mandatory DNA selectors now cover concrete overall recipe labels with qualitative synthetic construction evidence, supported synthesis fallback and conflicting families, deterministic nonoutlier chosen-member references, v1/v2 prompt compatibility and unchanged request caps/schema. The actual native multipart test asserts original bytes first, ordered frozen references next and improved identity/abstraction/recipe/one-transparent-icon guidance. These are contract assertions, not inferred visual scores. All existing regression groups remain mandatory.

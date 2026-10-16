@@ -1,5 +1,11 @@
 # Architecture
 
+## Current trial plan retention during read-only reload
+
+OwnedStyleTrials retains a frozen plan while a coalesced local read is busy, then uses existing current(plan) checks and same-plan/staging guards before keeping it. The guard runs across suspensions so explicit cancellation cannot resurrect a plan. Changed route/context/original/recipe/epoch or read failure clears staging/proof; paid confirmation remains disabled until idle and submit independently rechecks. Suspending key/approval reads finish before the final StateFlow merge. No paid retry, consumed marker, journal format or Room migration is added.
+
+Raw per-image logo_silhouette may name a source symbol. Only closed abstract construction phrases from that field enter local family/global recipes; unknown/negated/identity-appended descriptions remain evidence-only. Separately supported abstract family synthesis is retained. This boundary follows an actual new full-suite source-identity failure and preserves the authoritative original-first contract.
+
 ## Bounded generation recipe compilation
 
 Existing V1 traits/drawing fields feed explicit generation labels and separate brand-preservation/abstraction constraints. Geometry/contour use silhouette evidence. Global fallback pools only nonunknown synthesis rules with at least two cited samples and60 percent pack support; unsupported/conflicting traits stay unestablished. Raw reports/partition remain immutable. Default representative selection excludes flagged outliers within chosen membership. Promptv2 uses the existing version field; plan/result readers accept frozen v1 and v2 and the gateway retains v1 instructions. New/frozen recipe comparison still protects current consent. No Room/schema/backup shape or transport-role change. See [ADR0011](decisions/0011-generation-useful-dna-recipes.md).

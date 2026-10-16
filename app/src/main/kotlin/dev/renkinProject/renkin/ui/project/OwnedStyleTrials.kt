@@ -116,13 +116,27 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         }
         pendingLoads.remove(id)
         start(id) {
-            flow(id).value = flow(id).value.copy(plan = null, preparation = null, ready = false)
-            images.remove(id)
-            coordinator.recover(id); history(id)
-            val p = preparation(id)
-            flow(id).value = flow(id).value.copy(preparation = p, hasKey = withContext(Dispatchers.IO) { hasKey(p.context.provider) })
-            val accepted = accepted(id)
-            flow(id).value = flow(id).value.copy(ready = accepted.isNotEmpty())
+            // A read queued during Prepare must not erase its completed plan.
+            // Keep the dialog while busy (paid confirmation stays disabled), then
+            // retain the exact plan/bytes only after all current-input checks.
+            val frozen = flow(id).value.plan
+            flow(id).value = flow(id).value.copy(preparation = null, ready = false)
+            try {
+                coordinator.recover(id); history(id)
+                val p = preparation(id)
+                val keyPresent = withContext(Dispatchers.IO) { hasKey(p.context.provider) }
+                val accepted = accepted(id)
+                val retained = frozen?.takeIf { plan ->
+                    p.context == plan.context && flow(id).value.plan?.id == plan.id && images[id] != null &&
+                        current(plan) && flow(id).value.plan?.id == plan.id && images[id] != null
+                }
+                if (retained == null) { images.remove(id); verifiedOriginalPlans.remove(id) }
+                flow(id).value = flow(id).value.copy(preparation = p, hasKey = keyPresent,
+                    ready = accepted.isNotEmpty(), plan = retained)
+            } catch (failure: Exception) {
+                cancelPreparation(id)
+                throw failure
+            }
         }
     }
     override fun options(id: Long, provider: String, model: String, quality: String) {

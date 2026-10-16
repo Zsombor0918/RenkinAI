@@ -1,5 +1,11 @@
 # Verification baseline
 
+## Actual hosted queued-load reproduction
+
+aef0dca0 hosted Android records plan assignment then queued-load clearing within18ms, followed by missing trial-decline and dependent missing Standard completion evidence. Saved revision1 survives. Focused local controlled RED repeats current plan becoming null after the queued read (1/1); corrected final-head results remain external on PR8. This supersedes the earlier merely suspected scheduling explanation, without retroactively claiming an exact trace of75e.
+
+Checkpoint aef0dca0 actually executes1010 Windows tests with7 failures/zero errors/skips: six retained baseline failures plus the unchanged source-identity assertion. Local Android4/4 and Python64 pass. This failed checkpoint prompted a narrow abstract-silhouette boundary correction; its final source results belong on PR8, never inherited from these counts.
+
 ## Diagnostic and generation-quality checkpoint
 
 From clean75e936a1, five focused quality cases execute5/5 RED before production edits; diagnostic instrumentation compiles and local Standard passes1/1 in11.557s with detailed traces. Existing runner safety tests9/9 pass. Later correction/final-source checks belong on PR8 after execution, not inferred from these checkpoints. The RED full matrix is cancelled to avoid redundant execution before the correction; final-head complete checks remain required.

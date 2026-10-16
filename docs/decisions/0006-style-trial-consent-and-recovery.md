@@ -149,3 +149,7 @@ within the256-plan limit and consumed item reservations within8192, while ignori
 those orphan plans as readable history. A partial result is not a saved PNG. Fresh
 separate consent can proceed with new IDs without deleting consumed rights, inventing
 completion, replaying a sent endpoint or weakening malformed committed-record checks.
+
+## October16 queued local-read retention
+
+A local read queued during Prepare must not discard a newly prepared current plan. Keep the confirmation visible but paid-disabled while busy; retain it and private staging only after existing fresh context/original/recipe/epoch checks. Recheck same-plan/staging presence across suspensions so explicit decline cannot resurrect consent. On mismatch/read error clear plan, bytes and verification proof. Local load never submits, claims a marker or repeats a request; explicit submit still performs its independent checks. No journal/Room/backup format changes. The hosted trace and deterministic RED/GREEN are recorded in the PR8 queued-load change note.

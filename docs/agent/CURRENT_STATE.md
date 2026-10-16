@@ -1,5 +1,11 @@
 # Current implementation
 
+## Queued local trial reads preserve only current prepared plans
+
+A hosted trace and deterministic barrier regression now prove that pending load drained after Prepare erases its newly assigned plan. Load retains the visible plan while busy, revalidates all existing context/original/recipe checks, and keeps its staged bytes only if the same plan remains current and uncancelled. Changed inputs or read failure invalidate it; decline during recheck cannot resurrect it. No local load submits or consumes a request. See [root-cause correction](../changes/2026-10-16-trial-queued-load-retention.md).
+
+The aef0dca0 full suite catches raw reference identity in the new silhouette mapping. Local recipes now accept only a closed abstract shape vocabulary from logo_silhouette; other raw descriptions stay evidence-only. Supported abstract synthesis rules remain available. See [identity boundary](../changes/2026-10-16-dna-abstract-silhouette-boundary.md).
+
 ## Generation-useful overall DNA contract
 
 The bounded PR8 quality continuation retains __pack__, raw schema1 reports and optional families. Overall rules use observed recurrence or supported synthesis with cited pack-wide support; silhouette maps to geometry/contour. The compiler labels concrete generation decisions, separates identity/abstraction constraints and lists unestablished traits once. Default references exclude flagged outliers without padding unrelated families. New promptv2 retains schema/request counts/caps; frozen v1 plans/readers remain supported with their actual version. Existing saved specifications/history are not rewritten. Offline structural/payload tests do not establish live or visual quality. See [decision](../decisions/0011-generation-useful-dna-recipes.md).

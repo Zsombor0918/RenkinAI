@@ -19,3 +19,7 @@ New prompt version per-icon-grammar-v2 refines guidance within the same fields a
 Adding report fields, a second overall cloud synthesis, an unverified prose classifier or a visual-quality score would expand storage/usage or imply unsupported precision. They are rejected. Recipe labels/provenance are deterministic assembly, not proof that a provider will observe or draw accurately. Keep __pack__ and family evidence inspectable. No Room21/schema19-21/backup/journal-shape migration, new endpoint or silent retry is introduced.
 
 V2 uses the existing version string field, so rollback must retain a compatible v1/v2 reader. Older binaries reject v2 during existing validation; do not downgrade owner data or replay consumed plans. Full/share compatibility and legacy null-override transport stay covered. Actual token consumption, output completeness, Samsung rendering and visual fidelity remain unmeasured; no live/paid request is authorized.
+
+## Raw silhouette identity boundary
+
+The full aef0dca0 suite demonstrates that direct raw logo_silhouette mapping can carry reference identity into the recipe. Local synthesis/global recurrence therefore accept only a small closed abstract construction vocabulary from that field; unrecognized, negated or identity-appended text remains raw evidence. Supported family drawing rules remain the abstract synthesis channel. This conservative boundary may omit useful Quick contours; do not replace it with an unverified brand/semantic classifier or weaken the retained identity assertion.
