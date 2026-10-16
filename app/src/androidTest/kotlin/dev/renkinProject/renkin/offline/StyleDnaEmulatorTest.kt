@@ -274,12 +274,25 @@ class StyleDnaEmulatorTest {
             fixture.trials.state(1).value.let { !it.busy && (it.plan != null || it.error != null) }
         }
     }
+    private fun prepareVisibleTrial() {
+        // A completed controller read can precede Compose's consumption, and a
+        // queued local reload can briefly replace the list with loading content.
+        // Observe/materialize the real control; never retry its click or request.
+        compose.waitUntil(15000) {
+            val state = fixture.trials.state(1).value
+            if (state.busy || state.preparation == null) false else try {
+                compose.onNodeWithTag("project-trials-1").performScrollToNode(hasTestTag("trial-prepare"))
+                compose.onAllNodes(hasTestTag("trial-prepare") and isEnabled()).fetchSemanticsNodes().size == 1
+            } catch (_: AssertionError) { false }
+        }
+        compose.onNodeWithTag("trial-prepare").assertIsDisplayed().assertIsEnabled().performClick()
+        awaitTrialPlan()
+    }
     private fun trialPreparation() {
         click("project-targets", "setup-target-${target.key}")
         click("project-targets", "setup-save-selection")
         compose.waitUntil(15000) { fixture.trials.state(1).value.let { !it.busy && it.preparation != null } }
-        click("project-trials-1", "trial-prepare")
-        awaitTrialPlan()
+        prepareVisibleTrial()
         assertNull(fixture.trials.state(1).value.error)
         val plan = checkNotNull(fixture.trials.state(1).value.plan)
         assertEquals(listOf(target.key), plan.inputs.map { it.key })
@@ -368,8 +381,7 @@ class StyleDnaEmulatorTest {
         // Targets were already persisted; continue is a read-only selection operation.
         click("project-targets", "setup-save-selection")
         compose.waitUntil(15000) { fixture.trials.state(1).value.let { !it.busy && it.preparation != null } }
-        click("project-trials-1", "trial-prepare")
-        awaitTrialPlan()
+        prepareVisibleTrial()
         assertNull(fixture.trials.state(1).value.error)
         assertNotNull(fixture.trials.state(1).value.plan)
         fixture.assertPosts(0)

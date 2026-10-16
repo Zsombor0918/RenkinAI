@@ -2,6 +2,14 @@
 
 ## October16 new Windows PC
 
+Delivery checkpoint6479b8f7 passes Linux CI/profile/HTTP but hosted Standard fails
+on missing trial-prepare in the loading Compose list. Its unchanged regression is
+retained. Test-only observation now awaits the enabled materialized control within
+the existing15 seconds before one click. Focused API35 Standard passes1/1 at normal
+width (11.441s) and320px (11.155s); display overrides are reset. Final-head full and
+hosted evidence remains separate. See
+[the focused delivery correction](../changes/2026-10-16-offline-dna-visible-trial-control.md).
+
 Hosted a234 Android phase1 is3 tests/1 Standard missing-trial-plan failure after
 Save; phase2 fails because Standard evidence is absent. Quick and incomplete/
 cancel pass. The test helper retains15 seconds and all assertions while requiring

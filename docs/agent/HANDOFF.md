@@ -2,6 +2,18 @@
 
 ## October16 new-PC offline validation continuation
 
+Focused delivery resumes from verified remote6479b8f7, clean tree. That source's
+Linux CI, full regressions and offline HTTP pass, but hosted Standard fails on
+missing trial-prepare inside the still-loading list; restart lacks its evidence.
+The fixture now observes the real enabled UI item before exactly one click, within
+the same15 seconds, then retains all plan/reference/consumption assertions. No
+production change. Focused Standard passes1/1 at normal and320px emulator widths;
+the hosted failure remains RED evidence until the new final head passes. See
+[minimal correction](../changes/2026-10-16-offline-dna-visible-trial-control.md).
+Implementation scope is closed; final committed-source checks/artifact receipt
+belong directly on PR8 after execution. Next safe owner action is review and free
+Samsung acceptance, with compatible signing and preserved data, never paid replay.
+
 Hosted a234 Android Standard reaches Save but observes idle/null plan/null error
 at trial preparation; Quick and incomplete/cancel pass. The new fixture helper
 now waits for a real plan or error within the same15 seconds before all original
