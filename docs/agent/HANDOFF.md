@@ -1,5 +1,21 @@
 # Agent handoff — guided UX Stage 1
 
+## Narrow guided-journey finishing pass
+
+Source896faa15 has hosted Android4/4 and Python67/67 success, but Linux full1013/1
+fails at the first Prepare scroll in GuidedProjectRoomJourneyComposeTest.journey.
+The single method and its five-class-method fixture pass alone on Windows; running
+CreateExtendFlowComposeTest immediately before those five methods reproduces the
+same missing Prepare at journey:246 (15/1 RED). The test now waits, within the
+existing10000ms readiness bound, for both a ready controller and the real
+trial-style semantics marker before scrolling to Prepare. No runtime, timeout,
+click retry, assertion, group or CI schedule changes. See the
+[focused correction](../changes/2026-10-17-guided-trial-ui-readiness.md).
+Final exact-head focused/hosted results and APK verification belong in PR8 after
+execution. Do not start Phases3/4; stop after delivery or an unresolved final gate.
+The earlier unrelated PACKAGE_CHANGED trace remains evidence of invalidation,
+not proof of a permanent starvation fix. Preserve data/signing/consumed markers.
+
 Phase1 checkpoint74d7c2b1 retains all Kotlin cases; local Python67/67 pass in52.659s. Phase2 now tags initiating invalidations, effect-key names, panel attachment and explicit reload/decline in the synthetic trace. Execute one hosted diagnostic; only reproduced causality may justify a correction. Stop on ambiguity. Final-head unit/Android/APK evidence belongs directly on PR8.
 
 October17 Phase1 starts at clean ebc5ef95a193a5541ce2d09415169cb8d42fb23d on existing PR8. Owner authorizes lean scheduling in [ADR0012](../decisions/0012-lean-verification.md). Focused runner checks pass11/11 after two missing-selection-API RED errors. No runtime/test assertion is deleted. Final committed-head CI evidence belongs on PR8. Next bounded phase: tag the shared Trial reload initiator in one diagnostic run; retain BLOCKED if causality remains ambiguous. Phases3/4 remain separate: reference-first UI with Legacy optional, then versioned concise prompt without rewriting frozen bytes.

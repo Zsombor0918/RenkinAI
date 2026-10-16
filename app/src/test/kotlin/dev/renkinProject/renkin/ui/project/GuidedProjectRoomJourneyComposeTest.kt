@@ -238,7 +238,14 @@ class GuidedProjectRoomJourneyComposeTest {
         assertEquals(1, styleSaves); assertEquals(0, providerCalls)
         click("project-targets", "setup-target-app/Main")
         click("project-targets", "setup-save-selection")
-        compose.waitUntil(10000) { trials.state(1).value.preparation != null && !trials.state(1).value.busy }
+        compose.waitUntil(10000) {
+            val current = trials.state(1).value
+            // Room/controller readiness can precede collectAsState's UI delivery.
+            // This visible header is emitted only by the prepared Trial content;
+            // wait for that composition before searching its lazy Prepare item.
+            current.preparation != null && !current.busy &&
+                compose.onAllNodesWithTag("trial-style").fetchSemanticsNodes().size == 1
+        }
         assertEquals(listOf("app/Main"), runBlocking {
             ProjectSelection.decode(fixture.repo.metadata(1)!!.selectionJson)!!.componentKeys
         })
