@@ -2,6 +2,13 @@
 
 ## October16 new Windows PC
 
+Hosted a234cf38 verification actually fails1005/8, all8 new HTTP fixtures; isolated
+offline artifact14/8 confirms parser5/5 remains green and the exact DNS guard blocks
+canonical localhost before reaching the server. Test-only explicit127 routing
+corrects that host difference without relaxing denial or changing production.
+Its new final-head execution is recorded on PR8. See
+[failure and correction](../changes/2026-10-16-offline-dna-host-routing.md).
+
 Source baseline e235922b3b57961f21f0b91e47a8938f464705af was fetched for existing
 draft PR8. Windows11Pro26200/x64/i9-13900K/32GiB uses official verified portable
 Temurin17.0.20.1, SDK36/build-tools35, Gradle8.11.1 and Python3.14. User explicitly

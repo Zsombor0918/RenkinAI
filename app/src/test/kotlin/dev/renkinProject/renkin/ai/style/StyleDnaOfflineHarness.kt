@@ -78,7 +78,10 @@ internal class StyleDnaOfflineHarness(root: File, timeoutMillis: Long = 5000) : 
             check(request.method == "POST" && request.header("Authorization") == "Bearer $TOKEN")
             logicalDestinations += request.url
             beforeNetwork(request)
-            chain.proceed(request.newBuilder().url(server.url(request.url.encodedPath)).build())
+            // MockWebServer uses InetAddress.canonicalHostName, which can be
+            // localhost on Linux. Pin the numeric host required by every guard.
+            val loopback = server.url(request.url.encodedPath).newBuilder().host("127.0.0.1").build()
+            chain.proceed(request.newBuilder().url(loopback).build())
         }
         .addNetworkInterceptor { chain ->
             val url = chain.request().url

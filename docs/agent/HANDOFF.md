@@ -2,6 +2,14 @@
 
 ## October16 new-PC offline validation continuation
 
+Linux CI on a234cf38 exposes a test-only canonical-hostname defect: offline HTTP
+14/8 and full1005/8 fail while all5 incomplete parser tests pass. MockWebServer's
+canonical name becomes localhost, which the exact127 DNS guard correctly denies.
+The JVM fixture now explicitly pins127.0.0.1, matching the already successful
+Android route, with all guards/assertions intact. No runtime change follows this
+finding. Fresh closing-head checks/artifact must replace a234's failed CI; retain
+its failure ZIP/logs. See [host correction](../changes/2026-10-16-offline-dna-host-routing.md).
+
 Source baseline e235922b3b57961f21f0b91e47a8938f464705af was fetched into the
 existing clean checkout and existing feat/ux-flow-stabilization branch; PR8 remains
 draft/open on unchanged feat/style-dna-v1. Main/PR6/PR7 are preserved. Unpushed work
