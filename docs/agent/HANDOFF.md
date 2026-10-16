@@ -1,5 +1,7 @@
 # Agent handoff — guided UX Stage 1
 
+Phase1 checkpoint74d7c2b1 retains all Kotlin cases; local Python67/67 pass in52.659s. Phase2 now tags initiating invalidations, effect-key names, panel attachment and explicit reload/decline in the synthetic trace. Execute one hosted diagnostic; only reproduced causality may justify a correction. Stop on ambiguity. Final-head unit/Android/APK evidence belongs directly on PR8.
+
 October17 Phase1 starts at clean ebc5ef95a193a5541ce2d09415169cb8d42fb23d on existing PR8. Owner authorizes lean scheduling in [ADR0012](../decisions/0012-lean-verification.md). Focused runner checks pass11/11 after two missing-selection-API RED errors. No runtime/test assertion is deleted. Final committed-head CI evidence belongs on PR8. Next bounded phase: tag the shared Trial reload initiator in one diagnostic run; retain BLOCKED if causality remains ambiguous. Phases3/4 remain separate: reference-first UI with Legacy optional, then versioned concise prompt without rewriting frozen bytes.
 
 ## Hosted Standard root cause and bounded closing correction

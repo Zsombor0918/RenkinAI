@@ -84,12 +84,25 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
     var previewOptionsExpanded by rememberSaveable(id) { mutableStateOf(false) }
     var recheckId by rememberSaveable(id) { mutableStateOf<String?>(null) }
     val theme = PackageResourceResolver.displayedNightMode
+    val trace = LocalProjectInvalidationTrace.current
+    val traceKeys = remember { arrayOfNulls<List<Any?>>(1) }
     ObserveCoverageInvalidation(source, observeLauncherChanges = true) { reload++ }
     // An invalidation while a paid job owns the controller is rechecked locally when it finishes.
     LaunchedEffect(id, mode, source, reload, theme, available, state.network) {
+        if (trace != null) {
+            val keys = listOf(id, mode, source, reload, theme, available, state.network)
+            val labels = listOf("id", "mode", "source", "reload", "theme", "available", "network")
+            val previous = traceKeys[0]
+            trace("trial.effect", if (previous == null) "initial" else
+                labels.filterIndexed { index, _ -> keys[index] != previous[index] }.joinToString(","))
+            traceKeys[0] = keys
+        }
         if (available && !state.network) backend.load(id, mode, source)
     }
-    DisposableEffect(id, backend) { onDispose { backend.release(id) } }
+    DisposableEffect(id, backend) {
+        trace?.invoke("trial.panel.attach", "composition")
+        onDispose { trace?.invoke("trial.panel.detach", "composition"); backend.release(id) }
+    }
     BackHandler(onBack = onBack)
     val p = state.preparation
     val context = p?.context?.encode().orEmpty()
@@ -203,7 +216,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                         }
                         Text(stringResource(R.string.trialSuggestion))
                     }
-                    OutlinedButton(onClick = { backend.load(id, mode, source) }, enabled = enabled,
+                    OutlinedButton(onClick = { trace?.invoke("trial.reload.user", "button"); backend.load(id, mode, source) }, enabled = enabled,
                         modifier = Modifier.heightIn(min = 48.dp).testTag("trial-reload")) { Text(stringResource(R.string.guidedTrialReload)) }
                     if (p != null || state.error != "missing_style") OutlinedButton(onClick = onRefine, enabled = enabled,
                         modifier = Modifier.heightIn(min = 48.dp).testTag("trial-refine")) { Text(stringResource(R.string.trialRefine)) }
@@ -345,6 +358,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
         if (!state.network) {
             backend.cancelPreparation(id)
             // Re-read the unchanged durable approval; cancellation grants no request consent.
+            trace?.invoke("trial.reload.user", "decline")
             reload++
         }
     }

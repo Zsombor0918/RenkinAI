@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -71,18 +72,36 @@ internal data class ProjectSetupData(
     val launcherInventoryChanged: Boolean = false
 )
 
+/** Optional instrumentation sink. Production has no logger; values are fixed codes only. */
+internal val LocalProjectInvalidationTrace = staticCompositionLocalOf<((String, String) -> Unit)?> { null }
+
 /** Screen-scoped invalidation only, never a background watcher or icon refresh. */
 @Composable
 internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges: Boolean = false, onInvalidate: () -> Unit) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val invalidate by rememberUpdatedState(onInvalidate)
+    val trace by rememberUpdatedState(LocalProjectInvalidationTrace.current)
     DisposableEffect(lifecycle, context, source, observeLauncherChanges) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) invalidate() }
+        trace?.invoke("invalidation.attach", "observer")
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) {
+            trace?.invoke("invalidation.resume", "ON_RESUME")
+            invalidate()
+        } }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val pack = intent?.data?.schemeSpecificPart
-                if (pack != null && (observeLauncherChanges || source != null && pack == source)) invalidate()
+                if (pack != null && (observeLauncherChanges || source != null && pack == source)) {
+                    val action = when (intent?.action) {
+                        Intent.ACTION_PACKAGE_ADDED -> "added"
+                        Intent.ACTION_PACKAGE_REMOVED -> "removed"
+                        Intent.ACTION_PACKAGE_CHANGED -> "changed"
+                        Intent.ACTION_PACKAGE_REPLACED -> "replaced"
+                        else -> "other"
+                    }
+                    trace?.invoke("invalidation.package", "$action:source_match=${pack == source}")
+                    invalidate()
+                }
             }
         }
         lifecycle.addObserver(observer)
@@ -94,6 +113,7 @@ internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges
             addDataScheme("package")
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
         onDispose {
+            trace?.invoke("invalidation.detach", "observer")
             lifecycle.removeObserver(observer)
             if (source != null || observeLauncherChanges) context.unregisterReceiver(receiver)
         }

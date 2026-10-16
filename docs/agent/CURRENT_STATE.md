@@ -1,5 +1,7 @@
 # Current implementation
 
+Phase2 adds an opt-in instrumentation sink for Trial composition/effect-key and lifecycle/package/user reload origins. Production defaults to no sink. No controller correction, state transition, timeout or consent behavior changes. Hosted causality is pending; Standard/restart remain BLOCKED.
+
 Verification scheduling now follows [ADR0012](../decisions/0012-lean-verification.md): one authoritative full suite plus explicit targeted/order diagnostics. Runtime, unique Kotlin coverage and unresolved hosted Standard/restart status are unchanged.
 
 ## Queued local trial reads preserve only current prepared plans

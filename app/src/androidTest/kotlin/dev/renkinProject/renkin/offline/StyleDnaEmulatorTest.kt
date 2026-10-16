@@ -231,8 +231,13 @@ class StyleDnaEmulatorTest {
                         onStyleSaved = { metadata = it.metadata; fixture.trace.event("style.parent.saved"); next() }, guided = true)
                 }, guidedWorkflow = true,
                 guidedTrialPanel = { id, mode, source, back, refine, editor, complete ->
+                    val traceSink = remember(fixture) { { event: String, reason: String ->
+                        fixture.trace.event(event, "reason" to reason)
+                    } }
+                    CompositionLocalProvider(LocalProjectInvalidationTrace provides traceSink) {
                     ProjectTrialPanel(id, "Offline project", mode, source, true, fixture.trials, back, refine, editor,
                         onComplete = complete, appName = { target.name }, guided = true)
+                    }
                 }) { Text("Preserved classic editor") }
         }
     }

@@ -1,5 +1,7 @@
 # Offline Style DNA verification
 
+Origin tracing additionally emits trial.effect with changed key names (id/mode/source/reload/theme/available/network), trial.panel.attach/detach, invalidation.attach/detach/resume/package, and trial.reload.user. No package/profile/source values are emitted; package reason is a fixed action code plus source-match boolean. Correlate the existing monotonic seq/timestamp and backend/state/plan trace. The production CompositionLocal defaults to null; only the synthetic Trial subtree supplies a stable logger. Instrumentation can perturb timing; absence of a failing interleaving does not prove a fix.
+
 ## Standard diagnostic trace
 
 The Android fixture emits OfflineDnaTrace JSON events; the runner saves tag-filtered logcat as trace-0.log and trace-1.log even when assertions fail. Compare ui.prepare.before/input.return, trial.prepare.dispatched/enter/return, trial.load/bind/release, trial.state.observed and scope.job.completed.after_finally. Save, selection, disk/evidence and journal filesystem events distinguish persisted style from journey completion. Each row carries process/thread, main-thread flag and monotonic time. StateFlow conflation and new-directory watcher attachment limit negative conclusions; do not infer an unobserved assignment never happened. The supported default Compose dispatcher remains unchanged.
