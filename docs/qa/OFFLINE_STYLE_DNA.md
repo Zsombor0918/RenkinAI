@@ -1,5 +1,9 @@
 # Offline Style DNA verification
 
+## Standard diagnostic trace
+
+The Android fixture emits OfflineDnaTrace JSON events; the runner saves tag-filtered logcat as trace-0.log and trace-1.log even when assertions fail. Compare ui.prepare.before/input.return, trial.prepare.dispatched/enter/return, trial.load/bind/release, trial.state.observed and scope.job.completed.after_finally. Save, selection, disk/evidence and journal filesystem events distinguish persisted style from journey completion. Each row carries process/thread, main-thread flag and monotonic time. StateFlow conflation and new-directory watcher attachment limit negative conclusions; do not infer an unobserved assignment never happened. The supported default Compose dispatcher remains unchanged.
+
 These fixtures exercise the production request encoder, strict Responses parser,
 owned controller, journals and Room. They never read a stored provider credential.
 Synthetic PNGs and a generated, permission-free icon pack replace private artwork.

@@ -1,5 +1,9 @@
 # Agent handoff — guided UX Stage 1
 
+## October16 diagnostic and recipe-quality continuation
+
+Resume clean75e936a1 on existing PR8. Five new recipe/prompt/reference/payload assertions execute5/5 RED before production edits. Test-only backend/state/job/click/persistence/journal traces retain monotonic thread/process evidence in trace-0/1.log. A default-dispatcher experiment stays reverted; no sleeps/retries/timeouts/assertions change. First establish hosted Prepare event ordering, then improve the existing overall contract with V1 compatibility and unchanged request limits. See [diagnostic RED](../changes/2026-10-16-dna-diagnostic-quality-red.md). Final exact-head results belong on PR8; no phone/key/live request or adjacent feature scope.
+
 ## October16 new-PC offline validation continuation
 
 Focused delivery resumes from verified remote6479b8f7, clean tree. That source's

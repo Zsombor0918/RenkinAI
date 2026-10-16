@@ -74,6 +74,8 @@ class StyleDnaEmulatorTest {
             override fun getNoBackupFilesDir() = File(root, "noBackup").apply { mkdirs() }
             override fun getDatabasePath(name: String) = File(root, "database/$name").apply { parentFile!!.mkdirs() }
         }
+        val trace = OfflineDnaTrace(name)
+        private val journalTrace = trace.journal(context.noBackupFilesDir)
         val db = Room.databaseBuilder(context, RenkinPackDatabase::class.java, "offline.db").build()
         val repo = ProjectAiRepository(db, ProjectAssetStore(context))
         val dnaJournal = StyleDnaJournal(context)
@@ -113,7 +115,10 @@ class StyleDnaEmulatorTest {
         lateinit var packInfo: IconPack
         lateinit var coverage: CoverageSnapshot
         suspend fun <T> owned(id: Long, block: suspend () -> T): T = mutex.withLock {
-            check(id == 1L); block()
+            check(id == 1L)
+            val job = System.identityHashCode(currentCoroutineContext()[Job])
+            trace.event("owner.enter", "job" to job)
+            try { block() } finally { trace.event("owner.finally", "job" to job) }
         }
         val analysis = OwnedStyleAnalysis(scope, repo, legacyJournal, ReferenceSampler(),
             StyleAnalysisCoordinator(legacyJournal, StyleAnalysisGateway { error("Legacy submission is forbidden") }),
@@ -125,7 +130,7 @@ class StyleDnaEmulatorTest {
                 }
             }, StyleDnaCoordinator(dnaJournal, OpenAiStyleDnaGateway({ TOKEN }, client,
                 "https://api.openai.com/v1/responses".toHttpUrl())))
-        val trials = OwnedStyleTrials(scope, repo, trialJournal,
+        private val actualTrials = OwnedStyleTrials(scope, repo, trialJournal,
             StyleTrialCoordinator(trialJournal, IconGenerationGateway { error("Trial submission is forbidden") }, repo),
             { true }, object : TrialSessionOwner {
                 override suspend fun <T> owned(id: Long, action: suspend () -> T) = this@Fixture.owned(id, action)
@@ -137,9 +142,28 @@ class StyleDnaEmulatorTest {
                 }
                 override suspend fun settings() = AiSettings()
             })
+        val trials = trace.trials(actualTrials, scope)
+        private val observedAnalysis = object : ProjectAnalysisBackend by analysis {
+            override suspend fun saveDna(id: Long, planId: String?, grammar: String, selectedFamily: String,
+                hashes: List<String>, expected: Long?, draft: ProjectStyleDraft): SavedProjectStyle {
+                trace.event("dna.save.enter", "references" to hashes.size, "expected_revision" to expected)
+                return try { analysis.saveDna(id, planId, grammar, selectedFamily, hashes, expected, draft).also {
+                    trace.event("dna.save.persisted", "revision" to it.revision?.revision, "references" to it.references.size)
+                } } finally { trace.event("dna.save.finally") }
+            }
+        }
+        private val analysisObserver = scope.launch(Dispatchers.Unconfined, start = CoroutineStart.UNDISPATCHED) {
+            analysis.state(1).collect { trace.event("dna.state.observed", "busy" to it.busy, "network" to it.network,
+                "plan" to it.dnaPlan?.id, "status" to it.dnaRecord?.status?.name,
+                "submitted" to it.dnaRecord?.submitted, "reports" to it.dnaRecord?.reports?.size, "error" to it.error) }
+        }
         val style = object : ProjectStyleBackend {
-            override val analysis get() = this@Fixture.analysis
-            override suspend fun load(id: Long) = owned(id) { repo.load(id) }
+            override val analysis get() = observedAnalysis
+            override suspend fun load(id: Long) = owned(id) {
+                trace.event("style.load.enter")
+                repo.load(id).also { trace.event("style.load.complete", "revision" to it.revision?.revision,
+                    "references" to it.references.size) }
+            }
             override suspend fun referencePreview(id: Long, hash: String) = owned(id) { repo.referenceBytes(id, hash) }
             override suspend fun importReference(id: Long, uri: Uri): ReferenceAsset = error("No external input")
             override suspend fun copyGlobal(id: Long): ProjectStyleDraft = error("No credential/settings input")
@@ -164,7 +188,15 @@ class StyleDnaEmulatorTest {
             assertEquals("Only verified loopback connections", expected, posts.get())
         }
         override fun close() {
-            runBlocking { scope.coroutineContext.job.cancelAndJoin() }
+            trace.trial("fixture.close", trials.state(1).value)
+            runBlocking {
+                val saved = repo.load(1)
+                trace.event("disk.reopen.snapshot", "revision" to saved.revision?.revision, "references" to saved.references.size,
+                    "dna_statuses" to dnaJournal.records(1).joinToString { it.status.name },
+                    "dna_submitted" to dnaJournal.records(1).sumOf { it.submitted }, "trial_records" to trialJournal.records(1).size)
+                scope.coroutineContext.job.cancelAndJoin()
+            }
+            journalTrace.close()
             db.close(); client.connectionPool.evictAll(); client.dispatcher.executorService.shutdown(); server.shutdown()
         }
     }
@@ -181,12 +213,15 @@ class StyleDnaEmulatorTest {
                         coverage = CoverageUiState.Ready(fixture.coverage),
                         onSaveSelection = { version, selection -> fixture.owned(1) {
                             verifyProjectSelectionContext(selection, listOf(target)) { _, _ -> fixture.reader }
-                            fixture.repo.saveSelection(1, version, selection).also { metadata = it }
+                            fixture.trace.event("selection.save.enter", "expected_version" to version)
+                            fixture.repo.saveSelection(1, version, selection).also {
+                                metadata = it; fixture.trace.event("selection.save.persisted", "version" to it.version)
+                            }
                         } })
                 },
                 stylePanel = { id, mode, source, stamp, back, next ->
                     ProjectStylePanel(id, mode, source, stamp, true, fixture.style, back, next,
-                        onStyleSaved = { metadata = it.metadata; next() }, guided = true)
+                        onStyleSaved = { metadata = it.metadata; fixture.trace.event("style.parent.saved"); next() }, guided = true)
                 }, guidedWorkflow = true,
                 guidedTrialPanel = { id, mode, source, back, refine, editor, complete ->
                     ProjectTrialPanel(id, "Offline project", mode, source, true, fixture.trials, back, refine, editor,
@@ -220,7 +255,9 @@ class StyleDnaEmulatorTest {
         compose.waitUntil(15000) { compose.onAllNodes(hasTestTag(tag) and isEnabled()).fetchSemanticsNodes().size == 1 }
         compose.waitForIdle()
         compose.onNodeWithTag(list).performScrollToNode(hasTestTag(tag))
+        fixture.trace.event("ui.click.before", "tag" to tag)
         compose.onNodeWithTag(tag).assertIsDisplayed().assertIsEnabled().performClick()
+        fixture.trace.event("ui.click.return", "tag" to tag)
         compose.waitForIdle()
     }
     private fun idleAnalysis() {
@@ -285,8 +322,12 @@ class StyleDnaEmulatorTest {
                 compose.onAllNodes(hasTestTag("trial-prepare") and isEnabled()).fetchSemanticsNodes().size == 1
             } catch (_: AssertionError) { false }
         }
+        fixture.trace.trial("ui.prepare.before", fixture.trials.state(1).value)
         compose.onNodeWithTag("trial-prepare").assertIsDisplayed().assertIsEnabled().performClick()
-        awaitTrialPlan()
+        fixture.trace.trial("ui.prepare.input.return", fixture.trials.state(1).value)
+        try { awaitTrialPlan() } finally {
+            fixture.trace.trial("ui.prepare.wait.finally", fixture.trials.state(1).value)
+        }
     }
     private fun trialPreparation() {
         click("project-targets", "setup-target-${target.key}")
@@ -407,7 +448,10 @@ class StyleDnaEmulatorTest {
         val file = File(app.filesDir, "offline-dna-evidence.json")
         val root = if (file.exists()) JSONObject(file.readText()) else JSONObject()
         value.put("process_id", android.os.Process.myPid()).put("android_api", Build.VERSION.SDK_INT)
-        root.put(name, value); file.writeText(root.toString(2))
+        root.put(name, value)
+        fixture.trace.event("evidence.save.enter", "journey" to name)
+        file.writeText(root.toString(2))
+        fixture.trace.event("evidence.save.complete", "journey" to name)
     }
     companion object { private const val TOKEN = "offline-emulator-synthetic-never-a-paid-key" }
 }

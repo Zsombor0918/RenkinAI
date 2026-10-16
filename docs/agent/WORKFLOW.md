@@ -1,5 +1,9 @@
 # Agent, Git and review workflow
 
+## Synthetic emulator transition evidence
+
+The offline runner additionally retains tag-filtered trace-0.log and trace-1.log from the explicit emulator after each instrumentation command. Test-owned delegates record actual input/backend boundaries, observed state and child completion, plus Save/read/journal events with monotonic thread/process identity. Logging never changes a dispatcher or grants success; absent transitions may reflect StateFlow conflation or watcher attachment. No raw credentials, image bytes, SQL arguments or provider prose are logged. Existing gates and strict counter/assertion checks remain.
+
 ## Offline DNA gates and Unicode Windows paths
 
 The original23 regression groups remain; an additive offline HTTP group requires

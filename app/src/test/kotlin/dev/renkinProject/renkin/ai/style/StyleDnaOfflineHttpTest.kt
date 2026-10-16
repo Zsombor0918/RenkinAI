@@ -312,6 +312,12 @@ class StyleDnaOfflineHttpTest {
             }
             assertTrue(body.contains("Image 1")); assertTrue(body.contains("STYLE REFERENCES ONLY"))
             assertTrue(body.contains("Preserve original target hues")); assertTrue(body.contains("Target-type handling"))
+            assertTrue(body.contains("Background mode:")); assertTrue(body.contains("Brand-preservation rule:"))
+            assertTrue(body.contains("Abstraction rule:")); assertTrue(body.contains("Optical fill / padding:"))
+            assertTrue(body.contains("exactly ONE")); assertTrue(body.contains("transparent")); assertTrue(body.contains("1024x1024"))
+            assertTrue(body.contains("no collage") || body.contains("No reference symbols, collages"))
+            assertTrue(trial.referenceHashes.size in 1..5)
+            assertEquals(f.original.hash, trial.inputs.single().originalHash)
             assertFalse(body.contains(StyleDnaOfflineHarness.TOKEN)); assertFalse(body.contains(key))
             val snapshots = f.repository.snapshot(); f.reopen()
             assertEquals(snapshots, f.repository.snapshot())

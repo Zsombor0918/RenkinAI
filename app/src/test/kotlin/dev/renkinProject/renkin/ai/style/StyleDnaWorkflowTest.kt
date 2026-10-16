@@ -32,6 +32,73 @@ internal fun dnaReportsBody(reports: List<DnaIconReport>)=canonicalJson(json("sc
 @Config(application=Application::class,sdk=[33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleDnaWorkflowTest {
+    @Test fun overallRecipeUsesConcreteGenerationDecisionsAndKeepsRawEvidence() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val values = mapOf("tile_geometry" to "Standalone dark silhouette forms; no separate background tile",
+            "logo_silhouette" to "Compact geometric masses with soft external contours",
+            "stroke_fill" to "Solid fills without an outline", "corners" to "Softened corners",
+            "optical_scale" to "High optical fill with a narrow clear outer margin; qualitative, not measured",
+            "negative_space" to "Keep open counters and distinct internal gaps",
+            "shadow_gradient" to "Subtle gradients and soft highlights; shallow depth, no heavy extrusion",
+            "luminance" to "Dark neutral base with vivid accents", "color_roles" to "Dark base plus vivid native brand accents, not monochrome",
+            "wordmark_handling" to "Retain text only when essential to target brand identity",
+            "simplification" to "Reduce small detail to a few bold geometric parts")
+        val reports = dnaFixtureReports(plan).map { report -> report.copy(
+            traits = DNA_TRAITS.associateWith { DnaObservation(values.getValue(it), DnaProvenance.OBSERVED) },
+            tileVote = DnaTile.NONE, depthVote = DnaDepth.GRADIENT, colorPolicy = PackColorPolicy.ADAPT_BRAND_COLORS) }
+        val raw = synthesizeDnaLocally(reports, images)
+        val saved = SavedStyleDna(raw, reports, plan.model, plan.detail, plan.algorithm, DNA_PACK_STYLE)
+        val before = saved.encode()
+        val recipe = StyleDnaCompiler.recipe(saved, DnaSymbolType.WORDMARK)
+        for (label in listOf("Background mode:", "Dominant shape / silhouette:", "Optical fill / padding:",
+            "Edges / corners:", "Stroke / outline:", "Simplification / complexity ceiling:", "Color policy:",
+            "Gradient / highlight / depth:", "Text policy:", "Negative space:", "Brand-preservation rule:",
+            "Abstraction rule:", "Pack consistency:")) assertTrue(label + " missing: " + recipe, recipe.contains(label))
+        for (value in listOf("standalone dark silhouette", "compact geometric masses", "vivid native brand accents",
+            "high optical fill", "subtle gradients", "essential to target brand identity")) assertTrue(value, recipe.lowercase().contains(value))
+        assertFalse(recipe.contains("UNKNOWN:")); assertFalse(recipe.contains("Not established"))
+        assertEquals(before, saved.encode()); assertEquals(saved, SavedStyleDna.parse(before))
+        assertEquals(reports, saved.reports); assertEquals(raw, saved.dna)
+        assertTrue(recipe.length < 4000)
+    }
+    @Test fun overallUsesSupportedSynthesisRulesWithoutTurningConflictsIntoUniversalRules() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.STANDARD, 12)
+        val reports = dnaFixtureReports(plan).mapIndexed { index, report -> report.copy(traits = report.traits +
+            ("logo_silhouette" to DnaObservation("Distinct contour observation number $index", DnaProvenance.OBSERVED))) }
+        val local = synthesizeDnaLocally(reports, images)
+        val rule = DnaRule("Standalone dark silhouette forms with compact geometric masses", DnaProvenance.INFERRED, reports.map { it.sampleId })
+        val family = local.families.single().copy(drawing = local.families.single().drawing + ("geometry" to rule))
+        val saved = SavedStyleDna(local.copy(families = listOf(family)), reports, plan.model, plan.detail, plan.algorithm, DNA_PACK_STYLE)
+        val overall = packDnaFamily(saved)
+        assertEquals(rule.value.lowercase(), overall.drawing.getValue("geometry").value.lowercase())
+        assertEquals(rule.evidenceIds, overall.drawing.getValue("geometry").evidenceIds)
+        val halves = reports.chunked(6).mapIndexed { index, members -> family.copy(id="part$index", evidenceIds=members.map { it.sampleId },
+            colorRoles=emptyList(), drawing=family.drawing.mapValues { (_, value) -> value.copy(evidenceIds=members.map { it.sampleId }) } +
+                ("geometry" to rule.copy(value=if(index==0) "Rounded simple masses" else "Angular complex contours", evidenceIds=members.map { it.sampleId })),
+            must=emptyList(),should=emptyList(),mustNot=emptyList()) }
+        val conflict = saved.copy(dna=local.copy(families=halves,recommendedFamily=halves.first().id))
+        assertEquals(DnaProvenance.UNKNOWN, packDnaFamily(conflict).drawing.getValue("geometry").provenance)
+        val sparse = saved.copy(reports=reports.map { it.copy(traits=it.traits.mapValues { (_, value) -> value.copy(provenance=DnaProvenance.UNKNOWN) }) },
+            dna=local.copy(families=listOf(family.copy(drawing=family.drawing.mapValues { (_, value) -> value.copy(provenance=DnaProvenance.UNKNOWN,evidenceIds=emptyList()) }))))
+        val sparseRecipe=StyleDnaCompiler.recipe(sparse,DnaSymbolType.UNKNOWN)
+        assertTrue(sparseRecipe.contains("Unestablished traits:")); assertFalse(sparseRecipe.contains("UNKNOWN:"))
+    }
+    @Test fun representativeReferencesPreferUnflaggedEvidenceAndNeverPadAnotherFamily() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val reports = dnaFixtureReports(plan).mapIndexed { index, report -> report.copy(
+            familyVote=if(index<6) DnaFamilyVote.OUTLINE else DnaFamilyVote.SOLID,
+            outlierReason=if(index==0) "Atypical construction for this sample" else "") }
+        val raw=synthesizeDnaLocally(reports,images)
+        val saved=SavedStyleDna(raw,reports,plan.model,plan.detail,plan.algorithm,DNA_PACK_STYLE)
+        val available=plan.samples.map { it.hash }
+        val refs=dnaReferenceHashes(saved,DNA_PACK_STYLE,available)
+        assertEquals(5,refs.size); assertFalse(refs.contains(reports.first().sampleHash))
+        assertTrue(refs.contains(reports[6].sampleHash)); assertNotEquals(available.take(5),refs)
+        val family=raw.families.first()
+        val familyRefs=dnaReferenceHashes(saved,family.id,available)
+        assertTrue(familyRefs.all { hash -> reports.single { it.sampleHash==hash }.sampleId in family.evidenceIds })
+        assertEquals(refs,dnaReferenceHashes(saved,DNA_PACK_STYLE,available))
+    }
     @Test fun packWideDerivedReviewNormalizesSynonymsWithoutRewritingRawFamiliesOrIdentity() {
         val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
         val reports = dnaFixtureReports(plan).mapIndexed { index, report -> report.copy(

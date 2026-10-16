@@ -81,6 +81,8 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
                 if device[:2] == ["shell", "getprop"]:
                     values = {"ro.build.version.sdk": "35", "ro.product.model": "synthetic_emulator"}
                     return completed(command, values.get(device[-1], "synthetic") + "\n")
+                if device == ["logcat", "-d", "-v", "threadtime", "OfflineDnaTrace:I", "*:S"]:
+                    return completed(command, "OfflineDnaTrace: synthetic bounded transition\n")
                 if device[0] == "install":
                     if mode == "install_failure":
                         raise subprocess.CalledProcessError(1, command)

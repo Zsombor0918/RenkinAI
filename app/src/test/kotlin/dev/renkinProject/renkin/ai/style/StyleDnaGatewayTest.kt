@@ -40,6 +40,28 @@ internal fun dnaFullResponseFixture(request: DnaCall, text: String): String = js
 @Config(application=Application::class,sdk=[33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleDnaGatewayTest {
+    @Test fun generationUsefulPromptIsVersionedAndKeepsV1PlansAndEvidenceReadable() {
+        val request=call()
+        assertEquals("per-icon-grammar-v2",request.plan.promptVersion)
+        val synthesis=DnaCall(request.plan,request.plan.steps.last(),emptyMap(),dnaFixtureReports(request.plan))
+        for (input in listOf(request,synthesis)) {
+            val body=dnaBody(input)
+            val instruction=body.getString("instructions")
+            for (term in listOf("silhouette-led", "optical fill", "complexity ceiling", "brand identity", "negative space", "qualitative"))
+                assertTrue(term,instruction.contains(term))
+            assertEquals(12288,body.getInt("max_output_tokens")); assertFalse(body.getBoolean("store"))
+            assertEquals(if(input.step.synthesis) "renkin_style_dna_v1" else "renkin_icon_reports_v1",body.getJSONObject("text").getJSONObject("format").getString("name"))
+        }
+        val old=request.plan.copy(promptVersion="per-icon-grammar-v1")
+        assertEquals(old,StyleDnaPlan.parse(old.json()))
+        assertNotEquals(old.promptHash,request.plan.promptHash)
+        assertFalse(dnaBody(request.copy(plan=old)).getString("instructions").contains("complexity ceiling"))
+        val reports=dnaFixtureReports(old)
+        val saved=SavedStyleDna(synthesizeDnaLocally(reports,dnaFixturePlan(DnaAnalysisMode.STANDARD,24).second),reports,
+            old.model,old.detail,old.algorithm,DNA_PACK_STYLE,"per-icon-grammar-v1")
+        assertEquals(saved,SavedStyleDna.parse(saved.encode()))
+        assertThrows(IllegalArgumentException::class.java) { old.copy(promptVersion="future-unrecognized").validate() }
+    }
     @Test fun frozenReportSchemaMatchesNonemptyTextExactCountAndAllowedBindings() {
         for (mode in DnaAnalysisMode.entries) {
             val request = call(mode)

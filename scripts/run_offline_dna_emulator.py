@@ -84,6 +84,8 @@ def main():
             result = device("shell", "am", "instrument", "-w", "-r", "-e", "class", selector,
                             PACKAGE + ".test/androidx.test.runner.AndroidJUnitRunner", check=False, timeout=600)
             log = result.stdout + result.stderr
+            trace = device("logcat", "-d", "-v", "threadtime", "OfflineDnaTrace:I", "*:S", check=False)
+            (output / f"trace-{index}.log").write_text(trace.stdout + trace.stderr, encoding="utf-8")
             (output / f"instrumentation-{index}.log").write_text(log, encoding="utf-8")
             expected = 3 if index == 0 else 1
             passed = result.returncode == 0 and re.search(rf"OK \({expected} tests?\)", log) is not None
