@@ -1,5 +1,20 @@
 # Agent, Git and review workflow
 
+## Offline DNA gates and Unicode Windows paths
+
+The original23 regression groups remain; an additive offline HTTP group requires
+the new disk-Room/controller/actual-wire suite and incomplete-reason regressions.
+The runner preserves an explicit ASCII junction path so AGP's Windows path guard
+can stay enabled. A new Offline Style DNA workflow runs failing HTTP and emulator
+jobs on the actual PR head and retains reports. Its host runner refuses physical
+serials/qemu mismatches, builds the three APKs, records hashes/source/dirty status,
+and verifies separate instrumentation processes. It never reads a provider key.
+These are workflow gates; no new branch-protection context is claimed configured.
+The existing CI build also pins checkout to the PR head (or event SHA on push/
+dispatch), retaining all tasks while making final APK provenance explicit.
+See [offline commands](../qa/OFFLINE_STYLE_DNA.md) and
+[ADR0010](../decisions/0010-offline-style-dna-validation.md).
+
 ## PR8 final APK verification
 
 The existing CI compile/unit/assemble/upload sequence retains every task. After

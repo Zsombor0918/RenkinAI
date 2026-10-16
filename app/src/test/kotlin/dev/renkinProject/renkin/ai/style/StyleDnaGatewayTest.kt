@@ -195,7 +195,7 @@ class StyleDnaGatewayTest {
                     "error" to json("message" to "private provider prose"), "output" to JSONArray()).toString()))
                 var markers = 0
                 val outcome = client(server).call(call()) { markers++ }
-                assertEquals(DnaCallResult.Failed(if (status == "incomplete") "RESPONSE_INCOMPLETE" else "RESPONSE_FAILED", true), outcome)
+                assertEquals(DnaCallResult.Failed(if (status == "incomplete") "RESPONSE_INCOMPLETE_MAX_OUTPUT_TOKENS" else "RESPONSE_FAILED", true), outcome)
                 assertEquals(1, markers); assertEquals(1, server.requestCount)
                 assertFalse(outcome.toString().contains("private"))
             }

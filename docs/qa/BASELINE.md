@@ -1,5 +1,28 @@
 # Verification baseline
 
+## October16 new Windows PC
+
+Source baseline e235922b3b57961f21f0b91e47a8938f464705af was fetched for existing
+draft PR8. Windows11Pro26200/x64/i9-13900K/32GiB uses official verified portable
+Temurin17.0.20.1, SDK36/build-tools35, Gradle8.11.1 and Python3.14. User explicitly
+authorized SDK licenses. Existing WHPX supports API35 x86_64 emulator37.2.12.
+Initial commands failed before assertions: AGP rejected the accented project path,
+then default compiler heap exhausted, then Gradle worker startup exposed a Unicode
+cache-path issue. These are failed attempts, not passing tests. An untouched
+detached baseline and separate logs retain their evidence. Git shell/Python alias
+configuration corrected two initial hook setup errors; all55 original guards then
+passed. Exact subsequent baseline/final XML counts and fresh APK evidence belong
+in PR8's audit after execution. Fresh untouched baseline now executes990 cases with
+six failures/zero errors/skips (two symlink, three file-replacement and one decimal
+locale assertion); separate debug assembly passes. The new six-test RED has four
+expected failures. First corrected focused GREEN passes36/36, including HTTP9,
+and Android instrumentation compiles. These checkpoints do not substitute for the
+final-head matrix. See [offline setup](OFFLINE_STYLE_DNA.md).
+The implementation tree also passes API35 emulator instrumentation3+1, including
+actual process restart, Quick/Standard Save and trial preparation. Initial hostname
+routing failures are retained; explicit127.0.0.1 fixes the synthetic server route.
+All64 Python tests pass. Final commit/CI/native matrix evidence is external on PR8.
+
 ## PR8 derived guidance execution
 
 Existing Windows/JDK17/SDK36/Gradle8.11.1: fidelity-bc-red runs2/2 assertion failures

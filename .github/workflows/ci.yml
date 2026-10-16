@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Delivery verifies the exact source head, including stacked draft PRs.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           # Arcticons-Font ships as a git submodule; the build copies the font from it.
           submodules: recursive
 

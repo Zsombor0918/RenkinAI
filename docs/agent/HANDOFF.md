@@ -1,5 +1,51 @@
 # Agent handoff — guided UX Stage 1
 
+## October16 new-PC offline validation continuation
+
+Source baseline e235922b3b57961f21f0b91e47a8938f464705af was fetched into the
+existing clean checkout and existing feat/ux-flow-stabilization branch; PR8 remains
+draft/open on unchanged feat/style-dna-v1. Main/PR6/PR7 are preserved. Unpushed work
+from the old PC cannot be retrieved from GitHub. The full attached new-PC contract
+was read. Official portable JDK17/SDK36/build-tools35/GitHub CLI were installed,
+SDK licenses explicitly authorized, hooks/submodule configured and API35 x86_64
+emulator booted under already available WHPX. No admin/system-feature change.
+
+Current scope is fixed safe incomplete reasons and test-owned real HTTP/disk-Room/
+Android validation, preserving the existing UX, models, token limit, one-shot
+transport, consumed ledgers, Room21/backups and signing identities. Original55
+governance tests pass after local shell/Python-path correction; early Gradle path/
+heap/worker-start failures are retained as failures. Final exact source hash,
+actual baseline/RED/GREEN/XML/emulator/CI and verified APK link/digest belong in
+PR8's audit after committing. No prior990-test count is reused as fresh evidence.
+
+Actual six-test RED now reaches four expected assertions and zero errors/skips:
+three lost incomplete reasons and one missing UI explanation. The narrow whitelist/
+strings correction follows that evidence; final GREEN is recorded after execution.
+First corrected focused execution passes36/36 with zero failures/errors/skips,
+including all nine new actual HTTP cases; Android instrumentation compiles. Baseline
+full Windows executes990 tests with six retained filesystem/locale failures and
+zero errors/skips; separate baseline debug assembly passes. No baseline artifact
+is final delivery. The real ASCII Gradle cache, rather than a canonicalized short alias, fixes worker
+startup without suppressing security checks. Untouched baseline assertions run
+separately from this changed tree.
+
+Next safe task is to finish the recorded offline gates and artifact delivery, then
+owner review of that evidence. No paid test, phone data operation, merge, force
+push, additional PR or Stage2/3 work is authorized. If a gate fails, preserve its
+logs and consumed data and correct only the demonstrated defect. See
+[scope/evidence](../changes/2026-10-16-offline-dna-e2e.md) and
+[commands](../qa/OFFLINE_STYLE_DNA.md). Earlier sections below are historical.
+
+The implementation tree now passes real Android3+1 journeys on API35/emulator37.2.12:
+Quick12/one local POST, Standard24/five, incomplete/cancel/two and fresh-process
+reopen/zero. PID4116→4271 changes; saved styles and trial preparation survive, with
+zero external requests. First-run hostname rejection remains as failed evidence;
+test-only explicit127.0.0.1 routing fixes it while all guards stay. All64 Python
+tests and staged32-path documentation audit pass. Final-head Windows24-group,
+Android/CI/artifact results and exact committed SHA are recorded externally after
+commit. Next safe owner action remains review/free fixture or existing-PNG checks,
+never replay or a new paid run under this authorization.
+
 ## Overall guidance and fidelity verification boundary
 
 P0 correction04dfa532 follows actual b7a30380 red2/2. Test-only95762f1a next

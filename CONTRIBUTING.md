@@ -1,5 +1,10 @@
 # Contributing to RenkinAI
 
+The no-paid-request Style DNA HTTP and emulator commands are documented in
+[offline validation](docs/qa/OFFLINE_STYLE_DNA.md). They use generated fixtures and
+actual production transport/persistence, preserve all original regression groups,
+and explicitly refuse a physical-device serial. No API key is needed.
+
 Start with [AGENTS.md](AGENTS.md) and the [documentation index](docs/INDEX.md).
 Contributors and AI agents use the same PR audit and shared guard scripts.
 

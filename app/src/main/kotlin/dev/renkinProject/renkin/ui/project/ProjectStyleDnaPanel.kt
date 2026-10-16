@@ -192,6 +192,9 @@ internal fun ProjectStyleDnaPanel(id: Long, mode: ProjectSetupMode, source: Stri
                             "REQUEST_REJECTED_400", "REQUEST_REJECTED_422" -> R.string.styleAnalysisRequestRejected
                             "REFUSED" -> R.string.styleAnalysisRefused
                             "RESPONSE_INCOMPLETE" -> R.string.uxStyleResponseIncomplete
+                            "RESPONSE_INCOMPLETE_MAX_OUTPUT_TOKENS" -> R.string.uxStyleResponseIncompleteTokens
+                            "RESPONSE_INCOMPLETE_CONTENT_FILTER" -> R.string.uxStyleResponseIncompleteFilter
+                            "RESPONSE_INCOMPLETE_UNKNOWN" -> R.string.uxStyleResponseIncompleteUnknown
                             "RESPONSE_FAILED" -> R.string.uxStyleResponseFailed
                             "ENVELOPE_INVALID" -> R.string.uxStyleEnvelopeInvalid
                             in DNA_ENVELOPE_FAILURE_CODES -> R.string.uxStyleEnvelopeInvalid

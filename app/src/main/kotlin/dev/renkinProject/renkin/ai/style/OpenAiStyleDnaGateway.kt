@@ -101,7 +101,13 @@ internal fun parseDnaResponse(raw: String): DnaCallResult {
     val r=strictObject(raw,128*1024,12,JsonDepthAllowance(listOf("text","format","schema"),14))
     stage = DnaEnvelopeFailure.ROOT_STATUS
     when (r.stringValue("status")) {
-        "incomplete" -> DnaCallResult.Failed("RESPONSE_INCOMPLETE",true)
+        // Whitelist public reason values only. Partial output and arbitrary provider
+        // prose never become accepted style data or persisted diagnostic text.
+        "incomplete" -> DnaCallResult.Failed(when (r.optJSONObject("incomplete_details")?.opt("reason")) {
+            "max_output_tokens" -> "RESPONSE_INCOMPLETE_MAX_OUTPUT_TOKENS"
+            "content_filter" -> "RESPONSE_INCOMPLETE_CONTENT_FILTER"
+            else -> "RESPONSE_INCOMPLETE_UNKNOWN"
+        },true)
         "failed" -> DnaCallResult.Failed("RESPONSE_FAILED",true)
         "completed" -> {
             stage = DnaEnvelopeFailure.ROOT_ERROR

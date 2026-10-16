@@ -159,6 +159,33 @@ class StyleDnaComposeTest {
         assertEquals(0, consents); assertEquals(0, saves)
     }
 
+    @Test fun recordedIncompleteReasonsExplainOnlyFixedCauseWithoutChangingHistoryOrSubmitting() {
+        val (plan, _) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        val record = StyleDnaRecord(plan, DnaStatus.UNCERTAIN,
+            plan.steps.map { DnaStepState(it.id, "SUBMITTED") }, reason = "RESPONSE_INCOMPLETE")
+        flow.value = flow.value.copy(dnaRecord = record)
+        compose.setContent { Content() }
+        compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        for ((reason, explanation) in listOf(
+            "RESPONSE_INCOMPLETE_MAX_OUTPUT_TOKENS" to "output token limit",
+            "RESPONSE_INCOMPLETE_CONTENT_FILTER" to "content filter",
+            "RESPONSE_INCOMPLETE_UNKNOWN" to "reason was not provided or recognized",
+            "RESPONSE_INCOMPLETE" to "incomplete response")) {
+            val current = record.copy(reason = reason)
+            val bytes = current.encode()
+            compose.runOnIdle { flow.value = flow.value.copy(dnaRecord = current) }
+            compose.onNodeWithTag("style-dna-outcome-reason").performScrollTo()
+                .assertTextContains(explanation, substring = true)
+                .assertTextContains("not be retried automatically", substring = true)
+            compose.onNodeWithTag("style-dna-status").performScrollTo()
+                .assertTextContains("UNCERTAIN: $reason", substring = true)
+            assertEquals(bytes, flow.value.dnaRecord!!.encode())
+            assertEquals(1, flow.value.dnaRecord!!.submitted)
+            compose.onNodeWithTag("style-dna-save").assertDoesNotExist()
+        }
+        assertEquals(0, prepares); assertEquals(0, consents); assertEquals(0, saves)
+    }
+
     @Test fun changedOptionsExplainWhyFrozenPlanNeedsFreshPreparation() {
         compose.setContent { Content() }; prepare("QUICK")
         compose.onNodeWithTag("style-dna-decline").performClick()

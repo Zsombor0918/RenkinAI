@@ -1,5 +1,12 @@
 # Changelog
 
+## Offline Style DNA diagnostics
+
+- Distinguish output-token-limit, content-filter and unknown incomplete responses
+  while preserving uncertainty, saved styles and consumed requests without retries.
+- Add production-path local HTTP/disk recovery and Android emulator gates using
+  synthetic artwork; no provider credential or paid request is required.
+
 PR8 follow-up: Style DNA requests now bind exact report counts/allowed sample
 labels and expose safe rejection categories. New candidates offer an overall
 pack recipe; optional families retain raw evidence. Reviewed references follow

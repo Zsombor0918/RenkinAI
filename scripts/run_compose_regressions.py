@@ -7,7 +7,9 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-ROOT = Path(__file__).resolve().parents[1]
+# Preserve an explicitly used ASCII junction on Windows. Resolving it reintroduces
+# accented profile paths that AGP rejects before configuration.
+ROOT = Path(__file__).absolute().parents[1]
 OUTPUT = ROOT / "build" / "compose-regressions"
 PACKAGE = "dev.renkinProject.renkin.ui.project."
 CREATION = PACKAGE + "ProjectShellComposeTest.confirmedCreationRecompositionAndRestorationDoNotResubmitOrOpenEarly"
@@ -57,6 +59,8 @@ CASES = {
                         PACKAGE + "ProjectGuidedNavigationComposeTest",
                         PACKAGE + "GuidedProjectRoomJourneyComposeTest",
                         "dev.renkinProject.renkin.testing.WindowsAtomicFileTest"],
+    "offline-dna-http": ["dev.renkinProject.renkin.ai.style.StyleDnaOfflineHttpTest",
+                         "dev.renkinProject.renkin.ai.style.StyleDnaIncompleteReasonTest"],
     "full-suite": [],
 }
 

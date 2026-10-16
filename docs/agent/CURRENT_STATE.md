@@ -1,5 +1,15 @@
 # Current implementation
 
+## Offline incomplete-response validation
+
+PR8 adds fixed token-limit, content-filter and unknown incomplete diagnostic codes;
+historical generic records remain readable. All incomplete attempts stay uncertain,
+consume their original marker and accept no style. Models,12288-token cap, submissions,
+Room21, backup formats, signing and legacy paths remain unchanged. The unavailable
+phone response does not establish which cause occurred. Test-only loopback routing,
+disk-Room recovery and emulator fixtures extend the existing production-path suite;
+actual final-head acceptance is recorded in PR8. See [offline checks](../qa/OFFLINE_STYLE_DNA.md).
+
 ## PR8 overall guidance and reference consistency
 
 New successful Quick/Standard candidates recommend a derived overall pack recipe.

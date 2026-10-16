@@ -1,5 +1,18 @@
 # Architecture
 
+## Offline Style DNA verification boundary
+
+The existing gateway/coordinator/controller/Room/journal ownership remains. Incomplete
+Responses reasons are allowlisted into fixed diagnostics without saving raw output or
+granting a replay. Tests own localhost routing and synthetic credentials; release
+configuration has no fixture switch. A separate permission-free offline-fixture APK
+supplies generated Android resources. Debug-only visibility and exact127.0.0.1
+cleartext policy support instrumented Compose journeys over real disk persistence.
+The host runner verifies an explicit emulator serial and qemu identity before any
+install/stop, then checks logs/counters across a real process restart. See
+[ADR0010](decisions/0010-offline-style-dna-validation.md) and
+[commands and limits](qa/OFFLINE_STYLE_DNA.md). No schema/signing/identity change.
+
 ## Derived overall DNA view and reference membership
 
 StyleDnaReview derives a pack-wide DnaFamily without inserting it into the stored

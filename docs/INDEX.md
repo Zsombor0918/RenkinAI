@@ -1,5 +1,9 @@
 # Documentation index
 
+Current zero-cost PR8 continuation: [offline HTTP and Android commands](qa/OFFLINE_STYLE_DNA.md),
+[test-boundary decision](decisions/0010-offline-style-dna-validation.md).
+Exact final source, executed checks and verified APK download belong in draft PR8.
+
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
 
 Current PR8 reliability/fidelity follow-up: [report contract and diagnostics](changes/2026-10-15-dna-report-contract.md),

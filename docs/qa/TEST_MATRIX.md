@@ -1,5 +1,18 @@
 # Regression and test matrix
 
+## Zero-cost production-path HTTP and real Android
+
+The additive StyleDnaOfflineHttpTest closes/reopens disk SQLite and reconstructs
+controllers/journals, with exact Quick12/one and Standard24/five local POST counts,
+partial/incomplete/fault/cancel/no-replay and actual native multipart assertions.
+StyleDnaIncompleteReasonTest and retained Compose history tests distinguish fixed
+token/filter/unknown causes without raw data or style acceptance. The existing23
+groups stay; the new HTTP group is additional. A separate emulator gate traverses
+production guided routes with installed generated pack resources, real HTTP/Room,
+explicit Save/trial preparation and a process-restart read. See
+[the executable matrix and limits](OFFLINE_STYLE_DNA.md). Results are reported from
+actual final-head runs in PR8, never inferred from a successful APK or old counts.
+
 ## Overall review and family-bound generation
 
 New test-first pack-wide and actual Compose Save regressions guard synonymous
