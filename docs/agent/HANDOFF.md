@@ -2,6 +2,14 @@
 
 ## October16 new-PC offline validation continuation
 
+Hosted a234 Android Standard reaches Save but observes idle/null plan/null error
+at trial preparation; Quick and incomplete/cancel pass. The new fixture helper
+now waits for a real plan or error within the same15 seconds before all original
+assertions. Persistent missing plans still fail, with no retry/runtime change.
+Scheduling versus pending-refresh cause is unproven. Local6dda clean-tree Android
+4/4 does not erase that hosted failure; final closing-head local/hosted results
+must independently pass. See [observation correction](../changes/2026-10-16-offline-dna-trial-observation.md).
+
 Linux CI on a234cf38 exposes a test-only canonical-hostname defect: offline HTTP
 14/8 and full1005/8 fail while all5 incomplete parser tests pass. MockWebServer's
 canonical name becomes localhost, which the exact127 DNS guard correctly denies.

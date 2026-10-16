@@ -267,12 +267,19 @@ class StyleDnaEmulatorTest {
                     "content" to JSONArray().put(json("type" to "output_text", "text" to text,
                         "annotations" to JSONArray(), "logprobs" to JSONArray()))))).toString())
     }
+    private fun awaitTrialPlan() {
+        // Idle alone also describes an initial or intervening local load. Await
+        // the requested result; a persistently missing plan must still fail.
+        compose.waitUntil(15000) {
+            fixture.trials.state(1).value.let { !it.busy && (it.plan != null || it.error != null) }
+        }
+    }
     private fun trialPreparation() {
         click("project-targets", "setup-target-${target.key}")
         click("project-targets", "setup-save-selection")
         compose.waitUntil(15000) { fixture.trials.state(1).value.let { !it.busy && it.preparation != null } }
         click("project-trials-1", "trial-prepare")
-        compose.waitUntil(15000) { !fixture.trials.state(1).value.busy }
+        awaitTrialPlan()
         assertNull(fixture.trials.state(1).value.error)
         val plan = checkNotNull(fixture.trials.state(1).value.plan)
         assertEquals(listOf(target.key), plan.inputs.map { it.key })
@@ -362,7 +369,7 @@ class StyleDnaEmulatorTest {
         click("project-targets", "setup-save-selection")
         compose.waitUntil(15000) { fixture.trials.state(1).value.let { !it.busy && it.preparation != null } }
         click("project-trials-1", "trial-prepare")
-        compose.waitUntil(15000) { !fixture.trials.state(1).value.busy }
+        awaitTrialPlan()
         assertNull(fixture.trials.state(1).value.error)
         assertNotNull(fixture.trials.state(1).value.plan)
         fixture.assertPosts(0)

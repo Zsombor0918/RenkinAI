@@ -2,6 +2,13 @@
 
 ## October16 new Windows PC
 
+Hosted a234 Android phase1 is3 tests/1 Standard missing-trial-plan failure after
+Save; phase2 fails because Standard evidence is absent. Quick and incomplete/
+cancel pass. The test helper retains15 seconds and all assertions while requiring
+plan/error terminal state. Local6dda4/4 is a separate successful checkpoint;
+final-head hosted verification remains mandatory. See
+[the observed state and correction](../changes/2026-10-16-offline-dna-trial-observation.md).
+
 Hosted a234cf38 verification actually fails1005/8, all8 new HTTP fixtures; isolated
 offline artifact14/8 confirms parser5/5 remains green and the exact DNS guard blocks
 canonical localhost before reaching the server. Test-only explicit127 routing
