@@ -1,5 +1,7 @@
 # Current implementation
 
+Verification scheduling now follows [ADR0012](../decisions/0012-lean-verification.md): one authoritative full suite plus explicit targeted/order diagnostics. Runtime, unique Kotlin coverage and unresolved hosted Standard/restart status are unchanged.
+
 ## Queued local trial reads preserve only current prepared plans
 
 A hosted trace and deterministic barrier regression now prove that pending load drained after Prepare erases its newly assigned plan. Load retains the visible plan while busy, revalidates all existing context/original/recipe checks, and keeps its staged bytes only if the same plan remains current and uncancelled. Changed inputs or read failure invalidate it; decline during recheck cannot resurrect it. No local load submits or consumes a request. See [root-cause correction](../changes/2026-10-16-trial-queued-load-retention.md).

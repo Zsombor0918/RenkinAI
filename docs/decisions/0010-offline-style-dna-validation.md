@@ -37,3 +37,9 @@ instrumented fixture, while release identities, signing and provider URLs stay.
 Automated fixture success does not prove token sufficiency, phone diagnosis,
 provider quality, installed-app update compatibility or generated visual fidelity.
 Owner review and merge remain separate; PR8 stays draft/open/unmerged.
+
+## Scheduling amendment, October 17, 2026
+
+[ADR0012](0012-lean-verification.md) supersedes the additive execution schedule only,
+with explicit owner approval. All test cases and safety requirements remain;
+HTTP executes in the authoritative full suite and Android remains a failing gate.

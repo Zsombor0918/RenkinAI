@@ -65,3 +65,9 @@ remain acceptance requirements; this is platform fidelity, not permission to ski
 Declining or dismissing an unsubmitted trial plan cancels it and reloads the existing
 local approval proof. Presentation never restores ready directly; source/owner/catalog/
 original/context validation remains authoritative and no new paid permission is granted.
+
+## Scheduling amendment, October 17, 2026
+
+[ADR0012](0012-lean-verification.md) supersedes the additive execution schedule only,
+with explicit owner approval. All test cases and safety requirements remain;
+HTTP executes in the authoritative full suite and Android remains a failing gate.

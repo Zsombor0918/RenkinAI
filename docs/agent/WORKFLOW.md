@@ -1,5 +1,25 @@
 # Agent, Git and review workflow
 
+## Owner-approved lean verification (October 17, 2026)
+
+This policy supersedes earlier requirements below to execute every historical group
+on every PR. It changes scheduling only; all Kotlin cases/assertions remain.
+[ADR0012](../decisions/0012-lean-verification.md) records the owner authorization and exact execution inventory.
+CI/build alone runs the full unit suite, compile and debug assembly through
+`python scripts/run_compose_regressions.py --group full-suite`, retaining exact-head
+XML/HTML/logs, required selectors and real Room19/20/21 exports. HTTP contracts are
+included there, not in a second automatic job. Android instrumentation and strict
+Python/governance checks remain separate; hosted Standard/restart remain BLOCKED.
+For development use `--group trial-persistence-session` (or another existing name);
+repeat `--group` to run a deduplicated union in one Gradle invocation. No argument
+also selects only full-suite. `--order-check` explicitly runs creation, ingress,
+both and shared-form separately; run it for shared UI harness/order changes and
+before owner pre-merge/release review, via the dispatch-only Profile form workflow.
+Record its exact SHA and result; a missing diagnostic is NOT RUN, never PASS.
+Older results below remain historical, not final-head evidence. No safety/data,
+billing, signing, API, test failure condition or owner-review requirement is waived.
+
+
 ## Synthetic emulator transition evidence
 
 The offline runner additionally retains tag-filtered trace-0.log and trace-1.log from the explicit emulator after each instrumentation command. Test-owned delegates record actual input/backend boundaries, observed state and child completion, plus Save/read/journal events with monotonic thread/process identity. Logging never changes a dispatcher or grants success; absent transitions may reflect StateFlow conflation or watcher attachment. No raw credentials, image bytes, SQL arguments or provider prose are logged. Existing gates and strict counter/assertion checks remain.

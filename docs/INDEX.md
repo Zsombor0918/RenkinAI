@@ -1,5 +1,7 @@
 # Documentation index
 
+Current owner-approved Phase1: [lean verification ADR](decisions/0012-lean-verification.md) and [implementation evidence](changes/2026-10-17-lean-verification.md).
+
 Current bounded PR8 quality work: [generation recipe decision](decisions/0011-generation-useful-dna-recipes.md) and [diagnostic RED](changes/2026-10-16-dna-diagnostic-quality-red.md). Final-head traces/results remain on draft PR8.
 
 Current zero-cost PR8 continuation: [offline HTTP and Android commands](qa/OFFLINE_STYLE_DNA.md),

@@ -9,33 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  offline-dna-http:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          submodules: recursive
-          persist-credentials: false
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
-      - uses: android-actions/setup-android@v3
-        with:
-          packages: platform-tools
-      - name: Run production-path offline HTTP contract
-        run: ./gradlew testDebugUnitTest --tests '*.StyleDnaOfflineHttpTest' --tests '*.StyleDnaIncompleteReasonTest'
-      - name: Retain HTTP reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: offline-dna-http
-          path: |
-            app/build/test-results/testDebugUnitTest/
-            app/build/reports/tests/testDebugUnitTest/
-          if-no-files-found: error
+  # HTTP contract tests execute in CI/build's full suite; select the runner's
+  # offline-dna-http group locally when developing that subsystem.
   offline-dna-emulator:
     runs-on: ubuntu-latest
     timeout-minutes: 35

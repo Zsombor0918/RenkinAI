@@ -15,6 +15,33 @@ SELECTOR = "dev.renkinProject.renkin.ui.project.ProjectStyleAnalysisComposeTest"
 
 
 class ComposeRunnerFaultTests(unittest.TestCase):
+    def test_lean_default_runs_only_full_and_targeted_groups_share_one_invocation(self):
+        self.assertEqual({"full-suite": []}, RUNNER.select_runs([]))
+        runs = RUNNER.select_runs(["--group", "creation", "--group", "ingress", "--group", "both"])
+        self.assertEqual({"targeted": [RUNNER.CREATION, RUNNER.INGRESS]}, runs)
+        runs = RUNNER.select_runs(["--group", "project-style-ui", "--group", "guided-ux"])
+        self.assertEqual(1, next(iter(runs.values())).count(RUNNER.PACKAGE + "ProjectSelectionComposeTest"))
+
+    def test_order_diagnostic_is_explicit_and_cannot_repeat_full_suite(self):
+        self.assertEqual(["creation", "ingress", "both", "shared-form"], list(RUNNER.select_runs(["--order-check"])))
+        with self.assertRaises(SystemExit), mock.patch("sys.stderr"):
+            RUNNER.select_runs(["--group", "full-suite", "--group", "offline-dna-http"])
+
+    def test_workflows_have_one_authoritative_full_suite_and_retain_android(self):
+        workflows = Path(__file__).resolve().parents[2] / ".github/workflows"
+        ci = (workflows / "ci.yml").read_text()
+        order = (workflows / "compose-regressions.yml").read_text()
+        offline = (workflows / "offline-dna.yml").read_text()
+        self.assertEqual(1, ci.count("run_compose_regressions.py --group full-suite"))
+        self.assertIn("if: always()", ci)
+        self.assertIn("path: build/compose-regressions/", ci)
+        self.assertNotIn("pull_request:", order)
+        self.assertIn("workflow_dispatch:", order)
+        self.assertIn("run_compose_regressions.py --order-check", order)
+        self.assertNotIn("offline-dna-http:", offline)
+        self.assertIn("offline-dna-emulator:", offline)
+        self.assertNotIn("continue-on-error", offline)
+
     def test_native_windows_uses_batch_wrapper_and_posix_retains_shell_wrapper(self):
         with mock.patch.object(RUNNER.sys, "platform", "win32"):
             self.assertEqual(str(RUNNER.ROOT / "gradlew.bat"), RUNNER.gradle_wrapper())
@@ -29,6 +56,9 @@ class ComposeRunnerFaultTests(unittest.TestCase):
             for version in (19, 20, 21):
                 if not (version == 21 and mode == "missing_schema"):
                     (schema / f"{version}.json").write_text("synthetic test file; not a Room export")
+            stale = root / "app/build/test-results/testDebugUnitTest"
+            stale.mkdir(parents=True)
+            (stale / "TEST-stale.xml").write_text('<testsuite name="stale" tests="1"><testcase name="old"/></testsuite>')
             commands = []
 
             def gradle(command, **kwargs):
@@ -63,7 +93,8 @@ class ComposeRunnerFaultTests(unittest.TestCase):
                  mock.patch.object(RUNNER.subprocess, "check_output", return_value="final-synthetic-head\n"), \
                  mock.patch.object(RUNNER.subprocess, "run", side_effect=gradle), \
                  mock.patch("builtins.print"):
-                result = RUNNER.main()
+                result = RUNNER.main([])
+            self.assertEqual(1, len(commands))
             summary = json.loads((root / "evidence/summary.json").read_text())
             self.assertEqual("final-synthetic-head", summary["head"])
             wrapper = str(root / "gradlew.bat") if RUNNER.sys.platform == "win32" else "./gradlew"
@@ -87,21 +118,21 @@ class ComposeRunnerFaultTests(unittest.TestCase):
             with self.subTest(mode=mode):
                 code, summary = self.execute(mode)
                 self.assertNotEqual(0, code)
-                self.assertEqual(0, summary["cases"]["analysis-style-ui"]["tests"])
+                self.assertEqual(0, summary["cases"]["full-suite"]["tests"])
 
     def test_skipped_failure_error_and_nonzero_exit_fail(self):
         for mode in ("skipped", "failure", "error", "nonzero"):
             with self.subTest(mode=mode):
                 code, summary = self.execute(mode)
                 self.assertNotEqual(0, code)
-                self.assertFalse(summary["cases"]["analysis-style-ui"]["passed"])
+                self.assertFalse(summary["cases"]["full-suite"]["passed"])
 
     def test_malformed_xml_and_counts_without_testcase_evidence_fail(self):
         for mode in ("malformed", "forged_counts"):
             with self.subTest(mode=mode):
                 code, summary = self.execute(mode)
                 self.assertNotEqual(0, code)
-                self.assertTrue(summary["cases"]["analysis-style-ui"]["malformed_reports"])
+                self.assertTrue(summary["cases"]["full-suite"]["malformed_reports"])
 
     def test_production_selectors_keep_original_cases_and_all_seven_analysis_groups(self):
         self.assertEqual([RUNNER.CREATION], RUNNER.CASES["creation"])

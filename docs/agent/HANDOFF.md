@@ -1,5 +1,7 @@
 # Agent handoff — guided UX Stage 1
 
+October17 Phase1 starts at clean ebc5ef95a193a5541ce2d09415169cb8d42fb23d on existing PR8. Owner authorizes lean scheduling in [ADR0012](../decisions/0012-lean-verification.md). Focused runner checks pass11/11 after two missing-selection-API RED errors. No runtime/test assertion is deleted. Final committed-head CI evidence belongs on PR8. Next bounded phase: tag the shared Trial reload initiator in one diagnostic run; retain BLOCKED if causality remains ambiguous. Phases3/4 remain separate: reference-first UI with Legacy optional, then versioned concise prompt without rewriting frozen bytes.
+
 ## Hosted Standard root cause and bounded closing correction
 
 Hosted aef0dca0 trace proves a local load queued during Prepare clears the completed plan at98.022s after assignment98.004s; saved DNA revision1 remains on disk. Controlled barriers reproduce expected plan versus null (1/1 RED) before changing OwnedStyleTrials. The correction revalidates/retains only identical uncancelled plans and bytes, with changed-input/decline negatives. See [root-cause record](../changes/2026-10-16-trial-queued-load-retention.md). Earlier unproven-cause paragraphs below are historical. This is emulator corrective cycle2 after the proven fixture Main ownership repair. Freeze final source and record its exact checks/artifact on PR8; if another gate fails, stop speculative edits and retain the precise failure. No live/key/phone/main/PR6/7 operation or merge.

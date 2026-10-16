@@ -30,14 +30,8 @@ jobs:
           # v3 defaults to the retired "tools" package, which sdkmanager cannot resolve.
           packages: platform-tools
 
-      - name: Compile
-        run: ./gradlew compileDebugKotlin
-
-      - name: Unit tests
-        run: ./gradlew testDebugUnitTest
-
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
+      - name: Authoritative full unit suite and debug build
+        run: python3 scripts/run_compose_regressions.py --group full-suite
 
       - name: Verify debug APK identity, signature and SHA-256
         run: |
@@ -56,9 +50,10 @@ jobs:
           name: RenkinAI-debug
           path: app/build/outputs/apk/debug/*.apk
 
-      - name: Upload test reports on failure
-        if: failure()
+      - name: Retain authoritative full-suite evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
-          path: app/build/reports/tests/
+          name: full-suite-evidence
+          path: build/compose-regressions/
+          if-no-files-found: error

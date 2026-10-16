@@ -29,16 +29,15 @@ wrapper, dependencies and Robolectric images; running the tests makes no paid ca
 ```powershell
 . <current-user-tool-directory>\env.ps1
 .\gradlew.bat testDebugUnitTest --tests '*StyleDnaOfflineHttpTest' --tests '*StyleDnaIncompleteReasonTest'
-python scripts/run_compose_regressions.py
+python scripts/run_compose_regressions.py --group offline-dna-http
 python -m unittest discover -s scripts/tests -v
 python scripts/run_offline_dna_emulator.py --serial emulator-5580
 ```
 
-The complete regression runner retains the original23 groups and adds the offline
-HTTP group. Nonzero exit, absent/malformed XML, mismatched testcase counts, missing
-selectors, failures, errors and skips remain failures. Existing Windows AtomicFile,
-symlink, locale and Compose-order assertions remain mandatory; compare actual
-failures with an untouched baseline and Linux CI without hiding either result.
+The authoritative full suite runs once in CI/build, including both HTTP classes.
+Focused groups remain available for development; see [ADR0012](../decisions/0012-lean-verification.md).
+Nonzero exit, absent/malformed XML, count mismatches, missing selectors, failures,
+errors and skips still fail. Compare native Windows baseline failures separately.
 
 ## HTTP contract
 
@@ -80,7 +79,7 @@ endpoints and network policy remain unchanged.
 Three instrumented journeys run first; the runner then explicitly stops the debug
 app process and invokes the read-only restart selector in a new instrumentation
 process. Logs and synthetic counters are retained in `build/offline-dna-emulator`.
-The `Offline Style DNA` workflow runs HTTP and Android jobs without
+The `Offline Style DNA` workflow runs the Android job without
 `continue-on-error`. This is a PR gate in the workflow, not a claim that repository
 administration has made the new job names protected required contexts.
 
