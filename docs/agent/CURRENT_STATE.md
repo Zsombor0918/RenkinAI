@@ -1,5 +1,9 @@
 # Current implementation
 
+## Generation-useful overall DNA contract
+
+The bounded PR8 quality continuation retains __pack__, raw schema1 reports and optional families. Overall rules use observed recurrence or supported synthesis with cited pack-wide support; silhouette maps to geometry/contour. The compiler labels concrete generation decisions, separates identity/abstraction constraints and lists unestablished traits once. Default references exclude flagged outliers without padding unrelated families. New promptv2 retains schema/request counts/caps; frozen v1 plans/readers remain supported with their actual version. Existing saved specifications/history are not rewritten. Offline structural/payload tests do not establish live or visual quality. See [decision](../decisions/0011-generation-useful-dna-recipes.md).
+
 ## Offline incomplete-response validation
 
 PR8 adds fixed token-limit, content-filter and unknown incomplete diagnostic codes;

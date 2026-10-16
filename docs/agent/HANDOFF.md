@@ -1,5 +1,9 @@
 # Agent handoff — guided UX Stage 1
 
+## Generation recipe quality boundary
+
+Starting diagnostic checkpoint e839c227 records5/5 actual RED with unchanged production. The minimal quality correction uses existing fields, preserves raw evidence/optional families and v1 frozen plans, and adds versioned compact guidance without additional endpoints. Target identity stays original IMAGE1; references stay chosen-style members. Pending focused/full final-head results and hosted Standard trace must be recorded on PR8 before changing BLOCKED. Thread RED1/1 reproduces off-main Save return; matching the existing VM Main.immediate owner/controller context passes the unchanged Standard journey1/1 in11.607s. This fixes a fixture defect, not uniquely the old hosted timeout. See [bounded correction](../changes/2026-10-16-dna-generation-recipe.md). The rejected dispatcher experiment remains reverted; no phone/key/live request, merge, main/PR6/7 write or adjacent feature work.
+
 ## October16 diagnostic and recipe-quality continuation
 
 Resume clean75e936a1 on existing PR8. Five new recipe/prompt/reference/payload assertions execute5/5 RED before production edits. Test-only backend/state/job/click/persistence/journal traces retain monotonic thread/process evidence in trace-0/1.log. A default-dispatcher experiment stays reverted; no sleeps/retries/timeouts/assertions change. First establish hosted Prepare event ordering, then improve the existing overall contract with V1 compatibility and unchanged request limits. See [diagnostic RED](../changes/2026-10-16-dna-diagnostic-quality-red.md). Final exact-head results belong on PR8; no phone/key/live request or adjacent feature scope.

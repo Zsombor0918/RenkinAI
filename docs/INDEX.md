@@ -1,5 +1,7 @@
 # Documentation index
 
+Current bounded PR8 quality work: [generation recipe decision](decisions/0011-generation-useful-dna-recipes.md) and [diagnostic RED](changes/2026-10-16-dna-diagnostic-quality-red.md). Final-head traces/results remain on draft PR8.
+
 Current zero-cost PR8 continuation: [offline HTTP and Android commands](qa/OFFLINE_STYLE_DNA.md),
 [test-boundary decision](decisions/0010-offline-style-dna-validation.md).
 Exact final source, executed checks and verified APK download belong in draft PR8.

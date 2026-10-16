@@ -14,8 +14,8 @@ internal fun synthesizeDnaLocally(reports: List<DnaIconReport>, images: Map<Stri
         }
         val policy=measuredFamilyPolicy(members,images)
         val tiles=members.map { it.tileVote }.distinct(); val depths=members.map { it.depthVote }.distinct()
-        val mapping=mapOf("background_tile" to "tile_geometry","geometry" to "simplification","stroke_fill" to "stroke_fill",
-            "rounding" to "corners","simplification" to "simplification","contour" to "stroke_fill","scale_padding" to "optical_scale",
+        val mapping=mapOf("background_tile" to "tile_geometry","geometry" to "logo_silhouette","stroke_fill" to "stroke_fill",
+            "rounding" to "corners","simplification" to "simplification","contour" to "logo_silhouette","scale_padding" to "optical_scale",
             "optical_alignment" to "negative_space","negative_space" to "negative_space","light_shadow_depth" to "shadow_gradient",
             "gradient_use" to "shadow_gradient","wordmarks" to "wordmark_handling")
         val rules=DNA_DRAWING.associateWith { key -> mapping[key]?.let(::recurring)
@@ -97,27 +97,50 @@ internal object StyleDnaCompiler {
         return if(familyId == DNA_PACK_STYLE) packDnaFamily(saved) else family(saved.dna,DnaSymbolType.UNKNOWN,familyId)
     }
     fun recipe(saved: SavedStyleDna,target: DnaSymbolType,familyId: String = saved.selectedFamily): String = recipe(family(saved,familyId),target)
-    private fun recipe(f: DnaFamily,target: DnaSymbolType): String {
-        fun instruction(key: String): String = f.drawing.getValue(key).let { r ->
-            if(r.provenance==DnaProvenance.UNKNOWN) "UNKNOWN: preserve target geometry; do not invent this trait"
-            else "${r.provenance.name}: ${r.value}" }
-        return buildString {
-            appendLine("Reviewed Style DNA family ${f.id}; symbol type ${target.name}. Evidence counts are sampled observations, not confidence.")
-            appendLine("Transform IMAGE 1 only. Preserve its recognizable silhouette, essential logotype and meaningful native colors.")
-            appendLine("1. Simplify target geometry: ${instruction("geometry")}; ${instruction("simplification")}; contour: ${instruction("contour")}")
-            appendLine("2. Set optical scale, alignment and negative space: ${instruction("scale_padding")}; ${instruction("optical_alignment")}; ${instruction("negative_space")}")
-            appendLine("3. Apply fill/stroke, rounding and tile: ${instruction("stroke_fill")}; ${instruction("rounding")}; tile policy ${f.tile}: ${instruction("background_tile")}")
-            appendLine("4. Lighting/depth policy ${f.depth}: ${instruction("light_shadow_depth")}; gradient: ${instruction("gradient_use")}")
-            appendLine("5. Color policy ${f.colorPolicy.name}. " + when(f.colorPolicy) {
-                PackColorPolicy.ADAPT_BRAND_COLORS,PackColorPolicy.MIXED,PackColorPolicy.UNKNOWN -> "Preserve original target hues. Neutral tile colors never impose a fixed logo palette."
-                else -> "Intentional recoloring is permitted only by this explicitly reviewed recurring family policy; preserve identity." })
-            f.colorRoles.forEach { appendLine("Color role ${it.role}: ${it.strength}; ${it.colors.joinToString(", ")}; ${it.observedCount} sampled reports. These are role observations.") }
-            val key=when(target) { DnaSymbolType.WORDMARK->"wordmarks";DnaSymbolType.MONOGRAM->"monograms";DnaSymbolType.GEOMETRIC_PICTOGRAM->"geometric_pictograms";DnaSymbolType.COMPLEX_EMBLEM->"complex_emblems";else->null }
-            if(key!=null) appendLine("Target-type handling: ${instruction(key)}") else appendLine("Target type is UNKNOWN; retain the original essential typography and symbol without guessing its brand.")
-            f.must.forEach { appendLine("Must (${it.provenance}): ${it.value}") }; f.should.forEach { appendLine("Should (${it.provenance}): ${it.value}") };f.mustNot.forEach { appendLine("Must not (${it.provenance}): ${it.value}") }
-            appendLine("6. Check recognition and legibility at 48px. Produce one centered transparent 1024x1024 PNG.")
-            append("No reference symbols, collages, generic modernization or arbitrary dark rounded tiles. Unknown/mixed depth is not permission for glow, 3D, gradients or shadows.")
-        }.also { require(it.length<=6000) { "Reviewed recipe exceeds the bounded generation budget." } }
-    }
+    private fun recipe(f: DnaFamily,target: DnaSymbolType): String = buildString {
+        appendLine("Reviewed Style DNA family ${f.id}; symbol type ${target.name}. Evidence counts are sampled observations, not confidence.")
+        appendLine("Brand-preservation rule: Transform IMAGE 1 only. Preserve its recognizable silhouette, essential logotype and meaningful native colors.")
+        appendLine("Abstraction rule: Transfer construction and simplification to the target's own geometry, never the reference logo. Remove incidental detail without removing identity cues.")
+        val missing = mutableListOf<String>()
+        fun rule(label: String, vararg keys: String) {
+            val established = keys.map { f.drawing.getValue(it) }.filter { it.provenance != DnaProvenance.UNKNOWN }
+                .distinctBy { it.value }
+            if (established.isEmpty()) missing += label else appendLine("$label: " + established.joinToString("; ") {
+                "${it.value} [${it.provenance}, ${it.evidenceIds.size}/${f.observedCount} sampled reports]" })
+        }
+        appendLine("Background mode: " + when(f.tile) {
+            DnaTile.NONE -> "none; standalone forms, no separate background tile."
+            DnaTile.ROUND -> "separate round tile where supported."
+            DnaTile.SQUARE -> "separate square tile where supported."
+            DnaTile.OTHER -> "other evidenced tile geometry; follow the construction rule."
+            DnaTile.MIXED, DnaTile.UNKNOWN -> "variable or unresolved; do not impose a universal tile."
+        })
+        rule("Background construction", "background_tile")
+        rule("Dominant shape / silhouette", "geometry", "contour")
+        rule("Optical fill / padding", "scale_padding", "optical_alignment")
+        rule("Edges / corners", "rounding")
+        rule("Stroke / outline", "stroke_fill")
+        rule("Simplification / complexity ceiling", "simplification")
+        rule("Negative space", "negative_space")
+        rule("Gradient / highlight / depth", "light_shadow_depth", "gradient_use")
+        if(f.depth == DnaDepth.NONE) appendLine("Depth policy: flat; no added shadow, gradient or extrusion.")
+        appendLine("Color policy: ${f.colorPolicy.name}. " + when(f.colorPolicy) {
+            PackColorPolicy.ADAPT_BRAND_COLORS,PackColorPolicy.MIXED,PackColorPolicy.UNKNOWN -> "Preserve original target hues. Neutral tile colors never impose a fixed logo palette."
+            else -> "Intentional recoloring is permitted only by this explicitly reviewed recurring family policy; preserve identity." })
+        f.colorRoles.forEach { appendLine("Color role ${it.role}: ${it.strength}; ${it.colors.joinToString(", ")}; ${it.observedCount} sampled reports.") }
+        appendLine("Text policy: Keep lettering only when required for target brand identity; no decorative text or captions.")
+        rule("Observed text treatment", "wordmarks")
+        val key=when(target) { DnaSymbolType.WORDMARK->"wordmarks";DnaSymbolType.MONOGRAM->"monograms";DnaSymbolType.GEOMETRIC_PICTOGRAM->"geometric_pictograms";DnaSymbolType.COMPLEX_EMBLEM->"complex_emblems";else->null }
+        if(key != null && f.drawing.getValue(key).provenance != DnaProvenance.UNKNOWN)
+            rule("Target-type handling",key)
+        else appendLine("Target-type handling: Human review required; preserve the original identifying symbol and essential typography without guessing a brand.")
+        f.must.filter { it.provenance != DnaProvenance.UNKNOWN }.forEach { appendLine("Must (${it.provenance}): ${it.value}") }
+        f.should.filter { it.provenance != DnaProvenance.UNKNOWN }.forEach { appendLine("Should (${it.provenance}): ${it.value}") }
+        f.mustNot.filter { it.provenance != DnaProvenance.UNKNOWN }.forEach { appendLine("Must not (${it.provenance}): ${it.value}") }
+        appendLine("Pack consistency: Apply supported rules across the target; ${f.observedCount} analyzed samples, not an entire-pack measurement. Dimensions are qualitative unless explicitly measured.")
+        if(missing.isNotEmpty()) appendLine("Unestablished traits: ${missing.distinct().joinToString(", ")}. Retain target geometry; do not invent a style rule.")
+        appendLine("Check recognition and legibility at 48px. Produce exactly one standalone centered transparent 1024x1024 PNG.")
+        append("No reference symbols, collages, generic modernization or arbitrary dark rounded tiles. Unknown/mixed depth is not permission for glow, 3D, gradients or shadows.")
+    }.also { require(it.length<=6000) { "Reviewed recipe exceeds the bounded generation budget." } }
     fun specification(saved: SavedStyleDna) = recipe(saved,DnaSymbolType.UNKNOWN)
 }

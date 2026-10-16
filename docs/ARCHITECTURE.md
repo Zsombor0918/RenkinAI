@@ -1,5 +1,9 @@
 # Architecture
 
+## Bounded generation recipe compilation
+
+Existing V1 traits/drawing fields feed explicit generation labels and separate brand-preservation/abstraction constraints. Geometry/contour use silhouette evidence. Global fallback pools only nonunknown synthesis rules with at least two cited samples and60 percent pack support; unsupported/conflicting traits stay unestablished. Raw reports/partition remain immutable. Default representative selection excludes flagged outliers within chosen membership. Promptv2 uses the existing version field; plan/result readers accept frozen v1 and v2 and the gateway retains v1 instructions. New/frozen recipe comparison still protects current consent. No Room/schema/backup shape or transport-role change. See [ADR0011](decisions/0011-generation-useful-dna-recipes.md).
+
 ## Offline Style DNA verification boundary
 
 The existing gateway/coordinator/controller/Room/journal ownership remains. Incomplete

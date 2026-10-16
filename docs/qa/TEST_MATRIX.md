@@ -1,5 +1,9 @@
 # Regression and test matrix
 
+## Generation-usefulness contract regressions
+
+Existing mandatory DNA selectors now cover concrete overall recipe labels with qualitative synthetic construction evidence, supported synthesis fallback and conflicting families, deterministic nonoutlier chosen-member references, v1/v2 prompt compatibility and unchanged request caps/schema. The actual native multipart test asserts original bytes first, ordered frozen references next and improved identity/abstraction/recipe/one-transparent-icon guidance. These are contract assertions, not inferred visual scores. All existing regression groups remain mandatory.
+
 ## Zero-cost production-path HTTP and real Android
 
 The additive StyleDnaOfflineHttpTest closes/reopens disk SQLite and reconstructs

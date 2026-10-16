@@ -47,6 +47,11 @@ class StyleDnaGatewayTest {
         for (input in listOf(request,synthesis)) {
             val body=dnaBody(input)
             val instruction=body.getString("instructions")
+            val legacyBody=dnaBody(input.copy(plan=input.plan.copy(promptVersion="per-icon-grammar-v1")))
+            assertTrue(instruction.length <= legacyBody.getString("instructions").length)
+            assertEquals(canonicalJson(legacyBody.getJSONObject("text")),canonicalJson(body.getJSONObject("text")))
+            val expectedLegacyHash=if(input.step.synthesis) "97a330601c5217f2b1fdc9ae79f66c333d7724de37167accaad8340b2f8d84ca" else "188f90bff93d44881da9453600ab38a2c428f87a1d32429eadc94e5d34974a92"
+            assertEquals(expectedLegacyHash,dev.renkinProject.renkin.data.project.sha256(legacyBody.getString("instructions").toByteArray()))
             for (term in listOf("silhouette-led", "optical fill", "complexity ceiling", "brand identity", "negative space", "qualitative"))
                 assertTrue(term,instruction.contains(term))
             assertEquals(12288,body.getInt("max_output_tokens")); assertFalse(body.getBoolean("store"))

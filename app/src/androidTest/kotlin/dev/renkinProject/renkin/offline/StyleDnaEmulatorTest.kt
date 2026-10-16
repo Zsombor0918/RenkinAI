@@ -43,6 +43,7 @@ import java.net.Proxy
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** Real Android resources, Compose routes, HTTP, SQLite and AtomicFile journals.
  * Every byte is synthetic. This suite refuses physical devices and never reads credentials.
@@ -74,6 +75,7 @@ class StyleDnaEmulatorTest {
             override fun getNoBackupFilesDir() = File(root, "noBackup").apply { mkdirs() }
             override fun getDatabasePath(name: String) = File(root, "database/$name").apply { parentFile!!.mkdirs() }
         }
+        val saveReturnedOnMain = AtomicBoolean()
         val trace = OfflineDnaTrace(name)
         private val journalTrace = trace.journal(context.noBackupFilesDir)
         val db = Room.databaseBuilder(context, RenkinPackDatabase::class.java, "offline.db").build()
@@ -81,7 +83,9 @@ class StyleDnaEmulatorTest {
         val dnaJournal = StyleDnaJournal(context)
         val legacyJournal = StyleAnalysisJournal(context)
         val trialJournal = StyleTrialJournal(context)
-        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        // MainViewModel owns these controllers on viewModelScope (Main.immediate).
+        // Match that ownership instead of letting the test frame clock resume on IO.
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         val mutex = Mutex()
         val server = MockWebServer().apply { start(InetAddress.getByName("127.0.0.1"), 0) }
         // MockWebServer.url uses InetAddress.canonicalHostName, which Android's
@@ -114,11 +118,13 @@ class StyleDnaEmulatorTest {
         lateinit var reader: CoverageSourceReader
         lateinit var packInfo: IconPack
         lateinit var coverage: CoverageSnapshot
-        suspend fun <T> owned(id: Long, block: suspend () -> T): T = mutex.withLock {
-            check(id == 1L)
-            val job = System.identityHashCode(currentCoroutineContext()[Job])
-            trace.event("owner.enter", "job" to job)
-            try { block() } finally { trace.event("owner.finally", "job" to job) }
+        suspend fun <T> owned(id: Long, block: suspend () -> T): T = withContext(Dispatchers.Main.immediate) {
+            mutex.withLock {
+                check(id == 1L)
+                val job = System.identityHashCode(currentCoroutineContext()[Job])
+                trace.event("owner.enter", "job" to job)
+                try { block() } finally { trace.event("owner.finally", "job" to job) }
+            }
         }
         val analysis = OwnedStyleAnalysis(scope, repo, legacyJournal, ReferenceSampler(),
             StyleAnalysisCoordinator(legacyJournal, StyleAnalysisGateway { error("Legacy submission is forbidden") }),
@@ -148,6 +154,7 @@ class StyleDnaEmulatorTest {
                 hashes: List<String>, expected: Long?, draft: ProjectStyleDraft): SavedProjectStyle {
                 trace.event("dna.save.enter", "references" to hashes.size, "expected_revision" to expected)
                 return try { analysis.saveDna(id, planId, grammar, selectedFamily, hashes, expected, draft).also {
+                    saveReturnedOnMain.set(android.os.Looper.myLooper() == android.os.Looper.getMainLooper())
                     trace.event("dna.save.persisted", "revision" to it.revision?.revision, "references" to it.references.size)
                 } } finally { trace.event("dna.save.finally") }
             }
@@ -365,6 +372,7 @@ class StyleDnaEmulatorTest {
         val saved = runBlocking { fixture.repo.load(1) }
         assertNotNull(SavedStyleDna.optional(saved.revision!!.analysisProfileJson))
         assertEquals(DnaStatus.REVIEWED, runBlocking { fixture.dnaJournal.latest(1) }!!.status)
+        assertTrue("Fixture UI Save must return on Android main like production", fixture.saveReturnedOnMain.get())
         trialPreparation()
         fixture.assertPosts(plan.endpointMaximum)
         evidence(name, json("samples" to plan.samples.size, "reports" to record.reports.size,

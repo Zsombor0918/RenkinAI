@@ -272,7 +272,8 @@ class StyleDnaOfflineHttpTest {
         StyleDnaOfflineHarness(temporary.newFolder()).use { f ->
             f.initialize(); val plan = f.prepare(DnaAnalysisMode.QUICK); val images = f.images(plan)
             val reports = dnaFixtureReports(plan).mapIndexed { index, report ->
-                if (index < 6) report else report.copy(familyVote = DnaFamilyVote.SOLID)
+                report.copy(familyVote = if(index < 6) report.familyVote else DnaFamilyVote.SOLID,
+                    outlierReason = if(index == 0) "Atypical synthetic construction" else "")
             }
             f.server.enqueue(MockResponse().setBody(dnaOfflineEnvelope(f.call(plan, plan.steps.single(), images), dnaReportsBody(reports))))
             val record = f.submit(plan); val saved = f.save(record)
@@ -291,6 +292,9 @@ class StyleDnaOfflineHttpTest {
             val trial = checkNotNull(prepared.plan)
             assertTrue(dnaReferencesMatch(dna, DNA_PACK_STYLE, trial.referenceHashes))
             assertEquals(saved.references.map { it.hash }, trial.referenceHashes)
+            assertFalse(trial.referenceHashes.contains(reports.first().sampleHash))
+            assertTrue(trial.referenceHashes.contains(reports[6].sampleHash))
+            assertNotEquals(plan.samples.take(5).map { it.hash }, trial.referenceHashes)
             val output = projectTestPng(size = 1024)
             f.server.enqueue(MockResponse().setBody(json("data" to JSONArray().put(json("b64_json" to Base64.encodeToString(output, Base64.NO_WRAP)))).toString()))
             f.beforeNetwork = { request ->
@@ -312,8 +316,11 @@ class StyleDnaOfflineHttpTest {
             }
             assertTrue(body.contains("Image 1")); assertTrue(body.contains("STYLE REFERENCES ONLY"))
             assertTrue(body.contains("Preserve original target hues")); assertTrue(body.contains("Target-type handling"))
-            assertTrue(body.contains("Background mode:")); assertTrue(body.contains("Brand-preservation rule:"))
-            assertTrue(body.contains("Abstraction rule:")); assertTrue(body.contains("Optical fill / padding:"))
+            val appearanceStart = body.indexOf("QUOTED APPEARANCE GUIDANCE:\n")
+            assertTrue(appearanceStart >= 0)
+            val appearance = org.json.JSONTokener(body.substring(appearanceStart + "QUOTED APPEARANCE GUIDANCE:\n".length)).nextValue() as String
+            assertTrue(appearance.contains("Background mode:")); assertTrue(appearance.contains("Brand-preservation rule:"))
+            assertTrue(appearance.contains("Abstraction rule:")); assertTrue(appearance.contains("Optical fill / padding:"))
             assertTrue(body.contains("exactly ONE")); assertTrue(body.contains("transparent")); assertTrue(body.contains("1024x1024"))
             assertTrue(body.contains("no collage") || body.contains("No reference symbols, collages"))
             assertTrue(trial.referenceHashes.size in 1..5)

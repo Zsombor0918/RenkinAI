@@ -5,7 +5,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
-internal const val DNA_PROMPT_VERSION = "per-icon-grammar-v1"
+internal const val DNA_PROMPT_VERSION = "per-icon-grammar-v2"
+internal val DNA_PROMPT_VERSIONS = setOf("per-icon-grammar-v1", DNA_PROMPT_VERSION)
 internal enum class DnaAnalysisMode { QUICK, STANDARD }
 internal data class DnaSampleBinding(val id: String, val hash: String) {
     fun json() = json("id" to id.also(::dnaId),"hash" to hash.also(::dnaHash))
@@ -25,7 +26,7 @@ internal data class StyleDnaPlan(val context: AnalysisContext, val mode: DnaAnal
     val fingerprint get() = sha256(canonicalJson(json("context" to context.encode(),"mode" to mode.name,"samples" to JSONArray(samples.map { it.json() }),
         "report" to report.encode(),"promptHash" to promptHash,"draftHash" to draftHash,"model" to model,"detail" to detail,"algorithm" to algorithm,"schema" to 1)).toByteArray())
     fun validate() {
-        context.validate(); require(UUID.fromString(id).toString() == id && promptVersion == DNA_PROMPT_VERSION && algorithm == REFERENCE_ALGORITHM)
+        context.validate(); require(UUID.fromString(id).toString() == id && promptVersion in DNA_PROMPT_VERSIONS && algorithm == REFERENCE_ALGORITHM)
         require(model in ANALYSIS_MODELS && detail in setOf("low","high")); dnaHash(draftHash)
         cleanText(description,6000,true); cleanText(instruction,2000,true); report.validate()
         require(samples.size in 1..(if(mode==DnaAnalysisMode.QUICK)12 else 24) && report.valid >= samples.size)
@@ -70,7 +71,7 @@ internal data class SavedStyleDna(val dna: StyleDnaV1, val reports: List<DnaIcon
         dna.encode(); require(reports.size in 1..24 && reports.map { it.sampleId }.distinct().size==reports.size && reports.map { it.sampleHash }.distinct().size==reports.size)
         require(dna.families.flatMap { it.evidenceIds }.toSet()==reports.map { it.sampleId }.toSet() &&
             (selectedFamily == DNA_PACK_STYLE || dna.families.any { it.id==selectedFamily }))
-        require(model in ANALYSIS_MODELS && detail in setOf("low","high") && algorithm==REFERENCE_ALGORITHM && promptVersion==DNA_PROMPT_VERSION)
+        require(model in ANALYSIS_MODELS && detail in setOf("low","high") && algorithm==REFERENCE_ALGORITHM && promptVersion in DNA_PROMPT_VERSIONS)
         return canonicalJson(json("kind" to "style_dna","schema" to 1,"dna" to dna.json(),"reports" to JSONArray(reports.map { it.json() }),
             "model" to model,"detail" to detail,"algorithm" to algorithm,"selectedFamily" to selectedFamily,"promptVersion" to promptVersion))
             .also { require(it.toByteArray().size<=192*1024) }

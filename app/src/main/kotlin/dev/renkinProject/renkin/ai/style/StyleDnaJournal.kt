@@ -35,7 +35,7 @@ internal data class StyleDnaRecord(val plan: StyleDnaPlan,val status: DnaStatus,
                     DnaStepState(s.stringValue("id"),s.stringValue("status"),if(s.isNull("responseId"))null else s.stringValue("responseId"),
                         if(s.isNull("usage"))null else s.getJSONObject("usage").let { u->AnalysisUsage(u.longValue("input"),u.longValue("output")) }) } },
                 parsedReports,
-                dna?.let { SavedStyleDna(it,parsedReports,plan.model,plan.detail,plan.algorithm,it.recommendedFamily) },if(r.isNull("reason"))null else r.stringValue("reason"),r.longValue("createdAt")).also { it.encode() }
+                dna?.let { SavedStyleDna(it,parsedReports,plan.model,plan.detail,plan.algorithm,it.recommendedFamily,plan.promptVersion) },if(r.isNull("reason"))null else r.stringValue("reason"),r.longValue("createdAt")).also { it.encode() }
         }
     }
 }

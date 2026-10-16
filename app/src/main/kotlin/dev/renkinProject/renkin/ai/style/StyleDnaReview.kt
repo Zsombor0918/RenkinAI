@@ -16,24 +16,34 @@ internal fun normalizedDnaObservation(trait: String, text: String): String {
     }
 }
 
-private fun packDrawingRule(reports: List<DnaIconReport>, trait: String): DnaRule {
+private fun packDrawingRule(saved: SavedStyleDna, trait: String, drawing: String? = null): DnaRule {
+    val reports = saved.reports
+    val threshold = maxOf(2, (reports.size * 3 + 4) / 5)
     val candidates = reports.filter { it.traits.getValue(trait).provenance == DnaProvenance.OBSERVED }
         .groupBy { normalizedDnaObservation(trait, it.traits.getValue(trait).value) }
     val recurring = candidates.entries.sortedWith(compareByDescending<Map.Entry<String,List<DnaIconReport>>> { it.value.size }.thenBy { it.key }).firstOrNull()
-    return if (recurring != null && recurring.value.size >= maxOf(2, (reports.size * 3 + 4) / 5))
-        DnaRule(recurring.key, DnaProvenance.INFERRED, recurring.value.map { it.sampleId })
-    else DnaRule("Unknown; preserve the target's essential identifying geometry", DnaProvenance.UNKNOWN, emptyList())
+    if (recurring != null && recurring.value.size >= threshold)
+        return DnaRule(recurring.key, DnaProvenance.INFERRED, recurring.value.map { it.sampleId })
+    // Standard's validated grammar can summarize differently worded reports. Require
+    // actual cited support across the pack, never promote a small optional family.
+    val synthesis = if (drawing == null) emptyMap() else saved.dna.families.map { it.drawing.getValue(drawing) }
+        .filter { it.provenance != DnaProvenance.UNKNOWN && it.evidenceIds.size >= 2 }
+        .groupBy { normalizedDnaObservation(trait, it.value) }
+        .mapValues { (_, rules) -> rules.flatMap { it.evidenceIds }.distinct() }
+    val supported = synthesis.filterValues { it.size >= threshold }.entries.singleOrNull()
+    return if (supported != null) DnaRule(supported.key, DnaProvenance.INFERRED, supported.value)
+        else DnaRule("Unestablished from recurring sample evidence", DnaProvenance.UNKNOWN, emptyList())
 }
 
 /** Derived pack view. Existing V1 partition, raw prose and sample evidence are untouched. */
 internal fun packDnaFamily(saved: SavedStyleDna): DnaFamily {
     val reports = saved.reports
     val ids = reports.map { it.sampleId }
-    val mapping = mapOf("background_tile" to "tile_geometry", "geometry" to "simplification", "stroke_fill" to "stroke_fill",
-        "rounding" to "corners", "simplification" to "simplification", "contour" to "stroke_fill", "scale_padding" to "optical_scale",
+    val mapping = mapOf("background_tile" to "tile_geometry", "geometry" to "logo_silhouette", "stroke_fill" to "stroke_fill",
+        "rounding" to "corners", "simplification" to "simplification", "contour" to "logo_silhouette", "scale_padding" to "optical_scale",
         "optical_alignment" to "optical_scale", "negative_space" to "negative_space", "light_shadow_depth" to "shadow_gradient",
         "gradient_use" to "shadow_gradient", "wordmarks" to "wordmark_handling")
-    val drawing = DNA_DRAWING.associateWith { key -> mapping[key]?.let { packDrawingRule(reports,it) }
+    val drawing = DNA_DRAWING.associateWith { key -> mapping[key]?.let { packDrawingRule(saved,it,key) }
         ?: DnaRule("Unknown; preserve target identity",DnaProvenance.UNKNOWN,emptyList()) }
     val policies = saved.dna.families.map { it.colorPolicy }.distinct()
     val policy = policies.singleOrNull()?.takeUnless { candidate ->
@@ -47,7 +57,8 @@ internal fun packDnaFamily(saved: SavedStyleDna): DnaFamily {
     return DnaFamily("pack_overall",ids,DnaSymbolType.entries.toList(),
         if(reports.size < 2) DnaTile.UNKNOWN else reports.map { it.tileVote }.distinct().singleOrNull() ?: DnaTile.MIXED,
         if(reports.size < 2) DnaDepth.UNKNOWN else reports.map { it.depthVote }.distinct().singleOrNull() ?: DnaDepth.MIXED,policy,roles,drawing,
-        emptyList(),emptyList(),listOf(DnaRule("Never copy any reference logo or symbol",DnaProvenance.INFERRED,ids)))
+        emptyList(),listOf(packDrawingRule(saved,"color_roles")).filter { it.provenance != DnaProvenance.UNKNOWN },
+        listOf(DnaRule("Never copy any reference logo or symbol",DnaProvenance.INFERRED,ids)))
 }
 
 /** Stable diversity across observed construction/type categories, then original sample order.
@@ -58,6 +69,7 @@ internal fun dnaReferenceHashes(saved: SavedStyleDna, family: String, available:
         saved.reports.filter { it.sampleId in ids }
     }
     val ordered = available.distinct().mapNotNull { hash -> members.singleOrNull { it.sampleHash == hash } }
+        .filter { it.outlierReason.isBlank() }
     val groups = ordered.groupBy { listOf(it.familyVote.name,it.tileVote.name,it.depthVote.name,it.symbolType.name) }.values.map { it.toMutableList() }
     val selected = mutableListOf<String>()
     while(selected.size < 5 && groups.any { it.isNotEmpty() }) {

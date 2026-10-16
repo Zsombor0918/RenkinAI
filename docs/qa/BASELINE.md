@@ -1,5 +1,9 @@
 # Verification baseline
 
+## Diagnostic and generation-quality checkpoint
+
+From clean75e936a1, five focused quality cases execute5/5 RED before production edits; diagnostic instrumentation compiles and local Standard passes1/1 in11.557s with detailed traces. Existing runner safety tests9/9 pass. Later correction/final-source checks belong on PR8 after execution, not inferred from these checkpoints. The RED full matrix is cancelled to avoid redundant execution before the correction; final-head complete checks remain required.
+
 ## October16 new Windows PC
 
 Delivery checkpoint6479b8f7 passes Linux CI/profile/HTTP but hosted Standard fails

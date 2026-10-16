@@ -32,6 +32,25 @@ internal fun dnaReportsBody(reports: List<DnaIconReport>)=canonicalJson(json("sc
 @Config(application=Application::class,sdk=[33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleDnaWorkflowTest {
+    @Test fun oldAndNewPromptJournalsKeepTheirVersionAndConsumedSteps() = runBlocking {
+        for(version in listOf("per-icon-grammar-v1","per-icon-grammar-v2")) {
+            val (source,images)=dnaFixturePlan(DnaAnalysisMode.QUICK,12)
+            val plan=source.copy(promptVersion=version)
+            val journal=journal()
+            var posts=0
+            val coordinator=StyleDnaCoordinator(journal,StyleDnaGateway { call,before ->
+                before();posts++
+                DnaCallResult.Received(dnaReportsBody(dnaFixtureReports(plan,call.step.samples)),"resp_version_fixture",null)
+            })
+            val result=checkNotNull(coordinator.submit(plan,images,true,{true}))
+            assertEquals(DnaStatus.RESULT_SAVED,result.status)
+            assertEquals(version,result.result!!.promptVersion)
+            val bytes=result.encode()
+            assertEquals(bytes,StyleDnaRecord.parse(bytes).encode())
+            assertEquals(version,StyleDnaRecord.parse(bytes).result!!.promptVersion)
+            assertEquals(result,coordinator.submit(plan,images,true,{true}));assertEquals(1,posts)
+        }
+    }
     @Test fun overallRecipeUsesConcreteGenerationDecisionsAndKeepsRawEvidence() {
         val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
         val values = mapOf("tile_geometry" to "Standalone dark silhouette forms; no separate background tile",
