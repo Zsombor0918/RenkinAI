@@ -32,8 +32,186 @@ internal fun dnaReportsBody(reports: List<DnaIconReport>)=canonicalJson(json("sc
 @Config(application=Application::class,sdk=[33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleDnaWorkflowTest {
+    @Test fun oldAndNewPromptJournalsKeepTheirVersionAndConsumedSteps() = runBlocking {
+        for(version in listOf("per-icon-grammar-v1","per-icon-grammar-v2")) {
+            val (source,images)=dnaFixturePlan(DnaAnalysisMode.QUICK,12)
+            val plan=source.copy(promptVersion=version)
+            val journal=journal()
+            var posts=0
+            val coordinator=StyleDnaCoordinator(journal,StyleDnaGateway { call,before ->
+                before();posts++
+                DnaCallResult.Received(dnaReportsBody(dnaFixtureReports(plan,call.step.samples)),"resp_version_fixture",null)
+            })
+            val result=checkNotNull(coordinator.submit(plan,images,true,{true}))
+            assertEquals(DnaStatus.RESULT_SAVED,result.status)
+            assertEquals(version,result.result!!.promptVersion)
+            val bytes=result.encode()
+            assertEquals(bytes,StyleDnaRecord.parse(bytes).encode())
+            assertEquals(version,StyleDnaRecord.parse(bytes).result!!.promptVersion)
+            assertEquals(result,coordinator.submit(plan,images,true,{true}));assertEquals(1,posts)
+        }
+    }
+    @Test fun overallRecipeUsesConcreteGenerationDecisionsAndKeepsRawEvidence() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val values = mapOf("tile_geometry" to "Standalone dark silhouette forms; no separate background tile",
+            "logo_silhouette" to "Compact geometric masses with soft external contours",
+            "stroke_fill" to "Solid fills without an outline", "corners" to "Softened corners",
+            "optical_scale" to "High optical fill with a narrow clear outer margin; qualitative, not measured",
+            "negative_space" to "Keep open counters and distinct internal gaps",
+            "shadow_gradient" to "Subtle gradients and soft highlights; shallow depth, no heavy extrusion",
+            "luminance" to "Dark neutral base with vivid accents", "color_roles" to "Dark base plus vivid native brand accents, not monochrome",
+            "wordmark_handling" to "Retain text only when essential to target brand identity",
+            "simplification" to "Reduce small detail to a few bold geometric parts")
+        val reports = dnaFixtureReports(plan).map { report -> report.copy(
+            traits = DNA_TRAITS.associateWith { DnaObservation(values.getValue(it), DnaProvenance.OBSERVED) },
+            tileVote = DnaTile.NONE, depthVote = DnaDepth.GRADIENT, colorPolicy = PackColorPolicy.ADAPT_BRAND_COLORS) }
+        val raw = synthesizeDnaLocally(reports, images)
+        val saved = SavedStyleDna(raw, reports, plan.model, plan.detail, plan.algorithm, DNA_PACK_STYLE)
+        val before = saved.encode()
+        val recipe = StyleDnaCompiler.recipe(saved, DnaSymbolType.WORDMARK)
+        for (label in listOf("Background mode:", "Dominant shape / silhouette:", "Optical fill / padding:",
+            "Edges / corners:", "Stroke / outline:", "Simplification / complexity ceiling:", "Color policy:",
+            "Gradient / highlight / depth:", "Text policy:", "Negative space:", "Brand-preservation rule:",
+            "Abstraction rule:", "Pack consistency:")) assertTrue(label + " missing: " + recipe, recipe.contains(label))
+        for (value in listOf("standalone dark silhouette", "compact geometric masses", "vivid native brand accents",
+            "high optical fill", "subtle gradients", "essential to target brand identity")) assertTrue(value, recipe.lowercase().contains(value))
+        assertFalse(recipe.contains("UNKNOWN:")); assertFalse(recipe.contains("Not established"))
+        assertEquals(before, saved.encode()); assertEquals(saved, SavedStyleDna.parse(before))
+        assertEquals(reports, saved.reports); assertEquals(raw, saved.dna)
+        assertTrue(recipe.length < 4000)
+        assertNull(abstractDnaSilhouette("FOREIGN_SOURCE_LOGO"))
+        assertNull(abstractDnaSilhouette("not compact geometric masses with soft external contours"))
+        assertNull(abstractDnaSilhouette("compact geometric masses with soft external contours of a reference brand"))
+    }
+    @Test fun overallUsesSupportedSynthesisRulesWithoutTurningConflictsIntoUniversalRules() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.STANDARD, 12)
+        val reports = dnaFixtureReports(plan).mapIndexed { index, report -> report.copy(traits = report.traits +
+            ("logo_silhouette" to DnaObservation("Distinct contour observation number $index", DnaProvenance.OBSERVED))) }
+        val local = synthesizeDnaLocally(reports, images)
+        val rule = DnaRule("Standalone dark silhouette forms with compact geometric masses", DnaProvenance.INFERRED, reports.map { it.sampleId })
+        val family = local.families.single().copy(drawing = local.families.single().drawing + ("geometry" to rule))
+        val saved = SavedStyleDna(local.copy(families = listOf(family)), reports, plan.model, plan.detail, plan.algorithm, DNA_PACK_STYLE)
+        val overall = packDnaFamily(saved)
+        assertEquals(rule.value.lowercase(), overall.drawing.getValue("geometry").value.lowercase())
+        assertEquals(rule.evidenceIds, overall.drawing.getValue("geometry").evidenceIds)
+        val halves = reports.chunked(6).mapIndexed { index, members -> family.copy(id="part$index", evidenceIds=members.map { it.sampleId },
+            colorRoles=emptyList(), drawing=family.drawing.mapValues { (_, value) -> value.copy(evidenceIds=members.map { it.sampleId }) } +
+                ("geometry" to rule.copy(value=if(index==0) "Rounded simple masses" else "Angular complex contours", evidenceIds=members.map { it.sampleId })),
+            must=emptyList(),should=emptyList(),mustNot=emptyList()) }
+        val conflict = saved.copy(dna=local.copy(families=halves,recommendedFamily=halves.first().id))
+        assertEquals(DnaProvenance.UNKNOWN, packDnaFamily(conflict).drawing.getValue("geometry").provenance)
+        val sparse = saved.copy(reports=reports.map { it.copy(traits=it.traits.mapValues { (_, value) -> value.copy(provenance=DnaProvenance.UNKNOWN) }) },
+            dna=local.copy(families=listOf(family.copy(drawing=family.drawing.mapValues { (_, value) -> value.copy(provenance=DnaProvenance.UNKNOWN,evidenceIds=emptyList()) }))))
+        val sparseRecipe=StyleDnaCompiler.recipe(sparse,DnaSymbolType.UNKNOWN)
+        assertTrue(sparseRecipe.contains("Unestablished traits:")); assertFalse(sparseRecipe.contains("UNKNOWN:"))
+    }
+    @Test fun representativeReferencesPreferUnflaggedEvidenceAndNeverPadAnotherFamily() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val reports = dnaFixtureReports(plan).mapIndexed { index, report -> report.copy(
+            familyVote=if(index<6) DnaFamilyVote.OUTLINE else DnaFamilyVote.SOLID,
+            outlierReason=if(index==0) "Atypical construction for this sample" else "") }
+        val raw=synthesizeDnaLocally(reports,images)
+        val saved=SavedStyleDna(raw,reports,plan.model,plan.detail,plan.algorithm,DNA_PACK_STYLE)
+        val available=plan.samples.map { it.hash }
+        val refs=dnaReferenceHashes(saved,DNA_PACK_STYLE,available)
+        assertEquals(5,refs.size); assertFalse(refs.contains(reports.first().sampleHash))
+        assertTrue(refs.contains(reports[6].sampleHash)); assertNotEquals(available.take(5),refs)
+        val family=raw.families.first()
+        val familyRefs=dnaReferenceHashes(saved,family.id,available)
+        assertTrue(familyRefs.all { hash -> reports.single { it.sampleHash==hash }.sampleId in family.evidenceIds })
+        assertEquals(refs,dnaReferenceHashes(saved,DNA_PACK_STYLE,available))
+    }
+    @Test fun packWideDerivedReviewNormalizesSynonymsWithoutRewritingRawFamiliesOrIdentity() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val reports = dnaFixtureReports(plan).mapIndexed { index, report -> report.copy(
+            familyVote = DnaFamilyVote.entries[index % 7],
+            traits = report.traits + mapOf(
+                "stroke_fill" to DnaObservation(listOf("solid fill with smooth edges, no outline", "solid filled shapes with no visible stroke", "solid fills with no outline")[index % 3], DnaProvenance.OBSERVED),
+                "corners" to DnaObservation(listOf("fully rounded ends", "rounded terminals and softened corners")[index % 2], DnaProvenance.OBSERVED),
+                "logo_silhouette" to DnaObservation("PRIVATE_SOURCE_IDENTITY", DnaProvenance.OBSERVED))) }
+        val raw = synthesizeDnaLocally(reports, images)
+        val historical = SavedStyleDna(raw, reports, plan.model, plan.detail, plan.algorithm, raw.recommendedFamily)
+        val bytes = historical.encode()
+        val global = historical.copy(selectedFamily = "__pack__")
+        assertEquals(global, SavedStyleDna.parse(global.encode()))
+        val recipe = StyleDnaCompiler.specification(global)
+        assertTrue(recipe, recipe.contains("solid filled shapes without an outline"))
+        assertTrue(recipe, recipe.contains("rounded terminals and softened corners"))
+        assertFalse(recipe.contains("PRIVATE_SOURCE_IDENTITY"))
+        assertEquals(bytes, SavedStyleDna.parse(bytes).encode())
+        assertEquals(raw, global.dna); assertEquals(reports, global.reports)
+        assertNotEquals("rounded terminals and softened corners", normalizedDnaObservation("corners","no rounded terminals"))
+        assertNotEquals("solid filled shapes without an outline", normalizedDnaObservation("stroke_fill","not solid fills with no outline"))
+        assertNotEquals("rounded terminals and softened corners", normalizedDnaObservation("corners","rounded terminals except sharp corners"))
+        assertTrue(StyleDnaCompiler.family(global).json().getJSONArray("evidence_ids").length() == reports.size)
+        val selected = dnaReferenceHashes(global,DNA_PACK_STYLE,plan.samples.map { it.hash })
+        assertEquals(5,selected.size); assertEquals(5,selected.distinct().size)
+        assertEquals(selected,dnaReferenceHashes(global,DNA_PACK_STYLE,plan.samples.map { it.hash }))
+        val small = raw.families.first { it.observedCount < 3 }
+        val smallRefs = dnaReferenceHashes(global,small.id,plan.samples.map { it.hash })
+        assertEquals(small.observedCount,smallRefs.size)
+        assertTrue(dnaReferencesMatch(global,small.id,smallRefs))
+        assertFalse(dnaReferencesMatch(global,small.id,plan.samples.take(5).map { it.hash }))
+    }
+    @Test fun thirdStandardBatchCountFailureRetainsTwelveReportsAndSpecificReasonWithoutReplay() = runBlocking {
+        val (plan, images) = dnaFixturePlan()
+        var calls = 0
+        val j = journal()
+        val coordinator = StyleDnaCoordinator(j, StyleDnaGateway { request, before ->
+            before(); calls++
+            val reports = dnaFixtureReports(plan, request.step.samples)
+            DnaCallResult.Received(dnaReportsBody(if (calls == 3) reports.dropLast(1) else reports), "resp_fixture_$calls", null)
+        })
+        val record = coordinator.submit(plan, images, true, { true })!!
+        assertEquals("REPORT_COUNT", record.reason)
+        assertEquals(DnaStatus.UNCERTAIN, record.status)
+        assertEquals(12, record.reports.size); assertEquals(3, record.submitted)
+        assertEquals(dnaFixtureReports(plan, plan.steps.take(2).flatMap { it.samples }), record.reports)
+        assertNull(record.result)
+        val durable = record.encode()
+        assertEquals(record, journal().latest(1))
+        assertEquals(record, coordinator.submit(plan, images, true, { true }))
+        assertEquals(durable, j.record(1, plan.id)!!.encode()); assertEquals(3, calls)
+    }
     @get:Rule val temporary=TemporaryFolder()
     private fun journal()=StyleDnaJournal(analysisFixtureContext(temporary.root))
+
+    @Test fun trustedParentAliasKeepsAtomicRecoveryAndConsumedReservations() {
+        val canonical = journal()
+        assertTrue(canonical.records(1).isEmpty())
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        assertTrue(canonical.claim(plan, images)); canonical.submitted(plan, plan.steps.first()); canonical.release(plan)
+        val file = File(temporary.root, "style_dna/1/plan-${plan.id}.json")
+        val durable = file.readBytes()
+        assertTrue(file.renameTo(File(file.path + ".bak")))
+        File(file.path + ".new").writeText("unfinished private bytes")
+        val aliased = StyleDnaJournal(analysisFixtureContext(File(temporary.root, ".")))
+        val recovered = aliased.records(1).single()
+        assertEquals(DnaStatus.UNCERTAIN, recovered.status)
+        assertEquals(1, recovered.submitted)
+        assertEquals(plan, recovered.plan)
+        assertFalse(aliased.claim(plan, images))
+        assertFalse(canonical.claim(plan, images))
+        assertNotNull(StyleDnaRecord.parse(String(durable)))
+        assertEquals(recovered, canonical.latest(1))
+        val orphan = plan.copy(id = java.util.UUID.randomUUID().toString(),
+            samples = plan.samples) // New plan ID, still consumed step IDs.
+        File(file.parentFile, "plan-${orphan.id}.json.new").writeText("interrupted")
+        assertFalse(aliased.claim(orphan, images))
+        assertEquals(recovered, aliased.latest(1))
+    }
+
+    @Test fun canonicalContextStillRejectsLinkedJournalAndProfileDirectories() {
+        val outside = temporary.newFolder("outside")
+        val root = File(temporary.root, "style_dna")
+        java.nio.file.Files.createSymbolicLink(root.toPath(), outside.toPath())
+        assertTrue(runCatching { journal().records(1) }.isFailure)
+        java.nio.file.Files.delete(root.toPath()) // Only remove the fixture link, never its target.
+        assertTrue(root.mkdir())
+        java.nio.file.Files.createSymbolicLink(File(root, "1").toPath(), outside.toPath())
+        assertTrue(runCatching { journal().records(1) }.isFailure)
+        assertTrue(outside.listFiles()!!.isEmpty())
+    }
 
     @Test fun safeRendererSeparatesDeliberateStatefulExclusionsFromDarkVisibleAndBrokenArt() {
         val resources=org.robolectric.RuntimeEnvironment.getApplication().resources
@@ -91,6 +269,68 @@ class StyleDnaWorkflowTest {
         val r=c.submit(plan,images,true,{true})!!
         assertEquals(1,calls);assertEquals(12,r.reports.size);assertEquals(DnaStatus.RESULT_SAVED,r.status)
     }
+    @Test fun completedHttpReportSchemaAndSynthesisFailuresKeepDistinctStagesAndConsumedRights() = runBlocking {
+        for (fault in listOf("missing", "hash", "extra_field", "extra_report", "duplicate", "wrong_type",
+            "quick_local_synthesis", "standard_schema", "standard_evidence")) {
+            val standard = fault.startsWith("standard")
+            val (plan, images) = dnaFixturePlan(if (standard) DnaAnalysisMode.STANDARD else DnaAnalysisMode.QUICK,
+                if (standard) 24 else 12)
+            okhttp3.mockwebserver.MockWebServer().use { server ->
+                for (step in plan.steps) {
+                    val reports = dnaFixtureReports(plan, step.samples)
+                    val text = when {
+                        step.synthesis && fault == "standard_schema" -> "{}"
+                        step.synthesis -> {
+                            val valid = synthesizeDnaLocally(dnaFixtureReports(plan), images)
+                            valid.copy(families = valid.families.map { it.copy(tile = DnaTile.ROUND) }).encode()
+                        }
+                        fault == "quick_local_synthesis" -> dnaReportsBody(reports.mapIndexed { i, r ->
+                            r.copy(familyVote = DnaFamilyVote.entries[i % DnaFamilyVote.entries.size],
+                                tileVote = DnaTile.entries[i / DnaFamilyVote.entries.size])
+                        }) // Schema-valid reports with >8 distinct groups exceed the local synthesis bound.
+                        standard -> dnaReportsBody(reports.reversed())
+                        else -> org.json.JSONObject(dnaReportsBody(reports)).also { root ->
+                            val a = root.getJSONArray("reports")
+                            when (fault) {
+                                "missing" -> a.remove(a.length() - 1)
+                                "hash" -> a.getJSONObject(0).put("sample_hash", "f".repeat(64))
+                                "extra_field" -> a.getJSONObject(0).put("untrusted", "private provider prose")
+                                "extra_report" -> a.put(a.getJSONObject(0))
+                                "duplicate" -> a.put(1, a.getJSONObject(0))
+                                "wrong_type" -> a.getJSONObject(0).put("schema", "1")
+                            }
+                        }.toString()
+                    }
+                    server.enqueue(okhttp3.mockwebserver.MockResponse().setBody(json("id" to "resp_simulated_${step.id}",
+                        "status" to "completed", "output" to JSONArray().put(json("type" to "message", "status" to "completed",
+                            "content" to JSONArray().put(json("type" to "output_text", "text" to text))))).toString()))
+                }
+                val gateway = OpenAiStyleDnaGateway({ "offline_fixture_no_real_credential" }, okhttp3.OkHttpClient(), server.url("/v1/responses"))
+                val coordinator = StyleDnaCoordinator(journal(), gateway)
+                val result = coordinator.submit(plan, images, true, { true })!!
+                val synthesis = standard || fault == "quick_local_synthesis"
+                assertEquals(fault, if (synthesis) "SYNTHESIS_INVALID" else when(fault) {
+                    "missing", "extra_report" -> "REPORT_COUNT"
+                    "hash" -> "REPORT_HASH"
+                    "extra_field" -> "REPORT_FIELDS"
+                    "duplicate" -> "REPORT_DUPLICATE_ID"
+                    else -> "REPORT_SCHEMA"
+                }, result.reason)
+                assertEquals(fault, if (fault == "quick_local_synthesis") DnaStatus.FAILED else DnaStatus.UNCERTAIN, result.status)
+                assertNull(result.result)
+                assertEquals(if (standard) 24 else if (fault == "quick_local_synthesis") 12 else 0, result.reports.size)
+                assertEquals(if (standard) 5 else 1, result.submitted)
+                assertEquals(result.submitted, server.requestCount)
+                val durable = result.encode()
+                assertFalse(durable.contains("private provider prose"))
+                val recreated = StyleDnaCoordinator(journal(), gateway)
+                assertEquals(result, recreated.submit(plan, images, true, { true }))
+                assertEquals(durable, journal().record(1, plan.id)!!.encode())
+                assertEquals(result.submitted, server.requestCount)
+            }
+        }
+    }
+
     @Test fun partialSixImageFailureRetainsOnlyCompletedReportsAndCannotResumeOrReplay()=runBlocking {
         val (plan,images)=dnaFixturePlan();var calls=0
         val c=StyleDnaCoordinator(journal(),StyleDnaGateway { request,before->before();calls++

@@ -1,0 +1,49 @@
+name: Offline Style DNA
+
+on:
+  pull_request:
+    branches: [main, "feat/style-trials-m5", "feat/style-dna-v1"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # HTTP contract tests execute in CI/build's full suite; select the runner's
+  # offline-dna-http group locally when developing that subsystem.
+  offline-dna-emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable runner KVM access
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Build test APKs
+        run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest :offline-fixture:assembleDebug
+      - name: Run real Android synthetic journeys
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: python3 scripts/run_offline_dna_emulator.py --serial emulator-5554
+      - name: Retain Android evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-dna-emulator
+          path: build/offline-dna-emulator/
+          if-no-files-found: error

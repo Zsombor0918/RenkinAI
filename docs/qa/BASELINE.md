@@ -1,5 +1,281 @@
 # Verification baseline
 
+## Actual hosted queued-load reproduction
+
+aef0dca0 hosted Android records plan assignment then queued-load clearing within18ms, followed by missing trial-decline and dependent missing Standard completion evidence. Saved revision1 survives. Focused local controlled RED repeats current plan becoming null after the queued read (1/1); corrected final-head results remain external on PR8. This supersedes the earlier merely suspected scheduling explanation, without retroactively claiming an exact trace of75e.
+
+Checkpoint aef0dca0 actually executes1010 Windows tests with7 failures/zero errors/skips: six retained baseline failures plus the unchanged source-identity assertion. Local Android4/4 and Python64 pass. This failed checkpoint prompted a narrow abstract-silhouette boundary correction; its final source results belong on PR8, never inherited from these counts.
+
+## Diagnostic and generation-quality checkpoint
+
+From clean75e936a1, five focused quality cases execute5/5 RED before production edits; diagnostic instrumentation compiles and local Standard passes1/1 in11.557s with detailed traces. Existing runner safety tests9/9 pass. Later correction/final-source checks belong on PR8 after execution, not inferred from these checkpoints. The RED full matrix is cancelled to avoid redundant execution before the correction; final-head complete checks remain required.
+
+## October16 new Windows PC
+
+Delivery checkpoint6479b8f7 passes Linux CI/profile/HTTP but hosted Standard fails
+on missing trial-prepare in the loading Compose list. Its unchanged regression is
+retained. Test-only observation now awaits the enabled materialized control within
+the existing15 seconds before one click. Focused API35 Standard passes1/1 at normal
+width (11.441s) and320px (11.155s); display overrides are reset. Final-head full and
+hosted evidence remains separate. See
+[the focused delivery correction](../changes/2026-10-16-offline-dna-visible-trial-control.md).
+
+Hosted a234 Android phase1 is3 tests/1 Standard missing-trial-plan failure after
+Save; phase2 fails because Standard evidence is absent. Quick and incomplete/
+cancel pass. The test helper retains15 seconds and all assertions while requiring
+plan/error terminal state. Local6dda4/4 is a separate successful checkpoint;
+final-head hosted verification remains mandatory. See
+[the observed state and correction](../changes/2026-10-16-offline-dna-trial-observation.md).
+
+Hosted a234cf38 verification actually fails1005/8, all8 new HTTP fixtures; isolated
+offline artifact14/8 confirms parser5/5 remains green and the exact DNS guard blocks
+canonical localhost before reaching the server. Test-only explicit127 routing
+corrects that host difference without relaxing denial or changing production.
+Its new final-head execution is recorded on PR8. See
+[failure and correction](../changes/2026-10-16-offline-dna-host-routing.md).
+
+Source baseline e235922b3b57961f21f0b91e47a8938f464705af was fetched for existing
+draft PR8. Windows11Pro26200/x64/i9-13900K/32GiB uses official verified portable
+Temurin17.0.20.1, SDK36/build-tools35, Gradle8.11.1 and Python3.14. User explicitly
+authorized SDK licenses. Existing WHPX supports API35 x86_64 emulator37.2.12.
+Initial commands failed before assertions: AGP rejected the accented project path,
+then default compiler heap exhausted, then Gradle worker startup exposed a Unicode
+cache-path issue. These are failed attempts, not passing tests. An untouched
+detached baseline and separate logs retain their evidence. Git shell/Python alias
+configuration corrected two initial hook setup errors; all55 original guards then
+passed. Exact subsequent baseline/final XML counts and fresh APK evidence belong
+in PR8's audit after execution. Fresh untouched baseline now executes990 cases with
+six failures/zero errors/skips (two symlink, three file-replacement and one decimal
+locale assertion); separate debug assembly passes. The new six-test RED has four
+expected failures. First corrected focused GREEN passes36/36, including HTTP9,
+and Android instrumentation compiles. These checkpoints do not substitute for the
+final-head matrix. See [offline setup](OFFLINE_STYLE_DNA.md).
+The implementation tree also passes API35 emulator instrumentation3+1, including
+actual process restart, Quick/Standard Save and trial preparation. Initial hostname
+routing failures are retained; explicit127.0.0.1 fixes the synthetic server route.
+All64 Python tests pass. Final commit/CI/native matrix evidence is external on PR8.
+
+## PR8 derived guidance execution
+
+Existing Windows/JDK17/SDK36/Gradle8.11.1: fidelity-bc-red runs2/2 assertion failures
+in22.025s, preserving raw runtime04dfa532. First corrected focused execution runs
+28/28,zero failures/errors/skips in150.409s. An added real-controller/native-factory
+fixture then runs8/1 in67.139s: its multipart settings omit referenceNames for five
+actual refs, correctly rejected by the unchanged native factory. Every preceding
+runtime/choice/membership/original assertion passes. Fix only fixture settings;
+fidelity-bc-green-3 then passes9/9 in37.463s,zero failures/errors/skips, adding real
+Room full/shared overall-selection round trips. Logs/XML remain outside Git in
+task tools2026-10-15/fidelity-bc-*. These are focused source checks, not final-head
+all23 or generated-artwork acceptance. Exact final evidence belongs on draft PR8.
+
+## PR8 report contract execution
+
+Windows JDK17/SDK36/Gradle8.11.1, existing caches: reliability-a-red compiles and
+runs2 tests/2 assertion failures/0 errors/skips in22.920s before runtime changes.
+reliability-a-green runs19/19,0 failures/errors/skips in108.762s: complete DNA
+gateway and real Room persistence, third-batch and retained fault/recovery tests,
+owned auth/schema/timeout. Eighteen report fault fixtures retain strict rejection;
+reordering/nonempty UNKNOWN remain accepted. Evidence is outside Git in task tools
+2026-10-15/reliability-a-*. These are focused uncommitted-source results, not final
+HEAD/full regression or phone acceptance. Final exact evidence belongs on PR8.
+
+## PR8 full REST envelope red evidence
+
+Baseline86c95e9d, existing Windows11/Temurin17.0.20.1+1/API36/build-tools35,
+Gradle8.11.1/caches/Python3.14. Actual envelope-red selects the new six-image full
+envelope test and the whole StyleDnaPersistenceTest class: production/test compile,
+5 tests/2 failures/0 errors/skips in239.106s. The first test confirms14, rejects at12,
+and accepts Legacy's actual shallower schema before failing with ENVELOPE_INVALID.
+The existing real Room Quick/Standard Save/reload test, now using full envelopes,
+fails expected RESULT_SAVED/actual FAILED. Three retained persistence tests pass.
+Original XML/log/commands remain outside Git in task tools2026-10-15/envelope-red.
+Original successful-result and security assertions remain; exact invalid-envelope
+expectations are strengthened to the new fixed diagnostic categories.
+Corrected envelope-green-1 executes44/44,0 failures/errors/skips in1624.412s:
+complete DNA gateway/persistence, Legacy gateway/schema and DNA Compose classes.
+Both red assertions pass; full Quick12/Standard24/five-step Save/reload and exact
+rejection/consumed-marker checks pass. This source was uncommitted during the run;
+it is focused proof, not a final-head full-suite or device acceptance claim.
+Final-head focused/full23/unfiltered/Python/docs/CI/schema/APK results belong on
+PR8 after execution. Physical and live testing NOT RUN; the pasted key is unused.
+
+## Latest PR8 provider-result RED and final-head boundary
+
+Test-only61e7b166 compiles/runs978/4 RED in Android38761014578; downloaded
+225955-byte HTML artifact11985886299 SHA256
+7b66da1d42c222416406be006a7b6bd269eadd7aaf167d6b38fe24e2e20ea67f confirms
+exact four new assertions. Test-only2207f82d compiles/runs978/5 in Android38761504726:
+real parent restoration loses the plan before re-scan. Artifact11985728802 is
+229111bytes, SHA25680078f95930cdd9c33e6517e248b2a7b3c4f3d195dbf144bf0a5a72a8a5791c8.
+
+Original RED assertions, strict validation and all23 groups remain. Final-head
+Android/unfiltered/all23 XML/schema, Python/docs/subjects/PR audit and verified APK
+are recorded externally on PR8 after execution; RED/checkpoints are not final
+passes. Local Gradle is blocked before configuration by download network access.
+Physical/live testing NOT RUN; zero paid/live calls. See
+[the correction record](../changes/2026-10-15-dna-provider-result-correction.md).
+
+## PR8 automated runtime verified; final source gates required
+
+At `6fd75af26fe04595719bf618b19b173b96084f53`, Android38711653859 passes
+compilation, **974/974 unit tests** and assembleDebug. The additive verifier stops
+at the missing rg executable before signing/hash/upload; this is not a verified
+APK artifact. Test-report11961232344 has221888bytes, SHA256
+a45ef56f42e8ff7363b635f89f0a1a48fb5a45aff952ca527fd61d49eb31f205.
+
+Independent all23 run38711653794 artifact11961372299 has683404bytes, SHA256
+46a04221c7e134f5f6812dec67f761501114c7d46bedcce3b76e366abc35a234.
+Actual154 full XML/974 tests have one retained guided displayed assertion failure,
+zero errors/skips; all22 isolated groups pass (DNA34, analysis persistence/session31,
+guided35). All selectors/counts match; retained19/20 and KSP21 bytes equal source.
+The final helper realigns after awaited restored-layout readiness; the CI command
+uses available grep. No assertion/selector/timeout/idling rule is weakened.
+
+Actual key event/invalidation/refresh acceptance now passes after normal Compose
+effect synchronization. The earlier8ee/350 failures remain historical below and
+in their notes, not relabeled as product fixes. The final commit requires its own
+complete gates and newly verified APK, recorded on PR8 after execution; the974
+standalone pass cannot substitute for its final all23 result. Physical acceptance
+NOT RUN, live API SKIPPED/zero calls. See [record](../changes/2026-10-15-dna-final-verification.md).
+
+## PR8 key-resume verification checkpoint
+
+Implementation4be6ad63 passes production/test compilation and973 of974 tests in
+[Android38708500788](https://github.com/Zsombor0918/RenkinAI/actions/runs/38708500788).
+The only failure is the new key-resume fixture's first10000ms resume wait. Original
+red cases and new real-wire/Room/fault/cancel/progress tests pass. Downloaded report
+11959118399 is223270bytes, SHA256
+e4ab841572b85ff19542c253ac741e3280a8089efc7bfe1ce181831f6a318c44.
+The fixture follow-up uses the actual composed lifecycle and separately observed
+pause/resume events, retaining every assertion and timeout. No runtime or idling
+change; key refresh remains unverified until actual execution. See
+[record](../changes/2026-10-15-dna-resume-verification.md).
+
+## PR8 end-to-end plan/history regression
+
+Test-only948f805ddbde3f31c40adaeadae1de07f03b6f83:
+[Android38706159146](https://github.com/Zsombor0918/RenkinAI/actions/runs/38706159146)
+successfully compiles production/tests and executes969 cases with exactly three
+new failures: frozen-plan/busy refresh overlap, current-ready versus historical
+failure presentation, and changed-option recovery. Original cases pass. Retained
+report artifact11958498226 is224150bytes, SHA256
+b3cb901b02a6b9e05eb699a90da7f63af1a7ee5309c4b5e61eb071f0c70b0370.
+Corrective final-head Android/all23/Python/audit/XML/schema and signed APK evidence
+must be observed and recorded on PR8; no subset or ancestor substitutes for them.
+Local Gradle8.11.1 download fails before configuration (Network is unreachable).
+Live test SKIPPED: no approved secure runtime credential or verified budget controls.
+Zero live/paid calls; physical Flip8/Keystore/signature/visual acceptance NOT RUN.
+
+## PR8 all-pack storage investigation (Windows local)
+
+Baseline f46115f1, Windows11/Temurin17.0.20.1+1/SDK36/build-tools35/Gradle8.11.1.
+Actual red selects the two new OwnedStyleAnalysisTest alias/shared-history methods:
+compilation passes,2 tests/2 failures/0 errors/skips; both assert actual storage.
+Original XML/log/commands remain outside Git under task tools2026-10-15/allpacks-red.
+After correction allpacks-green-1 executes20/1: both red cases and retained controller
+tests pass; the new linked-directory guard fails at native Windows canonical-path
+semantics. Its security assertion remains unchanged for Linux execution.
+allpacks-focused executes24/24,0 failures/errors/skips in30.365s: entire owned/DNA
+Compose classes plus backup/orphan/alias durability. These uncommitted-source subsets
+do not replace final acceptance. Final-head local23/unfiltered/Python, hosted Linux
+XML/schema/APK and checks are recorded in PR8 after committing. Earlier Windows5
+failures comprise four native filesystem cases and one HU decimal expectation.
+Physical Samsung/storage/signature verification is NOT RUN; zero live/paid calls.
+
+## Verified PR8 corrective code checkpoint
+
+Code f788b62b0cebe387c1c444b797831ac7bda66c6f passed
+[Android38665453196](https://github.com/Zsombor0918/RenkinAI/actions/runs/38665453196)
+and [all23 commands38665453253](https://github.com/Zsombor0918/RenkinAI/actions/runs/38665453253).
+Independently downloaded675222-byte regression artifact11942105251, ZIP SHA256
+51ecf1158245f175720ac9b0e3865871d1249f78de1473bec2a7701f33c36b46:
+exact HEAD,154 full-suite XML/960 actual tests/zero failures/errors/skips, every
+selector present and counts matching actual testcase nodes. Owned analysis24,
+DNA27 and guided35 pass; all original groups remain. Room19/20/21 bytes match
+source, including unchanged v21 SHA25611912e933464d86952e3c70ced6ceb2e7506fe3407ac44f3425ebed9a89e0dad.
+
+The same two red assertions now pass without modification. Red876ad51e retains
+958/2 and artifact11940906530, ZIP SHA2569624deacda309f8161ac89e18ea4cb1f52407aaa95610758573d176afd767047.
+The additional direct missing-stamp/empty/stale/storage tests also pass, with zero
+live calls. Local Linux/Python3.12.14/OpenJDK17.0.20: Python55 passed23.020s,
+range docs54paths/subjects5 and real commit hooks passed. Local Android remains
+blocked before configuration at Gradle download; hosted native SDK33/Room/fixtures
+supply Android evidence. CI's merge checkout tree equals the exact source head.
+
+Checkpoint APK11940927063 has37203290 bytes, SHA256
+0797baaf08d36abece0e6b0adb21aeeecaa027e75c608984af7726402b3161eb;
+actual binary manifest is hu.zsombor.renkinai.dev/version56/2026.10.04-ai2.
+Public debug signer SHA256044b533ad0962676a8ddf9dc97c218cee3ccbe5576210cc058943d70ddc89c44
+was extracted; full APK signature verification and installed-certificate match
+are NOT RUN. This checkpoint APK is not substituted for the closing-head delivery.
+
+The closing documentation head requires its own complete checks and fresh APK;
+exact SHA/artifact/hash/latest audit declaration belong in PR8 after execution.
+Physical corrective Flip8/Lux, TalkBack/fold, signing/data upgrade and live visual
+fidelity remain NOT RUN. No main/PR6/PR7 change, merge or paid request occurred.
+
+## October15 PR8 first local Quick scan
+
+Remote source ecff4e5f has successful Android38661004421 and all23 regression
+commands38661004416. Governance38661004446 failed solely because the PR body
+declares BLOCKED; its55 offline guards passed. This historical automated success
+does not resolve the owner's observed Flip8 free-scan failure.
+At the initial test-only checkpoint, hosted loading-source/owned-DNA execution was pending.
+Local Gradle download fails before configuration with Network is unreachable;
+no Android assertion or build success is claimed locally. Production is unchanged.
+
+Reproduction876ad51e subsequently ran958 tests/2 failures in Android38664556204,
+with successful production/test compilation. Only the new guided source-loading
+and owned source_required/operation assertions failed; HTML artifact11940622007
+SHA25664b79d6e54e0fac4ee5a359803510bcc656833014d22f27779cd4812855f6190
+was downloaded and inspected. Production edits start only after this actual red.
+Local55 governance tests passed in25.928s. Corrective green/final-head results are
+pending and must replace no historical failure. No live/paid request is made.
+
+## Guided UX local Windows continuation
+
+Source baseline2f422ca8, feature checkpoint3ee52fa1, Windows harness861ac270. Host:
+Windows11 build26200/PowerShell5.1, portable Temurin17.0.20.1+1/Gradle8.11.1,
+Android API36/build-tools35.0.0, Python3.14. Existing caches/tools are reused.
+
+| Executed checkpoint | Actual testcase counts / observed result |
+| --- | --- |
+| Pre-edit guided reproduction |17 tests/11 failures/0 errors/skips; production/test compilation passed |
+| Pre-edit owned/currentness subset |3 tests/3 failures; two owned cases stopped before intended assertions at journal setup |
+| First integration | Production compiled; new test import failed before JUnit |
+| Corrected integration2 |12 XML/98 tests/26 failures/0 errors/skips |
+| Native AtomicFile probe |1 test/1 failure; first base retained and second `.new` bytes prove failed Windows replacement |
+| Test-only harness correction |8 tests/0 failures/errors/skips, including retained backup/orphan/controller guards |
+| Resumed focus |10 tests/4 failures; Atomic4, Legacy phrase and cross-profile case pass; Room fixtures act before actual readiness |
+| Synchronized Room journeys |4 tests/1 failure, exact decline readiness boundary |
+| Local decline revalidation fix |4 tests/0 failures/errors/skips |
+| Complete guided/retained targeted set |103 tests /0 failures /0 errors /0 skips |
+
+Original commands/log/XML remain outside Git in task tools `2026-10-14` and
+`2026-10-15`; the continuation paths are `resume-focused-red`, `room-journey-red`,
+`room-journey-green` and `targeted-guided-retained`. Full Python55 passed at the
+earlier checkpoint; the final committed head requires its own complete guards.
+
+Required final commands are `python scripts/run_compose_regressions.py` (all23,
+ending in unfiltered compileDebugKotlin/testDebugUnitTest/assembleDebug), full Python
+governance, committed-range docs/subjects and complete PR-event audit. Actual final
+HEAD/testcase counts/selector checks/schema byte comparisons and fresh APK certificate,
+size and SHA256 are recorded in the external draft audit after execution. Inspect
+actual XML, not historical counts or a terminal-only green message.
+
+The API30+ Windows AtomicFile shadow only adapts private rename; non-Windows calls
+Android's original method. Successive/failed/interrupted/first-orphan/backup semantics
+remain guarded. Original production storage, symlink checks and consumed markers are
+unchanged. The owner enabled Developer Mode and the actual Java link probe passed.
+No attached device; instrumented/Flip8/Theme Park/TalkBack/fold/signature upgrade and
+live visual/provider acceptance are NOT RUN. Native SDK33/320dp Robolectric is local
+Android testing, not device or screenshot-golden evidence. Zero paid/live API calls.
+See [closing correction](../changes/2026-10-15-guided-ux-stabilization.md).
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Closing-head legacy rejection-journey readiness
 
 Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered

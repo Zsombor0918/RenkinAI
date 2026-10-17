@@ -40,6 +40,7 @@ class OwnedStyleAnalysisTest {
     private var active = 1L
     private var calls = 0
     private var key = true
+    private var beforeReader: suspend () -> Unit = {}
     private var catalog = sha256("catalog".toByteArray())
     private var reader = FixtureReferenceReader((0 until 12).associate { "icon$it" to analysisFixturePng(it % 3, it) })
     private var gateway: StyleAnalysisGateway = StyleAnalysisGateway { calls++; StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_fixture", null) }
@@ -47,9 +48,16 @@ class OwnedStyleAnalysisTest {
     private val owner = object : AnalysisSessionOwner {
         override suspend fun <T> owned(id: Long, operation: suspend () -> T): T = lock.withLock { check(id == active); operation() }
         override suspend fun catalogStamp() = catalog
-        override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader = sourceOverride ?: reader
+        override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader {
+            beforeReader(); return sourceOverride ?: reader
+        }
     }
-    private fun newController() = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(), StyleAnalysisCoordinator(journal, gateway), { key }, owner)
+    private fun newController(dna: Boolean = false, dnaContext: Context = analysisFixtureContext(temporary.root),
+        keyRead: () -> Boolean = { key }, dnaGateway: StyleDnaGateway = StyleDnaGateway { _, _ ->
+            calls++; error("Local preparation must not submit")
+        }) = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(),
+        StyleAnalysisCoordinator(journal, gateway), keyRead, owner,
+        if (dna) StyleDnaCoordinator(StyleDnaJournal(dnaContext), dnaGateway) else null)
     @Before fun setup() = runBlocking {
         context = RuntimeEnvironment.getApplication()
         db = Room.inMemoryDatabaseBuilder(context, RenkinPackDatabase::class.java).build()
@@ -74,6 +82,323 @@ class OwnedStyleAnalysisTest {
     }
     private fun draft(used: AnalyzedDraft, instruction: String = "do not lose my instruction", stale: Boolean = false) =
         ProjectStyleDraft(used.specification, instruction, used.hashes, used.requestId, used.reviewedAt, stale, used.reviewedSourceStamp)
+
+    @Test fun readyQuickAndStandardPlansSurvivePreviewReleaseAndKeyRefreshButCannotSubmitToAnotherRoute() = runBlocking {
+        reader = FixtureReferenceReader((0 until 50).associate { "draw$it" to analysisFixturePng(2, it) })
+        val controller = newController(dna = true)
+        val before = repo.snapshot()
+        for (mode in DnaAnalysisMode.entries) {
+            key = false
+            controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+                ProjectStyleDraft("", "", emptyList()), mode, DEFAULT_ANALYSIS_MODEL, "high")
+            val prepared = withTimeout(10000) { controller.state(1).first { !it.busy } }
+            assertNull(prepared.error)
+            val frozen = checkNotNull(prepared.dnaPlan)
+            assertEquals(if (mode == DnaAnalysisMode.QUICK) 12 else 24, frozen.samples.size)
+            assertFalse(prepared.hasKey)
+            controller.releasePreview(1)
+            assertEquals(frozen, controller.state(1).value.dnaPlan)
+            assertSame(prepared.samples, controller.state(1).value.samples)
+            key = true; controller.refresh(1)
+            assertTrue(controller.state(1).value.hasKey)
+            assertEquals(frozen, controller.state(1).value.dnaPlan)
+            assertFalse(controller.state(1).value.busy); assertFalse(controller.state(1).value.network)
+            controller.bindContext(1, ProjectSetupMode.EXTEND, "different.pack")
+            controller.submitDna(1, frozen.id)
+            assertTrue(StyleDnaJournal(analysisFixtureContext(temporary.root)).records(1).isEmpty())
+            assertEquals(0, calls); assertEquals(before, repo.snapshot())
+        }
+    }
+
+    @Test fun refreshOverlappingLocalFreezeCannotLoseTheNewPlanOrRestoreBusyState() = runBlocking {
+        val sourceEntered = CompletableDeferred<Unit>(); val sourceRelease = CompletableDeferred<Unit>()
+        val keyEntered = CompletableDeferred<Unit>(); val keyRelease = java.util.concurrent.CountDownLatch(1)
+        val blockSource = java.util.concurrent.atomic.AtomicBoolean(true)
+        val blockKey = java.util.concurrent.atomic.AtomicBoolean(true)
+        beforeReader = { if (blockSource.getAndSet(false)) { sourceEntered.complete(Unit); sourceRelease.await() } }
+        val controller = newController(dna = true, keyRead = {
+            if (blockKey.getAndSet(false)) {
+                keyEntered.complete(Unit)
+                check(keyRelease.await(10, java.util.concurrent.TimeUnit.SECONDS))
+            }
+            key
+        })
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+            ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+        withTimeout(10000) { sourceEntered.await() }
+        val refresh = async(Dispatchers.Default) { controller.refresh(1) }
+        try {
+            withTimeout(10000) { keyEntered.await() }
+            sourceRelease.complete(Unit)
+            val prepared = withTimeout(10000) { controller.state(1).first { !it.busy } }
+            assertNull(prepared.error); assertNotNull(prepared.dnaPlan); assertNotNull(prepared.samples)
+            keyRelease.countDown(); withTimeout(10000) { refresh.await() }
+            val refreshed = controller.state(1).value
+            assertFalse("A late credential read must not restore busy=true", refreshed.busy)
+            assertEquals("A late history read must retain the current frozen plan", prepared.dnaPlan, refreshed.dnaPlan)
+            assertEquals(prepared.samples, refreshed.samples); assertTrue(refreshed.hasKey)
+            assertFalse(refreshed.network); assertEquals(0, calls)
+        } finally { sourceRelease.complete(Unit); keyRelease.countDown(); refresh.cancelAndJoin() }
+    }
+
+    @Test fun delayedRefreshCannotReplaceSubmittedProgressOrRestoreAConsumedPlan() = runBlocking {
+        val keyEntered = CompletableDeferred<Unit>(); val keyRelease = java.util.concurrent.CountDownLatch(1)
+        val responseEntered = CompletableDeferred<Unit>(); val responseRelease = CompletableDeferred<Unit>()
+        val blockKey = java.util.concurrent.atomic.AtomicBoolean(false)
+        val controller = newController(dna = true, keyRead = {
+            if (blockKey.getAndSet(false)) {
+                keyEntered.complete(Unit); check(keyRelease.await(10, java.util.concurrent.TimeUnit.SECONDS))
+            }
+            key
+        }, dnaGateway = StyleDnaGateway { request, before ->
+            before(); calls++; responseEntered.complete(Unit); responseRelease.await()
+            DnaCallResult.Received(dnaReportsBody(dnaFixtureReports(request.plan)), "resp_delayed", null)
+        })
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+            ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+        val plan = withTimeout(10000) { controller.state(1).first { !it.busy } }.dnaPlan!!
+        blockKey.set(true)
+        val refresh = async(Dispatchers.Default) { controller.refresh(1) }
+        try {
+            withTimeout(10000) { keyEntered.await() }
+            controller.submitDna(1, plan.id); withTimeout(10000) { responseEntered.await() }
+            keyRelease.countDown(); withTimeout(10000) { refresh.await() }
+            val inFlight = controller.state(1).value
+            assertTrue(inFlight.busy); assertTrue(inFlight.network); assertNull(inFlight.dnaPlan)
+            assertEquals(DnaStatus.REQUESTING, inFlight.dnaRecord!!.status)
+            assertEquals(1, inFlight.dnaRecord!!.submitted)
+            responseRelease.complete(Unit)
+            assertEquals(DnaStatus.RESULT_SAVED, withTimeout(10000) { controller.state(1).first { !it.busy } }.dnaRecord!!.status)
+            controller.submitDna(1, plan.id); controller.refresh(1); assertEquals(1, calls)
+        } finally { keyRelease.countDown(); responseRelease.complete(Unit); refresh.cancelAndJoin() }
+    }
+
+    @Test fun dnaHttpAuthSchemaAndTimeoutKeepConsumedMarkersAndNeverReplay() = runBlocking {
+        okhttp3.mockwebserver.MockWebServer().use { server ->
+            val draft = ProjectStyleDraft("", "", emptyList())
+            for (failure in listOf("auth", "schema", "timeout")) {
+                server.enqueue(when (failure) {
+                    "auth" -> okhttp3.mockwebserver.MockResponse().setResponseCode(401).setBody("private provider message")
+                    "schema" -> okhttp3.mockwebserver.MockResponse().setBody(json("id" to "resp_invalid", "status" to "completed",
+                        "output" to org.json.JSONArray().put(json("type" to "message", "status" to "completed",
+                            "content" to org.json.JSONArray().put(json("type" to "output_text", "text" to "{}"))))).toString())
+                    else -> okhttp3.mockwebserver.MockResponse().setSocketPolicy(okhttp3.mockwebserver.SocketPolicy.NO_RESPONSE)
+                })
+                val controller = newController(dna = true, dnaGateway = OpenAiStyleDnaGateway(
+                    { "offline_fixture_no_real_credential" }, okhttp3.OkHttpClient.Builder().callTimeout(
+                        if (failure == "timeout") 250 else 2000, java.util.concurrent.TimeUnit.MILLISECONDS).build(), server.url("/v1/responses")))
+                val before = repo.snapshot(); val count = server.requestCount
+                controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+                    draft, DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+                val prepared = withTimeout(10000) { controller.state(1).first { !it.busy } }
+                val plan = checkNotNull(prepared.dnaPlan)
+                assertEquals(count, server.requestCount)
+                controller.submitDna(1, plan.id)
+                val failed = withTimeout(10000) { controller.state(1).first { !it.busy } }
+                assertNull(failed.error); assertNull(failed.dnaPlan)
+                val record = failed.dnaRecord!!
+                assertEquals(if (failure == "auth") DnaStatus.FAILED else DnaStatus.UNCERTAIN, record.status)
+                assertEquals(when (failure) { "auth" -> "UNAUTHORIZED"; "schema" -> "REPORT_ROOT"; else -> "UNCERTAIN" }, record.reason)
+                assertEquals(1, record.submitted); assertEquals(count + 1, server.requestCount)
+                assertFalse(record.encode().contains("private provider message")); assertEquals(before, repo.snapshot())
+                controller.submitDna(1, plan.id); controller.refresh(1)
+                val recreated = newController(dna = true); recreated.refresh(1); recreated.submitDna(1, plan.id)
+                assertNull(recreated.state(1).value.dnaPlan)
+                val dj = StyleDnaJournal(analysisFixtureContext(temporary.root))
+                val images = prepared.samples!!.samples.associate { it.hash to it.png }
+                assertFalse(dj.claim(plan, images)); assertEquals(record, dj.record(1, plan.id))
+                controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+                    draft, DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+                val fresh = withTimeout(10000) { controller.state(1).first { !it.busy } }
+                assertNotEquals(plan.id, fresh.dnaPlan!!.id)
+                assertEquals("New local preparation keeps previous failure evidence", record, fresh.dnaRecord)
+                assertEquals(record, dj.record(1, plan.id)); assertEquals(count + 1, server.requestCount)
+            }
+        }
+    }
+
+    @Test fun cancellingConfirmedDnaKeepsUncertainHistoryAndCannotReplayAfterRecreation() = runBlocking {
+        val entered = CompletableDeferred<Unit>()
+        val controller = newController(dna = true, dnaGateway = StyleDnaGateway { _, before ->
+            before(); calls++; entered.complete(Unit); awaitCancellation()
+        })
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+            ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.STANDARD, DEFAULT_ANALYSIS_MODEL, "low")
+        val prepared = withTimeout(10000) { controller.state(1).first { !it.busy } }
+        val plan = prepared.dnaPlan!!
+        controller.submitDna(1, plan.id); withTimeout(10000) { entered.await() }
+        controller.releasePreview(1) // Navigation releases previews, not a confirmed request.
+        assertTrue(controller.state(1).value.network)
+        controller.cancel(1)
+        val cancelled = withTimeout(10000) { controller.state(1).first { !it.busy } }
+        assertEquals(DnaStatus.UNCERTAIN, cancelled.dnaRecord!!.status)
+        assertEquals("CANCELLED_NO_REPLAY", cancelled.dnaRecord!!.reason)
+        assertEquals(1, cancelled.dnaRecord!!.submitted); assertFalse(cancelled.network)
+        val recreated = newController(dna = true); recreated.refresh(1)
+        recreated.submitDna(1, plan.id)
+        assertNull(recreated.state(1).value.dnaPlan); assertEquals(1, calls)
+        assertFalse(StyleDnaJournal(analysisFixtureContext(temporary.root)).claim(plan,
+            prepared.samples!!.samples.associate { it.hash to it.png }))
+        assertNull(repo.load(1).revision)
+    }
+
+    @Test fun trustedContextAliasPreparesBothModesAcrossPacksWithoutChangingHistoryOrRoom() = runBlocking {
+        key = false
+        repo.saveStyle(1, null, "keep saved style", "keep instruction", emptyList())
+        val dnaJournal = StyleDnaJournal(analysisFixtureContext(temporary.root))
+        val (historic, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        assertTrue(dnaJournal.claim(historic, images))
+        dnaJournal.submitted(historic, historic.steps.first())
+        dnaJournal.failed(historic, "NETWORK", true)
+        dnaJournal.release(historic)
+        val before = repo.snapshot()
+        val historicBytes = File(temporary.root, "style_dna/1/plan-${historic.id}.json").readBytes()
+        // Context owns its directory. Normalize its alias, never a child journal symlink.
+        val contextAlias = analysisFixtureContext(File(temporary.root, "."))
+        assertNotEquals(contextAlias.noBackupFilesDir.absolutePath, contextAlias.noBackupFilesDir.canonicalPath)
+        val controller = newController(dna = true, dnaContext = contextAlias)
+        for (profile in listOf(1L, 2L)) for (pack in listOf("outline.pack", "color.pack")) {
+            active = profile
+            val fixture = FixtureReferenceReader((0 until 30).associate { "art$it" to analysisFixturePng(if (pack == "outline.pack") 0 else 2, it) })
+            sourceOverride = object : CoverageSourceReader by fixture {
+                override val index = fixture.index.copy(stamp = fixture.index.stamp.copy(packageName = pack, theme = pack == "color.pack"))
+            }
+            for (mode in listOf(DnaAnalysisMode.QUICK, DnaAnalysisMode.STANDARD)) {
+                controller.prepareDna(profile, ProjectSetupMode.EXTEND, pack, projectSourceStamp(sourceOverride!!.index),
+                    repo.load(profile).revision?.revision, ProjectStyleDraft("", "", emptyList()), mode, DEFAULT_ANALYSIS_MODEL, "low")
+                val state = controller.state(profile).first { !it.busy }
+                assertNull("$profile/$pack/$mode local failure", state.error)
+                val plan = checkNotNull(state.dnaPlan)
+                plan.validate()
+                assertEquals(pack, plan.context.sourcePackage)
+                assertEquals(mode, plan.mode)
+                assertTrue(plan.samples.size in 1..if (mode == DnaAnalysisMode.QUICK) 12 else 24)
+                assertFalse(state.hasKey)
+                assertEquals(0, calls)
+                assertEquals(before, repo.snapshot())
+                assertArrayEquals(historicBytes, File(temporary.root, "style_dna/1/plan-${historic.id}.json").readBytes())
+            }
+        }
+        assertFalse(dnaJournal.claim(historic, images))
+    }
+
+    @Test fun corruptSharedHistoryFailsClosedAcrossPacksButReportsHistoryInsteadOfDiskSpace() = runBlocking {
+        val (historic, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        val dnaJournal = StyleDnaJournal(analysisFixtureContext(temporary.root))
+        assertTrue(dnaJournal.claim(historic, images)); dnaJournal.release(historic)
+        val file = File(temporary.root, "style_dna/1/plan-${historic.id}.json")
+        val damaged = "{truncated private journal content".toByteArray()
+        file.writeBytes(damaged)
+        val before = repo.snapshot()
+        val controller = newController(dna = true)
+        for (pack in listOf("outline.pack", "color.pack")) for (mode in DnaAnalysisMode.entries) {
+            sourceOverride = object : CoverageSourceReader by reader {
+                override val index = reader.index.copy(stamp = reader.index.stamp.copy(packageName = pack))
+            }
+            controller.prepareDna(1, ProjectSetupMode.EXTEND, pack, projectSourceStamp(sourceOverride!!.index), null,
+                ProjectStyleDraft("", "", emptyList()), mode, DEFAULT_ANALYSIS_MODEL, "low")
+            val state = controller.state(1).first { !it.busy }
+            assertNull(state.dnaPlan)
+            assertEquals("history_unreadable", state.error)
+            assertEquals("history_read/invalid_data", state.dnaLocalDiagnostic!!.code)
+            assertEquals(0, calls); assertEquals(before, repo.snapshot()); assertArrayEquals(damaged, file.readBytes())
+        }
+        assertFalse(dnaJournal.claim(historic, images))
+        active = 2
+        controller.prepareDna(2, ProjectSetupMode.EXTEND, "color.pack", projectSourceStamp(sourceOverride!!.index), null,
+            ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+        val fresh = controller.state(2).first { !it.busy }
+        assertNull(fresh.error); assertNotNull(fresh.dnaPlan); assertEquals(0, calls)
+    }
+
+    @Test fun sourceIoAndPermissionFailuresExposeOnlyFixedStageCodesAndRetryFreely() = runBlocking {
+        val controller = newController(dna = true)
+        key = false
+        val before = repo.snapshot()
+        for (failure in listOf(java.io.IOException("secret path and inventory"), SecurityException("private permission details"))) {
+            sourceOverride = object : CoverageSourceReader by reader { override val index get() = throw failure }
+            controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+                ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.STANDARD, DEFAULT_ANALYSIS_MODEL, "low")
+            val failed = controller.state(1).first { !it.busy }
+            assertEquals("storage", failed.error)
+            assertEquals(DnaLocalStage.SAMPLE_RENDER, failed.dnaLocalDiagnostic!!.stage)
+            assertEquals(if (failure is SecurityException) DnaLocalCategory.PERMISSION else DnaLocalCategory.IO,
+                failed.dnaLocalDiagnostic.category)
+            assertFalse(failed.toString().contains("secret")); assertFalse(failed.toString().contains("private"))
+            assertNull(failed.dnaPlan); assertEquals(before, repo.snapshot()); assertEquals(0, calls)
+        }
+        sourceOverride = null
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+            ProjectStyleDraft("", "", emptyList()), DnaAnalysisMode.STANDARD, DEFAULT_ANALYSIS_MODEL, "low")
+        val retried = controller.state(1).first { !it.busy }
+        assertNull(retried.error); assertNull(retried.dnaLocalDiagnostic); assertNotNull(retried.dnaPlan)
+        assertFalse(retried.hasKey); assertEquals(before, repo.snapshot()); assertEquals(0, calls)
+    }
+
+    @Test fun firstQuickScanWithoutSetupStampReportsPrerequisiteAndRetryIsLocal() = runBlocking {
+        key = false
+        val before = repo.snapshot()
+        val controller = newController(dna = true)
+        val draft = ProjectStyleDraft("", "", emptyList())
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", null, null, draft,
+            DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "high")
+        val failed = controller.state(1).first { !it.busy }
+        assertNull(failed.dnaPlan)
+        assertEquals(before, repo.snapshot())
+        assertEquals(0, reader.renderCount)
+        assertEquals(0, calls)
+        // The old enabled guided action reaches require(setupStamp != null), then hides its cause.
+        assertEquals("source_required", failed.error)
+
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null, draft,
+            DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "high")
+        val prepared = controller.state(1).first { !it.busy }
+        assertNull(prepared.error)
+        val plan = checkNotNull(prepared.dnaPlan)
+        plan.validate()
+        assertEquals(projectSourceStamp(reader.index), plan.context.setupStamp)
+        assertNull(plan.context.baseRevision)
+        assertFalse(prepared.hasKey)
+        assertEquals(1, plan.endpointMaximum)
+        assertEquals(before, repo.snapshot())
+        assertEquals(0, calls)
+    }
+
+    @Test fun quickPreparationDiagnosesStaleEmptyAndStorageWithoutLeakingExceptionText() = runBlocking {
+        val controller = newController(dna = true)
+        val before = repo.snapshot()
+        val draft = ProjectStyleDraft("", "", emptyList())
+        suspend fun attempt(reason: String) {
+            controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+                draft, DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+            val state = controller.state(1).first { !it.busy }
+            assertEquals(reason, state.error)
+            assertNull(state.dnaPlan)
+            assertEquals(before, repo.snapshot())
+            assertEquals(0, calls)
+        }
+        sourceOverride = object : CoverageSourceReader by reader {
+            override val index = reader.index.copy(stamp = reader.index.stamp.copy(versionCode = 8))
+        }
+        attempt("source_changed")
+        controller.releasePreview(1)
+        assertNull(controller.state(1).value.error)
+        sourceOverride = FixtureReferenceReader(emptyMap())
+        attempt("references_empty")
+        controller.bindContext(1, ProjectSetupMode.EXTEND, "other.pack")
+        assertNull(controller.state(1).value.error)
+        sourceOverride = object : CoverageSourceReader by reader {
+            override val index get() = throw java.io.IOException("private path /fixture/secret and private content")
+        }
+        attempt("storage")
+        sourceOverride = null
+        controller.prepareDna(1, ProjectSetupMode.EXTEND, "fixture.pack", projectSourceStamp(reader.index), null,
+            draft, DnaAnalysisMode.QUICK, DEFAULT_ANALYSIS_MODEL, "low")
+        val recovered = controller.state(1).first { !it.busy }
+        assertNull(recovered.error)
+        assertNotNull(recovered.dnaPlan)
+        assertEquals(0, calls)
+    }
 
     @Test fun prepareAndReopenAreLocalAndMissingKeyDoesNotBlockManualSave() = runBlocking {
         key = false; val controller = newController(); val request = prepare(controller)
@@ -193,6 +518,27 @@ class OwnedStyleAnalysisTest {
         assertEquals(record.requestId, recreated.state(1).value.record!!.requestId)
         assertNull(recreated.state(1).value.preparation); assertEquals(1, calls)
         recreated.discardCandidate(1, record.requestId); assertNull(repo.load(1).revision); assertEquals(1, calls)
+    }
+    @Test fun staleDnaHistoryDoesNotInvalidateACurrentLegacyCandidate() = runBlocking {
+        val dnaJournal = StyleDnaJournal(analysisFixtureContext(temporary.root))
+        val dnaCoordinator = StyleDnaCoordinator(dnaJournal, StyleDnaGateway { _, _ -> error("Viewing history must not submit") })
+        val controller = OwnedStyleAnalysis(scope, repo, journal, ReferenceSampler(),
+            StyleAnalysisCoordinator(journal, gateway), { key }, owner, dnaCoordinator)
+        val legacy = result(controller)
+        val (fixture, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val stale = fixture.copy(context = checkNotNull(legacy.context).copy(catalogStamp = sha256("old catalog".toByteArray())))
+        assertTrue(dnaJournal.claim(stale, images))
+        dnaJournal.failed(stale, "STALE_SOURCE", false); dnaJournal.release(stale)
+        controller.refresh(1)
+        val state = controller.state(1).value
+        assertEquals(legacy.requestId, state.record!!.requestId)
+        assertEquals(stale.id, state.dnaRecord!!.plan.id)
+        assertEquals("The legacy candidate must keep its own current validity", AnalysisValidity.CURRENT, state.validity)
+        assertEquals(AnalysisValidity.CURRENT, state.legacyValidity)
+        assertEquals(AnalysisValidity.PREPARATION_CHANGED, state.dnaValidity)
+        assertEquals(legacy.requestId, controller.use(1, legacy.requestId, legacy.hashes, false).requestId)
+        assertEquals(1, calls)
+        assertNull(repo.load(1).revision)
     }
     @Test fun rejectedAnalysisKeepsSafeReasonAndNeedsFreshPreparationUuidAndExplicitConfirmation() = runBlocking {
         okhttp3.mockwebserver.MockWebServer().use { server ->

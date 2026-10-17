@@ -988,7 +988,23 @@ Unmapped: %4$d · broken: %5$d · unknown: %6$d · unavailable: %7$d</string>
     <string name="styleDnaReviewed">I reviewed the selected family and its drawing rules.</string>
     <string name="styleDnaSave">Save reviewed Style DNA · free</string>
     <string name="styleDnaLocalError">Inputs changed or local validation failed. Prepare current samples or reopen the style; no automatic request.</string>
+    <string name="styleDnaSourceRequired">Return to Project/source, wait for the source check, then reopen Style to scan. No request was sent.</string>
+    <string name="styleDnaSourceChanged">The source changed. Return to Project/source and rescan, then reopen Style. No request was sent.</string>
+    <string name="styleDnaSamplesUnavailable">References could not be read. Retry the scan or inspect the source in Project/source. No request was sent.</string>
+    <string name="styleDnaStorageError">A local read or write failed. Retry the free scan; if it persists, report the diagnostic code below. No request was sent.</string>
+    <string name="styleDnaHistoryError">Previous analysis history could not be verified. It has been preserved, and requests remain blocked. Report the diagnostic code below; do not clear app data.</string>
+    <string name="styleDnaLocalDiagnostic">Local diagnostic: %1$s. No private file or source details are included.</string>
+    <string name="styleDnaInputsChanged">Project inputs changed. Reopen Style and scan again. No request was sent.</string>
+    <string name="styleDnaInvalidPlan">These samples or settings cannot form an analysis plan. Prepare fresh samples and review the settings. No request was sent.</string>
     <string name="styleDnaConsent">Send %1$d separate labeled style images using %2$s, detail=%3$s. Authorize only the following frozen steps, maximum %4$d charged endpoint submissions. Uploaded content is style evidence only; no target identity is analyzed here.</string>
     <string name="styleDnaConfirm">Authorize only these paid analysis steps</string>
     <string name="styleDnaTargetHelp">Use the reviewed family for this original target. Choose its symbol type from the genuine original preview; UNKNOWN keeps essential geometry and wording. Package names never determine symbol type. References supply style only.</string>
+    <string name="styleDnaOverall">Overall pack style · recommended</string>
+    <string name="styleDnaProvisionalFamily">Fewer than three samples: a provisional observation group, not an established pack-wide style.</string>
+    <string name="styleDnaUncertainSummary">These are inferred drawing instructions. Uncertain details keep the original icon’s identifying shapes; inspect all evidence in Details.</string>
+    <string name="styleDnaReferenceMismatch">The saved reference images do not match this style family. Return to Style, review matching references and save before preparing a paid trial.</string>
+    <string name="styleDnaChosenFamily">Reviewed style family: %1$s</string>
+    <string name="styleDnaChosenType">Reviewed symbol type: %1$s</string>
+    <string name="styleDnaTypeUnknown">Symbol type is unclassified. Preserve the original identity; you can choose a type under Advanced options before preparing again.</string>
+    <string name="styleDnaFrozenPolicy">Reviewed color policy: %1$s</string>
 </resources>

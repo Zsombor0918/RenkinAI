@@ -119,4 +119,16 @@ class ProjectSelectionComposeTest {
         compose.waitForIdle(); assertEquals(baseline + 2, invalidations)
         assertEquals(0, saves)
     }
+
+    @Test fun reopeningCurrentSavedTargetsShowsTheirSelectionWithoutWritingAgain() {
+        val saved = ProjectSelection("CREATE", null, null, projectCatalogStamp(targets), listOf("pkg/Main"))
+        metadata = ProjectAiMetadata(1, selectionJson = saved.encode(), activeRevision = 1)
+        compose.setContent { Content() }
+        scroll("setup-selection-count")
+        compose.onNodeWithTag("setup-selection-count").assertTextEquals("Selected: 1 / 2 known launcher entries")
+        scroll("setup-target-pkg/Main")
+        compose.onNodeWithTag("setup-target-pkg/Main").assertIsOn()
+        assertEquals(0, saves)
+        assertEquals(saved, ProjectSelection.decode(metadata!!.selectionJson))
+    }
 }

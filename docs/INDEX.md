@@ -1,6 +1,44 @@
 # Documentation index
 
+Current owner-approved Phase1: [lean verification ADR](decisions/0012-lean-verification.md) and [implementation evidence](changes/2026-10-17-lean-verification.md).
+
+Current bounded PR8 quality work: [generation recipe decision](decisions/0011-generation-useful-dna-recipes.md) and [diagnostic RED](changes/2026-10-16-dna-diagnostic-quality-red.md). Final-head traces/results remain on draft PR8.
+
+Current zero-cost PR8 continuation: [offline HTTP and Android commands](qa/OFFLINE_STYLE_DNA.md),
+[test-boundary decision](decisions/0010-offline-style-dna-validation.md).
+Exact final source, executed checks and verified APK download belong in draft PR8.
+
 Read [AGENTS.md](../AGENTS.md) first, then CURRENT_STATE, ROADMAP and HANDOFF.
+
+Current PR8 reliability/fidelity follow-up: [report contract and diagnostics](changes/2026-10-15-dna-report-contract.md),
+[derived overall guidance and matching references](changes/2026-10-15-dna-overall-guidance.md),
+and [no-cost visual acceptance rubric](qa/STYLE_DNA_FIDELITY.md). Exact final source,
+all checks and verified fresh APK evidence belong directly on draft PR8 after execution.
+
+Latest real-device report and narrow offline correction:
+[first-submission Responses envelope](changes/2026-10-15-dna-response-envelope.md).
+
+Latest PR8 provider-result correction: [reproduction, state/event table and narrow fix](changes/2026-10-15-dna-provider-result-correction.md).
+Retained-controller recreation loses a frozen plan on the starting source; old
+failure prose also conflates envelope/reports/synthesis. Final-head evidence and
+exact APK link/hash belong in the draft PR audit after execution.
+
+PR8 final verification source: [observed974-test success and closing gates](changes/2026-10-15-dna-final-verification.md).
+Its own final SHA/checks/APK are recorded externally on draft PR8 after execution.
+
+Latest PR8 end-to-end follow-up: [current frozen plan, history and refresh race](changes/2026-10-15-dna-plan-refresh.md).
+Exact final-head verification and APK evidence are recorded on draft PR8.
+
+Latest PR8 owner finding: [cross-pack local storage and diagnostics](changes/2026-10-15-dna-shared-storage.md).
+Exact final-source checks and downloadable APK evidence are in the draft PR audit.
+
+Current local guided UX Stage0/1: [evidence audit](changes/2026-10-14-guided-ux-audit.md),
+[implementation and checks](changes/2026-10-14-guided-ux-implementation.md),
+[closing readiness correction](changes/2026-10-15-guided-ux-stabilization.md),
+[ownership ADR0009](decisions/0009-guided-project-workflow.md) and
+[Flip8 owner check / Stage2+3 plans](qa/GUIDED_UX_OWNER_CHECK.md).
+The branch is `feat/ux-flow-stabilization`, stacked on verified PR7 `2f422ca8`;
+PR6/PR7 remain draft/unmerged. Older checkpoint prose below is historical evidence.
 
 Current Style DNA scope, complete changed-file inventory and genuinely executed red/green
 evidence: [October14 verification](changes/2026-10-14-style-dna-verification.md).

@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -71,18 +72,38 @@ internal data class ProjectSetupData(
     val launcherInventoryChanged: Boolean = false
 )
 
+/** Optional instrumentation sink. Production has no logger; values are fixed codes only. */
+internal val LocalProjectInvalidationTrace = staticCompositionLocalOf<((String, String) -> Unit)?> { null }
+
 /** Screen-scoped invalidation only, never a background watcher or icon refresh. */
 @Composable
-internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges: Boolean = false, onInvalidate: () -> Unit) {
+internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges: Boolean = false,
+    onPackageInvalidate: ((String) -> Unit)? = null, onInvalidate: () -> Unit) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val invalidate by rememberUpdatedState(onInvalidate)
+    val invalidatePackage by rememberUpdatedState(onPackageInvalidate)
+    val trace by rememberUpdatedState(LocalProjectInvalidationTrace.current)
     DisposableEffect(lifecycle, context, source, observeLauncherChanges) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) invalidate() }
+        trace?.invoke("invalidation.attach", "observer")
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) {
+            trace?.invoke("invalidation.resume", "ON_RESUME")
+            invalidate()
+        } }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 val pack = intent?.data?.schemeSpecificPart
-                if (pack != null && (observeLauncherChanges || source != null && pack == source)) invalidate()
+                if (pack != null && (observeLauncherChanges || source != null && pack == source)) {
+                    val action = when (intent?.action) {
+                        Intent.ACTION_PACKAGE_ADDED -> "added"
+                        Intent.ACTION_PACKAGE_REMOVED -> "removed"
+                        Intent.ACTION_PACKAGE_CHANGED -> "changed"
+                        Intent.ACTION_PACKAGE_REPLACED -> "replaced"
+                        else -> "other"
+                    }
+                    trace?.invoke("invalidation.package", "$action:source_match=${pack == source}")
+                    invalidatePackage?.invoke(pack) ?: invalidate()
+                }
             }
         }
         lifecycle.addObserver(observer)
@@ -94,6 +115,7 @@ internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges
             addDataScheme("package")
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
         onDispose {
+            trace?.invoke("invalidation.detach", "observer")
             lifecycle.removeObserver(observer)
             if (source != null || observeLauncherChanges) context.unregisterReceiver(receiver)
         }
@@ -184,13 +206,14 @@ internal fun ProjectSetup(
     mode: ProjectSetupMode, page: ProjectSetupPage, profileId: Long?, source: String?,
     state: ProjectHomeState, data: ProjectSetupData,
     onSource: (String) -> Unit, onProfile: (Long) -> Unit, onNewProfile: () -> Unit,
-    onBack: () -> Unit, onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}, onTrials: () -> Unit = {}
+    onBack: () -> Unit, onChangeSource: () -> Unit, onEditor: () -> Unit, onStyle: () -> Unit = {}, onTrials: () -> Unit = {},
+    guidedStep: Int? = null, onContinue: () -> Unit = onStyle
 ) {
     if (page == ProjectSetupPage.TARGETS) {
         val ready = state.actionsEnabled && profileId == state.activeProfileId && data.catalogReady
         TargetSelection(mode, profileId ?: state.activeProfileId,
             state.profiles.find { it.id == profileId }?.name.orEmpty(), source,
-            data, ready, onBack, onChangeSource, onEditor, onStyle, onTrials)
+            data, ready, onBack, onChangeSource, onEditor, onStyle, onTrials, guidedStep, onContinue)
         return
     }
     CenteredFullscreenContent {
@@ -198,9 +221,11 @@ internal fun ProjectSetup(
             modifier = Modifier.testTag(if (page == ProjectSetupPage.SOURCE) "setup-source" else "setup-profile")) {
             item {
                 SetupHeading(stringResource(if (page == ProjectSetupPage.SOURCE) R.string.setupSourceTitle else R.string.setupProfileTitle), onBack)
-                Text(stringResource(R.string.setupReadOnly))
-                Text(stringResource(R.string.setupPreparationOnly))
-                if (source != null) Text(source)
+                if (guidedStep == null) {
+                    Text(stringResource(R.string.setupReadOnly))
+                    Text(stringResource(R.string.setupPreparationOnly))
+                    if (source != null) Text(source)
+                } else Text(stringResource(R.string.workflowSourceLocal))
                 if (!data.catalogReady || state.busy) WavyLoadingBar(Modifier.fillMaxWidth())
                 if (data.catalogFailed || state.operationFailed || state.operationInterrupted) {
                     Text(stringResource(R.string.setupUnavailable))
@@ -225,8 +250,10 @@ internal fun ProjectSetup(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-source-${pack.packageName}")) {
                         Column {
                             Text(pack.applicationName)
-                            Text(pack.packageName)
-                            Text(stringResource(R.string.setupSourceVersion, pack.versionCode))
+                            if (guidedStep == null) {
+                                Text(pack.packageName)
+                                Text(stringResource(R.string.setupSourceVersion, pack.versionCode))
+                            }
                         }
                     }
                 }
@@ -241,7 +268,7 @@ internal fun ProjectSetup(
                 items(state.profiles, key = { it.id }) { profile ->
                     OutlinedButton(onClick = { onProfile(profile.id) }, enabled = state.actionsEnabled,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("setup-profile-${profile.id}")) {
-                        Column { Text(profile.name); Text(stringResource(R.string.projectIdentity, profile.id)) }
+                        Column { Text(profile.name); if (guidedStep == null) Text(stringResource(R.string.projectIdentity, profile.id)) }
                     }
                 }
             }

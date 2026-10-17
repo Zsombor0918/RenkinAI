@@ -2,6 +2,13 @@ package dev.renkinProject.renkin.ai.style
 
 import kotlinx.coroutines.*
 
+/** Distinguish validation stages without retaining provider or exception prose. */
+private class DnaResultValidation(val reason: String) : IllegalArgumentException()
+private inline fun <T> validateDnaResult(reason: String, action: () -> T): T = try { action() }
+catch (cancel: CancellationException) { throw cancel }
+catch (rejected: DnaReportRejected) { throw DnaResultValidation(rejected.failure.code) }
+catch (_: Exception) { throw DnaResultValidation(reason) }
+
 internal class StyleDnaCoordinator(val journal: StyleDnaJournal,private val gateway: StyleDnaGateway) {
     suspend fun submit(plan: StyleDnaPlan,images: Map<String,ByteArray>,confirmed: Boolean,current: suspend ()->Boolean,
         progress: suspend (StyleDnaRecord)->Unit = {}): StyleDnaRecord?=withContext(Dispatchers.IO) {
@@ -21,21 +28,29 @@ internal class StyleDnaCoordinator(val journal: StyleDnaJournal,private val gate
                 if(result is DnaCallResult.Failed) {journal.failed(plan,result.reason,result.billingUnknown);break}
                 result as DnaCallResult.Received
                 if(step.synthesis) {
-                    val dna=StyleDnaV1.parse(result.text);validateDnaSynthesis(dna,prior.reports,images)
+                    val dna=validateDnaResult("SYNTHESIS_INVALID") {
+                        StyleDnaV1.parse(result.text).also { validateDnaSynthesis(it,prior.reports,images) }
+                    }
                     journal.completed(plan,step,result,emptyList())
-                    journal.result(plan,SavedStyleDna(dna,prior.reports,plan.model,plan.detail,plan.algorithm,dna.recommendedFamily))
+                    journal.result(plan,SavedStyleDna(dna,prior.reports,plan.model,plan.detail,plan.algorithm,DNA_PACK_STYLE,plan.promptVersion))
                 } else {
-                    val reports=StyleDnaCodec.parseReports(result.text,step.samples.associateWith { plan.bindings.getValue(it) })
+                    val reports=validateDnaResult("REPORT_SCHEMA_INVALID") {
+                        StyleDnaCodec.parseReports(result.text,step.samples.associateWith { plan.bindings.getValue(it) })
+                    }
                     journal.completed(plan,step,result,reports)
                     if(plan.mode==DnaAnalysisMode.QUICK) {
-                        val dna=synthesizeDnaLocally(reports,images);validateDnaSynthesis(dna,reports,images)
-                        journal.result(plan,SavedStyleDna(dna,reports,plan.model,plan.detail,plan.algorithm,dna.recommendedFamily))
+                        val dna=validateDnaResult("SYNTHESIS_INVALID") {
+                            synthesizeDnaLocally(reports,images).also { validateDnaSynthesis(it,reports,images) }
+                        }
+                        journal.result(plan,SavedStyleDna(dna,reports,plan.model,plan.detail,plan.algorithm,DNA_PACK_STYLE,plan.promptVersion))
                     }
                 }
                 progress(checkNotNull(journal.record(plan.context.profileId,plan.id)))
             }
         } catch(cancel: CancellationException) {
             withContext(NonCancellable) { journal.failed(plan,"CANCELLED_NO_REPLAY",journal.record(plan.context.profileId,plan.id)?.steps?.any { it.status=="SUBMITTED" }==true) };throw cancel
+        } catch(failure: DnaResultValidation) {
+            withContext(NonCancellable) { journal.failed(plan,failure.reason,journal.record(plan.context.profileId,plan.id)?.steps?.any { it.status=="SUBMITTED" }==true) }
         } catch(_: Exception) { withContext(NonCancellable) { journal.failed(plan,"INVALID_OR_INTERRUPTED",journal.record(plan.context.profileId,plan.id)?.steps?.any { it.status=="SUBMITTED" }==true) } }
         finally {journal.release(plan);journal.collect(plan.context.profileId)}
         journal.record(plan.context.profileId,plan.id)

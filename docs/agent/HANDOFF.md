@@ -1,4 +1,368 @@
-# Agent handoff — Codex 05 style trials, owner acceptance pending
+# Agent handoff — guided UX Stage 1
+
+## Shared Trial reload correction from6d7462e6
+
+Hosted38979452071 proves non-source PACKAGE_CHANGED during Prepare queues full
+reads at102.854/104.063s, retaining the plan but timing out busy at113.768s.
+A suspended-original regression reproduces benign queued hints causing an extra
+original read (expected2/actual3 RED) before controller changes. Typed package
+hints now require fresh catalog equality to avoid that redundant full read;
+source/selected target/catalog changes still use all existing validation. Explicit
+reads dominate hints. Three justified cases cover storm/decline, real input
+changes and actual broadcast dispatch; earlier plan-retention/cancel/no-replay
+assertions remain. See [correction](../changes/2026-10-17-trial-package-revalidation.md).
+Finish focused and one final-head hosted full/Android verification, publish exact
+APK evidence on PR8, then stop. Phases3/4 remain outside this task. If hosted
+acceptance fails, retain its trace and use at most the authorized second correction.
+
+## Narrow guided-journey finishing pass
+
+Source896faa15 has hosted Android4/4 and Python67/67 success, but Linux full1013/1
+fails at the first Prepare scroll in GuidedProjectRoomJourneyComposeTest.journey.
+The single method and its five-class-method fixture pass alone on Windows; running
+CreateExtendFlowComposeTest immediately before those five methods reproduces the
+same missing Prepare at journey:246 (15/1 RED). The test now waits, within the
+existing10000ms readiness bound, for both a ready controller and the real
+trial-style semantics marker before scrolling to Prepare. No runtime, timeout,
+click retry, assertion, group or CI schedule changes. See the
+[focused correction](../changes/2026-10-17-guided-trial-ui-readiness.md).
+Final exact-head focused/hosted results and APK verification belong in PR8 after
+execution. Do not start Phases3/4; stop after delivery or an unresolved final gate.
+The earlier unrelated PACKAGE_CHANGED trace remains evidence of invalidation,
+not proof of a permanent starvation fix. Preserve data/signing/consumed markers.
+
+Phase1 checkpoint74d7c2b1 retains all Kotlin cases; local Python67/67 pass in52.659s. Phase2 now tags initiating invalidations, effect-key names, panel attachment and explicit reload/decline in the synthetic trace. Execute one hosted diagnostic; only reproduced causality may justify a correction. Stop on ambiguity. Final-head unit/Android/APK evidence belongs directly on PR8.
+
+October17 Phase1 starts at clean ebc5ef95a193a5541ce2d09415169cb8d42fb23d on existing PR8. Owner authorizes lean scheduling in [ADR0012](../decisions/0012-lean-verification.md). Focused runner checks pass11/11 after two missing-selection-API RED errors. No runtime/test assertion is deleted. Final committed-head CI evidence belongs on PR8. Next bounded phase: tag the shared Trial reload initiator in one diagnostic run; retain BLOCKED if causality remains ambiguous. Phases3/4 remain separate: reference-first UI with Legacy optional, then versioned concise prompt without rewriting frozen bytes.
+
+## Hosted Standard root cause and bounded closing correction
+
+Hosted aef0dca0 trace proves a local load queued during Prepare clears the completed plan at98.022s after assignment98.004s; saved DNA revision1 remains on disk. Controlled barriers reproduce expected plan versus null (1/1 RED) before changing OwnedStyleTrials. The correction revalidates/retains only identical uncancelled plans and bytes, with changed-input/decline negatives. See [root-cause record](../changes/2026-10-16-trial-queued-load-retention.md). Earlier unproven-cause paragraphs below are historical. This is emulator corrective cycle2 after the proven fixture Main ownership repair. Freeze final source and record its exact checks/artifact on PR8; if another gate fails, stop speculative edits and retain the precise failure. No live/key/phone/main/PR6/7 operation or merge.
+
+Full aef0dca0 Windows1010/7 includes one new source-identity regression plus six baseline failures. Preserve that RED: raw source silhouettes must not be copied into recipes. The narrow closed-vocabulary correction is documented in [identity follow-up](../changes/2026-10-16-dna-abstract-silhouette-boundary.md); final-head focused/full/hosted checks remain required. Android diagnostic and aef local4/4 successes do not uniquely prove the historical Prepare cause. Next single diagnostic step, if unresolved, is a test-only barrier at busy=false to pending-load drain, exercising the real enabled Prepare click without retry.
+
+## Generation recipe quality boundary
+
+Starting diagnostic checkpoint e839c227 records5/5 actual RED with unchanged production. The minimal quality correction uses existing fields, preserves raw evidence/optional families and v1 frozen plans, and adds versioned compact guidance without additional endpoints. Target identity stays original IMAGE1; references stay chosen-style members. Pending focused/full final-head results and hosted Standard trace must be recorded on PR8 before changing BLOCKED. Thread RED1/1 reproduces off-main Save return; matching the existing VM Main.immediate owner/controller context passes the unchanged Standard journey1/1 in11.607s. This fixes a fixture defect, not uniquely the old hosted timeout. See [bounded correction](../changes/2026-10-16-dna-generation-recipe.md). The rejected dispatcher experiment remains reverted; no phone/key/live request, merge, main/PR6/7 write or adjacent feature work.
+
+## October16 diagnostic and recipe-quality continuation
+
+Resume clean75e936a1 on existing PR8. Five new recipe/prompt/reference/payload assertions execute5/5 RED before production edits. Test-only backend/state/job/click/persistence/journal traces retain monotonic thread/process evidence in trace-0/1.log. A default-dispatcher experiment stays reverted; no sleeps/retries/timeouts/assertions change. First establish hosted Prepare event ordering, then improve the existing overall contract with V1 compatibility and unchanged request limits. See [diagnostic RED](../changes/2026-10-16-dna-diagnostic-quality-red.md). Final exact-head results belong on PR8; no phone/key/live request or adjacent feature scope.
+
+## October16 new-PC offline validation continuation
+
+Focused delivery resumes from verified remote6479b8f7, clean tree. That source's
+Linux CI, full regressions and offline HTTP pass, but hosted Standard fails on
+missing trial-prepare inside the still-loading list; restart lacks its evidence.
+The fixture now observes the real enabled UI item before exactly one click, within
+the same15 seconds, then retains all plan/reference/consumption assertions. No
+production change. Focused Standard passes1/1 at normal and320px emulator widths;
+the hosted failure remains RED evidence until the new final head passes. See
+[minimal correction](../changes/2026-10-16-offline-dna-visible-trial-control.md).
+Implementation scope is closed; final committed-source checks/artifact receipt
+belong directly on PR8 after execution. Next safe owner action is review and free
+Samsung acceptance, with compatible signing and preserved data, never paid replay.
+
+Hosted a234 Android Standard reaches Save but observes idle/null plan/null error
+at trial preparation; Quick and incomplete/cancel pass. The new fixture helper
+now waits for a real plan or error within the same15 seconds before all original
+assertions. Persistent missing plans still fail, with no retry/runtime change.
+Scheduling versus pending-refresh cause is unproven. Local6dda clean-tree Android
+4/4 does not erase that hosted failure; final closing-head local/hosted results
+must independently pass. See [observation correction](../changes/2026-10-16-offline-dna-trial-observation.md).
+
+Linux CI on a234cf38 exposes a test-only canonical-hostname defect: offline HTTP
+14/8 and full1005/8 fail while all5 incomplete parser tests pass. MockWebServer's
+canonical name becomes localhost, which the exact127 DNS guard correctly denies.
+The JVM fixture now explicitly pins127.0.0.1, matching the already successful
+Android route, with all guards/assertions intact. No runtime change follows this
+finding. Fresh closing-head checks/artifact must replace a234's failed CI; retain
+its failure ZIP/logs. See [host correction](../changes/2026-10-16-offline-dna-host-routing.md).
+
+Source baseline e235922b3b57961f21f0b91e47a8938f464705af was fetched into the
+existing clean checkout and existing feat/ux-flow-stabilization branch; PR8 remains
+draft/open on unchanged feat/style-dna-v1. Main/PR6/PR7 are preserved. Unpushed work
+from the old PC cannot be retrieved from GitHub. The full attached new-PC contract
+was read. Official portable JDK17/SDK36/build-tools35/GitHub CLI were installed,
+SDK licenses explicitly authorized, hooks/submodule configured and API35 x86_64
+emulator booted under already available WHPX. No admin/system-feature change.
+
+Current scope is fixed safe incomplete reasons and test-owned real HTTP/disk-Room/
+Android validation, preserving the existing UX, models, token limit, one-shot
+transport, consumed ledgers, Room21/backups and signing identities. Original55
+governance tests pass after local shell/Python-path correction; early Gradle path/
+heap/worker-start failures are retained as failures. Final exact source hash,
+actual baseline/RED/GREEN/XML/emulator/CI and verified APK link/digest belong in
+PR8's audit after committing. No prior990-test count is reused as fresh evidence.
+
+Actual six-test RED now reaches four expected assertions and zero errors/skips:
+three lost incomplete reasons and one missing UI explanation. The narrow whitelist/
+strings correction follows that evidence; final GREEN is recorded after execution.
+First corrected focused execution passes36/36 with zero failures/errors/skips,
+including all nine new actual HTTP cases; Android instrumentation compiles. Baseline
+full Windows executes990 tests with six retained filesystem/locale failures and
+zero errors/skips; separate baseline debug assembly passes. No baseline artifact
+is final delivery. The real ASCII Gradle cache, rather than a canonicalized short alias, fixes worker
+startup without suppressing security checks. Untouched baseline assertions run
+separately from this changed tree.
+
+Next safe task is to finish the recorded offline gates and artifact delivery, then
+owner review of that evidence. No paid test, phone data operation, merge, force
+push, additional PR or Stage2/3 work is authorized. If a gate fails, preserve its
+logs and consumed data and correct only the demonstrated defect. See
+[scope/evidence](../changes/2026-10-16-offline-dna-e2e.md) and
+[commands](../qa/OFFLINE_STYLE_DNA.md). Earlier sections below are historical.
+
+The implementation tree now passes real Android3+1 journeys on API35/emulator37.2.12:
+Quick12/one local POST, Standard24/five, incomplete/cancel/two and fresh-process
+reopen/zero. PID4116→4271 changes; saved styles and trial preparation survive, with
+zero external requests. First-run hostname rejection remains as failed evidence;
+test-only explicit127.0.0.1 routing fixes it while all guards stay. All64 Python
+tests and staged32-path documentation audit pass. Final-head Windows24-group,
+Android/CI/artifact results and exact committed SHA are recorded externally after
+commit. Next safe owner action remains review/free fixture or existing-PNG checks,
+never replay or a new paid run under this authorization.
+
+## Overall guidance and fidelity verification boundary
+
+P0 correction04dfa532 follows actual b7a30380 red2/2. Test-only95762f1a next
+preserves fidelity-bc-red2/2 in22.025s. Derived overall selection and matching
+family references fix both; first focused run passes28/28 in150.409s. A subsequent
+new native multipart fixture fails because its referenceNames count is zero for
+five references; all runtime/mismatch/choice/identity assertions reached success.
+Correct only the fixture settings, keeping exact byte assertions and factory guards.
+That bounded fixture correction now passes fidelity-bc-green-3:9/9,zero failures/
+errors/skips in37.463s, including new real full/shared overall-selection backups.
+Raw V1 families/reports, old selections and histories stay unchanged. New overall
+selection requires this compatible reader, including on rollback/full/share restore.
+Do not claim measured visual improvement. See owner no-cost rubric and remaining
+physical/provider checks. Final exact-head all23/local/Python/docs/CI/APK evidence
+must be recorded on PR8 after commit; no subset is final acceptance. No live calls.
+
+## Current reliability continuation
+
+Start from existing PR8/feat/ux-flow-stabilization, clean baseline71b7bce. Entire
+October15 reliability/fidelity contract and21 supplied screenshots were inspected.
+Test-only b7a30380 preserves actual2/2 RED. Corrected focused19/19 passes in108.762s;
+Standard third-batch count failure retains12 reports/3 consumed markers and no replay.
+The precise phone report is unavailable; never claim its cause conclusively fixed.
+Outbound exact count/binding/nonblank constraints plus fixed report diagnostics
+preserve all strict checks, saved evidence and request boundaries. Next bounded
+work concerns derived pack guidance and family/reference consistency, followed by
+final-head all23/CI/APK/audit. No paid calls or phone access are needed/authorized.
+Publish verified final-head artifact URL/hash on PR8; leave draft/open/unmerged.
+
+## Latest: first Standard ENVELOPE_INVALID on Flip8
+
+Continue existing PR8 only, baseline86c95e9d9241d3552022a8ed709553601a046605,
+clean Windows RenkinAI-ux worktree. The new contract quotes18:55–18:56 Budapest
+FAILED: ENVELOPE_INVALID,0/24 analyzed,6 images submitted,1/5 markers. Three new
+screenshots are not available as local attachments; the raw response is unavailable.
+Do not infer exact POST completion/billing from pre-network markers or project totals.
+
+Full REST fixture/real Room red runs5/2 before runtime edits: returned DNA format
+schema reaches14 and is rejected by whole-envelope12; Legacy's real schema fits.
+The narrow correction permits14 only below exact root text.format.schema, retains
+all other limits, and supplies fixed future envelope categories. Reports/synthesis
+remain separately strict; failed history and consumed UUIDs cannot replay. Legacy,
+outbound wire/model, ownership, Room/backup, features and signing are preserved.
+
+Run final committed-head all23/unfiltered/assemble, Python/docs/hooks/audit and
+independent CI/XML/schema/APK checks. Publish actual final-source artifact ZIP link,
+APK SHA256/size/manifest/signature and observed results directly on PR8 after commit.
+The scoped [diagnosis](../changes/2026-10-15-dna-response-envelope.md) and ADR0008
+explain the measured exception. Exact phone trigger remains unproven; physical
+verification NOT RUN. No connected device is required. The pasted key is unused;
+no live call or automatic retry is authorized. Keep draft/open/unmerged, unchanged
+base feat/style-dna-v1, main/PR6/PR7 intact. Owner later verifies compatible signing
+and any separately chosen request; do not clear data or replay the failed plan.
+
+## Latest PR8 provider-result handoff
+
+Continue only existing feat/ux-flow-stabilization from1bf21f0e. Three new owner
+images/full spec were read. Actual RED61e7b166 runs978/4;2207f82d runs978/5, adding
+expected-plan/actual-null after real parent restoration. Keep all failed reports
+and history. Ready unsubmitted plans now survive disposal in the same VM; current
+previews/history and envelope/report/synthesis codes are truthful. Rejection,
+security/no-replay/source/context/signing bounds remain.
+
+Final exact-head Android/all23/Python/docs/subjects/full PR audit, XML/schema and
+SDK-verified fresh APK evidence belong on PR8 after execution. Keep BLOCKED until
+automated gates pass; physical/live acceptance is separate. Owner retest: compatible
+signing, free Quick/Standard READY versus old Details, Settings return, declined
+consent and explicit reviewed Save/reload. Any later live call requires a separate
+owner decision. ZERO live/paid calls here; no phone key is accessible. No main/
+PR6/PR7 write, merge, force-push or release; leave draft/open/unmerged. See
+[scope and state table](../changes/2026-10-15-dna-provider-result-correction.md).
+
+## Final PR8 corrective handoff
+
+The history heading says analysis attempt: reservation can fail with zero submitted
+steps. The retained zero-step fixture asserts this wording; do not infer a phone POST
+or charge from record existence or the old failure sentence.
+
+Authorized scope is complete in source: post-read atomic controller merges retain
+current plans/job state/live progress, history has separate presentation, paid
+review/disabled reasons appear before samples, and provider/journal/data/signing
+contracts remain. Runtime4be6ad63 passes all974 Android cases at6fd75af2. Key resume
+is verified with real event/invalidation counts, ordinary Compose idling and the
+same plan/zero-call assertions; failed fixture hypotheses remain dated evidence.
+
+Final verification source additionally fixes the actually missing runner rg utility
+and one full-order restored-layout scroll assertion, retaining every gate/assertion.
+Run final exact-head Android/all23/Python/docs/subjects/event audit; download and
+independently verify XML/schemas and APK against SDK identity/signature/hash output.
+Only those actual results justify changing BLOCKED to PASS WITH RISKS. Publish
+the exact final source/artifact/SHA256 on PR8; do not reuse any checkpoint APK.
+See [record](../changes/2026-10-15-dna-final-verification.md).
+
+Next safe owner task after delivery: free Quick/Standard freeze, current-ready
+versus Details history, Settings key recognition, manual Save and Back/reopen/source
+switches. A later Quick paid analysis remains the owner's separate decision.
+No live call occurred; no secure Work credential/verified spend control exists.
+Actual phone POST/billing/event order, Keystore and installed-signer compatibility
+remain unproven; physical acceptance NOT RUN. Preserve data/keys, leave PR8 draft/
+open, and do not merge, force-push, change main/PR6/PR7 or start Stage2/3.
+
+## Current PR8 end-to-end diagnosis
+
+Start from verified76387e2e on existing feat/ux-flow-stabilization. Six supplied
+images and the full owner specification were inspected. Test-only948f805d has
+actual hosted969/3 red, all three new assertions; runtime edits follow that proof.
+The matching defect is a pre-suspension flow snapshot that can lose a frozen plan,
+restore busy and overwrite live progress. Atomic post-read merges and separate
+current-plan/history presentation correct only this scope. Existing resume key
+refresh, provider bytes, journals/rights, Room21 and signing configuration remain.
+
+Continue mandatory final-head Android/all23/Python/docs/hooks verification and fresh
+APK delivery. Added SDK verification checks package/signature/hash before upload;
+publish the exact final artifact link and hash on PR8. Keep BLOCKED until gates
+finish. No secure Work credential or verified spend controls are available: live
+test SKIPPED, zero live calls. The phone's historical POST/billing/event order is
+unproven and physical acceptance NOT RUN. Keep PR8 draft/open and main/PR6/PR7
+unchanged. Next safe step after delivery is the free owner checklist followed only
+by separately chosen paid confirmation. See [record](../changes/2026-10-15-dna-plan-refresh.md).
+
+## Latest PR8 all-pack storage follow-up
+
+Baseline f46115f10090f04651994e521f10e899871970fc, clean existing Windows
+RenkinAI-ux / feat/ux-flow-stabilization. The owner reports the same free-scan
+storage error on every tested pack in both modes. No new image/phone trace is
+mounted. Physical verification is NOT RUN; no phone will be connected.
+
+Actual test-first2/2 red identifies trusted Context alias rejection and shared
+history error misclassification. The correction normalizes only the trusted parent,
+preserves every child/companion/AtomicFile/consumed guard and supplies fixed diagnostic
+codes. Corrupt history stays blocked/preserved, with no speculative repair. The
+precise Samsung cause is unproven. Focused24/24 pass; separate20/1 retains a new
+security assertion failing on Windows File symlink semantics, to verify on Linux.
+
+Run the existing portable env.ps1, full23 runner, Python and stacked range/event
+guards on final HEAD; publish that SHA's fresh verified GitHub APK ZIP link/hash
+directly on PR8. Final results belong in its audit after commit (no self-hash claim).
+Keep PR8 draft/open targeting feat/style-dna-v1; main/PR6/PR7 remain unchanged.
+Owner retest: two packs × Quick/Standard × existing/fresh project, no key/paid
+confirmation; return only the displayed fixed code if free preparation fails.
+See [record](../changes/2026-10-15-dna-shared-storage.md) and
+[owner check](../qa/GUIDED_UX_OWNER_CHECK.md). Earlier closure below is historical.
+
+## Current PR8 corrective handoff
+
+Continue only feat/ux-flow-stabilization / draft PR8, stacked on unchanged
+PR7 2f422ca8. The verified correction is f788b62b0cebe387c1c444b797831ac7bda66c6f:
+Android38665453196 and all23 regressions38665453253 pass. Independent154 XML
+contain960 tests/zero failures/errors/skips; source/owned preparation24, DNA27,
+guided35 pass. Generated Room19/20/21 bytes match tracked files. Local Python55
+and committed-range docs54paths/subjects5 pass. Zero live/paid requests.
+
+This closing documentation commit requires its own fresh Android/all23/governance
+and APK on its exact SHA, recorded externally in PR8 to avoid self-hash claims.
+The old BLOCKED audit failure remains evidence; change the declaration only after
+complete exact-head checks. Keep draft/open/unmerged for owner free Flip8/Lux scan,
+Back/reopen/rotation/manual Save and installed-signature acceptance. The original
+phone exception is not recoverable from the two screenshots; the matching null-stamp
+path is reproduced and fixed, with actionable reasons for other local failures.
+Earlier Windows continuation and pending checkpoints below remain historical.
+See [verification](../changes/2026-10-15-dna-local-preparation-verification.md).
+
+## October15 PR8 local scan reproduction
+
+Work continues on the existing remote feat/ux-flow-stabilization from ecff4e5f.
+The owner observes a first Quick scan failure on Flip8. New test-only regressions
+exercise loading coverage/null setup stamp and real owned DNA/Room preparation;
+hosted red evidence is pending, not claimed. Local Gradle distribution download
+fails before configuration with Network is unreachable. No live calls or other
+branch writes are authorized. See [reproduction](../changes/2026-10-15-dna-local-preparation-reproduction.md).
+
+Hosted red876ad51e now genuinely compiles958 tests and fails exactly the two new
+source-readiness/diagnostic assertions (Android38664556204). The correction waits
+for verified EXTEND coverage, guards restored missing stamps and emits safe local
+reasons while preserving every validator. Real owned Quick/no-key/empty/stale/storage,
+restoration/navigation and all retained tests require next-head CI verification.
+The full23-command runner and final source/APK/audit evidence remain required;
+phone/Lux acceptance and generated style fidelity stay separate owner gates.
+
+## Closed implementation scope
+
+Continue only in `C:\Users\zsomb\Documents\Github\RenkinAI-ux`, branch
+`feat/ux-flow-stabilization`. Original base is PR7
+`2f422ca8dbd58174491c954826350bac29bc6dd2`; safe checkpoint3ee52fa1 and committed
+Windows harness861ac270 preserve the earlier work. Original mainaf7bdb10 and upstream
+PR6/PR7 are unchanged. The final commit SHA belongs in the external draft PR audit,
+since this file cannot contain its own hash.
+
+The four-step flow, awaited immutable style/target saves, current saved selection,
+separate Legacy/DNA paths and retained history are implemented. The final narrow
+runtime correction revalidates approval locally on trial confirmation cancellation
+or dismissal. Its real Room test proves unchanged approval, variants, request records
+and provider-call count. Current errors and stale inputs continue to disable readiness.
+No Apply/batch, visual-fidelity rewrite, repository cleanup or live provider work is added.
+
+The corrected targeted set passed 103 tests /0 failures /0 errors /0 skips. Earlier98/26 remains failed
+historical evidence:22 cases shared the proven Windows AtomicFile replacement boundary,
+three new fixtures targeted an absent Advanced control, and one new phrase assertion
+needed explicit substring matching. The resumed10/4 run confirmed the shared harness,
+Legacy phrase and cross-profile cases; remaining Room fixture interactions raced actual
+initial-load/recheck readiness. After proper synchronization,4/1 reached the genuine
+decline readiness defect; the narrow UI fix then passed4/4. Timeouts, idling, selectors,
+security and original assertions remain. See [closing evidence](../changes/2026-10-15-guided-ux-stabilization.md).
+
+## Final verification and artifact boundary
+
+Use the existing portable tools; do not reinstall or change global configuration:
+
+```powershell
+. 'C:\Users\zsomb\AppData\Local\RenkinAI-TaskTools\2026-10-14\env.ps1'
+python scripts/run_compose_regressions.py
+python -m unittest discover -s scripts/tests -v
+python scripts/check_docs.py --base origin/feat/style-dna-v1 --head HEAD
+python scripts/check_commit_messages.py --base origin/feat/style-dna-v1 --head HEAD
+```
+
+The23-group runner ends with unfiltered compileDebugKotlin/testDebugUnitTest/assembleDebug,
+retains actual XML/HTML/logs and exact HEAD in `build/compose-regressions/summary.json`,
+and requires every selector with zero skips/errors/failures. Independent recount,
+Room19/20/21 byte comparison, APK bytes/SHA256/package/debug certificate and exact
+final SHA are recorded in the external PR audit/local verification manifest after
+execution. Historical CI or checkpoint subsets must not be represented as that result.
+
+## Owner acceptance and next safe task
+
+No Android device/emulator is attached; physical testing is NOT RUN. The local debug
+certificate may differ from an installed CI build; compare certificates before an
+owner-authorized in-place update and preserve all data and both original signing keys.
+No phone install, uninstall, data clear, paid API request, main write or merge occurred.
+
+Run the [15-action Flip8/Lux check](../qa/GUIDED_UX_OWNER_CHECK.md), including free
+preparation/decline, saved state/reopen, dark/light/large fonts, TalkBack/fold and history.
+Optional paid steps require separate owner consent. Stage2 is a fixed-three-original
+blind comparison proposal with current pricing/spend authorization; Stage3 is caller-proven
+cleanup in separate small PRs. Keep the new stacked PR draft and require explicit owner
+review/merge; automated checks do not grant device, visual or release approval.
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
 
 ## Closing-head legacy rejection-journey readiness
 

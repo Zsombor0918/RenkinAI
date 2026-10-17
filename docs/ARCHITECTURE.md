@@ -1,5 +1,151 @@
 # Architecture
 
+## Bounded Trial package-read classification
+
+ObserveCoverageInvalidation keeps its original callbacks by default. Trial alone
+receives typed package hints through ProjectTrialBackend; OwnedStyleTrials checks
+source/saved-target membership and freshly revalidates the existing catalog under
+its owner. Only non-input package hints with an unchanged live catalog avoid the
+full local reload. This preserves prepared bytes and approval, with controls busy
+until the catalog check completes. A hint cannot downgrade an unconditional pending
+read; route replacement/release and cancellation keep their prior semantics.
+No new monitor, timer, persistence, schema or paid-request mechanism exists.
+
+## Current trial plan retention during read-only reload
+
+OwnedStyleTrials retains a frozen plan while a coalesced local read is busy, then uses existing current(plan) checks and same-plan/staging guards before keeping it. The guard runs across suspensions so explicit cancellation cannot resurrect a plan. Changed route/context/original/recipe/epoch or read failure clears staging/proof; paid confirmation remains disabled until idle and submit independently rechecks. Suspending key/approval reads finish before the final StateFlow merge. No paid retry, consumed marker, journal format or Room migration is added.
+
+Raw per-image logo_silhouette may name a source symbol. Only closed abstract construction phrases from that field enter local family/global recipes; unknown/negated/identity-appended descriptions remain evidence-only. Separately supported abstract family synthesis is retained. This boundary follows an actual new full-suite source-identity failure and preserves the authoritative original-first contract.
+
+## Bounded generation recipe compilation
+
+Existing V1 traits/drawing fields feed explicit generation labels and separate brand-preservation/abstraction constraints. Geometry/contour use silhouette evidence. Global fallback pools only nonunknown synthesis rules with at least two cited samples and60 percent pack support; unsupported/conflicting traits stay unestablished. Raw reports/partition remain immutable. Default representative selection excludes flagged outliers within chosen membership. Promptv2 uses the existing version field; plan/result readers accept frozen v1 and v2 and the gateway retains v1 instructions. New/frozen recipe comparison still protects current consent. No Room/schema/backup shape or transport-role change. See [ADR0011](decisions/0011-generation-useful-dna-recipes.md).
+
+## Offline Style DNA verification boundary
+
+The existing gateway/coordinator/controller/Room/journal ownership remains. Incomplete
+Responses reasons are allowlisted into fixed diagnostics without saving raw output or
+granting a replay. Tests own localhost routing and synthetic credentials; release
+configuration has no fixture switch. A separate permission-free offline-fixture APK
+supplies generated Android resources. Debug-only visibility and exact127.0.0.1
+cleartext policy support instrumented Compose journeys over real disk persistence.
+The host runner verifies an explicit emulator serial and qemu identity before any
+install/stop, then checks logs/counters across a real process restart. See
+[ADR0010](decisions/0010-offline-style-dna-validation.md) and
+[commands and limits](qa/OFFLINE_STYLE_DNA.md). No schema/signing/identity change.
+
+## Derived overall DNA view and reference membership
+
+StyleDnaReview derives a pack-wide DnaFamily without inserting it into the stored
+V1 partition. The reserved __pack__ selection is independent of valid family IDs;
+new candidates default to it, while old selected IDs and compiled specifications
+are unchanged. Conservative finite synonyms merge only supported observations;
+60% and at least two OBSERVED reports produce INFERRED global rules. Conflicting
+surface/palette observations cannot impose a universal tile/recoloring policy.
+This is an additive compatible-reader capability, not a Room/backup format migration.
+
+Reference recommendation round-robins observed construction/type groups inside the
+selected evidence set, retaining source order, uniqueness and a five-image bound.
+Save checks membership. Existing shared-reference trial plans keep their exact
+hashes/order; an incompatible per-target family is rejected before staging or any
+paid endpoint. Changed family/type still invalidates context and consent through
+the retained fingerprint/recipe guards. Original extraction and native multipart
+assembly stay intact. Saved previews fall back to owner-checked immutable assets
+after journal thumbnail collection. See [ADR0008](decisions/0008-style-dna-stacked-development.md).
+
+## DNA report contract and safe rejection
+
+Image-step request schemas bind count exactly and constrain IDs/hashes to the
+frozen step's allowed sets. Nonempty observation text includes a bounded pattern;
+UNKNOWN remains explicit text. Client validation still verifies exact field/type,
+enum/provenance/text, unique membership and ID/hash pairs independently. A swapped
+hash remains rejected even though it belongs to the allowed set. REPORT_* codes
+only refine the existing journal reason; no raw content/cause, persisted field,
+schema migration, retry or recovery permission is added. Existing generic records
+remain readable and unchanged. See [record](changes/2026-10-15-dna-report-contract.md).
+
+## DNA returned-format envelope depth
+
+The DNA response parser uses the strict reader's optional single exact object-path
+allowance for root text.format.schema only (depth14). Its actual report and grammar
+schemas require14 when echoed in a full Responses envelope; Legacy's shallower
+schema fits the unchanged12. Other paths, array lookalikes and all default callers
+retain12. Whole-envelope128KiB/array128, duplicate/surrogate/number validation and
+actual output/report/grammar/security conditions remain. No ignored subtree skips
+validation. Only fixed rejection categories enter the existing reason field; no
+raw response, new persisted field, journal/schema/transport change or retry exists.
+See [ADR0008](decisions/0008-style-dna-stacked-development.md) and
+[evidence](changes/2026-10-15-dna-response-envelope.md). Device cause is not uniquely proven.
+
+## DNA plan lifetime and diagnostic stages
+
+Composition disposal does not consume/invalidate a ready unsubmitted DNA plan.
+The existing VM retains its bounded samples/plan while idle; preparation replaces
+it and explicit submission consumes it. Busy local preparation still cancels;
+process loss never restores executable consent. Every endpoint independently
+rechecks the existing full context and durable consumed marker before transport.
+No second owner or new storage exists.
+
+Envelope/status validation, report decoding/binding and synthesis/evidence
+validation have distinct allowlisted codes. Cancellation/local persistence retain
+prior recovery. Historical generic reasons are read without reinterpretation or
+mutation; UI keeps them under Details and labels no-plan thumbnails as previews.
+Wire/model/schema/quotas, Room19/20/21, fingerprints, key presence semantics and
+signing remain. See [reproduced boundaries](changes/2026-10-15-dna-provider-result-correction.md).
+
+## DNA refresh and current-plan presentation
+
+OwnedStyleAnalysis performs suspending local reads before atomic StateFlow merges.
+History/credential refresh never restores preparation or job/network flags; live
+record updates that changed since the read began take precedence. Free preparation
+retains older history, while the panel presents the new plan and its own disabled
+reason separately. Existing source/lifecycle invalidation still refreshes key
+presence locally; there is no second session owner or new credential channel.
+Paid consent, context rechecks, one-shot transport, journal formats/consumed IDs
+and reviewed immutable Save remain unchanged. See [evidence](changes/2026-10-15-dna-plan-refresh.md).
+
+## DNA private storage and local diagnostics
+
+StyleDnaJournal canonicalizes only the Context-owned no-backup parent before
+constructing its existing root. Root/profile/record/backup/new descendants retain
+canonical-versus-absolute and containment checks; child links are never normalized
+into trust. Aliases share locks, bytes and the consumed ledger. There is no format
+change, history reset or speculative corruption recovery.
+OwnedStyleAnalysis exposes only ephemeral allowlisted stage/category enums for
+free-preparation errors. History integrity/read errors stay fail closed; a source
+read is not evidence of low disk space. No raw exception/path/ID is exposed or
+persisted. Separate paid consent, ownership, quotas and no-replay remain authoritative.
+
+## Guided presentation and ownership
+
+`RenkinAiRoot` enables the four-step shell without changing classic editor or intent
+priority. The shell stores routes only. `ProjectWorkflow` derives source readiness
+and completion from existing metadata, saved revisions and owned trial state.
+`TargetSelection` hydrates current saved keys and awaits the existing durable save
+before advancing. Default API-compatible shell consumers remain supported.
+
+`ProjectStylePanel` owns the local editable draft; the selected aggregate/DNA child
+propagates dirty and saving state. DNA/aggregate saves return a persisted
+`SavedProjectStyle` before parent synchronization/navigation. Per-record source
+validity is separate from current operation errors. Nothing converts legacy styles.
+`trialReviewSummary` checks all current successful variants, owner/context/request
+proof and current failures before exposing approval. History presentation does not
+remove journal or Room evidence. Completion performs read-only local revalidation. Trial confirmation decline/dismiss
+also requests existing local approval proof, without setting ready or authorizing a request.
+
+Owned controllers remain the only async request owners. `OwnedStyleTrials` coalesces
+a latest local load for another profile while its authorized network operation runs;
+release/context guards drop obsolete routes. The drain calls only `load`, never
+prepare/submit. Existing session mutexes, consumed markers, uncertain recovery,
+immutable original/RAW assets, repository transactions and one-shot gateways remain.
+No database, global lifecycle singleton or second request coordinator was added.
+See [ADR0009](decisions/0009-guided-project-workflow.md) and the
+[implementation inventory](changes/2026-10-14-guided-ux-implementation.md).
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Current opt-in Style DNA architecture
 
 Separate stacked PR7 adds diagnostics, individually labeled reports, independently validated

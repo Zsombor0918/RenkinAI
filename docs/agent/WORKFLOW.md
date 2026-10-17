@@ -1,5 +1,91 @@
 # Agent, Git and review workflow
 
+## Owner-approved lean verification (October 17, 2026)
+
+This policy supersedes earlier requirements below to execute every historical group
+on every PR. It changes scheduling only; all Kotlin cases/assertions remain.
+[ADR0012](../decisions/0012-lean-verification.md) records the owner authorization and exact execution inventory.
+CI/build alone runs the full unit suite, compile and debug assembly through
+`python scripts/run_compose_regressions.py --group full-suite`, retaining exact-head
+XML/HTML/logs, required selectors and real Room19/20/21 exports. HTTP contracts are
+included there, not in a second automatic job. Android instrumentation and strict
+Python/governance checks remain separate; hosted Standard/restart remain BLOCKED.
+For development use `--group trial-persistence-session` (or another existing name);
+repeat `--group` to run a deduplicated union in one Gradle invocation. No argument
+also selects only full-suite. `--order-check` explicitly runs creation, ingress,
+both and shared-form separately; run it for shared UI harness/order changes and
+before owner pre-merge/release review, via the dispatch-only Profile form workflow.
+Record its exact SHA and result; a missing diagnostic is NOT RUN, never PASS.
+Older results below remain historical, not final-head evidence. No safety/data,
+billing, signing, API, test failure condition or owner-review requirement is waived.
+
+
+## Synthetic emulator transition evidence
+
+The offline runner additionally retains tag-filtered trace-0.log and trace-1.log from the explicit emulator after each instrumentation command. Test-owned delegates record actual input/backend boundaries, observed state and child completion, plus Save/read/journal events with monotonic thread/process identity. Logging never changes a dispatcher or grants success; absent transitions may reflect StateFlow conflation or watcher attachment. No raw credentials, image bytes, SQL arguments or provider prose are logged. Existing gates and strict counter/assertion checks remain.
+
+## Offline DNA gates and Unicode Windows paths
+
+The original23 regression groups remain; an additive offline HTTP group requires
+the new disk-Room/controller/actual-wire suite and incomplete-reason regressions.
+The runner preserves an explicit ASCII junction path so AGP's Windows path guard
+can stay enabled. A new Offline Style DNA workflow runs failing HTTP and emulator
+jobs on the actual PR head and retains reports. Its host runner refuses physical
+serials/qemu mismatches, builds the three APKs, records hashes/source/dirty status,
+and verifies separate instrumentation processes. It never reads a provider key.
+These are workflow gates; no new branch-protection context is claimed configured.
+The existing CI build also pins checkout to the PR head (or event SHA on push/
+dispatch), retaining all tasks while making final APK provenance explicit.
+See [offline commands](../qa/OFFLINE_STYLE_DNA.md) and
+[ADR0010](../decisions/0010-offline-style-dna-validation.md).
+
+## PR8 final APK verification
+
+The existing CI compile/unit/assemble/upload sequence retains every task. After
+assembly an additive SDK35 aapt/apksigner/sha256sum step verifies the debug package
+hu.zsombor.renkinai.dev, nonempty APK, complete signature and certificate/hash.
+The hosted6fd75af2 run proved rg unavailable after a successful974-test/assemble
+run; package matching therefore uses standard grep with an anchored exact pattern.
+Download that exact run's artifact and compare its APK SHA256 to this output.
+This verifies the artifact, not installed-certificate compatibility or phone
+acceptance. No signing configuration, dependency, required gate or protection rule
+changes. Final exact-head all23/XML/schema and audit checks remain mandatory.
+
+## Native Windows guided UX verification
+
+The complete Compose runner now has 23 groups, retaining all 22 previous groups and
+selectors and adding five guided classes plus the AtomicFile harness class. Windows invokes the absolute native
+`gradlew.bat`; POSIX still invokes `./gradlew`. Task/selector/XML/skipped/error/exit
+requirements are unchanged. The final full-suite group compiles, tests and assembles
+on the exact committed HEAD after the isolated runs.
+
+Git snapshot reads normalize CRLF before matching the same exact four impact
+declarations. Strict declaration/body/path/link requirements remain; a retained test
+proves native Windows blobs work. Hook fixture text explicitly uses LF matching
+`.gitattributes`, so the real pre-commit whitespace gate is still exercised.
+All three workflows additionally trigger for PRs targeting `feat/style-dna-v1`.
+No required job or guard was removed and no server protection setting was changed.
+See [ADR0009](../decisions/0009-guided-project-workflow.md).
+
+Local setup is process-scoped via portable `env.ps1` (JDK17/API36/build-tools35.0.0,
+Python3.14/Git shell on PATH). Run `python -m unittest discover -s scripts/tests -v`,
+`python scripts/run_compose_regressions.py`, `python scripts/check_docs.py --base
+origin/feat/style-dna-v1 --head HEAD`, and the commit range/PR audit guards.
+Record final-head evidence externally; do not substitute earlier remote CI or a stale APK.
+The stacked PR stays draft; PASS WITH RISKS still requires explicit owner review.
+
+The Windows-only API30+ AtomicFile shadow preserves Android atomic replacement in
+Robolectric; non-Windows invokes the original method. Four mandatory harness guards
+and unchanged journal/controller guards verify base/backup/unfinished-write durability.
+Changes to shared Java shadows, test resources and the harness-test package also trigger
+the same mandatory isolated workflow, preserving coverage for harness-only corrections.
+Its narrow8-test pass does not replace the unfiltered/all23 gates; see the
+[platform correction](../changes/2026-10-14-windows-atomic-test-harness.md).
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Closing-head legacy rejection-journey readiness
 
 Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered

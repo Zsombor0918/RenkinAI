@@ -31,6 +31,8 @@ class StyleTrialComposeTest {
     @Test fun frozenConfirmationNamesTheAppOriginalAndSeparatesTheStylePack() {
         val b = Backend(preparation(ProjectSetupMode.EXTEND, 1)); show(b); prepare()
         compose.onNodeWithText("Original app icon").assertExists()
+        compose.onNodeWithTag("trial-frozen-confirmation").performScrollToNode(hasTestTag("trial-consent-details"))
+        compose.onNodeWithTag("trial-consent-details").performClick()
         compose.onNodeWithText("launcher:p0/Main:1", substring = true).assertExists()
         compose.onNodeWithText("Style reference pack: source.pack", substring = true).assertExists()
         val input = b.flow.value.plan!!.inputs.single()
@@ -56,12 +58,17 @@ class StyleTrialComposeTest {
     private inner class Backend(var base: TrialPreparation? = preparation()) : ProjectTrialBackend {
         val flow = MutableStateFlow(ProjectTrialState(preparation = base, hasKey = true))
         var paidPlans = 0; var stops = 0; var loads = 0; var key = true
+        val packageEvents = mutableListOf<String>()
         var originalEvidence: OriginalIconEvidence? = null
         var verifiedPlan: String? = null
         val consumed = mutableSetOf<String>(); var pending: StyleTrialPlan? = null
         override fun state(id: Long) = flow
         override fun load(id: Long, mode: ProjectSetupMode, source: String?) {
             loads++; if (!flow.value.network) flow.value = flow.value.copy(preparation = base, plan = null, hasKey = key)
+        }
+        override fun packageChanged(id: Long, mode: ProjectSetupMode, source: String?, packageName: String) {
+            assertEquals(1L, id); assertEquals(ProjectSetupMode.valueOf(base!!.context.mode), mode)
+            assertEquals(base!!.context.sourcePackage, source); packageEvents += packageName
         }
         override fun options(id: Long, provider: String, model: String, quality: String) {
             base = base!!.copy(context = base!!.context.copy(provider = provider, model = model, quality = quality))
@@ -110,6 +117,22 @@ class StyleTrialComposeTest {
     }
     private fun scroll(tag: String) { compose.onNodeWithTag("project-trials-1").performScrollToNode(hasTestTag(tag)) }
     private fun prepare() { scroll("trial-prepare"); compose.onNodeWithTag("trial-prepare").performClick() }
+    @Test fun packageBroadcastsReachTrialAsTypedInvalidationsWithoutAnUnconditionalReload() {
+        val b = Backend(preparation(ProjectSetupMode.EXTEND, 1)); show(b); compose.waitForIdle()
+        val loads = b.loads
+        val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+        for ((action, pack) in listOf(
+            android.content.Intent.ACTION_PACKAGE_CHANGED to "background.service",
+            android.content.Intent.ACTION_PACKAGE_CHANGED to "p0",
+            android.content.Intent.ACTION_PACKAGE_REPLACED to "source.pack",
+            android.content.Intent.ACTION_PACKAGE_ADDED to "new.launcher",
+            android.content.Intent.ACTION_PACKAGE_REMOVED to "old.launcher")) {
+            compose.runOnIdle { context.sendBroadcast(android.content.Intent(action, android.net.Uri.parse("package:$pack"))) }
+            compose.waitForIdle()
+        }
+        assertEquals(listOf("background.service", "p0", "source.pack", "new.launcher", "old.launcher"), b.packageEvents)
+        assertEquals(loads, b.loads); assertEquals(0, b.paidPlans)
+    }
     private fun generate(b: Backend): List<IconAssetVariant> {
         prepare(); compose.onNodeWithTag("trial-confirm-paid").performClick(); compose.runOnIdle { b.finish() }; return b.flow.value.variants
     }
@@ -126,6 +149,8 @@ class StyleTrialComposeTest {
         b.originalEvidence = OriginalIconEvidence("APP_COMPONENT_RESOURCE", "adaptive", 0, 420, 123, false)
         show(b); prepare()
         compose.onNodeWithTag("trial-confirm-paid").assertIsNotEnabled()
+        compose.onNodeWithTag("trial-frozen-confirmation").performScrollToNode(hasTestTag("trial-consent-details"))
+        compose.onNodeWithTag("trial-consent-details").performClick()
         compose.onNodeWithTag("trial-frozen-confirmation").performScrollToNode(hasTestTag("trial-original-unverified"))
         compose.onNodeWithText("UNVERIFIED_ORIGINAL", substring = true).assertExists()
         compose.onNodeWithTag("trial-frozen-confirmation").performScrollToNode(hasTestTag("trial-verify-originals"))
@@ -162,6 +187,7 @@ class StyleTrialComposeTest {
         compose.onNodeWithContentDescription("Generated at 48 px launcher size").assertExists()
         val bounds = compose.onNodeWithTag("trial-48-true-${row.id}").getUnclippedBoundsInRoot()
         assertEquals(48f, (bounds.right - bounds.left).value, .1f)
+        scroll("trial-preview-options-toggle"); compose.onNodeWithTag("trial-preview-options-toggle").performClick()
         scroll("trial-preview-theme"); compose.onNodeWithTag("trial-preview-theme").performClick()
         scroll("trial-preview-alpha"); compose.onNodeWithTag("trial-preview-alpha").performClick(); assertEquals(1, b.paidPlans)
     }
@@ -194,11 +220,13 @@ class StyleTrialComposeTest {
         val b = Backend(); show(b); prepare(); compose.onNodeWithTag("trial-confirm-paid").performClick()
         scroll("trial-stop"); compose.onNodeWithTag("trial-stop").performClick()
         assertEquals(1, b.stops); assertEquals(TrialStatus.UNCERTAIN, b.flow.value.records.single().items.first().status)
+        scroll("trial-options-toggle"); compose.onNodeWithTag("trial-options-toggle").performClick()
         scroll("trial-reload"); compose.onNodeWithTag("trial-reload").performClick(); assertEquals(1, b.paidPlans)
     }
     @Test fun staleRevisionPreservesHistoryButDisablesReviewAndRegeneration() {
         val b = Backend(preparation(n = 1)); show(b); val row = generate(b).single()
         compose.runOnIdle { b.base = b.base!!.copy(context = b.base!!.context.copy(revision = 2)); b.load(1, ProjectSetupMode.CREATE, null) }
+        scroll("trial-history-toggle"); compose.onNodeWithTag("trial-history-toggle").performClick()
         scroll("trial-historical-${row.id}"); compose.onNodeWithTag("trial-historical-${row.id}").assertExists()
         scroll("trial-accept-${row.id}"); compose.onNodeWithTag("trial-accept-${row.id}").assertIsNotEnabled()
         assertEquals(1, b.flow.value.variants.size); assertEquals(1, b.paidPlans)
@@ -212,6 +240,7 @@ class StyleTrialComposeTest {
         val b = Backend(preparation(n = 1)); show(b); val row = generate(b).single()
         scroll("trial-accept-${row.id}"); compose.onNodeWithTag("trial-accept-${row.id}").performClick()
         compose.runOnIdle { b.base = b.base!!.copy(context = b.base!!.context.copy(epoch = "restored:initial")); b.load(1, ProjectSetupMode.CREATE, null) }
+        scroll("trial-history-toggle"); compose.onNodeWithTag("trial-history-toggle").performClick()
         scroll("trial-recheck-${row.id}"); compose.onNodeWithTag("trial-recheck-${row.id}").performClick()
         compose.onNodeWithTag("trial-recheck-cancel").performClick(); assertEquals(1, b.paidPlans)
         scroll("trial-approve-style"); compose.onNodeWithTag("trial-approve-style").assertIsNotEnabled()
@@ -249,10 +278,12 @@ class StyleTrialComposeTest {
         compose.onNodeWithTag("project-home").performScrollToNode(hasTestTag("project-setup-1"))
         compose.onNodeWithTag("project-setup-1").performClick(); compose.onNodeWithTag("setup-trials").performScrollTo().performClick()
         compose.onNodeWithTag("project-trials-1").assertExists(); val row = generate(b).single()
+        scroll("trial-options-toggle"); compose.onNodeWithTag("trial-options-toggle").performClick()
         scroll("trial-refine"); compose.onNodeWithTag("trial-refine").performClick()
         compose.onNodeWithTag("project-style-description").performScrollTo().performTextReplacement("refined solid")
         compose.onNodeWithTag("project-style-save").performScrollTo().performClick()
         compose.onNodeWithTag("style-trials").performScrollTo().performClick()
+        scroll("trial-history-toggle"); compose.onNodeWithTag("trial-history-toggle").performClick()
         scroll("trial-historical-${row.id}"); compose.onNodeWithTag("trial-historical-${row.id}").assertExists()
         assertEquals(1, b.paidPlans); compose.runOnIdle { attention = true }
         compose.onNodeWithTag("trial-classic-editor").assertExists(); assertEquals(1, b.paidPlans)

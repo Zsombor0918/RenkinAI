@@ -3,10 +3,18 @@ package dev.renkinProject.renkin.ai.style
 import org.json.JSONArray
 import org.json.JSONObject
 
+internal enum class StrictJsonFailure { SIZE, DEPTH, DUPLICATE }
+internal class StrictJsonRejected(val failure: StrictJsonFailure) : IllegalArgumentException("Strict JSON ${failure.name}")
+/** Trusted caller configuration for one exact object path; never applies through arrays. */
+internal data class JsonDepthAllowance(val path: List<String>, val maxDepth: Int) {
+    init { require(path.size in 1..8 && path.all { it.isNotEmpty() } && maxDepth in 1..32) }
+}
+
 /** Bounded strict JSON, including duplicate keys, before Android's permissive JSON API.
  * Provider data is untrusted; no comments, coercion, trailing commas or deep recursion. */
-internal fun strictObject(text: String, maxBytes: Int = 65536, maxDepth: Int = 12): JSONObject {
-    require(text.toByteArray(Charsets.UTF_8).size <= maxBytes) { "JSON exceeds the safety limit." }
+internal fun strictObject(text: String, maxBytes: Int = 65536, maxDepth: Int = 12,
+    depthAllowance: JsonDepthAllowance? = null): JSONObject {
+    if (text.toByteArray(Charsets.UTF_8).size > maxBytes) throw StrictJsonRejected(StrictJsonFailure.SIZE)
     class Reader {
         var offset = 0
         fun ws() { while (offset < text.length && text[offset] in " \t\r\n") offset++ }
@@ -42,15 +50,20 @@ internal fun strictObject(text: String, maxBytes: Int = 65536, maxDepth: Int = 1
             }
             error("Truncated JSON string.")
         }
-        fun value(depth: Int): Any {
-            require(depth <= maxDepth); ws(); require(offset < text.length)
+        fun value(depth: Int, inheritedLimit: Int = maxDepth, pathIndex: Int = if (depthAllowance == null) -1 else 0): Any {
+            val limit = if (depthAllowance != null && pathIndex == depthAllowance.path.size) depthAllowance.maxDepth else inheritedLimit
+            if (depth > limit) throw StrictJsonRejected(StrictJsonFailure.DEPTH)
+            ws(); require(offset < text.length)
             return when (text[offset]) {
                 '{' -> {
                     take('{'); val result = JSONObject(); val keys = mutableSetOf<String>(); ws()
                     if (offset < text.length && text[offset] == '}') { offset++; result } else {
                         while (true) {
-                            val key = string(); require(keys.add(key)) { "Repeated JSON key." }; take(':')
-                            result.put(key, value(depth + 1)); ws(); require(offset < text.length)
+                            val key = string(); if (!keys.add(key)) throw StrictJsonRejected(StrictJsonFailure.DUPLICATE)
+                            take(':')
+                            val next = if (depthAllowance != null && pathIndex in depthAllowance.path.indices &&
+                                key == depthAllowance.path[pathIndex]) pathIndex + 1 else -1
+                            result.put(key, value(depth + 1, limit, next)); ws(); require(offset < text.length)
                             if (text[offset] == '}') { offset++; break }; take(',')
                         }; result
                     }
@@ -59,7 +72,7 @@ internal fun strictObject(text: String, maxBytes: Int = 65536, maxDepth: Int = 1
                     take('['); val result = JSONArray(); ws()
                     if (offset < text.length && text[offset] == ']') { offset++; result } else {
                         while (true) {
-                            require(result.length() < 128); result.put(value(depth + 1)); ws(); require(offset < text.length)
+                            require(result.length() < 128); result.put(value(depth + 1, limit, -1)); ws(); require(offset < text.length)
                             if (text[offset] == ']') { offset++; break }; take(',')
                         }; result
                     }

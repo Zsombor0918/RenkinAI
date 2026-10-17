@@ -1,5 +1,214 @@
 # Current implementation
 
+## Shared Trial package invalidations
+
+Package broadcasts retain their identity through the screen-scoped observer to the
+existing Trial controller. Source and saved-target packages still require the full
+revalidation. For other packages, a fresh owner-protected launcher/catalog read
+must match the current preparation's catalog stamp before avoiding redundant
+DNA/assets/original decoding. Unknown/error/changed catalog falls back to full
+validation; lookup failure invalidates the plan. No catalog result is cached.
+Busy package hints coalesce by route, while unconditional reads dominate hints.
+Resume/theme/route/explicit reads and paid-submit guards remain unchanged.
+Final hosted acceptance is recorded on PR8, not inferred from this implementation.
+
+The earlier Phase2 checkpoint added opt-in origin tracing without a controller correction. Production still defaults to no trace sink; the subsequent bounded correction is described above. Final hosted status belongs in PR8.
+
+Verification scheduling now follows [ADR0012](../decisions/0012-lean-verification.md): one authoritative full suite plus explicit targeted/order diagnostics. All existing Kotlin cases remain; current shared Trial acceptance is recorded on PR8.
+
+## Queued local trial reads preserve only current prepared plans
+
+A hosted trace and deterministic barrier regression now prove that pending load drained after Prepare erases its newly assigned plan. Load retains the visible plan while busy, revalidates all existing context/original/recipe checks, and keeps its staged bytes only if the same plan remains current and uncancelled. Changed inputs or read failure invalidate it; decline during recheck cannot resurrect it. No local load submits or consumes a request. See [root-cause correction](../changes/2026-10-16-trial-queued-load-retention.md).
+
+The aef0dca0 full suite catches raw reference identity in the new silhouette mapping. Local recipes now accept only a closed abstract shape vocabulary from logo_silhouette; other raw descriptions stay evidence-only. Supported abstract synthesis rules remain available. See [identity boundary](../changes/2026-10-16-dna-abstract-silhouette-boundary.md).
+
+## Generation-useful overall DNA contract
+
+The bounded PR8 quality continuation retains __pack__, raw schema1 reports and optional families. Overall rules use observed recurrence or supported synthesis with cited pack-wide support; silhouette maps to geometry/contour. The compiler labels concrete generation decisions, separates identity/abstraction constraints and lists unestablished traits once. Default references exclude flagged outliers without padding unrelated families. New promptv2 retains schema/request counts/caps; frozen v1 plans/readers remain supported with their actual version. Existing saved specifications/history are not rewritten. Offline structural/payload tests do not establish live or visual quality. See [decision](../decisions/0011-generation-useful-dna-recipes.md).
+
+## Offline incomplete-response validation
+
+PR8 adds fixed token-limit, content-filter and unknown incomplete diagnostic codes;
+historical generic records remain readable. All incomplete attempts stay uncertain,
+consume their original marker and accept no style. Models,12288-token cap, submissions,
+Room21, backup formats, signing and legacy paths remain unchanged. The unavailable
+phone response does not establish which cause occurred. Test-only loopback routing,
+disk-Room recovery and emulator fixtures extend the existing production-path suite;
+actual final-head acceptance is recorded in PR8. See [offline checks](../qa/OFFLINE_STYLE_DNA.md).
+
+## PR8 overall guidance and reference consistency
+
+New successful Quick/Standard candidates recommend a derived overall pack recipe.
+Raw V1 families/reports remain intact; existing saved selections/text round-trip
+unchanged. Two explicit synonym vocabularies normalize solid fill and rounded
+terminals only; recurring observed evidence requires at least two reports and60%
+support, labeled inference. Unknown/contradictory traits remain conservative.
+Optional raw families stay in Details with sample counts/provisional warnings.
+Style selection chooses up-to-five deterministic matching references, without
+padding a small family with unrelated art. Local Save and trial preparation verify
+membership; unsupported per-target family/reference combinations block before any
+paid marker, with return-to-Style guidance. Original-first transport is unchanged.
+Summary, actual refs, chosen policy/type and full recipe remain inspectable before
+consent. Unclassified target types explicitly use human review, not claimed brand
+recognition. Physical/generated visual acceptance remains NOT RUN. See
+[bounded implementation](../changes/2026-10-15-dna-overall-guidance.md).
+
+## PR8 report contract reliability
+
+The twenty-one supplied Flip8 images now show Standard stopping after12 accepted
+reports/18 submitted images/3 markers, and one successful Quick12. The rejected
+body is unavailable, so its exact semantic defect is unknown. Offline red2/2
+reproduces the weaker outbound count contract and undifferentiated third-batch
+failure. Requests now constrain exact count and allowed frozen IDs/hashes and
+nonblank control-free observations. Client count/pairing/security checks remain.
+Fixed REPORT_* reasons distinguish future faults without retaining provider prose.
+Focused Windows correction passes19/19; final-head acceptance belongs on PR8.
+No live request, data rewrite or physical verification occurred. See
+[report correction](../changes/2026-10-15-dna-report-contract.md).
+
+## PR8 first-submission envelope correction
+
+The owner now reports Standard FAILED: ENVELOPE_INVALID,0/24 analyzed and1/5
+submission markers after successful local sampling. The raw phone body is unavailable;
+the new screenshots are not mounted locally, so these facts are quoted from the
+owner's new execution contract. A full REST fixture with the exact returned DNA
+text.format.schema measures depth14, fails the old depth12 envelope parser, and
+passes the unchanged Legacy parser with Legacy's shallower schema. Actual local
+red execution:5 tests/2 failures/0 errors/skips, before runtime edits.
+
+Only the exact root text.format.schema subtree now permits depth14. Default12,
+other envelope paths,128KiB, arrays128, duplicate/surrogate/number rules and the
+actual report/grammar validators remain. Fixed ENVELOPE_* categories diagnose
+future2xx rejections without raw response content; old records are unchanged.
+Final-head checks/APK are recorded on PR8 after execution. This proves a supported
+envelope incompatibility, not the unique original Samsung exception. Physical and
+live verification are NOT RUN; zero live requests. See [record](../changes/2026-10-15-dna-response-envelope.md).
+
+## PR8 provider-result and retained-plan correction
+
+Test-only61e7b166 genuinely runs978/4 RED;2207f82d adds actual retained-controller
+restoration loss for978/5 RED. A ready unsubmitted DNA plan now survives preview
+disposal in the existing VM, preserving exact image bytes; busy scans, consumption,
+cold recovery and all fresh context guards retain their behavior. No-plan thumbnails
+say preview only. Old failure details stay under Details; ambiguous old codes do
+not accuse the provider or mutate history. New fixed codes separate incomplete/
+failed envelope, invalid envelope, per-image reports and synthesis rejection
+without accepting any previously rejected style data.
+
+Key presence refresh remains distinct from decryption/auth. Local synthesis
+diversity and strict report/hash/evidence bounds stay. Final exact-head Android/
+all23/XML/schema/governance/APK evidence is recorded on PR8 after execution, not
+inferred from RED/checkpoints. Physical phone cause, installed signer and account/
+billing remain unknown; LIVE TEST NOT RUN, zero paid/live calls. See
+[the state/event record](../changes/2026-10-15-dna-provider-result-correction.md).
+
+## PR8 final corrective scope
+
+History is labeled an analysis attempt, including FAILED records with zero submitted
+steps. A journal reservation or failure sentence does not establish a provider POST;
+the stored submitted-step count and actual transport boundary remain authoritative.
+
+The controller refresh race and current-plan/history confusion are reproduced and
+corrected; runtime remains `4be6ad63`. At `6fd75af2`, Android passes all974 tests
+and assembles the APK. Key add/replace/remove on actual resume is now verified
+offline, with the exact frozen plan and zero submissions retained. Earlier fixture
+timeouts were observation-before-composition; explicit ordinary idling resolves
+them without a runtime lifecycle rewrite or relaxed assertions.
+
+Independent all23 evidence passes all22 isolated groups and finds one retained
+full-order guided scroll assertion after restoration. Its helper now commits the
+awaited layout and realigns the same control before unchanged displayed/enabled/
+click assertions. The additive APK verifier also uses available standard grep
+after the runner proved rg absent. Final-head CI/XML/schema/signature/APK evidence
+belongs in PR8 before acceptance. See [verification](../changes/2026-10-15-dna-final-verification.md).
+Phone submission history/event order and physical acceptance remain unproven/NOT RUN;
+live test SKIPPED because secure Work credentials/spend controls are unavailable.
+
+## PR8 current frozen plan and historical analysis
+
+Test-only948f805d genuinely compiles and runs969 tests with precisely three new
+failures. A suspending key read inside a copy argument captures older controller
+state: a late refresh can erase a completed plan and restore busy=true. State
+merges now follow all suspending reads, preserve live progress and never let
+refresh own preparation/job flags. Existing ON_RESUME key refresh is retained.
+Current ready/preparing status and paid review appear before thumbnails; old
+FAILED/UNCERTAIN evidence stays separately labeled under Details. Changed inputs
+disable old consent with recovery text. No journal/provider/schema/signing change.
+Real Responses/Room and lifecycle/fault regressions extend the retained suite;
+final-head execution evidence belongs in PR8. Physical phone history/submission
+is unproven; no secure Work credential/spend control exists, so live testing is
+SKIPPED and phone acceptance NOT RUN. See [the scoped record](../changes/2026-10-15-dna-plan-refresh.md).
+
+## PR8 all-pack free-scan report and bounded correction
+
+The owner reports identical Quick/Standard storage errors across all tested packs
+on f46115f1. Two local regressions reproduce trusted Context alias rejection and
+corrupt shared history mislabeled as storage (2/2 red). DNA now canonicalizes only
+the Context-owned parent, matching Legacy; descendant checks and consumed evidence
+remain. History errors stay blocked/preserved with specific feedback. Fixed ephemeral
+stage/category codes expose no private paths, IDs or exception prose.
+Focused Room/controller/Compose/atomic-recovery passes24/24. One new security
+assertion reproduces the native Windows canonical-symlink limitation and remains
+mandatory on Linux. Final-head all23/unfiltered/CI/APK evidence belongs in PR8's
+audit after commit. The Samsung cause is NOT conclusively established; physical
+testing is NOT RUN. No schema, backup, transport, identity, legacy/editor, signing,
+new stage or paid behavior changes. See [the scoped record](../changes/2026-10-15-dna-shared-storage.md).
+
+## PR8 Quick DNA first local scan correction
+
+The guided EXTEND source page now waits for its matching verified coverage snapshot
+before opening Style. Previously, navigation while coverage was Loading froze a
+null setup stamp; the enabled Quick scan rejected it and displayed operation.
+Actual test-first876ad51e compiled958 tests with exactly those two new failures.
+DNA scan also explains/disables a missing stamp on restored/alternate entry paths.
+Owned preparation retains all original guards with bounded local reason codes;
+retry/source navigation clears free-operation errors without changing history or
+request markers. No-key local scanning/manual Save and Legacy remain available.
+Corrective code f788b62b0cebe387c1c444b797831ac7bda66c6f passed960/960 tests and
+all23 retained commands. Independent154 XML counts/selectors and generated
+Room19/20/21 bytes were verified. The closing documentation head's own checks,
+exact SHA and fresh APK belong in PR8's audit; physical Flip8/Lux is still NOT RUN.
+See the [verification record](../changes/2026-10-15-dna-local-preparation-verification.md) and
+[scoped correction](../changes/2026-10-15-dna-local-preparation-fix.md).
+
+## Guided UX Stage 1
+
+The local `feat/ux-flow-stabilization` branch implements Project/source -> Style ->
+Trials -> Completion from verified Style DNA base
+`2f422ca8dbd58174491c954826350bac29bc6dd2`. PR6/PR7 remain draft/open/unmerged;
+accepted main is `af7bdb104869b0d0dded2acdf020fc030642dcf9`.
+
+Fresh DNA-capable projects recommend Quick; aggregate/manual projects retain Legacy.
+Style Save advances after immutable persistence and parent synchronization. Current
+saved targets restore without a write; guided trials use one to three eligible named
+apps. Current errors remain separate from saved analysis/history. All current successful
+variants require review before common approval, including variants under history.
+Completion distinguishes saved style, reviewed trials and approval from Apply/build/install.
+
+Declining or dismissing a locally frozen trial now reloads the existing approval proof.
+An unchanged approved set becomes ready again without altering approval/variants/journal
+records or submitting a provider request. Changed or unavailable inputs still fail closed.
+Cross-profile refreshes after an owned request are local reads only. Existing repositories,
+session ownership, immutable assets, Room21/backups, consumed markers, legacy clients,
+component identity, app/pack IDs and signing/install paths remain.
+
+Source checkpoint targeted verification passed 103 tests /0 failures /0 errors /0 skips. The new real-Room
+CREATE/EXTEND/save-delay/cancellation journeys passed4/4 after actual failing reproduction.
+The Windows-only Robolectric AtomicFile adaptation preserves Android atomic replacement;
+production journals and all security/durability assertions are unchanged. Final committed
+HEAD, complete23-group/unfiltered results and fresh APK measurements belong in the
+stacked draft PR audit after execution; checkpoint counts are not a substitute.
+
+See the [closing correction](../changes/2026-10-15-guided-ux-stabilization.md),
+[ownership ADR0009](../decisions/0009-guided-project-workflow.md) and
+[owner phone check and later-stage plans](../qa/GUIDED_UX_OWNER_CHECK.md).
+Physical Flip8/TalkBack/fold, installed-signature upgrade and actual generated visual
+fidelity remain NOT RUN. Stages2/3 are plans only; zero live/paid API calls occurred.
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## Closing-head legacy rejection-journey readiness
 
 Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered

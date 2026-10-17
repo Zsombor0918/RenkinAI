@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Retain real profile-form regressions separately and together; fail on any failure."""
+"""One full verification, selected subsystem union, or explicit UI order diagnostic."""
+import argparse
 import json
 from pathlib import Path
 import shutil
@@ -7,7 +8,9 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-ROOT = Path(__file__).resolve().parents[1]
+# Preserve an explicitly used ASCII junction on Windows. Resolving it reintroduces
+# accented profile paths that AGP rejects before configuration.
+ROOT = Path(__file__).absolute().parents[1]
 OUTPUT = ROOT / "build" / "compose-regressions"
 PACKAGE = "dev.renkinProject.renkin.ui.project."
 CREATION = PACKAGE + "ProjectShellComposeTest.confirmedCreationRecompositionAndRestorationDoNotResubmitOrOpenEarly"
@@ -51,8 +54,21 @@ CASES = {
                               "dev.renkinProject.renkin.ai.style.StyleDnaGatewayTest",
                               "dev.renkinProject.renkin.data.project.StyleDnaPersistenceTest",
                               PACKAGE + "StyleDnaComposeTest"],
+    "guided-ux": [PACKAGE + "ProjectStyleGuidedFlowComposeTest",
+                        PACKAGE + "GuidedTrialComposeTest",
+                        PACKAGE + "ProjectSelectionComposeTest",
+                        PACKAGE + "ProjectGuidedNavigationComposeTest",
+                        PACKAGE + "GuidedProjectRoomJourneyComposeTest",
+                        "dev.renkinProject.renkin.testing.WindowsAtomicFileTest"],
+    "offline-dna-http": ["dev.renkinProject.renkin.ai.style.StyleDnaOfflineHttpTest",
+                         "dev.renkinProject.renkin.ai.style.StyleDnaIncompleteReasonTest"],
     "full-suite": [],
 }
+
+
+def gradle_wrapper():
+    """Run the native wrapper without changing any Gradle task or selector."""
+    return str(ROOT / "gradlew.bat") if sys.platform == "win32" else "./gradlew"
 
 
 def check_reports(reports, selectors, exit_code):
@@ -79,18 +95,37 @@ def check_reports(reports, selectors, exit_code):
     return {"exit": exit_code, "passed": passed, "missing_selectors": missing, "malformed_reports": malformed, **counts}
 
 
-def main():
+def select_runs(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    choice = parser.add_mutually_exclusive_group()
+    choice.add_argument("--group", action="append", choices=CASES,
+                        help="Select a subsystem; repeated groups share one deduplicated invocation")
+    choice.add_argument("--order-check", action="store_true",
+                        help="Explicit isolated/together/shared-form diagnostic (no full suite)")
+    args = parser.parse_args(argv)
+    if args.order_check:
+        return {name: CASES[name] for name in ("creation", "ingress", "both", "shared-form")}
+    groups = list(dict.fromkeys(args.group or ["full-suite"]))
+    if "full-suite" in groups and len(groups) != 1:
+        parser.error("full-suite already covers every group; select it alone")
+    selectors = list(dict.fromkeys(selector for name in groups for selector in CASES[name]))
+    return {groups[0] if len(groups) == 1 else "targeted": selectors}
+
+
+def main(argv=None):
+    runs = select_runs(argv)
     OUTPUT.mkdir(parents=True, exist_ok=True)
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    summary = {"head": head, "cases": {}}
+    dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip())
+    summary = {"head": head, "dirty": dirty, "requested_runs": runs, "cases": {}}
     failed = False
-    for name, selectors in CASES.items():
+    for name, selectors in runs.items():
         destination = OUTPUT / name
         if destination.exists():
             shutil.rmtree(destination)
         destination.mkdir(exist_ok=True)
         tasks = ["compileDebugKotlin", "testDebugUnitTest", "assembleDebug"] if name == "full-suite" else ["testDebugUnitTest"]
-        command = ["./gradlew", *tasks, "--console=plain"]
+        command = [gradle_wrapper(), *tasks, "--console=plain"]
         for selector in selectors:
             command.extend(["--tests", selector])
         # Prior run XML must never substitute for a command which produced no results.

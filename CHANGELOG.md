@@ -1,5 +1,18 @@
 # Changelog
 
+## Offline Style DNA diagnostics
+
+- Distinguish output-token-limit, content-filter and unknown incomplete responses
+  while preserving uncertainty, saved styles and consumed requests without retries.
+- Add production-path local HTTP/disk recovery and Android emulator gates using
+  synthetic artwork; no provider credential or paid request is required.
+
+PR8 follow-up: Style DNA requests now bind exact report counts/allowed sample
+labels and expose safe rejection categories. New candidates offer an overall
+pack recipe; optional families retain raw evidence. Reviewed references follow
+the selected family, and incompatible trial overrides block before billing.
+No generated visual-fidelity improvement is claimed without owner acceptance.
+
 - Add opt-in per-icon Style DNA diagnostics, Quick/Standard reports, editable family grammar and frozen target recipes on stacked draft PR7.
 - Repair optional recipe compilation and measured duotone paint classification; verified code passes925 tests and all22 regression groups. Deep and live/device visual quality remain unverified.
 
@@ -10,6 +23,12 @@ User-visible release changes only. Detailed engineering and test evidence belong
 in [change notes](docs/changes/README.md). No release is published by this PR.
 
 ## Unreleased
+
+- Guide project/source, style, one-to-three trial apps and completion through four steps.
+- Advance after durable style/target saves and restore current saved target choices.
+- Separate current errors/results from expandable history and require every current
+  successful trial to be reviewed before shared approval. Keep classic editing and
+  explicit paid consent; completion does not apply, build or install icons.
 
 - Require one standalone OpenAI trial icon from the target original, using reference
   images only for visual style; prevent saved-style prompt overrides from dropping

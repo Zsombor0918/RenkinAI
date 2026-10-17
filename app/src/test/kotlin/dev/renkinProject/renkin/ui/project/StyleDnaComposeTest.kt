@@ -10,6 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.junit4.StateRestorationTester
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.renkinProject.renkin.ai.style.*
 import dev.renkinProject.renkin.data.project.*
 import dev.renkinProject.renkin.ui.theme.RenkinTheme
@@ -29,10 +32,13 @@ class StyleDnaComposeTest {
     @get:Rule val compose=createComposeRule()
     private val flow=MutableStateFlow(ProjectAnalysisState(hasKey=true))
     private var prepares=0;private var consents=0;private var saves=0
+    private var storedKey = true
+    private var refreshes = 0
     private var source:String? by mutableStateOf(null)
     private var mode:ProjectSetupMode by mutableStateOf(ProjectSetupMode.CREATE)
     private var dark by mutableStateOf(false)
     private var saved:SavedProjectStyle?=null
+    private var savedHashes = emptyList<String>()
     private val draft=ProjectStyleDraft("","separate manual instruction",emptyList())
     private val backend=object:ProjectAnalysisBackend {
         override val supportsDna=true
@@ -40,7 +46,7 @@ class StyleDnaComposeTest {
         override fun prepare(id:Long,mode:ProjectSetupMode,source:String?,setupStamp:String?,expected:Long?,draft:ProjectStyleDraft) {error("Legacy is independent")}
         override fun submit(id:Long,requestId:String){error("Legacy is independent")}
         override fun cancel(id:Long){}
-        override suspend fun refresh(id:Long){}
+        override suspend fun refresh(id:Long){refreshes++;flow.value=flow.value.copy(hasKey=storedKey)}
         override suspend fun preview(id:Long,requestId:String,hash:String)=error("Legacy preview")
         override suspend fun use(id:Long,requestId:String,hashes:List<String>,allowStaleSource:Boolean)=error("Legacy use")
         override suspend fun discardCandidate(id:Long,requestId:String){}
@@ -58,6 +64,7 @@ class StyleDnaComposeTest {
         }
         override suspend fun dnaPreview(id:Long,hash:String)=flow.value.samples!!.samples.single {it.hash==hash}.png
         override suspend fun saveDna(id:Long,planId:String?,grammar:String,selectedFamily:String,hashes:List<String>,expected:Long?,draft:ProjectStyleDraft):SavedProjectStyle {
+            savedHashes = hashes
             saves++;val r=flow.value.dnaRecord!!;val dna=r.result!!.copy(dna=StyleDnaV1.parse(grammar),selectedFamily=selectedFamily)
             return SavedProjectStyle(ProjectAiMetadata(id,activeRevision=1),StyleRevision(id,1,specification=StyleDnaCompiler.specification(dna),
                 userInstruction=draft.instruction),emptyList()).also {flow.value=flow.value.copy(savedDna=dna,dnaRecord=r.copy(status=DnaStatus.REVIEWED))}
@@ -70,6 +77,192 @@ class StyleDnaComposeTest {
         compose.onNodeWithTag("style-dna-mode-$choice").performClick()
         compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
         compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled().performClick()
+    }
+    @Test fun changingFamilySelectsOnlyItsActualReferenceImagesBeforeReviewAndSave() {
+        val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val reports = dnaFixtureReports(plan).mapIndexed { index, r ->
+            if(index < 6) r else r.copy(familyVote = DnaFamilyVote.SOLID) }
+        val dna = synthesizeDnaLocally(reports, images)
+        val result = SavedStyleDna(dna, reports, plan.model, plan.detail, plan.algorithm, dna.recommendedFamily)
+        flow.value = ProjectAnalysisState(hasKey=true, validity=AnalysisValidity.CURRENT, dnaValidity=AnalysisValidity.CURRENT,
+            samples=ReferenceSamples(null,null,plan.samples.map { s -> SampledReference(s.id,"fixture",s.hash,images.getValue(s.hash),referenceFeatures(images.getValue(s.hash))) },plan.report),
+            dnaRecord=StyleDnaRecord(plan,DnaStatus.RESULT_SAVED,plan.steps.map { DnaStepState(it.id,"DONE","resp_ui") },reports,result))
+        compose.setContent { Content() }
+        compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-family-family2").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-reviewed").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-save").performScrollTo().assertIsEnabled().performClick()
+        compose.waitUntil(10000) { saves == 1 }
+        assertEquals(5, savedHashes.size)
+        assertTrue(savedHashes.all { hash -> reports.drop(6).any { it.sampleHash == hash } })
+        assertEquals(0, consents)
+    }
+    @Test fun previewSamplesWithoutCurrentPlanKeepAmbiguousOldFailureOnlyInDetails() {
+        val (historic, _) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        val old = StyleDnaRecord(historic, DnaStatus.FAILED, historic.steps.map { DnaStepState(it.id) },
+            reason = "INVALID_OR_INTERRUPTED")
+        val bytes = old.encode()
+        compose.setContent { Content() }
+        for (choice in DnaAnalysisMode.entries) {
+            val (p, images) = dnaFixturePlan(choice, if (choice == DnaAnalysisMode.QUICK) 12 else 24)
+            compose.runOnIdle { flow.value = flow.value.copy(dnaPlan = null, dnaRecord = old,
+                samples = ReferenceSamples(null, null, p.samples.map { s ->
+                    SampledReference(s.id, "fixture", s.hash, images.getValue(s.hash), referenceFeatures(images.getValue(s.hash)))
+                }, p.report)) }
+            compose.onNodeWithTag("style-dna-current-status").performScrollTo()
+                .assertTextContains("No current frozen plan", substring = true)
+                .assertTextContains("preview", substring = true)
+            compose.onNodeWithTag("style-dna-start").assertDoesNotExist()
+            compose.onNodeWithTag("style-dna-last-outcome").assertDoesNotExist()
+            compose.onNodeWithTag("style-dna-outcome-reason").assertDoesNotExist()
+            compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+            compose.onNodeWithTag("style-dna-history").performScrollTo().assertTextContains("Previous", substring = true)
+            compose.onNodeWithTag("style-dna-outcome-reason").performScrollTo()
+                .assertTextContains("cause was not recorded", substring = true)
+            compose.onNodeWithTag("style-dna-status").performScrollTo()
+                .assertTextContains("INVALID_OR_INTERRUPTED", substring = true)
+            assertEquals(bytes, flow.value.dnaRecord!!.encode())
+            compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        }
+        assertEquals(0, old.submitted); assertEquals(0, prepares); assertEquals(0, consents); assertEquals(0, saves)
+    }
+
+    @Test fun freshPlanIsReadyWhileFailedOrUncertainHistoryStaysUnderDetails() {
+        val (historic, _) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        val old = StyleDnaRecord(historic, DnaStatus.FAILED, historic.steps.map { DnaStepState(it.id) }, reason = "UNAUTHORIZED")
+        flow.value = flow.value.copy(dnaRecord = old)
+        compose.setContent { Content() }
+        prepare("QUICK")
+        compose.onNodeWithTag("style-dna-decline").performClick()
+        compose.onNodeWithTag("style-dna-current-status").performScrollTo()
+            .assertTextContains("ready", substring = true)
+        compose.onNodeWithText("This analysis did not complete.", substring = true).assertDoesNotExist()
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled()
+        assertEquals(old, flow.value.dnaRecord)
+        compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        assertEquals(0, old.submitted)
+        compose.onNodeWithTag("style-dna-history").performScrollTo().assertTextContains("Previous", substring = true)
+            .assertTextContains("analysis attempt", substring = true)
+        compose.onNodeWithTag("style-dna-status").performScrollTo().assertTextContains("FAILED", substring = true)
+        compose.onNodeWithTag("style-dna-outcome-reason").performScrollTo()
+            .assertTextContains("unavailable or rejected", substring = true)
+        compose.runOnIdle { flow.value = flow.value.copy(dnaRecord = old.copy(status = DnaStatus.UNCERTAIN, reason = "INTERRUPTED_NO_REPLAY")) }
+        compose.onNodeWithTag("style-dna-status").performScrollTo().assertTextContains("UNCERTAIN", substring = true)
+        compose.onNodeWithTag("style-dna-current-status").performScrollTo().assertTextContains("ready", substring = true)
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled()
+        compose.runOnIdle { flow.value = flow.value.copy(busy = true, network = false, dnaPlan = null) }
+        compose.onNodeWithTag("style-dna-current-status").performScrollTo()
+            .assertTextContains("Preparing local reference samples", substring = true)
+        compose.onNodeWithTag("style-dna-last-outcome").assertDoesNotExist()
+        compose.onNodeWithTag("style-dna-start").assertDoesNotExist()
+        assertNotNull(flow.value.samples); assertEquals(DnaStatus.UNCERTAIN, flow.value.dnaRecord!!.status)
+        assertEquals(0, consents); assertEquals(0, saves)
+    }
+
+    @Test fun recordedIncompleteReasonsExplainOnlyFixedCauseWithoutChangingHistoryOrSubmitting() {
+        val (plan, _) = dnaFixturePlan(DnaAnalysisMode.QUICK, 2)
+        val record = StyleDnaRecord(plan, DnaStatus.UNCERTAIN,
+            plan.steps.map { DnaStepState(it.id, "SUBMITTED") }, reason = "RESPONSE_INCOMPLETE")
+        flow.value = flow.value.copy(dnaRecord = record)
+        compose.setContent { Content() }
+        compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        for ((reason, explanation) in listOf(
+            "RESPONSE_INCOMPLETE_MAX_OUTPUT_TOKENS" to "output token limit",
+            "RESPONSE_INCOMPLETE_CONTENT_FILTER" to "content filter",
+            "RESPONSE_INCOMPLETE_UNKNOWN" to "reason was not provided or recognized",
+            "RESPONSE_INCOMPLETE" to "incomplete response")) {
+            val current = record.copy(reason = reason)
+            val bytes = current.encode()
+            compose.runOnIdle { flow.value = flow.value.copy(dnaRecord = current) }
+            compose.onNodeWithTag("style-dna-outcome-reason").performScrollTo()
+                .assertTextContains(explanation, substring = true)
+                .assertTextContains("not be retried automatically", substring = true)
+            compose.onNodeWithTag("style-dna-status").performScrollTo()
+                .assertTextContains("UNCERTAIN: $reason", substring = true)
+            assertEquals(bytes, flow.value.dnaRecord!!.encode())
+            assertEquals(1, flow.value.dnaRecord!!.submitted)
+            compose.onNodeWithTag("style-dna-save").assertDoesNotExist()
+        }
+        assertEquals(0, prepares); assertEquals(0, consents); assertEquals(0, saves)
+    }
+
+    @Test fun changedOptionsExplainWhyFrozenPlanNeedsFreshPreparation() {
+        compose.setContent { Content() }; prepare("QUICK")
+        compose.onNodeWithTag("style-dna-decline").performClick()
+        compose.onNodeWithTag("style-dna-advanced").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-detail-high").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("style-dna-current-status").performScrollTo()
+            .assertTextContains("changed", substring = true)
+        assertEquals(0, consents); assertEquals(0, saves)
+    }
+
+    @Test fun settingsKeyChangesRefreshOnResumeWithoutRepreparingOrSubmitting() {
+        lateinit var lifecycle: LifecycleRegistry
+        val resumeEvents = java.util.concurrent.atomic.AtomicInteger()
+        val directInvalidations = java.util.concurrent.atomic.AtomicInteger()
+        storedKey = false
+        compose.setContent {
+            lifecycle = LocalLifecycleOwner.current.lifecycle as LifecycleRegistry
+            ObserveCoverageInvalidation(source) { directInvalidations.incrementAndGet() }
+            RenkinTheme(false) { Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                ProjectStyleAnalysisPanel(1, mode, source, null, true, backend, null, draft, false, false,
+                    {}, {}, { _, _ -> })
+            } }
+        }
+        compose.waitUntil(10000) { refreshes > 0 && !flow.value.hasKey }
+        compose.runOnIdle { lifecycle.addObserver(androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) resumeEvents.incrementAndGet()
+        }) }
+        compose.onNodeWithTag("style-dna-no-key").assertExists()
+        compose.onNodeWithTag("style-dna-prepare").performScrollTo().performClick()
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("style-dna-current-status").assertTextContains("Add an OpenAI key", substring = true)
+        val frozen = flow.value.dnaPlan
+        fun resumeWithKey(present: Boolean) {
+            compose.waitForIdle()
+            val count = refreshes
+            val events = resumeEvents.get(); val invalidations = directInvalidations.get()
+            compose.runOnIdle {
+                assertTrue("Use the actual composed Activity lifecycle with registered observers", lifecycle.observerCount > 0)
+                assertEquals(Lifecycle.State.RESUMED, lifecycle.currentState)
+                lifecycle.currentState = Lifecycle.State.STARTED
+            }
+            compose.runOnIdle {
+                assertEquals(Lifecycle.State.STARTED, lifecycle.currentState)
+                storedKey = present; lifecycle.currentState = Lifecycle.State.RESUMED
+            }
+            compose.waitForIdle() // Commit the observer's state change and its refresh effect.
+            assertEquals(events + 1, resumeEvents.get())
+            assertEquals(invalidations + 1, directInvalidations.get())
+            try { compose.waitUntil(10000) { refreshes > count && flow.value.hasKey == present } }
+            catch (failure: androidx.compose.ui.test.ComposeTimeoutException) {
+                throw AssertionError("Resume events $events->${resumeEvents.get()}, direct invalidation $invalidations->${directInvalidations.get()}, " +
+                    "refresh $count->$refreshes, presence=${flow.value.hasKey}, expected=$present", failure)
+            }
+            assertEquals(frozen, flow.value.dnaPlan)
+        }
+        resumeWithKey(true)
+        compose.onNodeWithTag("style-dna-no-key").assertDoesNotExist()
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsEnabled()
+        resumeWithKey(true) // Replacing a present key still refreshes its presence, without submitting.
+        resumeWithKey(false)
+        compose.onNodeWithTag("style-dna-start").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("style-dna-no-key").assertExists()
+        assertEquals(1, prepares); assertEquals(0, consents); assertEquals(0, saves)
+    }
+    @Test fun historyFailurePreservesRequestGateAndDisplaysOnlyBoundedDiagnostic() {
+        flow.value = ProjectAnalysisState(error = "history_unreadable",
+            dnaLocalDiagnostic = DnaLocalDiagnostic(DnaLocalStage.HISTORY_READ, DnaLocalCategory.INVALID_DATA))
+        compose.setContent { Content() }
+        compose.onNodeWithTag("style-dna-error").performScrollTo()
+            .assertTextContains("history could not be verified", substring = true)
+            .assertTextContains("do not clear app data", substring = true)
+        compose.onNodeWithTag("style-dna-local-diagnostic").performScrollTo()
+            .assertTextContains("history_read/invalid_data", substring = true)
+        compose.onNodeWithTag("style-dna-start").assertDoesNotExist()
+        compose.onNodeWithTag("style-dna-prepare").performScrollTo().assertIsEnabled()
+        assertEquals(0, consents); assertEquals(0, prepares); assertEquals(0, saves)
     }
     @Test fun standardConsentListsFiveStepsAndSavingRequiresSeparateHumanReview() {
         compose.setContent {Content()};assertEquals(0,consents)
@@ -88,6 +281,14 @@ class StyleDnaComposeTest {
         compose.setContent {Content()};prepare("QUICK")
         compose.runOnIdle {mode=ProjectSetupMode.EXTEND;source="different.pack"}
         compose.onNodeWithTag("style-dna-confirm-paid").assertIsNotEnabled();assertEquals(0,consents)
+    }
+    @Test fun missingExtendStampExplainsDisabledScanAndManualPathStaysAvailable() {
+        mode = ProjectSetupMode.EXTEND; source = "fixture.pack"
+        compose.setContent {Content()}
+        compose.onNodeWithTag("style-dna-prepare").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("style-dna-source-required").assertTextContains("Return to Project/source", substring=true)
+        compose.onNodeWithTag("style-dna-manual").performScrollTo().assertIsEnabled()
+        assertEquals(0,prepares);assertEquals(0,consents);assertEquals(0,saves)
     }
     @Test fun restorationAndDarkNarrowUiNeverSubmitAndDeepRemainsDisabled() {
         val restoration=StateRestorationTester(compose);restoration.setContent {Content()};prepare("QUICK")

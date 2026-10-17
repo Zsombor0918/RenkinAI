@@ -35,6 +35,13 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     private val chosenOptions = ConcurrentHashMap<Long, Triple<String, String, String>>()
     private val images = ConcurrentHashMap<Long, Map<String, ByteArray>>()
     private val verifiedOriginalPlans = ConcurrentHashMap<Long, String>()
+    // Coalesce local reads blocked by another profile's already-confirmed job.
+    // These entries can only call load/recovery, never prepare or submit a request.
+    private data class PendingLoad(val mode: ProjectSetupMode, val source: String?, val packages: Set<String>? = null) {
+        val route get() = mode to source
+    }
+    // null packages means an unconditional read; package notifications cannot downgrade it.
+    private val pendingLoads = ConcurrentHashMap<Long, PendingLoad>()
     private fun matchesRoute(c: TrialContext) = routes[c.profileId]?.let { it.first.name == c.mode && it.second == c.sourcePackage } == true
     private fun flow(id: Long) = states.getOrPut(id) { MutableStateFlow(ProjectTrialState()) }
     override fun state(id: Long): StateFlow<ProjectTrialState> = flow(id)
@@ -54,7 +61,16 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             catch (failure: TrialPrerequisite) { flow(id).value = flow(id).value.copy(error = failure.reason) }
             catch (_: UnverifiedTrialOriginal) { flow(id).value = flow(id).value.copy(error = "unverified_original") }
             catch (_: Exception) { flow(id).value = flow(id).value.copy(error = "trial_context_or_storage") }
-            finally { jobs.remove(id); flow(id).value = flow(id).value.copy(busy = false, network = false) }
+            finally {
+                jobs.remove(id)
+                flow(id).value = flow(id).value.copy(busy = false, network = false)
+                val waiting = pendingLoads.toMap()
+                waiting.forEach { (profile, request) ->
+                    if (pendingLoads.remove(profile, request) && routes[profile] == request.route) {
+                        requestLoad(profile, request)
+                    }
+                }
+            }
         }
     }
     private suspend fun preparation(id: Long): TrialPreparation = owner.owned(id) {
@@ -96,16 +112,58 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         flow(id).value = flow(id).value.copy(records = records, variants = variants)
     }
     override fun load(id: Long, mode: ProjectSetupMode, source: String?) {
-        bindContext(id, mode, source)
+        requestLoad(id, PendingLoad(mode, source))
+    }
+    override fun packageChanged(id: Long, mode: ProjectSetupMode, source: String?, packageName: String) {
+        requestLoad(id, PendingLoad(mode, source, setOf(packageName)))
+    }
+    private fun requestLoad(id: Long, request: PendingLoad) {
+        bindContext(id, request.mode, request.source)
         if (flow(id).value.network) return
+        if (states.values.any { it.value.busy }) {
+            pendingLoads.compute(id) { _, previous ->
+                if (previous == null || previous.route != request.route) request
+                else request.copy(packages = if (previous.packages == null || request.packages == null) null
+                    else previous.packages + request.packages)
+            }
+            return
+        }
+        pendingLoads.remove(id)
+        val previousError = flow(id).value.error
         start(id) {
-            flow(id).value = flow(id).value.copy(plan = null, preparation = null, ready = false)
-            images.remove(id)
-            coordinator.recover(id); history(id)
-            val p = preparation(id)
-            flow(id).value = flow(id).value.copy(preparation = p, hasKey = withContext(Dispatchers.IO) { hasKey(p.context.provider) })
-            val accepted = accepted(id)
-            flow(id).value = flow(id).value.copy(ready = accepted.isNotEmpty())
+            // A read queued during Prepare must not erase its completed plan.
+            // Keep the dialog while busy (paid confirmation stays disabled), then
+            // retain the exact plan/bytes only after all current-input checks.
+            val frozen = flow(id).value.plan
+            try {
+                val previous = flow(id).value.preparation
+                val packages = request.packages
+                if (packages != null && previousError == null && previous != null && matchesRoute(previous.context) &&
+                    packages.none { changed -> changed == request.source || previous.candidates.any {
+                        it.target.key.substringBefore('/') == changed
+                    } }) {
+                    // Other packages can still add/remove launcher entries or change user identity.
+                    // Read that existing catalog afresh, without decoding saved DNA/assets/originals.
+                    val targets = owner.owned(id) { owner.targets() }
+                    if (flow(id).value.preparation === previous && matchesRoute(previous.context) &&
+                        previous.context.catalogStamp == projectCatalogStamp(targets)) return@start
+                }
+                flow(id).value = flow(id).value.copy(preparation = null, ready = false)
+                coordinator.recover(id); history(id)
+                val p = preparation(id)
+                val keyPresent = withContext(Dispatchers.IO) { hasKey(p.context.provider) }
+                val accepted = accepted(id)
+                val retained = frozen?.takeIf { plan ->
+                    p.context == plan.context && flow(id).value.plan?.id == plan.id && images[id] != null &&
+                        current(plan) && flow(id).value.plan?.id == plan.id && images[id] != null
+                }
+                if (retained == null) { images.remove(id); verifiedOriginalPlans.remove(id) }
+                flow(id).value = flow(id).value.copy(preparation = p, hasKey = keyPresent,
+                    ready = accepted.isNotEmpty(), plan = retained)
+            } catch (failure: Exception) {
+                cancelPreparation(id)
+                throw failure
+            }
         }
     }
     override fun options(id: Long, provider: String, model: String, quality: String) {
@@ -119,7 +177,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val p=flow(id).value.preparation ?: return
         require(p.candidates.any { it.target.key==key && it.eligible })
         val dna=checkNotNull(SavedStyleDna.optional(p.style.revision?.analysisProfileJson))
-        require(dna.dna.families.any { it.id==family })
+        require(family == DNA_PACK_STYLE || dna.dna.families.any { it.id==family })
         val choices=dnaChoices[id].orEmpty()+ (key to (family to type));require(choices.size<=1000)
         dnaChoices[id]=choices;routes[id]?.let {load(id,it.first,it.second)}
     }
@@ -129,6 +187,10 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val p = preparation(id)
         StyleTrialTargetSelector.validateChoice(p.candidates, keys, allowCovered)
         trialRequire(p.context.provider != AiSettings.STABILITY || p.style.references.size == 1, "stability_references")
+        SavedStyleDna.optional(p.style.revision?.analysisProfileJson)?.let { dna ->
+            keys.forEach { key -> trialRequire(dnaReferencesMatch(dna,p.dnaChoices[key]?.first ?: dna.selectedFamily,
+                p.style.references.map { it.hash }),"dna_reference_mismatch") }
+        }
         val originals = owner.owned(id) { keys.map { key -> key to owner.original(key) } }
         val inputs = originals.map { (key, original) -> TrialInput(key, p.candidates.single { it.target.key == key }.target.name,
             original.hash, original.origin, originalEvidence = original.evidence) }
@@ -138,7 +200,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             p.style.revision.userInstruction, p.style.references.map { it.hash }, inputs,
             drawingRecipes = SavedStyleDna.optional(p.style.revision.analysisProfileJson)?.let { dna -> keys.associateWith { key ->
                 val choice=p.dnaChoices[key] ?: (dna.selectedFamily to DnaSymbolType.UNKNOWN)
-                StyleDnaCompiler.recipe(dna.dna,choice.second,choice.first)
+                StyleDnaCompiler.recipe(dna,choice.second,choice.first)
             } }.orEmpty())
         check(current(plan))
         images[id] = bytes
@@ -150,7 +212,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val dna=SavedStyleDna.optional(p.style.revision?.analysisProfileJson)
         val expectedRecipes=dna?.let { saved -> plan.inputs.associate { input ->
             val choice=p.dnaChoices[input.key] ?: (saved.selectedFamily to DnaSymbolType.UNKNOWN)
-            input.key to StyleDnaCompiler.recipe(saved.dna,choice.second,choice.first) } }.orEmpty()
+            input.key to StyleDnaCompiler.recipe(saved,choice.second,choice.first) } }.orEmpty()
         if (p.context != plan.context || plan.drawingRecipes != expectedRecipes) false else owner.owned(plan.context.profileId) {
             plan.inputs.all { input -> owner.original(input.key).let { it.hash == input.originalHash && it.origin == input.origin &&
                 (input.originalEvidence == null || it.evidence == input.originalEvidence) } }
@@ -175,7 +237,10 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     }
     override fun cancelPreparation(id: Long) { if (!flow(id).value.network) { images.remove(id); verifiedOriginalPlans.remove(id); flow(id).value = flow(id).value.copy(plan = null) } }
     override fun stop(id: Long) { jobs[id]?.cancel() }
-    override fun release(id: Long) { if (!flow(id).value.network) { jobs[id]?.cancel(); cancelPreparation(id) } }
+    override fun release(id: Long) {
+        pendingLoads.remove(id)
+        if (!flow(id).value.network) { jobs[id]?.cancel(); cancelPreparation(id) }
+    }
     private suspend fun currentOriginals(p: TrialPreparation, keys: List<String>): Map<String, Pair<String, String>> = owner.owned(p.context.profileId) {
         check(keys.all { key -> p.candidates.any { it.target.key == key && it.eligible } }) { "A trial target is no longer eligible." }
         keys.distinct().associateWith { key -> owner.original(key).let { it.hash to it.origin } }

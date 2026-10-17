@@ -1,5 +1,200 @@
 # Regression and test matrix
 
+## Trial package storms and genuine input changes
+
+The existing owned-controller suite adds a controlled Prepare suspension plus a
+burst of package hints. Unchanged fresh catalog must preserve plan/original bytes,
+reach idle, avoid another original read and create zero requests/markers. A second
+catalog barrier declines during checking and forbids resurrection. A compact
+negative case covers original changes, source version, launcher add/remove and
+user ambiguity; the observer-to-Trial Compose case retains all package events.
+The existing unconditional queued-load test now also forbids a later package hint
+from downgrading its full validation. Existing route/style/epoch, original-first,
+missing-key, cancelled/uncertain replay and full Android journeys remain required.
+
+## Owner-approved lean verification (October 17, 2026)
+
+This policy supersedes earlier requirements below to execute every historical group
+on every PR. It changes scheduling only; all Kotlin cases/assertions remain.
+[ADR0012](../decisions/0012-lean-verification.md) records the owner authorization and exact execution inventory.
+CI/build alone runs the full unit suite, compile and debug assembly through
+`python scripts/run_compose_regressions.py --group full-suite`, retaining exact-head
+XML/HTML/logs, required selectors and real Room19/20/21 exports. HTTP contracts are
+included there, not in a second automatic job. Android instrumentation and strict
+Python/governance checks remain separate; hosted Standard/restart remain BLOCKED.
+For development use `--group trial-persistence-session` (or another existing name);
+repeat `--group` to run a deduplicated union in one Gradle invocation. No argument
+also selects only full-suite. `--order-check` explicitly runs creation, ingress,
+both and shared-form separately; run it for shared UI harness/order changes and
+before owner pre-merge/release review, via the dispatch-only Profile form workflow.
+Record its exact SHA and result; a missing diagnostic is NOT RUN, never PASS.
+Older results below remain historical, not final-head evidence. No safety/data,
+billing, signing, API, test failure condition or owner-review requirement is waived.
+
+
+## Prepared trial versus queued read ordering
+
+A deterministic owned-controller regression holds original acquisition with CompletableDeferred, queues the read during Prepare, observes assignment and completed reload, and requires the same frozen plan and original bytes with zero submissions/markers. A later explicit mock Submit proves retained staging usability. Negative refresh cases change original/style/epoch/route; a separate barrier declines while current-original validation is suspended and forbids resurrection. Existing source/owner/recipe/billing/consent regressions remain.
+
+## Generation-usefulness contract regressions
+
+Existing mandatory DNA selectors now cover concrete overall recipe labels with qualitative synthetic construction evidence, supported synthesis fallback and conflicting families, deterministic nonoutlier chosen-member references, v1/v2 prompt compatibility and unchanged request caps/schema. The actual native multipart test asserts original bytes first, ordered frozen references next and improved identity/abstraction/recipe/one-transparent-icon guidance. These are contract assertions, not inferred visual scores. All existing regression groups remain mandatory.
+
+## Zero-cost production-path HTTP and real Android
+
+The additive StyleDnaOfflineHttpTest closes/reopens disk SQLite and reconstructs
+controllers/journals, with exact Quick12/one and Standard24/five local POST counts,
+partial/incomplete/fault/cancel/no-replay and actual native multipart assertions.
+StyleDnaIncompleteReasonTest and retained Compose history tests distinguish fixed
+token/filter/unknown causes without raw data or style acceptance. The existing23
+groups stay; the new HTTP group is additional. A separate emulator gate traverses
+production guided routes with installed generated pack resources, real HTTP/Room,
+explicit Save/trial preparation and a process-restart read. See
+[the executable matrix and limits](OFFLINE_STYLE_DNA.md). Results are reported from
+actual final-head runs in PR8, never inferred from a successful APK or old counts.
+
+## Overall review and family-bound generation
+
+New test-first pack-wide and actual Compose Save regressions guard synonymous
+fill/rounding rules without changing raw V1 evidence, and switching to the second
+family without saving the first family's refs. Negative/provisional examples keep
+negation/conflicts and actual smaller reference counts. Real Room full/shared backup
+round-trips new overall selection alongside retained legacy-family tests. An owned
+trial fixture verifies incompatible family blocks before requests, changed family/
+type invalidates a frozen plan, global recipe/type is frozen, and actual multipart
+parts remain original IMAGE1 plus byte-identical ordered style-only refs. Retained
+source-B/display-A/genuine-C, immutable recipe, refusal, paid-rights and all23
+selectors stay. Visual grading is separate in [the no-cost rubric](STYLE_DNA_FIDELITY.md).
+
+## Report contract parity and third-batch recovery
+
+Existing mandatory DNA gateway/workflow/real Room selectors now assert exact
+min/max count, frozen allowed ID/hash enums and nonblank/control-free bounded
+observations. Typed fixtures cover JSON invalid/size/depth/duplicate, root,
+fields/schema/enum/provenance/text, missing/extra counts, malformed/foreign/duplicate
+IDs and mismatched hashes. Reordered reports bind safely; explicit UNKNOWN stays
+valid. Third Standard batch failure retains the first twelve reports, three
+consumed steps and immutable recovery without replay. Legacy selectors, atomic,
+symlink/security, persistence and all23 runner groups remain unchanged.
+
+## Full Responses envelope and scoped depth
+
+MockWebServer fixtures include the exact outbound report/synthesis text.format,
+real-shaped model/status/usage/reasoning/message fields and six bound reports.
+The fixture reaches14; Legacy's actual schema fits12. Real Room exercises Quick12
+and all Standard24/five steps through separate human Save/reload without replay.
+Wrong hash/ID/count/extra/duplicate reports inside a valid full envelope remain
+REPORT_SCHEMA_INVALID with one consumed step and unchanged Room. Negative envelope
+cases cover fixed JSON/status/output/item/message/content/text/ID diagnostics,
+duplicates inside the allowed schema, surplus arrays, malformed surrogates, excess
+schema depth, ordinary metadata and array-lookalike paths. Other strict callers,
+Legacy and all23 original groups/selectors/assertions/timeouts/idling stay retained.
+HTTP/auth/refusal/split text/cancellation/transport/size guards remain mandatory.
+No fixture is a recovered phone response; owner-device acceptance stays NOT RUN.
+
+## PR8 provider-result and frozen-plan identity additions
+
+Actual RED4 then RED5 precede narrow runtime changes. Existing required DNA/owned/
+guided groups cover preview-only12/24 plus untouched old history, current ready
+action/key presence, exact plan after real parent restoration, direct release/key
+refresh and refusal to submit to another route. Real Responses/Room Quick12 and
+Standard24/five-step explicit Save/reload tests remain.
+
+Faults independently cover incomplete/failed envelope, metadata/reasoning/order/
+split text, HTTP400/401/402/403/422/429/500/503, refusal, malformed envelope,
+missing/hash/extra/duplicate/type reports, valid reports rejected by conservative
+local synthesis, Standard grammar/evidence, UTF-8/oversize/truncated transport,
+unreadable key/pre-marker cancellation and retained after-marker/cold/no-replay
+guards. Original selectors/assertions/timeouts/idling/security/schema bounds remain.
+Full final-head evidence/exact APK is on PR8 after execution; physical/provider
+unknowns remain in [the state table](../changes/2026-10-15-dna-provider-result-correction.md).
+
+## PR8 final verification boundary
+
+Source6fd75af2 passes974 Android tests and all22 isolated groups; its later full974
+order exposes one retained post-restoration control reflow. Keep displayed/enabled/
+click and all source/version/selection/zero-call assertions; commit readiness/layout
+then realign that same control. Lifecycle event/invalidation/refresh counts and
+key add/replace/remove now pass without changing runtime or timeouts. The final
+commit must independently pass Android and all23, with actual XML/schema recount
+and SDK-verified fresh APK. An unavailable CI search utility is fixed with standard
+grep; no gate or signing configuration changes. Owner-device/API boundaries remain
+NOT RUN/SKIPPED as described in [the final record](../changes/2026-10-15-dna-final-verification.md).
+
+## PR8 current plan, credential refresh and real offline Responses
+
+Deterministic barriers reproduce a delayed history/key read erasing a new frozen
+plan/restoring busy, and guard newer submitted progress/consumed plans. Existing
+ON_RESUME is exercised with key add/replace/remove while preserving plan identity
+and zero submissions. Narrow Compose distinguishes ready samples from preserved
+FAILED/UNCERTAIN history and explains stale options/disabled confirmation.
+Real controller/coordinator/journal/Room plus loopback MockWebServer verify Quick12
+and Standard24/five steps, exact label/hash/image bytes, durable markers before
+HTTP headers, strict response parsing, candidate review and explicit Save/reload.
+Auth/schema/timeout/cancel/recreation keep consumed IDs and cannot replay. All23
+existing groups and every old selector/assertion/security/timeout/idling guard
+remain. Actual final-head execution is recorded on PR8; phone/provider acceptance
+stays NOT RUN. The eight transition cases are in [the scoped record](../changes/2026-10-15-dna-plan-refresh.md).
+
+## Cross-pack free DNA preparation and integrity
+
+Existing required classes add two independent outline/color readers, theme/source
+switches, Quick12/Standard24, real Room existing/fresh profiles and no key. Trusted
+Context aliases preserve saved data/history and the same consumed ledger. Backup
+and unfinished-write recovery retain submitted/uncertain evidence without replay.
+Linked journal/profile descendants must still fail. Corrupt shared history blocks
+both packs/modes, reports history_read/invalid_data, preserves exact bytes and rights,
+and leaves a fresh profile independent. Source I/O/permission faults expose only
+fixed categories; retry clears them with zero gateway calls. Compose verifies
+specific history remediation, no paid gate and an available free retry. Every old
+selector/assertion/timeout/idling rule and all23 groups remain. Windows JDK link
+semantics do not replace independent Linux security or owner-device acceptance.
+
+## PR8 first Quick local preparation
+
+The additive real-Room guided regression delays coverage independently of metadata,
+requires source readiness before navigation, then scans a fresh unsaved EXTEND style
+with different installed/all-reference indexes and no API key. It validates plan
+stamps, null revision, unchanged version/selection and zero gateway calls across
+restoration and Back/reopen. Owned tests diagnose missing stamp, changed source,
+empty references and storage without exception-text leakage, then retry locally.
+The direct panel additionally requires missing-stamp feedback and disabled scan
+while manual style stays accessible. Existing Legacy and all23 runner groups remain.
+Red876ad51e genuinely failed the two new prerequisite assertions; unchanged tests
+pass at f788b62b, independently verified960/960 and all23 commands. The owned
+analysis group24, DNA27 and guided35 have zero failures/errors/skips. The closing
+documentation SHA requires its own checks in PR8's audit. Actual Flip8/Lux and paid
+style fidelity remain owner NOT RUN gates in [the checklist](GUIDED_UX_OWNER_CHECK.md).
+
+## Guided UX additions and retained gates
+
+All old tests/assertions/selectors remain. Guided coverage adds first-use Quick and
+Legacy fallback, separate selected paths, DNA save completion/parent busy/dirty state,
+current error versus retained history and restored current targets. Retained history
+must still block approval for any current unreviewed successful variant.
+
+`GuidedProjectRoomJourneyComposeTest` traverses the production shell/panels for CREATE
+and EXTEND with real Room, immutable style/selection writes, asset/journal/controller,
+explicit synthetic consent, per-image review, shared approval and completion/reopen.
+Its delayed-save gate proves no route change or trial preparation before durable
+target persistence. An already approved set also survives free prepare/decline with
+identical approval, variants, journal records and provider-call count. Only provider/session/artwork ports are synthetic; actual
+MainViewModel/Hilt/device integration and provider image quality are not certified.
+Owned controller tests additionally prove profile switching during an already
+confirmed fake request eventually loads locally without a second submission.
+
+The guided runner group adds five UI/state classes and four tests in the required
+WindowsAtomicFileTest harness class, alongside all22 prior groups and the
+unfiltered compile/test/APK gate. Existing reload tests expand Details before the
+same selector and unchanged assertions; timeouts/idling/security checks stay intact.
+Python faults cover native wrapper selection, additive groups and CRLF declarations.
+Physical/device/live boundaries and Stage2/3 proposals are in the
+[owner check](GUIDED_UX_OWNER_CHECK.md).
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
 ## October 14 — verified Style DNA code and remaining acceptance
 
 Code89eacb0d: Android38477038060 and all22 commands38477037827 passed;

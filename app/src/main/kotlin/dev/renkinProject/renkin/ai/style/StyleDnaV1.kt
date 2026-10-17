@@ -29,7 +29,8 @@ internal data class DnaObservation(val value: String, val provenance: DnaProvena
     companion object {
         fun parse(r: JSONObject): DnaObservation { r.exactKeys(setOf("value","provenance"))
             return DnaObservation(r.stringValue("value"), DnaProvenance.valueOf(r.stringValue("provenance"))).also { it.json() } }
-        fun schema() = dnaObject(json("value" to dnaText(), "provenance" to dnaEnum<DnaProvenance>()))
+        // UNKNOWN still needs an explicit description, never an empty placeholder.
+        fun schema() = dnaObject(json("value" to dnaText().put("pattern", DNA_OBSERVATION_PATTERN), "provenance" to dnaEnum<DnaProvenance>()))
     }
 }
 internal data class DnaIconReport(val sampleId: String, val sampleHash: String, val familyVote: DnaFamilyVote,
@@ -143,13 +144,58 @@ internal data class StyleDnaV1(val families: List<DnaFamily>, val recommendedFam
 internal object StyleDnaCodec {
     fun parseReports(text: String, bindings: Map<String,String>): List<DnaIconReport> {
         require(bindings.size in 1..24); bindings.forEach { (id,hash) -> dnaId(id); dnaHash(hash) }
-        val r = strictObject(text,128*1024,8); r.exactKeys(setOf("schema","reports")); require(r.longValue("schema") == 1L)
-        val a = r.getJSONArray("reports"); require(a.length() == bindings.size)
-        val reports = (0 until a.length()).map { DnaIconReport.parse(a.getJSONObject(it)) }
-        require(reports.map { it.sampleId }.toSet() == bindings.keys && reports.map { it.sampleId }.distinct().size == reports.size)
-        require(reports.all { bindings[it.sampleId] == it.sampleHash })
+        val r = reportCheck(DnaReportFailure.JSON_INVALID) { strictObject(text,128*1024,8) }
+        reportCheck(DnaReportFailure.ROOT) { r.exactKeys(setOf("schema","reports")); require(r.longValue("schema") == 1L) }
+        val a = reportCheck(DnaReportFailure.FIELDS) { r.getJSONArray("reports") }
+        reportCheck(DnaReportFailure.COUNT) { require(a.length() == bindings.size) }
+        val reports = (0 until a.length()).map { index ->
+            val item = reportCheck(DnaReportFailure.FIELDS) { a.getJSONObject(index).also { it.exactKeys(setOf("schema","sample_id","sample_hash",
+                "family_vote","symbol_type","traits","color_policy","tile_vote","depth_vote","outlier_reason","do_not_copy_reference_logo")) } }
+            reportCheck(DnaReportFailure.SCHEMA) { require(item.longValue("schema") == 1L && item.get("do_not_copy_reference_logo") == true) }
+            reportCheck(DnaReportFailure.BINDING_FORMAT) { dnaId(item.stringValue("sample_id")); dnaHash(item.stringValue("sample_hash")) }
+            reportCheck(DnaReportFailure.ENUM) {
+                DnaFamilyVote.valueOf(item.stringValue("family_vote")); DnaSymbolType.valueOf(item.stringValue("symbol_type"))
+                PackColorPolicy.valueOf(item.stringValue("color_policy")); DnaTile.valueOf(item.stringValue("tile_vote")); DnaDepth.valueOf(item.stringValue("depth_vote"))
+            }
+            val traits = reportCheck(DnaReportFailure.FIELDS) { item.getJSONObject("traits").also { it.exactKeys(DNA_TRAITS.toSet()) } }
+            DNA_TRAITS.forEach { trait ->
+                val observation = reportCheck(DnaReportFailure.FIELDS) { traits.getJSONObject(trait).also { it.exactKeys(setOf("value","provenance")) } }
+                reportCheck(DnaReportFailure.PROVENANCE) { DnaProvenance.valueOf(observation.stringValue("provenance")) }
+                reportCheck(DnaReportFailure.TEXT) { require(cleanText(observation.stringValue("value"),240).isNotEmpty()) }
+            }
+            reportCheck(DnaReportFailure.TEXT) { cleanText(item.stringValue("outlier_reason"),240) }
+            reportCheck(DnaReportFailure.FIELDS) { DnaIconReport.parse(item) }
+        }
+        reportCheck(DnaReportFailure.DUPLICATE_ID) { require(reports.map { it.sampleId }.distinct().size == reports.size) }
+        reportCheck(DnaReportFailure.MEMBERSHIP) { require(reports.map { it.sampleId }.toSet() == bindings.keys) }
+        reportCheck(DnaReportFailure.HASH) { require(reports.all { bindings[it.sampleId] == it.sampleHash }) }
         return bindings.keys.map { id -> reports.single { it.sampleId == id } }
     }
     fun reportsSchema(max: Int) = dnaObject(json("schema" to json("type" to "integer","enum" to JSONArray(listOf(1))),
-        "reports" to dnaArray(DnaIconReport.schema(),max)))
+        "reports" to dnaArray(DnaIconReport.schema(),max).put("minItems",max)))
+    fun reportsSchema(bindings: Map<String,String>): JSONObject {
+        require(bindings.size in 1..24); bindings.forEach { (id,hash) -> dnaId(id); dnaHash(hash) }
+        return reportsSchema(bindings.size).also { schema ->
+            val properties = schema.getJSONObject("properties").getJSONObject("reports").getJSONObject("items").getJSONObject("properties")
+            properties.getJSONObject("sample_id").put("enum",JSONArray(bindings.keys.toList()))
+            properties.getJSONObject("sample_hash").put("enum",JSONArray(bindings.values.toList()))
+        }
+    }
 }
+
+// Anchored, bounded, nonblank and free of ISO controls, matching cleanText.
+internal const val DNA_OBSERVATION_PATTERN = "^[^\\u0000-\\u001F\\u007F-\\u009F]{0,239}[^\\s\\u0000-\\u001F\\u007F-\\u009F][^\\u0000-\\u001F\\u007F-\\u009F]{0,239}$"
+internal enum class DnaReportFailure {
+    JSON_INVALID, JSON_SIZE, JSON_DEPTH, JSON_DUPLICATE, ROOT, FIELDS, SCHEMA,
+    COUNT, BINDING_FORMAT, ENUM, PROVENANCE, TEXT, DUPLICATE_ID, MEMBERSHIP, HASH;
+    val code get() = "REPORT_$name"
+}
+internal val DNA_REPORT_FAILURE_CODES = DnaReportFailure.entries.map { it.code }.toSet()
+internal class DnaReportRejected(val failure: DnaReportFailure) : IllegalArgumentException(failure.code)
+private inline fun <T> reportCheck(failure: DnaReportFailure, action: () -> T): T = try { action() }
+catch (rejected: StrictJsonRejected) { throw DnaReportRejected(when(rejected.failure) {
+    StrictJsonFailure.SIZE -> DnaReportFailure.JSON_SIZE
+    StrictJsonFailure.DEPTH -> DnaReportFailure.JSON_DEPTH
+    StrictJsonFailure.DUPLICATE -> DnaReportFailure.JSON_DUPLICATE
+}) }
+catch (_: Exception) { throw DnaReportRejected(failure) }
