@@ -1,5 +1,16 @@
 # Architecture
 
+## Bounded Trial package-read classification
+
+ObserveCoverageInvalidation keeps its original callbacks by default. Trial alone
+receives typed package hints through ProjectTrialBackend; OwnedStyleTrials checks
+source/saved-target membership and freshly revalidates the existing catalog under
+its owner. Only non-input package hints with an unchanged live catalog avoid the
+full local reload. This preserves prepared bytes and approval, with controls busy
+until the catalog check completes. A hint cannot downgrade an unconditional pending
+read; route replacement/release and cancellation keep their prior semantics.
+No new monitor, timer, persistence, schema or paid-request mechanism exists.
+
 ## Current trial plan retention during read-only reload
 
 OwnedStyleTrials retains a frozen plan while a coalesced local read is busy, then uses existing current(plan) checks and same-plan/staging guards before keeping it. The guard runs across suspensions so explicit cancellation cannot resurrect a plan. Changed route/context/original/recipe/epoch or read failure clears staging/proof; paid confirmation remains disabled until idle and submit independently rechecks. Suspending key/approval reads finish before the final StateFlow merge. No paid retry, consumed marker, journal format or Room migration is added.

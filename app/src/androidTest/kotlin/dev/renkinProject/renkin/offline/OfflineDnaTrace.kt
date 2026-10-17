@@ -59,6 +59,13 @@ internal class OfflineDnaTrace(private val fixture: String) {
                 observeJobs("load.return")
                 trial("trial.load.return", backend.state(id).value)
             }
+            override fun packageChanged(id: Long, mode: ProjectSetupMode, source: String?, packageName: String) {
+                event("trial.package.dispatched", "source_match" to (packageName == source))
+                trial("trial.package.enter", backend.state(id).value)
+                backend.packageChanged(id, mode, source, packageName)
+                observeJobs("package.return")
+                trial("trial.package.return", backend.state(id).value)
+            }
             override fun prepare(id: Long, keys: List<String>, allowCovered: Boolean) {
                 event("trial.prepare.dispatched", "targets" to keys.size)
                 trial("trial.prepare.enter", backend.state(id).value)

@@ -58,12 +58,17 @@ class StyleTrialComposeTest {
     private inner class Backend(var base: TrialPreparation? = preparation()) : ProjectTrialBackend {
         val flow = MutableStateFlow(ProjectTrialState(preparation = base, hasKey = true))
         var paidPlans = 0; var stops = 0; var loads = 0; var key = true
+        val packageEvents = mutableListOf<String>()
         var originalEvidence: OriginalIconEvidence? = null
         var verifiedPlan: String? = null
         val consumed = mutableSetOf<String>(); var pending: StyleTrialPlan? = null
         override fun state(id: Long) = flow
         override fun load(id: Long, mode: ProjectSetupMode, source: String?) {
             loads++; if (!flow.value.network) flow.value = flow.value.copy(preparation = base, plan = null, hasKey = key)
+        }
+        override fun packageChanged(id: Long, mode: ProjectSetupMode, source: String?, packageName: String) {
+            assertEquals(1L, id); assertEquals(ProjectSetupMode.valueOf(base!!.context.mode), mode)
+            assertEquals(base!!.context.sourcePackage, source); packageEvents += packageName
         }
         override fun options(id: Long, provider: String, model: String, quality: String) {
             base = base!!.copy(context = base!!.context.copy(provider = provider, model = model, quality = quality))
@@ -112,6 +117,22 @@ class StyleTrialComposeTest {
     }
     private fun scroll(tag: String) { compose.onNodeWithTag("project-trials-1").performScrollToNode(hasTestTag(tag)) }
     private fun prepare() { scroll("trial-prepare"); compose.onNodeWithTag("trial-prepare").performClick() }
+    @Test fun packageBroadcastsReachTrialAsTypedInvalidationsWithoutAnUnconditionalReload() {
+        val b = Backend(preparation(ProjectSetupMode.EXTEND, 1)); show(b); compose.waitForIdle()
+        val loads = b.loads
+        val context = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+        for ((action, pack) in listOf(
+            android.content.Intent.ACTION_PACKAGE_CHANGED to "background.service",
+            android.content.Intent.ACTION_PACKAGE_CHANGED to "p0",
+            android.content.Intent.ACTION_PACKAGE_REPLACED to "source.pack",
+            android.content.Intent.ACTION_PACKAGE_ADDED to "new.launcher",
+            android.content.Intent.ACTION_PACKAGE_REMOVED to "old.launcher")) {
+            compose.runOnIdle { context.sendBroadcast(android.content.Intent(action, android.net.Uri.parse("package:$pack"))) }
+            compose.waitForIdle()
+        }
+        assertEquals(listOf("background.service", "p0", "source.pack", "new.launcher", "old.launcher"), b.packageEvents)
+        assertEquals(loads, b.loads); assertEquals(0, b.paidPlans)
+    }
     private fun generate(b: Backend): List<IconAssetVariant> {
         prepare(); compose.onNodeWithTag("trial-confirm-paid").performClick(); compose.runOnIdle { b.finish() }; return b.flow.value.variants
     }

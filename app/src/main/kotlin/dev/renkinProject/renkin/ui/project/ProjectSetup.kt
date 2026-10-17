@@ -77,10 +77,12 @@ internal val LocalProjectInvalidationTrace = staticCompositionLocalOf<((String, 
 
 /** Screen-scoped invalidation only, never a background watcher or icon refresh. */
 @Composable
-internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges: Boolean = false, onInvalidate: () -> Unit) {
+internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges: Boolean = false,
+    onPackageInvalidate: ((String) -> Unit)? = null, onInvalidate: () -> Unit) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val invalidate by rememberUpdatedState(onInvalidate)
+    val invalidatePackage by rememberUpdatedState(onPackageInvalidate)
     val trace by rememberUpdatedState(LocalProjectInvalidationTrace.current)
     DisposableEffect(lifecycle, context, source, observeLauncherChanges) {
         trace?.invoke("invalidation.attach", "observer")
@@ -100,7 +102,7 @@ internal fun ObserveCoverageInvalidation(source: String?, observeLauncherChanges
                         else -> "other"
                     }
                     trace?.invoke("invalidation.package", "$action:source_match=${pack == source}")
-                    invalidate()
+                    invalidatePackage?.invoke(pack) ?: invalidate()
                 }
             }
         }

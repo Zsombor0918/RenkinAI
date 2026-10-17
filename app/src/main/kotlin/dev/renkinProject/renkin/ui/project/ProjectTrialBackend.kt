@@ -16,6 +16,7 @@ internal interface ProjectTrialBackend {
     fun bindContext(id: Long, mode: ProjectSetupMode, source: String?) {}
     fun state(id: Long): StateFlow<ProjectTrialState>
     fun load(id: Long, mode: ProjectSetupMode, source: String?)
+    fun packageChanged(id: Long, mode: ProjectSetupMode, source: String?, packageName: String) = load(id, mode, source)
     fun dnaChoice(id: Long,key: String,family: String,type: dev.renkinProject.renkin.ai.style.DnaSymbolType) {}
     fun options(id: Long, provider: String, model: String, quality: String)
     fun prepare(id: Long, keys: List<String>, allowCovered: Boolean)

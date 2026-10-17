@@ -86,7 +86,9 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
     val theme = PackageResourceResolver.displayedNightMode
     val trace = LocalProjectInvalidationTrace.current
     val traceKeys = remember { arrayOfNulls<List<Any?>>(1) }
-    ObserveCoverageInvalidation(source, observeLauncherChanges = true) { reload++ }
+    ObserveCoverageInvalidation(source, observeLauncherChanges = true, onPackageInvalidate = { changed ->
+        if (available && !state.network) backend.packageChanged(id, mode, source, changed)
+    }) { reload++ }
     // An invalidation while a paid job owns the controller is rechecked locally when it finishes.
     LaunchedEffect(id, mode, source, reload, theme, available, state.network) {
         if (trace != null) {

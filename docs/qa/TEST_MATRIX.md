@@ -1,5 +1,17 @@
 # Regression and test matrix
 
+## Trial package storms and genuine input changes
+
+The existing owned-controller suite adds a controlled Prepare suspension plus a
+burst of package hints. Unchanged fresh catalog must preserve plan/original bytes,
+reach idle, avoid another original read and create zero requests/markers. A second
+catalog barrier declines during checking and forbids resurrection. A compact
+negative case covers original changes, source version, launcher add/remove and
+user ambiguity; the observer-to-Trial Compose case retains all package events.
+The existing unconditional queued-load test now also forbids a later package hint
+from downgrading its full validation. Existing route/style/epoch, original-first,
+missing-key, cancelled/uncertain replay and full Android journeys remain required.
+
 ## Owner-approved lean verification (October 17, 2026)
 
 This policy supersedes earlier requirements below to execute every historical group

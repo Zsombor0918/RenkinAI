@@ -37,7 +37,11 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
     private val verifiedOriginalPlans = ConcurrentHashMap<Long, String>()
     // Coalesce local reads blocked by another profile's already-confirmed job.
     // These entries can only call load/recovery, never prepare or submit a request.
-    private val pendingLoads = ConcurrentHashMap<Long, Pair<ProjectSetupMode, String?>>()
+    private data class PendingLoad(val mode: ProjectSetupMode, val source: String?, val packages: Set<String>? = null) {
+        val route get() = mode to source
+    }
+    // null packages means an unconditional read; package notifications cannot downgrade it.
+    private val pendingLoads = ConcurrentHashMap<Long, PendingLoad>()
     private fun matchesRoute(c: TrialContext) = routes[c.profileId]?.let { it.first.name == c.mode && it.second == c.sourcePackage } == true
     private fun flow(id: Long) = states.getOrPut(id) { MutableStateFlow(ProjectTrialState()) }
     override fun state(id: Long): StateFlow<ProjectTrialState> = flow(id)
@@ -61,9 +65,9 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
                 jobs.remove(id)
                 flow(id).value = flow(id).value.copy(busy = false, network = false)
                 val waiting = pendingLoads.toMap()
-                waiting.forEach { (profile, route) ->
-                    if (pendingLoads.remove(profile, route) && routes[profile] == route) {
-                        load(profile, route.first, route.second)
+                waiting.forEach { (profile, request) ->
+                    if (pendingLoads.remove(profile, request) && routes[profile] == request.route) {
+                        requestLoad(profile, request)
                     }
                 }
             }
@@ -108,20 +112,43 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         flow(id).value = flow(id).value.copy(records = records, variants = variants)
     }
     override fun load(id: Long, mode: ProjectSetupMode, source: String?) {
-        bindContext(id, mode, source)
+        requestLoad(id, PendingLoad(mode, source))
+    }
+    override fun packageChanged(id: Long, mode: ProjectSetupMode, source: String?, packageName: String) {
+        requestLoad(id, PendingLoad(mode, source, setOf(packageName)))
+    }
+    private fun requestLoad(id: Long, request: PendingLoad) {
+        bindContext(id, request.mode, request.source)
         if (flow(id).value.network) return
         if (states.values.any { it.value.busy }) {
-            pendingLoads[id] = mode to source
+            pendingLoads.compute(id) { _, previous ->
+                if (previous == null || previous.route != request.route) request
+                else request.copy(packages = if (previous.packages == null || request.packages == null) null
+                    else previous.packages + request.packages)
+            }
             return
         }
         pendingLoads.remove(id)
+        val previousError = flow(id).value.error
         start(id) {
             // A read queued during Prepare must not erase its completed plan.
             // Keep the dialog while busy (paid confirmation stays disabled), then
             // retain the exact plan/bytes only after all current-input checks.
             val frozen = flow(id).value.plan
-            flow(id).value = flow(id).value.copy(preparation = null, ready = false)
             try {
+                val previous = flow(id).value.preparation
+                val packages = request.packages
+                if (packages != null && previousError == null && previous != null && matchesRoute(previous.context) &&
+                    packages.none { changed -> changed == request.source || previous.candidates.any {
+                        it.target.key.substringBefore('/') == changed
+                    } }) {
+                    // Other packages can still add/remove launcher entries or change user identity.
+                    // Read that existing catalog afresh, without decoding saved DNA/assets/originals.
+                    val targets = owner.owned(id) { owner.targets() }
+                    if (flow(id).value.preparation === previous && matchesRoute(previous.context) &&
+                        previous.context.catalogStamp == projectCatalogStamp(targets)) return@start
+                }
+                flow(id).value = flow(id).value.copy(preparation = null, ready = false)
                 coordinator.recover(id); history(id)
                 val p = preparation(id)
                 val keyPresent = withContext(Dispatchers.IO) { hasKey(p.context.provider) }

@@ -1,5 +1,20 @@
 # Agent handoff — guided UX Stage 1
 
+## Shared Trial reload correction from6d7462e6
+
+Hosted38979452071 proves non-source PACKAGE_CHANGED during Prepare queues full
+reads at102.854/104.063s, retaining the plan but timing out busy at113.768s.
+A suspended-original regression reproduces benign queued hints causing an extra
+original read (expected2/actual3 RED) before controller changes. Typed package
+hints now require fresh catalog equality to avoid that redundant full read;
+source/selected target/catalog changes still use all existing validation. Explicit
+reads dominate hints. Three justified cases cover storm/decline, real input
+changes and actual broadcast dispatch; earlier plan-retention/cancel/no-replay
+assertions remain. See [correction](../changes/2026-10-17-trial-package-revalidation.md).
+Finish focused and one final-head hosted full/Android verification, publish exact
+APK evidence on PR8, then stop. Phases3/4 remain outside this task. If hosted
+acceptance fails, retain its trace and use at most the authorized second correction.
+
 ## Narrow guided-journey finishing pass
 
 Source896faa15 has hosted Android4/4 and Python67/67 success, but Linux full1013/1

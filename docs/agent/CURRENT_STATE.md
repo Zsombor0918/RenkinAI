@@ -1,8 +1,20 @@
 # Current implementation
 
-Phase2 adds an opt-in instrumentation sink for Trial composition/effect-key and lifecycle/package/user reload origins. Production defaults to no sink. No controller correction, state transition, timeout or consent behavior changes. Hosted causality is pending; Standard/restart remain BLOCKED.
+## Shared Trial package invalidations
 
-Verification scheduling now follows [ADR0012](../decisions/0012-lean-verification.md): one authoritative full suite plus explicit targeted/order diagnostics. Runtime, unique Kotlin coverage and unresolved hosted Standard/restart status are unchanged.
+Package broadcasts retain their identity through the screen-scoped observer to the
+existing Trial controller. Source and saved-target packages still require the full
+revalidation. For other packages, a fresh owner-protected launcher/catalog read
+must match the current preparation's catalog stamp before avoiding redundant
+DNA/assets/original decoding. Unknown/error/changed catalog falls back to full
+validation; lookup failure invalidates the plan. No catalog result is cached.
+Busy package hints coalesce by route, while unconditional reads dominate hints.
+Resume/theme/route/explicit reads and paid-submit guards remain unchanged.
+Final hosted acceptance is recorded on PR8, not inferred from this implementation.
+
+The earlier Phase2 checkpoint added opt-in origin tracing without a controller correction. Production still defaults to no trace sink; the subsequent bounded correction is described above. Final hosted status belongs in PR8.
+
+Verification scheduling now follows [ADR0012](../decisions/0012-lean-verification.md): one authoritative full suite plus explicit targeted/order diagnostics. All existing Kotlin cases remain; current shared Trial acceptance is recorded on PR8.
 
 ## Queued local trial reads preserve only current prepared plans
 

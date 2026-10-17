@@ -55,6 +55,81 @@ class OwnedStyleTrialsTest {
     private suspend fun generated(c: OwnedStyleTrials): StyleTrialPlan {
         val plan = prepared(c); c.submit(1, plan.id); idle(c).also { assertNull(it.error) }; return plan
     }
+    @Test fun benignPackageStormDuringPrepareChecksFreshCatalogWithoutRebuildingOriginals() = runBlocking {
+        val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
+        val originals = java.util.concurrent.atomic.AtomicInteger()
+        val catalogs = java.util.concurrent.atomic.AtomicInteger()
+        val catalogEntered = CompletableDeferred<Unit>(); val catalogRelease = CompletableDeferred<Unit>()
+        val pauseCatalog = java.util.concurrent.atomic.AtomicBoolean()
+        val c = controller(object : TrialSessionOwner by owner {
+            override suspend fun targets(): List<CoverageTarget> {
+                catalogs.incrementAndGet()
+                if (pauseCatalog.get()) { catalogEntered.complete(Unit); catalogRelease.await() }
+                return owner.targets()
+            }
+            override suspend fun original(key: String): TrialOriginal {
+                if (originals.incrementAndGet() == 1) { entered.complete(Unit); release.await() }
+                return owner.original(key)
+            }
+        })
+        loaded(c)
+        c.prepare(1, listOf("a/Main"), false)
+        withTimeout(10000) { entered.await() }
+        repeat(20) { c.packageChanged(1, ProjectSetupMode.CREATE, null, "background.service") }
+        release.complete(Unit)
+        suspend fun drained() = withTimeout(10000) {
+            while (scope.coroutineContext.job.children.any { it.isActive }) {
+                scope.coroutineContext.job.children.toList().joinAll()
+            }
+        }
+        drained()
+        val frozen = checkNotNull(c.state(1).value.plan)
+        assertFalse(c.state(1).value.busy); assertNull(c.state(1).value.error)
+        assertEquals("Benign queued broadcasts must not rebuild/revalidate the original after Prepare", 2, originals.get())
+        val before = catalogs.get()
+        repeat(20) { c.packageChanged(1, ProjectSetupMode.CREATE, null, "background.service") }
+        drained()
+        assertTrue("Do not cache launcher validation", catalogs.get() > before)
+        assertEquals(2, originals.get()); assertEquals(frozen, c.state(1).value.plan)
+        assertArrayEquals(f.originals.getValue("a/Main").png, c.preview(1, frozen.inputs.single().originalHash))
+        assertFalse(c.state(1).value.busy); assertNotNull(c.state(1).value.preparation)
+        assertEquals(0, calls); assertTrue(f.journal.records(1).isEmpty())
+        pauseCatalog.set(true)
+        c.packageChanged(1, ProjectSetupMode.CREATE, null, "background.service")
+        withTimeout(10000) { catalogEntered.await() }
+        assertTrue(c.state(1).value.busy)
+        c.cancelPreparation(1); catalogRelease.complete(Unit); drained()
+        assertNull(c.state(1).value.plan)
+        assertNull(c.preview(1, frozen.inputs.single().originalHash))
+        c.submit(1, frozen.id); assertEquals(0, calls); assertTrue(f.journal.records(1).isEmpty())
+    }
+    @Test fun packageChangesStillRejectChangedTargetSourceAndLauncherCatalog() = runBlocking {
+        val targets = f.targets; val original = f.originals.getValue("a/Main"); val index = f.index
+        for (change in listOf("target", "source", "added", "removed", "user")) {
+            f.targets = targets; f.originals["a/Main"] = original; f.index = index
+            val extend = change == "source"
+            f.initialize(if (extend) "EXTEND" else "CREATE")
+            val metadata = checkNotNull(f.repo.metadata(1))
+            f.repo.saveSelection(1, metadata.version,
+                checkNotNull(ProjectSelection.decode(metadata.selectionJson)).copy(componentKeys = listOf("a/Main")))
+            val c = controller()
+            loaded(c, extend); c.prepare(1, listOf("a/Main"), false)
+            val frozen = checkNotNull(idle(c).plan)
+            val changedPackage = when (change) {
+                "target" -> { f.originals["a/Main"] = f.originals.getValue("b/Main"); "a" }
+                "source" -> { f.index = index.copy(stamp = index.stamp.copy(versionCode = 2)); "source.pack" }
+                "added" -> { f.targets = targets + CoverageTarget("new/Main", "New launcher"); "new" }
+                "removed" -> { f.targets = targets.filterNot { it.key == "b/Main" }; "b" }
+                else -> { f.targets = targets.map { if (it.key == "b/Main") it.copy(ambiguousUser = true) else it }; "b" }
+            }
+            c.packageChanged(1, if (extend) ProjectSetupMode.EXTEND else ProjectSetupMode.CREATE,
+                if (extend) "source.pack" else null, changedPackage)
+            assertNull("Stale plan after $change", idle(c).plan)
+            assertNull(c.preview(1, frozen.inputs.single().originalHash))
+            c.submit(1, frozen.id)
+            assertEquals(0, calls); assertTrue(f.journal.records(1).isEmpty()); c.release(1)
+        }
+    }
     @Test fun reloadQueuedDuringPrepareKeepsCurrentPlanAndStagedOriginalWithoutSubmission() = runBlocking {
         val entered=CompletableDeferred<Unit>(); val release=CompletableDeferred<Unit>()
         val produced=CompletableDeferred<StyleTrialPlan>(); val reloadStarted=CompletableDeferred<Unit>()
@@ -75,6 +150,8 @@ class OwnedStyleTrialsTest {
             withTimeout(10000) { entered.await() }
             assertTrue(c.state(1).value.busy)
             c.load(1,ProjectSetupMode.CREATE,null) // Exact hosted order: local load queues behind Prepare.
+            // A later package hint must not downgrade an explicit/lifecycle/source recheck.
+            c.packageChanged(1, ProjectSetupMode.CREATE, null, "background.service")
             release.complete(Unit)
             val frozen=withTimeout(10000) { produced.await() }
             withTimeout(10000) { reloadStarted.await() }
