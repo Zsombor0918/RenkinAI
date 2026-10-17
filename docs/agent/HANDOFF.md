@@ -1,5 +1,16 @@
 # Agent handoff — guided UX Stage 1
 
+## Phase3A.1 separate reference-first branch
+
+Owner authorizes Phase3A from3831120691217503c868d640a690fef2a7beca88.
+PR8 remains unchanged. The first increment adds local sampling, explicit import,
+source revalidation and existing-asset persistence, with no provider/key dependency.
+See [change note](../changes/2026-10-17-local-style-references.md). Complete Phase3A.2
+guided integration on the same new branch before exposing a default. Preserve
+Legacy/Quick/Standard, Trial original identity and all consumed-request guards.
+No Phase4 work is authorized. Final exact-head evidence goes to the new draft PR.
+
+
 ## Shared Trial reload correction from6d7462e6
 
 Hosted38979452071 proves non-source PACKAGE_CHANGED during Prepare queues full

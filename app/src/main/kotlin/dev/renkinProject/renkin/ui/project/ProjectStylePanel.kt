@@ -35,9 +35,10 @@ import kotlinx.coroutines.launch
 
 internal data class ProjectStyleDraft(val specification: String, val instruction: String, val hashes: List<String>,
     val analysisRequestId: String? = null, val analysisReviewedAt: Long? = null, val allowStaleSource: Boolean = false,
-    val analysisReviewedSourceStamp: String? = null)
+    val analysisReviewedSourceStamp: String? = null, val localReferenceOrigin: LocalReferenceOrigin? = null)
 internal interface ProjectStyleBackend {
     val analysis: ProjectAnalysisBackend? get() = null
+    val localReferences: LocalStyleReferences? get() = null
     suspend fun load(id: Long): SavedProjectStyle
     suspend fun importReference(id: Long, uri: Uri): ReferenceAsset
     suspend fun referencePreview(id: Long, hash: String): ByteArray? = null

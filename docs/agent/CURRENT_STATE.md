@@ -1,5 +1,15 @@
 # Current implementation
 
+## Phase3A.1 local reference data path
+
+Separate feature work starts at verified PR8 source38311206. LocalStyleReferences
+reuses ReferenceSampler, the existing session owner and ProjectAiRepository assets.
+Explicitly selected pack PNGs retain hashes/order/profile ownership. Draft origin
+checks fresh setup/reference stamps and drawable bytes before Save. No cloud/key
+port or database migration exists. The new default is unexposed until Phase3A.2;
+final verification is pending on the separate stacked PR.
+
+
 ## Shared Trial package invalidations
 
 Package broadcasts retain their identity through the screen-scoped observer to the

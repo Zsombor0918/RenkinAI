@@ -1,5 +1,18 @@
 # Architecture
 
+## Local reference-first draft boundary
+
+LocalStyleReferences uses AnalysisSessionOwner only for its existing owner lock and
+fresh source readers; it has no provider or credential dependency. Sampling offers
+up to12 deduplicated geometry/color-diverse candidates, without assigning a common
+palette or automatically selecting five. Selection copies actual rendered PNGs
+through ProjectAiRepository. LocalReferenceOrigin is transient form provenance,
+not a new store: profile/source/setup/reference stamps and hash-to-drawable binding
+are checked again, including current drawable bytes before Save. Historical saved
+styles and reference ordering use their unchanged readers. No migration, request,
+consumed marker or signing change.
+
+
 ## Bounded Trial package-read classification
 
 ObserveCoverageInvalidation keeps its original callbacks by default. Trial alone
