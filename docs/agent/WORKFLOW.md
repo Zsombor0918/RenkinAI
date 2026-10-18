@@ -1,5 +1,17 @@
 # Agent, Git and review workflow
 
+## Phase3A stacked feature verification
+
+CI, offline Android and governance add PR base feat/ux-flow-stabilization so the
+separate reference-first draft PR receives the same gates. Scheduling remains
+ADR0012: one automatic full unit suite/build, no duplicate HTTP job. Android adds
+one local reference-first journey to the retained Quick/Standard/incomplete-cancel
+and restart paths (4 writes/preparations plus1 independent restart process).
+The evidence validator requires zero loopback/external POSTs for reference-first,
+ordered saved references, Trial preparation and three saved projects reopened.
+Only the explicit qemu-guarded emulator may be installed/stopped. No phone access.
+
+
 ## Owner-approved lean verification (October 17, 2026)
 
 This policy supersedes earlier requirements below to execute every historical group

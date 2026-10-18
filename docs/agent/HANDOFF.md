@@ -1,5 +1,44 @@
 # Agent handoff — guided UX Stage 1
 
+## Phase3A Linux queue-copy blocker
+
+New draft PR9 targets unchanged feat/ux-flow-stabilization at38311206. b6906528
+implements both increments, passes Android5/5, Python67/67, but Linux1019/1 fails
+because earlier Trial finally jobs throw during a shrinking ConcurrentHashMap.toMap
+singleton copy. The failure is not in ProfileDetailsDialog logic. Standalone
+Java17/Kotlin-stdlib reproduction gives the identical NoSuchElementException.
+Copy entries safely, keep all conditional dequeue/route and safety checks, run
+focused controller/form/guided tests, then corrected-head full CI/Android and
+explicit form-order diagnostic. Do not rerun a successful full suite on the same
+head. Remain BLOCKED until actual final results, then verify/publish the new APK
+on PR9 and stop. No Phase4, live/key/phone or protected-branch change.
+
+
+## Phase3A guided integration and final gates
+
+First increment6fa04bf5 passes local ProjectPreparationTest7/7, including2 new
+asset/source cases. The second increment makes reference-first primary and keeps
+optional analyses explicit. Only neutral fresh-project text is initialized; old
+styles are read unchanged. Existing manual editor/assets/Trial originals and
+frozen-plan checks are reused. See [integration note](../changes/2026-10-17-reference-first-guided.md).
+Run targeted guided/controller checks, then one authoritative final-head Linux
+CI, strict Python/governance and Android5 journeys including the new free Save
+and restart evidence. Preserve failures and the prior Compose concurrency risk.
+Publish a verified fresh APK on the new stacked draft PR; leave PR8 unchanged.
+Stop after Phase3A. No live/key/phone operations or Phase4 are authorized.
+
+
+## Phase3A.1 separate reference-first branch
+
+Owner authorizes Phase3A from3831120691217503c868d640a690fef2a7beca88.
+PR8 remains unchanged. The first increment adds local sampling, explicit import,
+source revalidation and existing-asset persistence, with no provider/key dependency.
+See [change note](../changes/2026-10-17-local-style-references.md). Complete Phase3A.2
+guided integration on the same new branch before exposing a default. Preserve
+Legacy/Quick/Standard, Trial original identity and all consumed-request guards.
+No Phase4 work is authorized. Final exact-head evidence goes to the new draft PR.
+
+
 ## Shared Trial reload correction from6d7462e6
 
 Hosted38979452071 proves non-source PACKAGE_CHANGED during Prepare queues full

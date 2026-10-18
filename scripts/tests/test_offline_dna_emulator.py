@@ -25,8 +25,9 @@ EVIDENCE = {
     "failure": {"loopback_posts": 2, "external_posts": 0, "consumed_attempts": 2,
                 "accepted_styles": 0, "incomplete_reason": "RESPONSE_INCOMPLETE_MAX_OUTPUT_TOKENS",
                 "cancel_reason": "CANCELLED_NO_REPLAY"},
+    "references": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True, "saved_revision": 1},
     "restart": {"process_restart": True, "loopback_posts": 0, "external_posts": 0,
-                "saved_projects_reopened": 2, "trial_prepared": True, "uncertain_attempts_replayed": 0},
+                "saved_projects_reopened": 3, "trial_prepared": True, "uncertain_attempts_replayed": 0},
 }
 
 
@@ -94,7 +95,7 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
                     instrumentation_count += 1
                     if mode == "instrument_timeout":
                         raise subprocess.TimeoutExpired(command, kwargs["timeout"])
-                    expected = 3 if instrumentation_count == 1 else 1
+                    expected = 4 if instrumentation_count == 1 else 1
                     log = f"OK ({expected} tests)\n"
                     if instrumentation_count == 1:
                         if mode == "wrong_count":
@@ -160,7 +161,7 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
         installs = [index for index, (command, _) in enumerate(commands) if command[3:4] == ["install"]]
         self.assertEqual(3, len(installs))
         self.assertTrue(all(build < index for index in installs))
-        self.assertEqual([3, 1], [run["tests"] for run in summary["runs"]])
+        self.assertEqual([4, 1], [run["tests"] for run in summary["runs"]])
         stop = next(index for index, (command, _) in enumerate(commands) if command[3:6] == ["shell", "am", "force-stop"])
         phases = [index for index, (command, _) in enumerate(commands) if command[3:6] == ["shell", "am", "instrument"]]
         self.assertLess(phases[0], stop)
@@ -216,6 +217,9 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
             ("restart", "process_restart", 1),
             ("quick", "saved_revision", True),
             ("standard", "saved_revision", 0),
+            ("references", "loopback_posts", 1),
+            ("references", "selected_references", 0),
+            ("references", "saved_revision", 0),
         ]
         invalid_evidence = []
         for section, key, value in mutations:

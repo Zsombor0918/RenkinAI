@@ -2,7 +2,7 @@
     <string name="uxStyleLocalSave">Saving a style is local and free. Icons are generated only after a separate paid confirmation.</string>
     <string name="uxStyleRevision">Saved style revision %1$d</string>
     <string name="uxStyleSaveContinue">Save style and continue</string>
-    <string name="uxStyleQuickChoice">Quick DNA (recommended)</string>
+    <string name="uxStyleQuickChoice">Quick DNA (optional)</string>
     <string name="uxStyleStandardChoice">Standard DNA (advanced)</string>
     <string name="uxStyleDeepChoice">Deep (not available)</string>
     <string name="uxStyleDetails">Details and analysis options</string>

@@ -219,6 +219,14 @@ class MainViewModel @Inject constructor(
         })
     internal val projectStyleBackend: ProjectStyleBackend = object : ProjectStyleBackend {
         override val analysis get() = projectAnalysis
+        override val localReferences = dev.renkinProject.renkin.ui.project.LocalStyleReferences(
+            projectAiRepository, styleAnalysisServices.sampler,
+            object : dev.renkinProject.renkin.ui.project.AnalysisSessionOwner {
+                override suspend fun <T> owned(id: Long, operation: suspend () -> T): T = projectOperation(id, operation)
+                override suspend fun catalogStamp() = error("Local references do not need target inventory")
+                override suspend fun reader(source: String, referenceIndex: Boolean) =
+                    if (referenceIndex) appProvider.referenceReader(source) else coverageReader(source, true)
+            })
         override suspend fun load(id: Long) = projectOperation(id) {
             projectAiRepository.load(id)
         }
@@ -242,8 +250,7 @@ class MainViewModel @Inject constructor(
         override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft,
             mode: ProjectSetupMode, source: String?, stamp: String?) =
             if (draft.analysisRequestId != null) projectAnalysis.save(id, expected, draft, mode, source)
-            else projectOperation(id) { projectAiRepository.saveStyle(id, expected, draft.specification, draft.instruction, draft.hashes,
-                mode.name, source, stamp) }
+            else localReferences.save(id, expected, draft, mode, source, stamp)
     }
     internal suspend fun saveProjectSelection(id: Long, expectedVersion: Long, selection: ProjectSelection) =
         projectOperation(id) {

@@ -1,5 +1,42 @@
 # Current implementation
 
+## Phase3A exact-head Linux follow-up
+
+b6906528 hosted Android5/5 passes, including free reference-first Save and restart.
+Linux39113733346 executes1019/1 failure: ProfileDetailsDialogComposeTest receives
+earlier uncaught OwnedStyleTrials.start exceptions. A concurrent last-entry
+removal breaks Kotlin Map.toMap's singleton optimization. Entry iteration replaces
+only that copy; conditional removal and route/read/paid checks remain unchanged.
+One deterministic regression extends the existing controller class. Final-head
+Linux/Android/form-order/governance evidence remains pending in PR9. See the
+[correction record](../changes/2026-10-18-trial-queue-snapshot.md).
+
+
+## Phase3A.2 reference-first guided integration
+
+Guided style entry presents the existing brief/reference editor. Only fresh,
+unsaved styles receive neutral starting text; saved text/instructions/order remain
+unchanged. EXTEND can browse local pack candidates and select/order up to5;
+CREATE keeps PNG import and text-only manual styles remain explicit. Sampling,
+preview and Save require no analysis/key; the existing target/Trial path uses the
+saved revision and actual original icon. Optional Legacy/Quick/Standard remain
+behind explicit method selection with paid consent unchanged. Dirty edits block
+method switches; no failed/historical result is automatically adopted.
+See [ADR0013](../decisions/0013-reference-first-style.md). No storage migration,
+prompt/signing/export change. Exact-head Linux/Android/governance evidence is
+pending in the separate Phase3A draft PR, never inherited from PR8.
+
+
+## Phase3A.1 local reference data path
+
+Separate feature work starts at verified PR8 source38311206. LocalStyleReferences
+reuses ReferenceSampler, the existing session owner and ProjectAiRepository assets.
+Explicitly selected pack PNGs retain hashes/order/profile ownership. Draft origin
+checks fresh setup/reference stamps and drawable bytes before Save. No cloud/key
+port or database migration exists. The new default is unexposed until Phase3A.2;
+final verification is pending on the separate stacked PR.
+
+
 ## Shared Trial package invalidations
 
 Package broadcasts retain their identity through the screen-scoped observer to the

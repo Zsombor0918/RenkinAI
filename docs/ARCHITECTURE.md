@@ -1,5 +1,35 @@
 # Architecture
 
+Queue-drain snapshots iterate concurrent entries rather than using Kotlin
+Map.toMap's size/singleton shortcut, which can throw if release removes the last
+pending read between size and iterator.next. The existing conditional removal,
+route match and local-read-only scheduling remain authoritative. This changes
+neither the event model nor paid permissions or persisted state.
+
+
+## Local reference-first draft boundary
+
+LocalStyleReferences uses AnalysisSessionOwner only for its existing owner lock and
+fresh source readers; it has no provider or credential dependency. Sampling offers
+up to12 deduplicated geometry/color-diverse candidates, without assigning a common
+palette or automatically selecting five. Selection copies actual rendered PNGs
+through ProjectAiRepository. LocalReferenceOrigin is transient form provenance,
+not a new store: profile/source/setup/reference stamps and hash-to-drawable binding
+are checked again, including current drawable bytes before Save. Historical saved
+styles and reference ordering use their unchanged readers. No migration, request,
+consumed marker or signing change.
+
+Guided ProjectStylePanel presents that existing manual form first, initializes
+only an unsaved fresh style with neutral text, and keeps the brief separate from
+additional instructions. Optional analysis is mounted only after method selection;
+its existing refresh/journal/consent behavior remains. Dirty edits block method
+switching, and the child saveable-state holder retains unmodified analysis drafts
+across presentation changes. Source-origin primitives survive form restoration;
+sample images stay bounded in memory and selected bytes live in existing assets.
+Saved manual styles enter unchanged target selection and OwnedStyleTrials; there
+is no new generation handoff or prompt version. See [ADR0013](decisions/0013-reference-first-style.md).
+
+
 ## Bounded Trial package-read classification
 
 ObserveCoverageInvalidation keeps its original callbacks by default. Trial alone

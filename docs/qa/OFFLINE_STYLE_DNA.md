@@ -1,5 +1,17 @@
 # Offline Style DNA verification
 
+## Phase3A additional free reference journey
+
+The same emulator runner retains Quick/Standard/incomplete-cancel and restart,
+adding referenceFirstJourney in the first instrumentation process (4+1 cases).
+It samples actual installed fixture-pack resources, explicitly selects/reorders2,
+saves the neutral brief without a key/analysis, prepares a genuine-original Trial
+and requires zero HTTP POSTs. Trial preparation retains its existing key-presence
+gate; only a synthetic boolean is supplied after the key-free Save. Restart also reads that saved manual revision and
+its references, for3 saved projects total. Existing synthetic tokens are only
+for the optional DNA journeys, never a real credential. No paid image request.
+
+
 Origin tracing additionally emits trial.effect with changed key names (id/mode/source/reload/theme/available/network), trial.panel.attach/detach, invalidation.attach/detach/resume/package, and trial.reload.user. No package/profile/source values are emitted; package reason is a fixed action code plus source-match boolean. Correlate the existing monotonic seq/timestamp and backend/state/plan trace. The production CompositionLocal defaults to null; only the synthetic Trial subtree supplies a stable logger. Instrumentation can perturb timing; absence of a failing interleaving does not prove a fix.
 
 ## Standard diagnostic trace
