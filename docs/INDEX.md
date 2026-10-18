@@ -1,5 +1,7 @@
 # Documentation index
 
+Current Phase4A: [versioned generation contract](decisions/0014-versioned-trial-generation-contract.md) and [implementation evidence](changes/2026-10-18-reference-first-prompt-v2.md). Phase3A is merged into PR8 at91e5737d, not main. This phase has its own stacked draft PR; final-head results remain external.
+
 Current owner-approved Phase3A: [reference-first decision](decisions/0013-reference-first-style.md),
 [local acquisition](changes/2026-10-17-local-style-references.md) and
 [guided integration](changes/2026-10-17-reference-first-guided.md).

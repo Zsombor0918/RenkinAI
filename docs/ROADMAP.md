@@ -1,5 +1,9 @@
 # RenkinAI roadmap
 
+## Owner-authorized Phase4A
+
+Phase3A merged into the PR8 feature branch as91e5737d. A separate stacked Phase4A PR implements concise versioned future OpenAI Trial contracts, deduplicated historical drawing guidance and immutable request compatibility. Final-head automated acceptance is recorded externally; visual acceptance remains separate. Phase4B old-analysis retirement and a paid visual pilot are not started.
+
 Owner-approved Phase3A is separate stacked feature work from completed PR8
 source38311206: local source references, reviewed brief, free Save and existing
 Trial preparation, with optional historical analysis preserved. Implementation

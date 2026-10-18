@@ -222,8 +222,9 @@ internal class StyleTrialJournal(context: Context) {
                 listOf("0".repeat(64)) else emptyList()
             val c = r.plan.context.copy(mode = "CREATE", sourcePackage = null, sourceStamp = null,
                 referenceFingerprint = referenceFingerprint(refs), styleFingerprint = styleFingerprint("deleted project", ""), dnaFingerprint = "")
-            val deleted = r.plan.copy(context = c, specification = "deleted project", instruction = "", referenceHashes = refs, drawingRecipes = emptyMap(),
+            val redacted = r.plan.copy(context = c, specification = "deleted project", instruction = "", referenceHashes = refs, drawingRecipes = emptyMap(),
                 inputs = r.plan.inputs.mapIndexed { i, input -> input.copy(key = "deleted/target$i", name = "", originalHash = "0".repeat(64), origin = "deleted", originalEvidence = null) })
+            val deleted = if (redacted.promptVersion == 2) redacted.freezeReferenceFirstPrompt() else redacted
             write(r.copy(plan = deleted, prepared = false, items = r.items.map { it.copy(status =
                 if (it.endpointCalls > 0) TrialStatus.UNCERTAIN else TrialStatus.SKIPPED, resultHash = null, reason = "profile_deleted") }))
         }

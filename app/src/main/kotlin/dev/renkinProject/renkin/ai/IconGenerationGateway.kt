@@ -23,7 +23,8 @@ data class IconGenerationRequest(
     // OpenAI treats overrides as quoted appearance data under its mandatory output contract.
     // Stability retains its fixed-endpoint prompt behavior.
     val composedPrompt: String? = null,
-    val beforeEndpoint: suspend (Int) -> Unit = {}
+    val beforeEndpoint: suspend (Int) -> Unit = {},
+    val promptVersion: Int = 1
 )
 
 sealed interface IconGenerationOutcome {
@@ -65,8 +66,10 @@ class ClientIconGenerationGateway internal constructor(
                 require(request.styleRevision == null || request.styleRevision > 0)
                 require(request.referencePngs.size <= 5)
                 require(request.composedPrompt == null || request.composedPrompt.isNotBlank() && request.composedPrompt.length <= MAX_COMPOSED_ICON_PROMPT)
+                require(request.promptVersion in 1..2 && (request.promptVersion == 1 ||
+                    request.provider == AiSettings.OPENAI && request.composedPrompt != null))
                 if (request.provider == AiSettings.OPENAI) request.composedPrompt?.let {
-                    PromptComposer.openAiEditPrompt(it, request.referencePngs.size)
+                    PromptComposer.versionedEditPrompt(it, request.referencePngs.size, request.promptVersion)
                 }
                 require(request.provider != AiSettings.STABILITY || request.referencePngs.size == 1)
                 (listOf(request.originalPng) + request.referencePngs).forEach { inspectPng(it) }
@@ -81,7 +84,7 @@ class ClientIconGenerationGateway internal constructor(
             submitted = true
             val bytes = when (settings.provider) {
                 AiSettings.OPENAI -> openAi.edit(key, settings, listOf(request.originalPng) + request.referencePngs,
-                    request.composedPrompt, request.beforeEndpoint)
+                    request.composedPrompt, request.beforeEndpoint, request.promptVersion)
                 AiSettings.STABILITY -> stability.edit(key, settings, request.originalPng, request.referencePngs.single(),
                     request.composedPrompt, request.beforeEndpoint)
                 else -> return IconGenerationOutcome.InvalidInput(request.requestId)

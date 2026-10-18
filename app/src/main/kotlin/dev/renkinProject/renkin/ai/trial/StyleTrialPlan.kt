@@ -88,14 +88,32 @@ internal data class TrialInput(val key: String, val name: String, val originalHa
 /** Primitive frozen input only. Actual PNGs are privately staged after explicit consent. */
 internal data class StyleTrialPlan(val context: TrialContext, val specification: String, val instruction: String,
     val referenceHashes: List<String>, val inputs: List<TrialInput>, val id: String = UUID.randomUUID().toString(),
-    val drawingRecipes: Map<String, String> = emptyMap()) {
+    val drawingRecipes: Map<String, String> = emptyMap(), val promptVersion: Int = 1,
+    val promptHashes: Map<String, String> = emptyMap()) {
     val endpointMaximum get() = inputs.size * if (context.provider == AiSettings.STABILITY) 2 else 1
     val fingerprint get() = sha256(encode().toByteArray())
+    fun appearance(input: TrialInput): String {
+        val recipe = drawingRecipes[input.key]
+        return if (context.provider != AiSettings.OPENAI) PromptComposer.composeSaved(recipe ?: specification, instruction)
+        else if (promptVersion == 2) PromptComposer.referenceFirstAppearance(specification, instruction, recipe)
+        else if (recipe != null) dnaTrialAppearance(recipe, specification, instruction)
+        else PromptComposer.openAiTrialAppearance(specification, instruction)
+    }
+    fun effectivePrompt(input: TrialInput): String = if (context.provider == AiSettings.OPENAI)
+        PromptComposer.versionedEditPrompt(appearance(input), referenceHashes.size, promptVersion) else appearance(input)
+    /** New plans only. Never upgrade a restored/consumed plan or change its UUID's request. */
+    fun freezeReferenceFirstPrompt(): StyleTrialPlan {
+        if (context.provider != AiSettings.OPENAI) return this
+        val next = copy(promptVersion = 2, promptHashes = emptyMap())
+        return next.copy(promptHashes = inputs.associate { it.key to sha256(next.effectivePrompt(it).toByteArray(Charsets.UTF_8)) })
+    }
     fun validate() {
         context.validate(); trialId(id)
         cleanText(specification, 6000, true); require(specification.isNotBlank()); cleanText(instruction, 2000, true)
         require(context.styleFingerprint.isEmpty() || context.styleFingerprint == styleFingerprint(specification, instruction))
-        val prompt = if (context.provider == AiSettings.OPENAI)
+        val prompt = if (context.provider == AiSettings.OPENAI && promptVersion == 2)
+            PromptComposer.referenceFirstEditPrompt(PromptComposer.referenceFirstAppearance(specification, instruction), referenceHashes.size)
+            else if (context.provider == AiSettings.OPENAI)
             PromptComposer.openAiEditPrompt(PromptComposer.openAiTrialAppearance(specification, instruction), referenceHashes.size)
             else PromptComposer.composeSaved(specification, instruction)
         require(prompt.length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT)
@@ -107,25 +125,36 @@ internal data class StyleTrialPlan(val context: TrialContext, val specification:
         require((context.dnaFingerprint.isEmpty() && drawingRecipes.isEmpty()) ||
             context.dnaFingerprint.isNotEmpty() && drawingRecipes.keys == inputs.map { it.key }.toSet())
         drawingRecipes.forEach { (_,recipe) -> cleanText(recipe,6000,true); require(recipe.isNotBlank())
-            if (context.provider == AiSettings.OPENAI) PromptComposer.openAiEditPrompt(dnaTrialAppearance(recipe,specification,instruction),referenceHashes.size)
-            else require(PromptComposer.composeSaved(recipe,instruction).length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT) }
-
+            if (context.provider == AiSettings.OPENAI && promptVersion == 1) PromptComposer.openAiEditPrompt(dnaTrialAppearance(recipe,specification,instruction),referenceHashes.size)
+            else if (context.provider != AiSettings.OPENAI) require(PromptComposer.composeSaved(recipe,instruction).length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT) }
+        require(promptVersion in 1..2)
+        if (promptVersion == 1) require(promptHashes.isEmpty()) else {
+            require(context.provider == AiSettings.OPENAI && promptHashes.keys == inputs.map { it.key }.toSet())
+            inputs.forEach { require(promptHashes[it.key] == sha256(effectivePrompt(it).toByteArray(Charsets.UTF_8))) }
+        }
     }
     fun encode(): String { validate(); return canonicalJson(json("schema" to 1, "id" to id,
         "context" to context.json(), "specification" to specification, "instruction" to instruction,
         "referenceHashes" to JSONArray(referenceHashes), "inputs" to JSONArray(inputs.map { it.json() })).also {
-            if (drawingRecipes.isNotEmpty()) it.put("drawingRecipes",json(*drawingRecipes.map { it.key to it.value }.toTypedArray())) }) }
+            if (drawingRecipes.isNotEmpty()) it.put("drawingRecipes",json(*drawingRecipes.map { it.key to it.value }.toTypedArray()))
+            if (promptVersion != 1) { it.put("promptVersion", promptVersion); it.put("promptHashes", JSONObject(promptHashes)) }
+        }) }
     companion object {
         fun parse(text: String): StyleTrialPlan {
             val r = strictObject(text, 65536, 12); require(r.longValue("schema") == 1L)
-            r.exactKeys(setOf("schema", "id", "context", "specification", "instruction", "referenceHashes", "inputs") + if (r.has("drawingRecipes")) setOf("drawingRecipes") else emptySet())
+            r.exactKeys(setOf("schema", "id", "context", "specification", "instruction", "referenceHashes", "inputs") +
+                (if (r.has("drawingRecipes")) setOf("drawingRecipes") else emptySet()) +
+                (if (r.has("promptVersion")) setOf("promptVersion", "promptHashes") else emptySet()))
+            val version = if (r.has("promptVersion")) r.longValue("promptVersion").also { require(it == 2L) }.toInt() else 1
             val refs = r.getJSONArray("referenceHashes"); require(refs.length() <= 5)
             val inputs = r.getJSONArray("inputs"); require(inputs.length() in 1..3)
             return StyleTrialPlan(TrialContext.parse(r.getJSONObject("context")), r.stringValue("specification"),
                 r.stringValue("instruction"), (0 until refs.length()).map { refs.getString(it) },
                 (0 until inputs.length()).map { TrialInput.parse(inputs.getJSONObject(it)) }, r.stringValue("id"),
                 if (r.has("drawingRecipes")) r.getJSONObject("drawingRecipes").let { recipes -> require(recipes.length()<=3);
-                    recipes.keys().asSequence().associateWith { recipes.stringValue(it) } } else emptyMap()).also { it.validate() }
+                    recipes.keys().asSequence().associateWith { recipes.stringValue(it) } } else emptyMap(), version,
+                if (version == 2) r.getJSONObject("promptHashes").let { hashes -> require(hashes.length() <= 3)
+                    hashes.keys().asSequence().associateWith { hashes.stringValue(it) } } else emptyMap()).also { it.validate() }
         }
     }
 }

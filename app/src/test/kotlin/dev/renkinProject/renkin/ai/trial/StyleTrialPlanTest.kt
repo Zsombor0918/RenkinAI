@@ -27,6 +27,42 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleTrialPlanTest {
     @get:Rule val temporary = TemporaryFolder()
+    @Test fun newPromptVersionBindsEffectiveBytesAndCannotMutateARestoredRequest() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(refs = 2)
+            val old = f.plan(listOf("a/Main"))
+            val frozenOld = old.encode(); val oldFingerprint = old.fingerprint
+            val next = old.freezeReferenceFirstPrompt()
+            assertEquals(1, StyleTrialPlan.parse(frozenOld).promptVersion)
+            assertEquals(frozenOld, StyleTrialPlan.parse(frozenOld).encode())
+            assertEquals(oldFingerprint, StyleTrialPlan.parse(frozenOld).fingerprint)
+            assertFalse(frozenOld.contains("promptVersion")); assertFalse(frozenOld.contains("promptHashes"))
+            assertNotEquals(old.fingerprint, next.fingerprint)
+            assertEquals(next, StyleTrialPlan.parse(next.encode()))
+            assertEquals(sha256(next.effectivePrompt(next.inputs.single()).toByteArray()), next.promptHashes.getValue("a/Main"))
+            assertTrue(runCatching { next.copy(promptHashes = mapOf("a/Main" to "0".repeat(64))).validate() }.isFailure)
+            assertTrue(runCatching { next.copy(specification = "changed", context = next.context.copy(
+                styleFingerprint = styleFingerprint("changed", next.instruction))).validate() }.isFailure)
+            assertTrue(runCatching { StyleTrialPlan.parse(JSONObject(next.encode()).put("promptVersion", 3).toString()) }.isFailure)
+            assertTrue(runCatching { StyleTrialPlan.parse(JSONObject(next.encode()).also { it.remove("promptHashes") }.toString()) }.isFailure)
+            assertTrue(runCatching { StyleTrialPlan.parse(JSONObject(next.encode()).put("promptVersion", 1).toString()) }.isFailure)
+            val maximum = old.copy(specification = "\"".repeat(6000), instruction = "\\".repeat(2000),
+                context = old.context.copy(dnaFingerprint = "e".repeat(64),
+                    styleFingerprint = styleFingerprint("\"".repeat(6000), "\\".repeat(2000))),
+                drawingRecipes = mapOf("a/Main" to "\\".repeat(6000))).freezeReferenceFirstPrompt()
+            maximum.validate()
+            assertEquals(maximum, StyleTrialPlan.parse(maximum.encode()))
+        }
+    }
+    @Test fun historicalV1CanonicalFingerprintRemainsAnExactGolden() {
+        val context = TrialContext(1, 1, 0, "CREATE", null, null, "a".repeat(64), "b".repeat(64),
+            referenceFingerprint(emptyList()), "initial", "OpenAI", "gpt-image-2.5-flare", "medium")
+        val plan = StyleTrialPlan(context, "outline", "", emptyList(), listOf(TrialInput("target/Main", "Target",
+            "c".repeat(64), "component-resource", "22222222-2222-2222-2222-222222222222")), "11111111-1111-1111-1111-111111111111")
+        // Android JSONObject.quote escapes the component slash as \/ in canonical bytes.
+        assertEquals("ec4677faf200588ca7602d7e987b2006e69b57693892db901e3c4ee4585c8ebd", plan.fingerprint)
+        assertEquals(plan.encode(), StyleTrialPlan.parse(plan.encode()).encode())
+    }
     @Test fun frozenPlanRoundTripsAndEveryCostInputChangesFingerprint() = runBlocking {
         StyleTrialFixture(temporary.root).use { f ->
             f.initialize(); val p = f.plan(); assertEquals(p, StyleTrialPlan.parse(p.encode()))

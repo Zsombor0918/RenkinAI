@@ -425,6 +425,9 @@ class StyleDnaEmulatorTest {
         prepareVisibleTrial()
         val plan = checkNotNull(fixture.trials.state(1).value.plan)
         assertTrue(fixture.trials.state(1).value.hasKey)
+        assertEquals(2, plan.promptVersion)
+        assertEquals(plan, StyleTrialPlan.parse(plan.encode()))
+        assertEquals(sha256(plan.effectivePrompt(plan.inputs.single()).toByteArray()), plan.promptHashes.getValue(target.key))
         assertEquals(saved.references.map { it.hash }, plan.referenceHashes)
         val original = runBlocking { currentTrialOriginal(app, target.key) }
         assertEquals(original.hash, plan.inputs.single().originalHash)

@@ -218,6 +218,8 @@ class GuidedProjectRoomJourneyComposeTest {
         compose.waitUntil(10000) { trials.state(1).value.plan != null && !trials.state(1).value.busy }
         val plan = checkNotNull(trials.state(1).value.plan)
         assertTrue(trials.state(1).value.hasKey)
+        assertEquals("New free Save-to-Trial plans must freeze the new contract", 2,
+            org.json.JSONObject(plan.encode()).optInt("promptVersion", 1))
         assertEquals(saved.references.map { it.hash }, plan.referenceHashes)
         val original = fixture.originals.getValue("app/Main")
         assertEquals(original.hash, plan.inputs.single().originalHash)
@@ -225,6 +227,18 @@ class GuidedProjectRoomJourneyComposeTest {
         assertArrayEquals(original.png, runBlocking { trials.preview(1, original.hash) })
         saved.references.forEach { assertArrayEquals(runBlocking { fixture.repo.referenceBytes(1, it.hash) },
             runBlocking { trials.preview(1, it.hash) }) }
+        val request = dev.renkinProject.renkin.ai.buildImageEditRequest("synthetic-not-a-key",
+            AiSettings(style = plan.specification, model = plan.context.model, quality = plan.context.quality,
+                referenceNames = plan.referenceHashes.indices.map { "img_0_$it.png" }),
+            listOf(original.png) + plan.referenceHashes.map { checkNotNull(runBlocking { trials.preview(1, it) }) },
+            plan.appearance(plan.inputs.single()), plan.promptVersion)
+        val body = request.body as okhttp3.MultipartBody
+        val prompt = okio.Buffer().also { buffer -> body.parts.single {
+            it.headers?.get("Content-Disposition") == "form-data; name=\"prompt\""
+        }.body.writeTo(buffer) }.readUtf8()
+        assertEquals(plan.promptHashes.getValue("app/Main"), sha256(prompt.toByteArray()))
+        assertTrue(prompt.contains(saved.revision!!.specification))
+        assertEquals(3, body.parts.count { it.headers?.get("Content-Disposition")?.contains("name=\"image[]\"") == true })
         assertEquals(0, providerCalls)
         assertTrue(runBlocking { fixture.journal.records(1) }.isEmpty())
         // Target selection legitimately updates metadata/version; the saved style

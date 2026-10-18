@@ -206,7 +206,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             drawingRecipes = SavedStyleDna.optional(p.style.revision.analysisProfileJson)?.let { dna -> keys.associateWith { key ->
                 val choice=p.dnaChoices[key] ?: (dna.selectedFamily to DnaSymbolType.UNKNOWN)
                 StyleDnaCompiler.recipe(dna,choice.second,choice.first)
-            } }.orEmpty())
+            } }.orEmpty()).freezeReferenceFirstPrompt()
         check(current(plan))
         images[id] = bytes
         flow(id).value = flow(id).value.copy(preparation = p, plan = plan,

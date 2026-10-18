@@ -1,5 +1,9 @@
 # Regression and test matrix
 
+## Phase4A immutable generation requests
+
+Existing PromptComposer/StyleTrialPlan/Gateway/Journal classes cover duplicate-rule removal, unique instructions, V1 exact golden fingerprint/prompt, V2 effective hashes/tampering, 1?5 ordered reference PNGs, original-first native multipart, explicit consent and consumed-version/restart safety. Existing guided free Save journey requires a frozen V2 plan; the same five Android journeys verify version/hash roundtrip without additional POSTs. Run focused classes during development, then one authoritative final-head Linux/build, Python/governance and Android. No extra group or automatic full-suite duplication. Protocol success does not measure aesthetic fidelity.
+
 ## Phase3A reference-first route
 
 Extend ProjectPreparationTest with real repository/asset tests for selected PNG

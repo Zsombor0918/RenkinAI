@@ -70,6 +70,71 @@ class StyleTrialGatewayTest {
     private fun field(body: MultipartBody, name: String): String = Buffer().also { buffer ->
         body.parts.single { it.headers?.get("Content-Disposition") == "form-data; name=\"$name\"" }.body.writeTo(buffer)
     }.readUtf8()
+
+    @Test fun futureReferenceFirstFrozenRequestsKeepReviewedRolesConsentAndExactWirePromptWithoutAnalysis() = runBlocking {
+        for (refs in 1..5) StyleTrialFixture(temporary.newFolder()).use { f ->
+            f.initialize(mode = "EXTEND", refs = refs)
+            val style = if (refs % 2 == 0) "Adaptive original-brand colors; standalone dark silhouette, no separate tile."
+                else "Reviewed monochrome white artwork on an intentional round tile."
+            val saved = f.repo.load(1)
+            assertNull(saved.revision!!.analysisProfileJson)
+            f.repo.saveStyle(1, saved.revision.revision, style, "keep the essential monogram", saved.references.map { it.hash }.reversed())
+            val plan = f.plan(listOf("a/Main")).freezeReferenceFirstPrompt()
+            assertEquals(plan, StyleTrialPlan.parse(plan.encode()))
+            assertEquals(2, plan.promptVersion)
+            MockWebServer().use { server ->
+                val c = StyleTrialCoordinator(f.journal, adapter(server), f.repo)
+                val bytes = f.images(plan)
+                c.submit(plan, bytes, false, { true }); c.submit(plan, bytes, true, { false })
+                assertEquals(0, server.requestCount); assertTrue(f.journal.records(1).isEmpty())
+                server.enqueue(response())
+                c.submit(plan, bytes, true, { true })
+                assertEquals(1, server.requestCount)
+                val wire = String(server.takeRequest().body.readByteArray(), Charsets.ISO_8859_1)
+                fun wireField(name: String) = wire.substringAfter("name=\"$name\"")
+                    .substringAfter("\r\n\r\n").substringBefore("\r\n--")
+                val prompt = wireField("prompt")
+                assertEquals(plan.promptHashes.getValue("a/Main"), sha256(prompt.toByteArray(Charsets.UTF_8)))
+                assertEquals(plan.effectivePrompt(plan.inputs.single()), prompt)
+                for (meaning in listOf("IMAGE 1", "STYLE-ONLY", "Redraw the target geometry", "48 dp", "Dark silhouettes",
+                    "transparent alpha", "intentional evidenced tile", "fixed palette, monochrome or duotone", "brand color",
+                    "ONE standalone", "collage", "keep the essential monogram", style)) assertTrue(meaning, prompt.contains(meaning))
+                for ((name, value) in listOf("n" to "1", "size" to "1024x1024", "background" to "transparent", "output_format" to "png"))
+                    assertEquals(value, wireField(name))
+                var last = -1
+                (listOf(bytes.getValue(plan.inputs.single().originalHash)) + plan.referenceHashes.map(bytes::getValue)).forEach { png ->
+                    val at = wire.indexOf(String(png, Charsets.ISO_8859_1)); assertTrue(at > last); last = at
+                }
+                assertTrue(plan.inputs.single().originalHash !in plan.referenceHashes)
+                assertEquals(f.repo.load(1).references.map { it.hash }, plan.referenceHashes)
+                val reopened = StyleTrialJournal(f.context)
+                val recovery = StyleTrialCoordinator(reopened, adapter(server), f.repo)
+                recovery.recover(1); recovery.submit(StyleTrialPlan.parse(plan.encode()), bytes, true, { true })
+                assertEquals(1, server.requestCount); assertEquals(1, f.repo.trialVariants(1).size)
+            }
+        }
+    }
+
+    @Test fun futureDnaWireContainsOneRuleSetAndRetainsDistinctReviewedAndTargetGuidance() = runBlocking {
+        val (analysis, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
+        val recipe = StyleDnaCompiler.recipe(synthesizeDnaLocally(dnaFixtureReports(analysis), images), DnaSymbolType.WORDMARK)
+        StyleTrialFixture(temporary.newFolder()).use { f ->
+            f.initialize(refs = 2)
+            val old = f.plan(listOf("a/Main"))
+            val spec = "$recipe\nOwner-approved unique accent"
+            val plan = old.copy(specification = spec,
+                context = old.context.copy(dnaFingerprint = "d".repeat(64), styleFingerprint = styleFingerprint(spec, old.instruction)),
+                drawingRecipes = mapOf("a/Main" to "$recipe\nUnique target construction")).freezeReferenceFirstPrompt()
+            MockWebServer().use { server ->
+                server.enqueue(response())
+                StyleTrialCoordinator(f.journal, adapter(server), f.repo).submit(plan, f.images(plan), true, { true })
+                val wire = server.takeRequest().body.readUtf8()
+                assertEquals(1, Regex("Background mode:").findAll(wire).count())
+                listOf("Owner-approved unique accent", "Unique target construction", old.instruction).forEach { assertTrue(wire.contains(it)) }
+                listOf("sampled reports", "Reviewed Style DNA family", "Unestablished traits", "dnaFingerprint").forEach { assertFalse(it, wire.contains(it)) }
+            }
+        }
+    }
     private fun assertFullTrialPrompt(request: IconGenerationRequest, expectedAppearance: String) {
         val body = buildImageEditRequest(credential, settings(request), listOf(request.originalPng) + request.referencePngs,
             request.composedPrompt).body as MultipartBody

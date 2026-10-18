@@ -1,5 +1,9 @@
 # Offline Style DNA verification
 
+## Phase4A generation version check
+
+The retained reference-first Android journey additionally checks V2 plan parse/hash equality after free Save and before any paid image consent. The native image-edit request and exact ordered PNG bytes are covered by local MockWebServer tests in the single authoritative unit suite. Existing Quick/Standard/incomplete/restart counts and the five-journey runner remain unchanged. No live endpoint or key is used.
+
 ## Phase3A additional free reference journey
 
 The same emulator runner retains Quick/Standard/incomplete-cancel and restart,

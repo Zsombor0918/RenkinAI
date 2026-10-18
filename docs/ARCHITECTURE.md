@@ -1,5 +1,9 @@
 # Architecture
 
+## Phase4A versioned Trial generation
+
+New OpenAI Trial preparation freezes generation promptV2 plus per-target full UTF-8 prompt hashes in the existing schema1 plan. Those optional fields bind effective request text to its fingerprint; parse/claim rejects changed text/version/hash. Missing fields retain byte-identical V1 composition and serialization. Coordinator and native multipart factory dispatch the same version. No mandatory analysis, new store, migration, model or signing change. One quoted reviewed brief merges only exact duplicate historical recipe lines, omitting recognized compiler metadata while keeping unique instructions. The authoritative contract separates original identity from geometric transformation, reference-only treatment, tile versus silhouette and reviewed color choices. See [ADR0014](decisions/0014-versioned-trial-generation-contract.md).
+
 Queue-drain snapshots iterate concurrent entries rather than using Kotlin
 Map.toMap's size/singleton shortcut, which can throw if release removes the last
 pending read between size and iterator.next. The existing conditional removal,

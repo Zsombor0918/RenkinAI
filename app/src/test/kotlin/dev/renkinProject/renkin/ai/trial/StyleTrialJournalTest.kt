@@ -28,6 +28,29 @@ class StyleTrialJournalTest {
         c.submit(p, images, false, { true }); c.submit(p, images, true, { false })
         assertEquals(0, calls); assertFalse(File(f.context.noBackupFilesDir, "style_trials").exists())
     }
+    @Test fun v2RestartAndVersionRetaggingCannotReplayConsumedItemsAndDeletionRedactsHashes() = runBlocking {
+        var calls = 0
+        val old = f.plan(listOf("a/Main"))
+        val c = StyleTrialCoordinator(f.journal, f.successful { calls++ }, f.repo)
+        c.submit(old, f.images(old), true, { true })
+        val retagged = old.copy(id = java.util.UUID.randomUUID().toString()).freezeReferenceFirstPrompt()
+        assertTrue(runCatching { c.submit(retagged, f.images(retagged), true, { true }) }.isFailure)
+        assertEquals(1, calls)
+        val next = f.plan(listOf("b/Main")).freezeReferenceFirstPrompt()
+        assertTrue(f.journal.claim(next, f.images(next)))
+        f.journal.begin(next, next.inputs.single().requestId); f.journal.endpoint(next, next.inputs.single().requestId, 1)
+        f.journal.release(next)
+        val reopened = StyleTrialJournal(f.context)
+        val recovery = StyleTrialCoordinator(reopened, f.successful { calls++ }, f.repo)
+        recovery.recover(1); recovery.submit(StyleTrialPlan.parse(next.encode()), f.images(next), true, { true })
+        assertEquals(1, calls); assertEquals(TrialStatus.UNCERTAIN, reopened.read(1, next.id)!!.items.single().status)
+        reopened.invalidateProfile(1)
+        val redacted = reopened.read(1, next.id)!!
+        assertFalse(redacted.prepared); assertEquals(2, redacted.plan.promptVersion)
+        assertEquals("deleted project", redacted.plan.specification)
+        assertFalse(redacted.encode().contains(next.promptHashes.getValue("b/Main")))
+        assertEquals(1, redacted.items.single().endpointCalls)
+    }
     @Test fun orphanFirstAtomicWriteDoesNotBlockRecoveryOrFreshConsentAndCannotReplayItsUuid() = runBlocking {
         val orphan = f.plan(listOf("a/Main"))
         val directory = File(f.context.noBackupFilesDir, "style_trials/1").apply { mkdirs() }

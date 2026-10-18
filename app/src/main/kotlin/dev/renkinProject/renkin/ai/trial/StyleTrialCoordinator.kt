@@ -1,7 +1,6 @@
 package dev.renkinProject.renkin.ai.trial
 
 import dev.renkinProject.renkin.ai.*
-import dev.renkinProject.renkin.ai.style.PromptComposer
 import dev.renkinProject.renkin.data.project.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -26,13 +25,7 @@ internal class StyleTrialCoordinator(private val journal: StyleTrialJournal, pri
                         plan.referenceHashes.map { journal.image(plan.context.profileId, it) }, plan.specification,
                         provider = plan.context.provider, model = plan.context.model, quality = plan.context.quality,
                         requestId = input.requestId, profileId = plan.context.profileId, styleRevision = plan.context.revision,
-                        composedPrompt = if (input.key in plan.drawingRecipes) {
-                            val recipe = plan.drawingRecipes.getValue(input.key)
-                            if (plan.context.provider == AiSettings.OPENAI) dnaTrialAppearance(recipe,plan.specification,plan.instruction)
-                            else PromptComposer.composeSaved(recipe,plan.instruction)
-                        } else if (plan.context.provider == AiSettings.OPENAI)
-                            PromptComposer.openAiTrialAppearance(plan.specification, plan.instruction)
-                            else PromptComposer.composeSaved(plan.specification, plan.instruction),
+                        composedPrompt = plan.appearance(input), promptVersion = plan.promptVersion,
                         beforeEndpoint = { step -> check(current()) { "Trial input changed." }; journal.endpoint(plan, input.requestId, step) }))
                     if (result is IconGenerationOutcome.Generated) withContext(NonCancellable) {
                         require(result.requestId == input.requestId && result.provider == plan.context.provider)

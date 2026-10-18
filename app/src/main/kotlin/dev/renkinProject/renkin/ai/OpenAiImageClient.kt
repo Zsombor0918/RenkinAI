@@ -39,22 +39,23 @@ class OpenAiImageClient internal constructor(private val client: OkHttpClient, p
     }
 
     suspend fun edit(key: String, settings: AiSettings, images: List<ByteArray>,
-        promptOverride: String? = null, beforeEndpoint: suspend (Int) -> Unit = {}): ByteArray =
+        promptOverride: String? = null, beforeEndpoint: suspend (Int) -> Unit = {}, promptVersion: Int = 1): ByteArray =
         withContext(Dispatchers.IO) {
-            val request = buildImageEditRequest(key, settings, images, promptOverride).newBuilder().url(endpoint).build().withOneShotBody()
+            val request = buildImageEditRequest(key, settings, images, promptOverride, promptVersion).newBuilder().url(endpoint).build().withOneShotBody()
             beforeEndpoint(1)
             decodeImageResponse(execute(client.newCall(request)))
         }
 }
 
-internal fun buildImageEditRequest(key: String, settings: AiSettings, images: List<ByteArray>, promptOverride: String? = null): Request {
+internal fun buildImageEditRequest(key: String, settings: AiSettings, images: List<ByteArray>, promptOverride: String? = null, promptVersion: Int = 1): Request {
     settings.validate()
+    require(promptVersion in 1..2 && (promptVersion == 1 || promptOverride != null))
     require(promptOverride == null || promptOverride.isNotBlank() && promptOverride.length <= MAX_COMPOSED_ICON_PROMPT)
     require(images.size == settings.referenceNames.size + 1 && images.size in 1..6)
     require(images.all { it.isNotEmpty() && it.size <= 4 * 1024 * 1024 }) { "An input icon is too large." }
     val body = MultipartBody.Builder().setType(MultipartBody.FORM)
         .addFormDataPart("model", settings.model)
-        .addFormDataPart("prompt", promptOverride?.let { PromptComposer.openAiEditPrompt(it, images.size - 1) }
+        .addFormDataPart("prompt", promptOverride?.let { PromptComposer.versionedEditPrompt(it, images.size - 1, promptVersion) }
             ?: iconPrompt(settings.style, images.size - 1, settings.appInstruction))
         .addFormDataPart("n", "1")
         .addFormDataPart("size", "1024x1024")

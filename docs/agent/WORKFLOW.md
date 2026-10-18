@@ -1,5 +1,9 @@
 # Agent, Git and review workflow
 
+## Phase4A stacked verification
+
+Use the existing PR base feat/ux-flow-stabilization and separate draft feature branch. No CI scheduling change: ADR0012 single full Linux/build plus Python/governance and existing five Android journeys. Record exact final SHA externally after commit; initial BLOCKED audit is retained until evidence supports a final result. No shared Compose harness/order change is introduced by request-contract assertions.
+
 ## Phase3A stacked feature verification
 
 CI, offline Android and governance add PR base feat/ux-flow-stabilization so the
