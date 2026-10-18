@@ -111,7 +111,7 @@ data class ProjectAiSnapshot(
             selectionJson = ProjectSelection.decode(it.selectionJson)?.copy(sourceStamp = null, needsRevalidation = true)?.encode().orEmpty()) },
         old.revisions.map { it.copy(profileId = newId,
             analysisEvidenceJson = it.analysisEvidenceJson?.let { evidence ->
-                dev.renkinProject.renkin.ai.style.ReviewedAnalysisEvidence.parse(evidence).rekey(newId).encode()
+                dev.renkinProject.renkin.ai.style.rekeyStyleEvidence(evidence, newId)
             }) },
         old.assets.map { it.copy(profileId = newId, relativePath = ProjectAssetStore.path(newId, it.hash)) },
         old.references.map { it.copy(profileId = newId) },

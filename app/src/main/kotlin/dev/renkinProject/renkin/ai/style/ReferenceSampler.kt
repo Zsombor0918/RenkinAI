@@ -50,8 +50,13 @@ internal class StaleReferenceSource : IllegalStateException("Source changed duri
 
 internal class ReferenceSampler {
     suspend fun sample(reader: CoverageSourceReader, candidateLimit: Int = 120, sampleLimit: Int = 12): ReferenceSamples =
-        withContext(Dispatchers.Default) {
-            require(candidateLimit in 1..600 && sampleLimit in 1..24)
+        sampleInternal(reader, candidateLimit, sampleLimit.also { require(it in 1..24) }, false)
+
+    suspend fun montageCandidates(reader: CoverageSourceReader): ReferenceSamples = sampleInternal(reader, 300, MONTAGE_MAX_MEMBERS, true)
+
+    private suspend fun sampleInternal(reader: CoverageSourceReader, candidateLimit: Int, sampleLimit: Int,
+        montage: Boolean): ReferenceSamples = withContext(Dispatchers.Default) {
+            require(candidateLimit in 1..600 && sampleLimit in 1..MONTAGE_MAX_MEMBERS)
             val index = reader.index
             check(index.state == CoverageIndexState.READY && index.stamp.versionCode != null) { "A verified source index is required." }
             if (!reader.isCurrent()) throw StaleReferenceSource()
@@ -76,7 +81,7 @@ internal class ReferenceSampler {
                 if (!reader.stableReferences || component in index.dynamicKeys) { failed(ReferenceFailure.UNSUPPORTED_DYNAMIC); continue }
                 try {
                     if (drawable.isBlank()) { failed(ReferenceFailure.MISSING_DRAWABLE); continue }
-                    val read = reader.inspectReference(drawable)
+                    val read = if (montage) reader.inspectMontageReference(drawable) else reader.inspectReference(drawable)
                     if (read is ReferenceRead.Failed) { failed(read.reason); continue }
                     val png = (read as ReferenceRead.Rendered).png
                     validateReferencePixels(png)
@@ -102,10 +107,12 @@ internal class ReferenceSampler {
             for (sample in diverseReferences(valid, sampleLimit)) {
                 currentCoroutineContext().ensureActive()
                 if (!reader.isCurrent()) throw StaleReferenceSource()
-                val png = if (sample.png.isNotEmpty()) sample.png else checkNotNull(reader.referencePng(sample.drawable))
+                val png = if (sample.png.isNotEmpty()) sample.png else if (montage)
+                    (reader.inspectMontageReference(sample.drawable) as? ReferenceRead.Rendered)?.png ?: error("Montage resource changed")
+                    else checkNotNull(reader.referencePng(sample.drawable))
                 validateAnalysisPng(png)
                 if (sha256(png) != sample.hash || !reader.isCurrent()) throw StaleReferenceSource()
-                if (uploadBytes + png.size <= (if (sampleLimit <= 12) 4L else 8L) * 1024 * 1024) { chosen += sample.copy(png = png); uploadBytes += png.size }
+                if (uploadBytes + png.size <= (if (montage) 16L else if (sampleLimit <= 12) 4L else 8L) * 1024 * 1024) { chosen += sample.copy(png = png); uploadBytes += png.size }
             }
             val evidence = packStyleEvidence(valid)
             val mixed = evidence?.colorPolicy == PackColorPolicy.MIXED
@@ -131,7 +138,7 @@ internal class ReferenceSampler {
 /** Proportional geometry families, then medoids/diversity within each family. A minority
  * check remains visible without letting a 10% family dominate twelve uploaded samples. */
 internal fun diverseReferences(input: List<SampledReference>, limit: Int): List<SampledReference> {
-    require(limit in 1..24)
+    require(limit in 1..MONTAGE_MAX_MEMBERS)
     val families = geometryFamilies(input)
     if (families.isEmpty()) return emptyList()
     val size = minOf(limit, input.size)

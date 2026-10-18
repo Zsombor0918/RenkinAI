@@ -1,5 +1,9 @@
 # Architecture
 
+## Pack montage local artifact
+
+LocalPackMontages reuses the source reader, geometry-proportional sampler, private PNG assets and existing revision JSON. PackMontage stores ordered source members and sheet hashes/stamps; MontageEvidence binds profile/payload/brief and participates in backup rekey. Automatic30-member selection and content edits use the same adaptive transparent sheets, preserving256px source pixels with bounded pages. A separate fit-render path preserves nonsquare resource proportions without changing historical render bytes. No Room migration/store or restored old analysis transport. UI/analysis/new generation integration follows before exposure; see [ADR0016](decisions/0016-pack-montage-inputs.md).
+
 ## Phase0 removal boundary
 
 Active Legacy/Quick/Standard transport/coordinator/controller/service/UI no longer exists. Outbound strict-schema builders and local new-analysis synthesis are removed; immutable saved-data parsers/compiler and journal/epoch/consumed boundaries remain for backups/history/Trial reconstruction. LocalStyleReferences reuses the extracted owner-lock port and shared PNG thumbnail without an analysis service. Saved DNA Trials retain their stored selected family and reference binding; the active family/type selector is gone. Manual style Save and TrialV1/V2 generation remain, with no replacement cloud pipeline. [ADR0015](decisions/0015-retire-active-dna-analysis.md) records the dependency and rollback boundary. Montage stages remain future work.

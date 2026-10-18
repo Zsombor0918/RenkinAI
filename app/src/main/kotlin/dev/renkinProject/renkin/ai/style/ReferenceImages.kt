@@ -16,6 +16,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+import kotlin.math.roundToInt
 
 internal const val REFERENCE_SIDE = 256
 internal const val MAX_ANALYSIS_PNG = 384 * 1024
@@ -30,7 +31,11 @@ internal fun renderStaticReference(source: Drawable): ByteArray? = renderStaticR
 }
 
 /** Allocation seam verifies owned render-bitmap cleanup on both success and draw failure. */
-internal fun renderStaticReference(source: Drawable, allocate: () -> Bitmap): ByteArray? {
+internal fun renderStaticReference(source: Drawable, allocate: () -> Bitmap): ByteArray? = renderReference(source, allocate, false)
+internal fun renderMontageReference(source: Drawable): ByteArray? = renderReference(source,
+    { Bitmap.createBitmap(REFERENCE_SIDE, REFERENCE_SIDE, Bitmap.Config.ARGB_8888) }, true)
+
+private fun renderReference(source: Drawable, allocate: () -> Bitmap, fit: Boolean): ByteArray? {
     if (source is Animatable || source is StateListDrawable || source is LevelListDrawable || source is LayerDrawable) return null
     if (source is BitmapDrawable && (source.bitmap.isRecycled || source.bitmap.allocationByteCount > 16 * 1024 * 1024)) return null
     val drawable = source.constantState?.newDrawable()?.mutate() ?: source
@@ -38,7 +43,14 @@ internal fun renderStaticReference(source: Drawable, allocate: () -> Bitmap): By
     val bitmap = allocate()
     return try {
         require(bitmap.width == REFERENCE_SIDE && bitmap.height == REFERENCE_SIDE && bitmap.config != Bitmap.Config.HARDWARE)
-        drawable.setBounds(0, 0, REFERENCE_SIDE, REFERENCE_SIDE); drawable.draw(Canvas(bitmap))
+        if (fit && drawable.intrinsicWidth > 0 && drawable.intrinsicHeight > 0) {
+            val scale = REFERENCE_SIDE.toDouble() / max(drawable.intrinsicWidth, drawable.intrinsicHeight)
+            val w = (drawable.intrinsicWidth * scale).roundToInt().coerceAtLeast(1)
+            val h = (drawable.intrinsicHeight * scale).roundToInt().coerceAtLeast(1)
+            val x = (REFERENCE_SIDE - w) / 2; val y = (REFERENCE_SIDE - h) / 2
+            drawable.setBounds(x, y, x + w, y + h)
+        } else drawable.setBounds(0, 0, REFERENCE_SIDE, REFERENCE_SIDE)
+        drawable.draw(Canvas(bitmap))
         png(bitmap).also { inspectPng(it, MAX_ANALYSIS_PNG, requireVisible = false) }
     } finally { drawable.bounds = old; bitmap.recycle() }
 }

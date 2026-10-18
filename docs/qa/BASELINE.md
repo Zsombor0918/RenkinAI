@@ -1,5 +1,9 @@
 # Verification baseline
 
+## Montage local foundation verification
+
+Native Windows/JDK17: new30-member selection initially fails1/1 on the old24 bound (expected RED). The first new test compile failed because getApplication was supplied an unsupported type argument; fixed fixture only. Production compile passes; focused4 classes35/35 PASS including real saved-data/Room paths. Additional typography/high-entropy image assertions and final committed-head results are recorded after execution. No live API, key or phone access; historical governance remains separate.
+
 ## Phase0 hosted refinement fixture follow-up
 
 Source8f33ce56 runs921 Linux cases:920 PASS/1 FAIL in the retained

@@ -1,5 +1,9 @@
 # Regression and test matrix
 
+## Montage local contracts
+
+PackMontageTest tests actual pixel/alpha preservation across1,2,7,14,15,16,29,30,31,60 members; reorder/remove redistribution; proportional wordmark rendering; high-entropy PNG bounds; real Room/asset save/reopen/history/rekey and stale/cross-owner rejection. ReferenceSamplerTest adds a30-representative proportionality RED/GREEN. Historical style/analysis persistence classes run in the same focused union. No test count inflation by separate duplicated matrices.
+
 ## Phase0 retirement coverage
 
 [The exact inventory](PHASE0_RETIREMENT.md) lists112 removed/replaced old JUnit identities and7 replacement identities, observed net105 fewer than1026. Historical journal/format/backup tests, real archived-DNA-to-image multipart, V1 golden/V2 hash, original identity/order, source changes, consent/cancel/uncertainty/consumed and active manual/guided journeys remain. New Android expectation is2+1 active reference/decline/restart cases, replacing obsolete Quick/Standard/incomplete analysis journeys. These are deliberate product removals, not hidden skipped failures. First Linux XML confirms921 cases with one retained refinement-fixture failure; corrected-head results remain pending; local Windows symlink baseline remains documented. No montage or real visual acceptance is asserted.

@@ -1,5 +1,9 @@
 # Documentation index
 
+## Montage Phases1–3 implementation
+
+[ADR0016](decisions/0016-pack-montage-inputs.md) records the shared montage artifact and adaptive bounds. The local acquisition/render/persistence foundation is implemented first and remains unexposed until analysis and Trial integration. Historical Phase0 results below remain baseline evidence.
+
 ## Current owner-authorized Phase0 checkpoint
 
 [ADR0015](decisions/0015-retire-active-dna-analysis.md) and the [retirement inventory](qa/PHASE0_RETIREMENT.md) supersede old active-analysis product guidance below. Existing PR10 on feat/reference-first-prompt-v2 now targets main as set by the owner; this task preserves that actual base. Phase0 removes obsolete services/UI while retaining historical readers and shared safeguards. Phase1–3 montages/one analysis/montage Trials remain unimplemented; prior sections are historical evidence.

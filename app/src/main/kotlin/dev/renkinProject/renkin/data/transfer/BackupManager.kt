@@ -324,7 +324,7 @@ class BackupManager(
         requireValidBackup(data)
         val restoredAi = data.projectAi.copy(revisions = data.projectAi.revisions.map { revision ->
             revision.copy(analysisEvidenceJson = revision.analysisEvidenceJson?.let {
-                dev.renkinProject.renkin.ai.style.ReviewedAnalysisEvidence.parse(it).copy(needsRevalidation = true).encode()
+                dev.renkinProject.renkin.ai.style.rekeyStyleEvidence(it)
             })
         }, approvals = data.projectAi.approvals.map { it.copy(needsRevalidation = true) })
         // Finalize and verify immutable project files before any DB replacement. Failure here

@@ -45,6 +45,7 @@ internal interface CoverageSourceReader {
     suspend fun canRender(drawableName: String): Boolean
     val stableReferences: Boolean get() = true
     suspend fun referencePng(drawableName: String): ByteArray? = null
+    suspend fun inspectMontageReference(drawableName: String): dev.renkinProject.renkin.ai.style.ReferenceRead = inspectReference(drawableName)
     /** Compatibility adapters may lack resource-ID diagnostics. Real pack readers override this. */
     suspend fun inspectReference(drawableName: String): dev.renkinProject.renkin.ai.style.ReferenceRead {
         if (!canRender(drawableName)) return dev.renkinProject.renkin.ai.style.ReferenceRead.Failed(

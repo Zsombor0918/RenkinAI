@@ -1,5 +1,9 @@
 # Current implementation
 
+## Montage Phase1 local foundation
+
+From6e5ff5d2, automatic representative sampling, adaptive transparent sheet composition, ordered provenance and existing-asset/revision persistence are implemented. Editing1–60 members redistributes balanced sheets automatically; initial selection aims up to30 without fabricating missing icons. Source/resource/hash/owner validation and historical/backup readers remain. The new route is not yet exposed; Phases2–3 are next in the same authorized task/branch/PR10.
+
 ## Phase0 hosted refinement fixture follow-up
 
 Source8f33ce56 runs921 Linux cases:920 PASS/1 FAIL in the retained

@@ -22,6 +22,18 @@ import java.io.StringReader
 @Config(application = Application::class, sdk = [33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ReferenceSamplerTest {
+    @Test fun montageSelectionSupportsThirtyWithoutLettingMinoritiesReplaceThePack() {
+        val png = analysisFixturePng(); val base = referenceFeatures(png)
+        val common = (0 until 54).map { SampledReference("common$it", "icon$it", "$it", png,
+            base.copy(brightness = .2 + it / 100.0)) }
+        val minority = (0 until 6).map { SampledReference("minority$it", "extra$it", "extra$it", png,
+            base.copy(occupancy = .95, edgeDensity = .01, outlineEstimate = .02)) }
+        val selected = diverseReferences(common + minority, 30)
+        assertEquals(30, selected.size)
+        assertTrue(selected.count { it.component.startsWith("common") } >= 26)
+        assertTrue(selected.any { it.component.startsWith("minority") })
+        assertEquals(selected, diverseReferences((common + minority).reversed(), 30))
+    }
     @Test fun paletteRetainsMeasuredBlueInsteadOfInventingRgbBinCenters() {
         val bytes = analysisFixturePng()
         val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)

@@ -1,5 +1,9 @@
 # RenkinAI roadmap
 
+## Montage checkpoint1 in progress
+
+Phase1 local sampling/composition/persistence exists and is focused-tested before the single analysis and Trial integration. The ordinary guided workflow will change only when the complete montage path works; no half-working default is exposed. Phases2–3 remain authorized work on the same PR10, with historical governance independent.
+
 ## Owner-authorized montage direction and Phase0 checkpoint
 
 The October18 Phase0–3 instruction supersedes optional Legacy/Quick/Standard as an active product direction. Phase0 removes their exclusive implementations/tests with historical compatibility. The remaining checkpoints are Phase1 automatic20–30 source icons/montages, Phase2 one consented pack-wide analysis, Phase3 stable random target selection and original+montage generation. They remain unimplemented at this checkpoint. Manual references/Trial remain a working fallback; no visual-quality claim or paid pilot. See [inventory](qa/PHASE0_RETIREMENT.md).

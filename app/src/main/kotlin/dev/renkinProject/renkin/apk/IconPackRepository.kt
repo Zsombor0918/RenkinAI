@@ -184,6 +184,14 @@ class IconPackRepository(
                 if (!isCurrent()) throw dev.renkinProject.renkin.ai.style.StaleReferenceSource()
                 result
             }
+            override suspend fun inspectMontageReference(drawableName: String): dev.renkinProject.renkin.ai.style.ReferenceRead = withContext(Dispatchers.Default) {
+                if (!isCurrent()) throw dev.renkinProject.renkin.ai.style.StaleReferenceSource()
+                val result = if (!stableReferences) dev.renkinProject.renkin.ai.style.ReferenceRead.Failed(
+                    dev.renkinProject.renkin.ai.style.ReferenceFailure.UNSUPPORTED_DYNAMIC)
+                    else appManager.inspectReferenceDrawable(packageName, drawableName, montage = true)
+                if (!isCurrent()) throw dev.renkinProject.renkin.ai.style.StaleReferenceSource()
+                result
+            }
             override suspend fun referencePng(drawableName: String): ByteArray? = withContext(Dispatchers.Default) {
                 if (!isCurrent()) throw dev.renkinProject.renkin.ai.style.StaleReferenceSource()
                 if (!stableReferences) return@withContext null

@@ -12,12 +12,12 @@ internal sealed interface ReferenceRead {
     data class Rendered(val png: ByteArray) : ReferenceRead
     data class Failed(val reason: ReferenceFailure) : ReferenceRead
 }
-internal fun diagnoseReference(source: Drawable): ReferenceRead {
+internal fun diagnoseReference(source: Drawable, montage: Boolean = false): ReferenceRead {
     if (source is Animatable) return ReferenceRead.Failed(ReferenceFailure.UNSUPPORTED_DYNAMIC)
     if (source is StateListDrawable || source is LevelListDrawable || source is LayerDrawable)
         return ReferenceRead.Failed(ReferenceFailure.UNSUPPORTED_STATEFUL)
     return try {
-        val png = renderStaticReference(source) ?: return ReferenceRead.Failed(ReferenceFailure.DECLARED_UNRENDERABLE)
+        val png = (if (montage) renderMontageReference(source) else renderStaticReference(source)) ?: return ReferenceRead.Failed(ReferenceFailure.DECLARED_UNRENDERABLE)
         validateReferencePixels(png); ReferenceRead.Rendered(png)
     } catch (cancel: CancellationException) { throw cancel }
     catch (failure: EmptyReference) { ReferenceRead.Failed(failure.reason) }
