@@ -1,5 +1,19 @@
 # Agent handoff — guided UX Stage 1
 
+## Phase3A Linux queue-copy blocker
+
+New draft PR9 targets unchanged feat/ux-flow-stabilization at38311206. b6906528
+implements both increments, passes Android5/5, Python67/67, but Linux1019/1 fails
+because earlier Trial finally jobs throw during a shrinking ConcurrentHashMap.toMap
+singleton copy. The failure is not in ProfileDetailsDialog logic. Standalone
+Java17/Kotlin-stdlib reproduction gives the identical NoSuchElementException.
+Copy entries safely, keep all conditional dequeue/route and safety checks, run
+focused controller/form/guided tests, then corrected-head full CI/Android and
+explicit form-order diagnostic. Do not rerun a successful full suite on the same
+head. Remain BLOCKED until actual final results, then verify/publish the new APK
+on PR9 and stop. No Phase4, live/key/phone or protected-branch change.
+
+
 ## Phase3A guided integration and final gates
 
 First increment6fa04bf5 passes local ProjectPreparationTest7/7, including2 new

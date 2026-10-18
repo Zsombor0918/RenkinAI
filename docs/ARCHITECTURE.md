@@ -1,5 +1,12 @@
 # Architecture
 
+Queue-drain snapshots iterate concurrent entries rather than using Kotlin
+Map.toMap's size/singleton shortcut, which can throw if release removes the last
+pending read between size and iterator.next. The existing conditional removal,
+route match and local-read-only scheduling remain authoritative. This changes
+neither the event model nor paid permissions or persisted state.
+
+
 ## Local reference-first draft boundary
 
 LocalStyleReferences uses AnalysisSessionOwner only for its existing owner lock and

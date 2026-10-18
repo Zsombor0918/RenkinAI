@@ -24,6 +24,11 @@ private fun trialRequire(condition: Boolean, reason: String) {
     if (!condition) throw TrialPrerequisite(reason)
 }
 
+/** A concurrent queue may lose its last entry between size and iteration.
+ * Map.toMap's singleton shortcut assumes it cannot; entry iteration does not. */
+internal fun <K, V> pendingTrialLoadSnapshot(loads: Map<K, V>): Map<K, V> =
+    loads.entries.associate { it.key to it.value }
+
 /** One controller in the existing VM. Paid jobs are never composition/restoration effects. */
 internal class OwnedStyleTrials(private val scope: CoroutineScope, private val repository: ProjectAiRepository,
     private val journal: StyleTrialJournal, private val coordinator: StyleTrialCoordinator,
@@ -64,7 +69,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             finally {
                 jobs.remove(id)
                 flow(id).value = flow(id).value.copy(busy = false, network = false)
-                val waiting = pendingLoads.toMap()
+                val waiting = pendingTrialLoadSnapshot(pendingLoads)
                 waiting.forEach { (profile, request) ->
                     if (pendingLoads.remove(profile, request) && routes[profile] == request.route) {
                         requestLoad(profile, request)

@@ -1,5 +1,17 @@
 # Current implementation
 
+## Phase3A exact-head Linux follow-up
+
+b6906528 hosted Android5/5 passes, including free reference-first Save and restart.
+Linux39113733346 executes1019/1 failure: ProfileDetailsDialogComposeTest receives
+earlier uncaught OwnedStyleTrials.start exceptions. A concurrent last-entry
+removal breaks Kotlin Map.toMap's singleton optimization. Entry iteration replaces
+only that copy; conditional removal and route/read/paid checks remain unchanged.
+One deterministic regression extends the existing controller class. Final-head
+Linux/Android/form-order/governance evidence remains pending in PR9. See the
+[correction record](../changes/2026-10-18-trial-queue-snapshot.md).
+
+
 ## Phase3A.2 reference-first guided integration
 
 Guided style entry presents the existing brief/reference editor. Only fresh,

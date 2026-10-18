@@ -55,6 +55,20 @@ class OwnedStyleTrialsTest {
     private suspend fun generated(c: OwnedStyleTrials): StyleTrialPlan {
         val plan = prepared(c); c.submit(1, plan.id); idle(c).also { assertNull(it.error) }; return plan
     }
+    @Test fun drainingSnapshotToleratesRemovalOfTheOnlyQueuedReadAndKeepsCopiedEntries() {
+        val shrinking = object : java.util.concurrent.ConcurrentHashMap<Long, String>() {
+            override val entries: MutableSet<MutableMap.MutableEntry<Long, String>>
+                get() { clear(); return super.entries }
+        }
+        shrinking[1] = "local-read"
+        assertEquals(1, shrinking.size)
+        assertTrue(pendingTrialLoadSnapshot(shrinking).isEmpty())
+        val pending = java.util.concurrent.ConcurrentHashMap(mapOf(1L to "source", 2L to "target"))
+        val snapshot = pendingTrialLoadSnapshot(pending)
+        pending.clear()
+        assertEquals(mapOf(1L to "source", 2L to "target"), snapshot)
+        assertEquals(0, calls)
+    }
     @Test fun benignPackageStormDuringPrepareChecksFreshCatalogWithoutRebuildingOriginals() = runBlocking {
         val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
         val originals = java.util.concurrent.atomic.AtomicInteger()
