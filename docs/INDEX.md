@@ -1,5 +1,12 @@
 # Documentation index
 
+Current owner-approved Phase3A: [reference-first decision](decisions/0013-reference-first-style.md),
+[local acquisition](changes/2026-10-17-local-style-references.md) and
+[guided integration](changes/2026-10-17-reference-first-guided.md).
+This is separate feature work stacked on completed PR8; its own draft PR retains
+final-head checks and APK evidence. Phase4 remains outside scope.
+
+
 Current owner-approved Phase1: [lean verification ADR](decisions/0012-lean-verification.md) and [implementation evidence](changes/2026-10-17-lean-verification.md).
 
 Current bounded PR8 quality work: [generation recipe decision](decisions/0011-generation-useful-dna-recipes.md) and [diagnostic RED](changes/2026-10-16-dna-diagnostic-quality-red.md). Final-head traces/results remain on draft PR8.

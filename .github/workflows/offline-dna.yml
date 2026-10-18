@@ -2,7 +2,7 @@ name: Offline Style DNA
 
 on:
   pull_request:
-    branches: [main, "feat/style-trials-m5", "feat/style-dna-v1"]
+    branches: [main, "feat/style-trials-m5", "feat/style-dna-v1", "feat/ux-flow-stabilization"]
   workflow_dispatch:
 
 permissions:

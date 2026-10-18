@@ -287,7 +287,7 @@ private fun LocalStyleEvidence(evidence: PackStyleEvidence, report: ReferenceSam
 }
 
 @Composable
-private fun AnalysisThumbnail(hash: String, read: suspend () -> ByteArray, index: Int) {
+internal fun AnalysisThumbnail(hash: String, read: suspend () -> ByteArray, index: Int) {
     val latest by rememberUpdatedState(read)
     val image by produceState<ImageBitmap?>(null, hash) {
         var bitmap: android.graphics.Bitmap? = null

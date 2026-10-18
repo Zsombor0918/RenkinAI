@@ -1,5 +1,19 @@
 # Agent handoff — guided UX Stage 1
 
+## Phase3A guided integration and final gates
+
+First increment6fa04bf5 passes local ProjectPreparationTest7/7, including2 new
+asset/source cases. The second increment makes reference-first primary and keeps
+optional analyses explicit. Only neutral fresh-project text is initialized; old
+styles are read unchanged. Existing manual editor/assets/Trial originals and
+frozen-plan checks are reused. See [integration note](../changes/2026-10-17-reference-first-guided.md).
+Run targeted guided/controller checks, then one authoritative final-head Linux
+CI, strict Python/governance and Android5 journeys including the new free Save
+and restart evidence. Preserve failures and the prior Compose concurrency risk.
+Publish a verified fresh APK on the new stacked draft PR; leave PR8 unchanged.
+Stop after Phase3A. No live/key/phone operations or Phase4 are authorized.
+
+
 ## Phase3A.1 separate reference-first branch
 
 Owner authorizes Phase3A from3831120691217503c868d640a690fef2a7beca88.

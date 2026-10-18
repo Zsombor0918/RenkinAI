@@ -31,6 +31,7 @@ class ProjectStyleGuidedFlowComposeTest {
     private var completions = 0
     private var saveGate: CompletableDeferred<Unit>? = null
     private var lastPreparedMode: DnaAnalysisMode? = null
+    private var refreshes = 0
     private var failSave = false
     private val analysis = object : ProjectAnalysisBackend {
         override val supportsDna = true
@@ -38,7 +39,7 @@ class ProjectStyleGuidedFlowComposeTest {
         override fun prepare(id: Long, mode: ProjectSetupMode, source: String?, setupStamp: String?, expected: Long?, draft: ProjectStyleDraft) {}
         override fun submit(id: Long, requestId: String) { submissions++ }
         override fun cancel(id: Long) {}
-        override suspend fun refresh(id: Long) {}
+        override suspend fun refresh(id: Long) { refreshes++ }
         override suspend fun preview(id: Long, requestId: String, hash: String): ByteArray = error("No legacy artwork")
         override suspend fun use(id: Long, requestId: String, hashes: List<String>, allowStaleSource: Boolean): AnalyzedDraft =
             AnalyzedDraft(PromptComposer.specification(checkNotNull(flow.value.record?.style)), hashes, requestId, 1234, null)
@@ -80,6 +81,10 @@ class ProjectStyleGuidedFlowComposeTest {
             onStyleSaved = { completions++ }, guided = true) }
     }
     private fun scroll(tag: String) = compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag(tag))
+    private fun choose(method: String = "QUICK") {
+        scroll("project-style-analysis-options"); compose.onNodeWithTag("project-style-analysis-options").performClick()
+        scroll("project-style-method-$method"); compose.onNodeWithTag("project-style-method-$method").assertIsEnabled().performClick()
+    }
     private fun candidate() {
         val (plan, images) = dnaFixturePlan(DnaAnalysisMode.QUICK, 12)
         val reports = dnaFixtureReports(plan)
@@ -89,19 +94,30 @@ class ProjectStyleGuidedFlowComposeTest {
             SavedStyleDna(dna, reports, plan.model, plan.detail, plan.algorithm, dna.recommendedFamily)))
     }
 
-    @Test fun freshProjectDefaultsToQuickAndDoesNotExposeParallelLegacyPreparation() {
+    @Test fun freshProjectDefaultsToFreeReferencesAndAnalysisRequiresExplicitMethodSelection() {
         show()
-        scroll("style-dna-prepare")
-        compose.onNodeWithTag("style-dna-prepare").assertIsEnabled().performClick()
-        assertEquals(DnaAnalysisMode.QUICK, lastPreparedMode)
+        scroll("project-style-description")
+        compose.onNodeWithTag("project-style-description").assertTextContains("reference icons", substring = true)
+        compose.onNodeWithTag("style-dna-prepare").assertDoesNotExist()
         compose.onNodeWithTag("style-analysis-prepare").assertDoesNotExist()
+        assertEquals(0, refreshes)
+        scroll("project-style-analysis-options")
+        compose.onNodeWithTag("project-style-analysis-options").assertIsEnabled().performClick()
+        scroll("project-style-method-QUICK"); compose.onNodeWithTag("project-style-method-QUICK").performClick()
+        scroll("style-dna-prepare"); compose.onNodeWithTag("style-dna-prepare").assertIsEnabled().performClick()
+        assertEquals(DnaAnalysisMode.QUICK, lastPreparedMode)
+        scroll("project-style-reference-mode"); compose.onNodeWithTag("project-style-reference-mode").performClick()
+        scroll("project-style-description"); compose.onNodeWithTag("project-style-description").performTextReplacement("Owner edited brief")
+        scroll("project-style-analysis-options"); compose.onNodeWithTag("project-style-analysis-options").assertIsNotEnabled()
+        candidate() // Delayed historical results must not replace a manual draft.
+        scroll("project-style-description"); compose.onNodeWithTag("project-style-description").assertTextContains("Owner edited brief")
         assertEquals(0, submissions)
         assertEquals(0, dnaSaves)
         assertEquals(0, manualSaves)
     }
 
     @Test fun immutableDnaSaveFinishesStyleWithoutASecondManualSave() {
-        candidate(); show()
+        candidate(); show(); choose()
         scroll("style-dna-reviewed"); compose.onNodeWithTag("style-dna-reviewed").performClick()
         scroll("style-dna-save"); compose.onNodeWithTag("style-dna-save").assertIsEnabled().performClick()
         compose.waitUntil(10000) { saved.revision != null }
@@ -112,7 +128,7 @@ class ProjectStyleGuidedFlowComposeTest {
     }
 
     @Test fun pendingDnaSaveCannotClaimSavedOrEnableNextStep() {
-        saveGate = CompletableDeferred(); candidate(); show()
+        saveGate = CompletableDeferred(); candidate(); show(); choose()
         scroll("style-dna-reviewed"); compose.onNodeWithTag("style-dna-reviewed").performClick()
         scroll("style-dna-save"); compose.onNodeWithTag("style-dna-save").performClick()
         compose.waitUntil(10000) { dnaSaves == 1 }
@@ -129,7 +145,7 @@ class ProjectStyleGuidedFlowComposeTest {
     @Test fun resavingDnaBlocksParentActionsUntilTheNewRevisionIsDurable() {
         saved = SavedProjectStyle(ProjectAiMetadata(1, activeRevision = 1),
             StyleRevision(1, 1, specification = "previous saved style", userInstruction = ""), emptyList())
-        saveGate = CompletableDeferred(); candidate(); show()
+        saveGate = CompletableDeferred(); candidate(); show(); choose()
         scroll("style-dna-reviewed"); compose.onNodeWithTag("style-dna-reviewed").performClick()
         scroll("style-dna-save"); compose.onNodeWithTag("style-dna-save").performClick()
         compose.waitUntil(10000) { dnaSaves == 1 }
@@ -141,7 +157,7 @@ class ProjectStyleGuidedFlowComposeTest {
     }
 
     @Test fun delayedReloadOfTheSameDnaCandidateKeepsItsEditedGrammar() {
-        candidate(); show()
+        candidate(); show(); choose()
         val record = checkNotNull(flow.value.dnaRecord)
         val original = checkNotNull(record.result).dna.encode()
         val rule = record.result!!.dna.families.first().drawing.values.first().value
@@ -157,8 +173,7 @@ class ProjectStyleGuidedFlowComposeTest {
 
     @Test fun sourceFreeManualCreateSavesAndContinuesWithoutAKeyOrAnySubmission() {
         show()
-        scroll("style-dna-manual"); compose.onNodeWithTag("style-dna-manual").performClick()
-        scroll("project-style-description"); compose.onNodeWithTag("project-style-description").performTextInput("simple outline")
+        scroll("project-style-description"); compose.onNodeWithTag("project-style-description").performTextReplacement("simple outline")
         scroll("project-style-instruction"); compose.onNodeWithTag("project-style-instruction").performTextInput("keep original colors")
         scroll("project-style-save"); compose.onNodeWithTag("project-style-save").performClick()
         compose.waitUntil(10000) { completions == 1 }
@@ -175,7 +190,7 @@ class ProjectStyleGuidedFlowComposeTest {
         flow.value = flow.value.copy(error = "operation", record = AnalysisRecord(1, request.requestId,
             request.fingerprint, request.context, request.model, "", "", request.images.map { it.hash },
             request.promptHash, 123, AnalysisStatus.RESULT_SAVED, style, "offline-result", sha256(style.toByteArray())))
-        show()
+        show(); choose("LEGACY")
         scroll("style-analysis-error"); compose.onNodeWithTag("style-analysis-error").assertTextContains("earlier analysis", substring = true)
         scroll("style-analysis-suggestion"); compose.onNodeWithTag("style-analysis-suggestion").assertTextContains(analysisFixtureStyle().shortStyleDescription)
         scroll("style-analysis-use"); compose.onNodeWithTag("style-analysis-use").assertIsEnabled().performClick()
@@ -187,7 +202,7 @@ class ProjectStyleGuidedFlowComposeTest {
     }
 
     @Test fun failedDnaSaveKeepsCandidateAndNeverAdvancesOrClaimsPersistentSuccess() {
-        failSave = true; candidate(); show()
+        failSave = true; candidate(); show(); choose()
         scroll("style-dna-reviewed"); compose.onNodeWithTag("style-dna-reviewed").performClick()
         scroll("style-dna-save"); compose.onNodeWithTag("style-dna-save").performClick()
         compose.waitUntil(10000) { dnaSaves == 1 }

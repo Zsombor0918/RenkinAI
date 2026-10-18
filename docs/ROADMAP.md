@@ -1,5 +1,13 @@
 # RenkinAI roadmap
 
+Owner-approved Phase3A is separate stacked feature work from completed PR8
+source38311206: local source references, reviewed brief, free Save and existing
+Trial preparation, with optional historical analysis preserved. Implementation
+and final-head verification are recorded on its own draft PR; this is not owner
+release approval. Phase4 prompt simplification and paid experiments remain deferred.
+See [reference-first decision](decisions/0013-reference-first-style.md).
+
+
 Statuses describe implementation, not release approval. The application baseline
 is [CURRENT_STATE](agent/CURRENT_STATE.md); test evidence is [BASELINE](qa/BASELINE.md).
 

@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /** Real Android resources, Compose routes, HTTP, SQLite and AtomicFile journals.
  * Every byte is synthetic. This suite refuses physical devices and never reads credentials.
- * The runner force-stops the process between the first three methods and restartReadOnly. */
+ * The runner force-stops the process between the first four methods and restartReadOnly. */
 @RunWith(AndroidJUnit4::class)
 class StyleDnaEmulatorTest {
     @get:Rule val compose = createComposeRule()
@@ -96,6 +96,7 @@ class StyleDnaEmulatorTest {
             check(it.scheme == "http" && it.host == "127.0.0.1" && it.port == server.port)
         }
         val posts = AtomicInteger()
+        val trialKeyAvailable = AtomicBoolean(name != "references")
         val client = OkHttpClient.Builder().proxy(Proxy.NO_PROXY)
             .retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false)
             .callTimeout(20, TimeUnit.SECONDS).readTimeout(20, TimeUnit.SECONDS)
@@ -128,7 +129,7 @@ class StyleDnaEmulatorTest {
         }
         val analysis = OwnedStyleAnalysis(scope, repo, legacyJournal, ReferenceSampler(),
             StyleAnalysisCoordinator(legacyJournal, StyleAnalysisGateway { error("Legacy submission is forbidden") }),
-            { true }, object : AnalysisSessionOwner {
+            { name != "references" }, object : AnalysisSessionOwner {
                 override suspend fun <T> owned(id: Long, operation: suspend () -> T) = this@Fixture.owned(id, operation)
                 override suspend fun catalogStamp() = projectCatalogStamp(listOf(target))
                 override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader {
@@ -138,7 +139,7 @@ class StyleDnaEmulatorTest {
                 "https://api.openai.com/v1/responses".toHttpUrl())))
         private val actualTrials = OwnedStyleTrials(scope, repo, trialJournal,
             StyleTrialCoordinator(trialJournal, IconGenerationGateway { error("Trial submission is forbidden") }, repo),
-            { true }, object : TrialSessionOwner {
+            { trialKeyAvailable.get() }, object : TrialSessionOwner {
                 override suspend fun <T> owned(id: Long, action: suspend () -> T) = this@Fixture.owned(id, action)
                 override suspend fun targets() = listOf(target)
                 override suspend fun reader(source: String): CoverageSourceReader { check(source == pack); return reader }
@@ -166,6 +167,13 @@ class StyleDnaEmulatorTest {
         }
         val style = object : ProjectStyleBackend {
             override val analysis get() = observedAnalysis
+            override val localReferences = LocalStyleReferences(repo, ReferenceSampler(), object : AnalysisSessionOwner {
+                override suspend fun <T> owned(id: Long, operation: suspend () -> T) = this@Fixture.owned(id, operation)
+                override suspend fun catalogStamp() = error("Free style does not read targets")
+                override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader {
+                    check(source == pack); return reader
+                }
+            })
             override suspend fun load(id: Long) = owned(id) {
                 trace.event("style.load.enter")
                 repo.load(id).also { trace.event("style.load.complete", "revision" to it.revision?.revision,
@@ -175,7 +183,7 @@ class StyleDnaEmulatorTest {
             override suspend fun importReference(id: Long, uri: Uri): ReferenceAsset = error("No external input")
             override suspend fun copyGlobal(id: Long): ProjectStyleDraft = error("No credential/settings input")
             override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft, mode: ProjectSetupMode,
-                source: String?, stamp: String?): SavedProjectStyle = error("Use the reviewed DNA Save path")
+                source: String?, stamp: String?): SavedProjectStyle = localReferences.save(id, expected, draft, mode, source, stamp)
         }
         suspend fun initialize(create: Boolean) {
             val catalog = IconPackCatalog(app)
@@ -247,7 +255,7 @@ class StyleDnaEmulatorTest {
         if (create) {
             val parent = File(app.filesDir, "offline-dna-fixtures").canonicalFile
             val root = File(parent, name).canonicalFile
-            check(root.parentFile == parent && name in setOf("quick", "standard", "failure"))
+            check(root.parentFile == parent && name in setOf("quick", "standard", "failure", "references"))
             root.deleteRecursively()
         }
         fixture = Fixture(name)
@@ -278,6 +286,10 @@ class StyleDnaEmulatorTest {
         assertNull(fixture.analysis.state(1).value.error)
     }
     private fun prepare(mode: DnaAnalysisMode): StyleDnaPlan {
+        if (compose.onAllNodesWithTag("style-dna-panel").fetchSemanticsNodes().isEmpty()) {
+            click("project-style-1", "project-style-analysis-options")
+            click("project-style-1", "project-style-method-${mode.name}")
+        }
         click("project-style-1", "style-dna-mode-${mode.name}")
         click("project-style-1", "style-dna-prepare")
         idleAnalysis()
@@ -387,6 +399,45 @@ class StyleDnaEmulatorTest {
     @Test fun quickJourney() = journey("quick", DnaAnalysisMode.QUICK)
     @Test fun standardJourney() = journey("standard", DnaAnalysisMode.STANDARD)
 
+    @Test fun referenceFirstJourney() {
+        open("references")
+        assertFalse(fixture.analysis.state(1).value.hasKey)
+        click("project-style-1", "project-style-sample-pack")
+        compose.waitUntil(15000) {
+            compose.onAllNodes(hasTestTag("project-style-sample-pack") and isEnabled()).fetchSemanticsNodes().size == 1
+        }
+        click("project-style-1", "project-style-select-candidate-0")
+        click("project-style-1", "project-style-select-candidate-1")
+        click("project-style-1", "project-style-up-1")
+        click("project-style-1", "project-style-save")
+        val saved = runBlocking { fixture.repo.load(1) }
+        assertEquals(2, saved.references.size)
+        assertNull(saved.revision!!.analysisProfileJson)
+        assertTrue(saved.revision!!.specification.contains("reference icons"))
+        assertFalse(fixture.trialKeyAvailable.get())
+        fixture.assertPosts(0)
+        // Only synthetic presence for the unchanged Trial preparation gate.
+        // There is no actual image-generation credential or submission.
+        fixture.trialKeyAvailable.set(true)
+        click("project-targets", "setup-target-${target.key}")
+        click("project-targets", "setup-save-selection")
+        compose.waitUntil(15000) { fixture.trials.state(1).value.let { !it.busy && it.preparation != null } }
+        prepareVisibleTrial()
+        val plan = checkNotNull(fixture.trials.state(1).value.plan)
+        assertTrue(fixture.trials.state(1).value.hasKey)
+        assertEquals(saved.references.map { it.hash }, plan.referenceHashes)
+        val original = runBlocking { currentTrialOriginal(app, target.key) }
+        assertEquals(original.hash, plan.inputs.single().originalHash)
+        assertArrayEquals(original.png, runBlocking { fixture.trials.preview(1, original.hash) })
+        saved.references.forEach { assertArrayEquals(runBlocking { fixture.repo.referenceBytes(1, it.hash) },
+            runBlocking { fixture.trials.preview(1, it.hash) }) }
+        assertTrue(runBlocking { fixture.dnaJournal.records(1) }.isEmpty())
+        assertTrue(runBlocking { fixture.trialJournal.records(1) }.isEmpty())
+        fixture.assertPosts(0)
+        evidence("references", json("loopback_posts" to 0, "external_posts" to 0, "selected_references" to 2,
+            "trial_prepared" to true, "saved_revision" to saved.revision!!.revision))
+    }
+
     @Test fun incompleteAndCancel() {
         open("failure")
         val first = prepare(DnaAnalysisMode.QUICK)
@@ -420,8 +471,8 @@ class StyleDnaEmulatorTest {
     @Test fun restartReadOnly() {
         val evidenceFile = File(app.filesDir, "offline-dna-evidence.json")
         val previous = JSONObject(evidenceFile.readText())
-        assertTrue(previous.has("quick") && previous.has("standard") && previous.has("failure"))
-        for (name in listOf("quick", "standard", "failure"))
+        assertTrue(previous.has("quick") && previous.has("standard") && previous.has("failure") && previous.has("references"))
+        for (name in listOf("quick", "standard", "failure", "references"))
             assertNotEquals("Runner must terminate the earlier application process", android.os.Process.myPid(),
                 previous.getJSONObject(name).getInt("process_id"))
         // A new instrumentation process reconstructs Room/controllers from disk, with an empty server.
@@ -440,11 +491,17 @@ class StyleDnaEmulatorTest {
         assertNotNull(fixture.trials.state(1).value.plan)
         fixture.assertPosts(0)
         // Independently open Standard and failed journals after the same real process restart.
-        for (name in listOf("standard", "failure")) {
+        for (name in listOf("standard", "failure", "references")) {
             Fixture(name).use { other -> runBlocking {
                 other.initialize(false)
                 if (name == "standard") assertNotNull(SavedStyleDna.optional(other.repo.load(1).revision!!.analysisProfileJson))
-                else {
+                else if (name == "references") {
+                    val local = other.repo.load(1)
+                    assertEquals(2, local.references.size)
+                    assertNull(local.revision!!.analysisProfileJson)
+                    assertEquals(previous.getJSONObject("references").getLong("saved_revision"), local.revision!!.revision)
+                    assertTrue(other.dnaJournal.records(1).isEmpty())
+                } else {
                     assertNull(other.repo.load(1).revision)
                     other.analysis.bindContext(1, ProjectSetupMode.EXTEND, pack); other.analysis.refresh(1)
                     assertNull(other.analysis.state(1).value.dnaPlan)
@@ -455,7 +512,7 @@ class StyleDnaEmulatorTest {
             } }
         }
         evidence("restart", json("process_restart" to true, "loopback_posts" to 0, "external_posts" to 0,
-            "saved_projects_reopened" to 2, "trial_prepared" to true, "uncertain_attempts_replayed" to 0))
+            "saved_projects_reopened" to 3, "trial_prepared" to true, "uncertain_attempts_replayed" to 0))
     }
     private fun evidence(name: String, value: JSONObject) {
         val file = File(app.filesDir, "offline-dna-evidence.json")

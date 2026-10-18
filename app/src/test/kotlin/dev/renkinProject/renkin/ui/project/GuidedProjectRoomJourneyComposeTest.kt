@@ -50,6 +50,8 @@ class GuidedProjectRoomJourneyComposeTest {
     private var selectionStarted = false
     private var coverageLoaded by mutableStateOf(true)
     private var analysis: OwnedStyleAnalysis? = null
+    private var localReferences: LocalStyleReferences? = null
+    @Volatile private var hasKey = true
     private suspend fun <T> owned(id: Long, action: suspend () -> T) = mutex.withLock {
         check(id == home.activeProfileId && home.actionsEnabled)
         action()
@@ -63,7 +65,7 @@ class GuidedProjectRoomJourneyComposeTest {
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         trials = OwnedStyleTrials(scope, fixture.repo, fixture.journal,
             StyleTrialCoordinator(fixture.journal, fixture.successful { providerCalls++ }, fixture.repo),
-            { true }, object : TrialSessionOwner {
+            { hasKey }, object : TrialSessionOwner {
                 override suspend fun <T> owned(id: Long, action: suspend () -> T) =
                     this@GuidedProjectRoomJourneyComposeTest.owned(id, action)
                 override suspend fun targets() = fixture.targets
@@ -73,13 +75,18 @@ class GuidedProjectRoomJourneyComposeTest {
             })
         style = object : ProjectStyleBackend {
             override val analysis get() = this@GuidedProjectRoomJourneyComposeTest.analysis
+            override val localReferences get() = this@GuidedProjectRoomJourneyComposeTest.localReferences
             override suspend fun load(id: Long) = owned(id) { fixture.repo.load(id) }
+            override suspend fun referencePreview(id: Long, hash: String) = owned(id) { fixture.repo.referenceBytes(id, hash) }
             override suspend fun importReference(id: Long, uri: Uri): ReferenceAsset = error("No picker in this test")
             override suspend fun copyGlobal(id: Long) = error("No global settings copied")
             override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft, mode: ProjectSetupMode,
-                source: String?, stamp: String?): SavedProjectStyle = owned(id) {
-                fixture.repo.saveStyle(id, expected, draft.specification, draft.instruction, draft.hashes,
-                    mode.name, source, stamp).also { metadata = it.metadata; styleSaves++ }
+                source: String?, stamp: String?): SavedProjectStyle {
+                val saved = localReferences?.save(id, expected, draft, mode, source, stamp) ?: owned(id) {
+                    fixture.repo.saveStyle(id, expected, draft.specification, draft.instruction, draft.hashes,
+                        mode.name, source, stamp)
+                }
+                return saved.also { metadata = it.metadata; styleSaves++ }
             }
         }
     }
@@ -152,7 +159,89 @@ class GuidedProjectRoomJourneyComposeTest {
         compose.waitUntil(10000) {
             compose.onAllNodes(hasTestTag("project-style-description") and isEnabled()).fetchSemanticsNodes().size == 1
         }
-        compose.onNodeWithTag("project-style-description").assertIsEnabled().performTextInput("manual centered outline")
+        compose.onNodeWithTag("project-style-description").assertIsEnabled().performTextReplacement("manual centered outline")
+    }
+
+    @Test fun referenceFirstPackSavesWithoutAKeyAndPreparesOriginalFirstOrderedTrial() {
+        hasKey = false
+        val artwork = FixtureReferenceReader((0 until 12).associate { "draw$it" to analysisFixturePng(it % 3, it) })
+        val references = object : CoverageSourceReader by artwork {
+            override val index = artwork.index.copy(stamp = fixture.index.stamp)
+        }
+        localReferences = LocalStyleReferences(fixture.repo, ReferenceSampler(), object : AnalysisSessionOwner {
+            override suspend fun <T> owned(id: Long, operation: suspend () -> T) =
+                this@GuidedProjectRoomJourneyComposeTest.owned(id, operation)
+            override suspend fun catalogStamp() = error("Free style does not read targets")
+            override suspend fun reader(source: String, referenceIndex: Boolean) = if (referenceIndex) references else fixture.reader
+        })
+        val restoration = StateRestorationTester(compose)
+        restoration.setContent { Content() }
+        click("project-home", "project-extend")
+        click("setup-source", "setup-source-source.pack")
+        click("setup-profile", "setup-profile-1")
+        click("project-targets", "setup-project-style")
+        click("project-style-1", "project-style-sample-pack")
+        compose.waitUntil(10000) {
+            compose.onAllNodes(hasTestTag("project-style-sample-pack") and isEnabled()).fetchSemanticsNodes().size == 1
+        }
+        click("project-style-1", "project-style-select-candidate-0")
+        click("project-style-1", "project-style-select-candidate-1")
+        val originalOrder = runBlocking { localReferences!!.sample(1, "source.pack", projectSourceStamp(fixture.index))
+            .samples.samples.take(2).map { it.hash } }
+        click("project-style-1", "project-style-up-1")
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
+        compose.onNodeWithTag("project-style-description").performTextReplacement("Owner reviewed reference icons; keep target identity")
+        restoration.emulateSavedInstanceStateRestore()
+        // Candidate bitmaps intentionally are not restored. The shorter lazy list
+        // remeasures while the independent Room read enables its real Save control.
+        compose.waitUntil(10000) {
+            try {
+                compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-save"))
+                compose.onAllNodes(hasTestTag("project-style-save") and isEnabled()).fetchSemanticsNodes().size == 1
+            } catch (_: AssertionError) { false }
+        }
+        click("project-style-1", "project-style-save")
+        compose.waitUntil(10000) { compose.onAllNodesWithTag("setup-target-app/Main").fetchSemanticsNodes().size == 1 }
+        val saved = runBlocking { fixture.repo.load(1) }
+        assertEquals(originalOrder.reversed(), saved.references.map { it.hash })
+        assertEquals("Owner reviewed reference icons; keep target identity", saved.revision!!.specification)
+        assertNull(saved.revision!!.analysisProfileJson)
+        assertFalse(hasKey); assertEquals(0, providerCalls)
+        // Preserve the existing Trial UI's key-presence gate. This boolean is
+        // synthetic; free Save above used no key and no provider is submitted.
+        hasKey = true
+        click("project-targets", "setup-target-app/Main")
+        click("project-targets", "setup-save-selection")
+        compose.waitUntil(10000) { !trials.state(1).value.busy && trials.state(1).value.preparation != null &&
+            compose.onAllNodesWithTag("trial-style").fetchSemanticsNodes().size == 1 }
+        click("project-trials-1", "trial-prepare")
+        compose.waitUntil(10000) { trials.state(1).value.plan != null && !trials.state(1).value.busy }
+        val plan = checkNotNull(trials.state(1).value.plan)
+        assertTrue(trials.state(1).value.hasKey)
+        assertEquals(saved.references.map { it.hash }, plan.referenceHashes)
+        val original = fixture.originals.getValue("app/Main")
+        assertEquals(original.hash, plan.inputs.single().originalHash)
+        assertTrue(original.hash !in plan.referenceHashes)
+        assertArrayEquals(original.png, runBlocking { trials.preview(1, original.hash) })
+        saved.references.forEach { assertArrayEquals(runBlocking { fixture.repo.referenceBytes(1, it.hash) },
+            runBlocking { trials.preview(1, it.hash) }) }
+        assertEquals(0, providerCalls)
+        assertTrue(runBlocking { fixture.journal.records(1) }.isEmpty())
+        // Target selection legitimately updates metadata/version; the saved style
+        // revision and its ordered assets must remain byte-for-byte unchanged.
+        val afterTrial = runBlocking { fixture.repo.load(1) }
+        assertEquals(saved.revision, afterTrial.revision)
+        assertEquals(saved.references, afterTrial.references)
+        compose.onNodeWithTag("trial-decline").assertIsEnabled().performClick()
+        click("project-trials-1", "trial-options-toggle")
+        click("project-trials-1", "trial-refine")
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
+        compose.waitUntil(10000) { compose.onAllNodes(hasTestTag("project-style-description") and isEnabled()).fetchSemanticsNodes().size == 1 }
+        compose.onNodeWithTag("project-style-description").assertTextContains("Owner reviewed reference icons; keep target identity")
+        val reopened = runBlocking { fixture.repo.load(1) }
+        assertEquals(saved.revision, reopened.revision)
+        assertEquals(saved.references, reopened.references)
+        assertEquals(1, styleSaves); assertEquals(0, providerCalls)
     }
 
     @Test fun firstQuickScanWaitsForVerifiedSourceAndRecreationNeverSubmits() {
@@ -184,9 +273,15 @@ class GuidedProjectRoomJourneyComposeTest {
         compose.runOnIdle { coverageLoaded = true }
         click("project-targets", "setup-project-style")
         compose.onNodeWithTag("workflow-step").assertTextContains("2 of 4", substring = true)
+        click("project-style-1", "project-style-analysis-options")
+        click("project-style-1", "project-style-method-QUICK")
         compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-dna-mode-QUICK"))
         compose.onNodeWithTag("style-dna-mode-QUICK").assertIsSelected()
         fun scan() {
+            if (compose.onAllNodesWithTag("style-dna-panel").fetchSemanticsNodes().isEmpty()) {
+                click("project-style-1", "project-style-analysis-options")
+                click("project-style-1", "project-style-method-QUICK")
+            }
             click("project-style-1", "style-dna-prepare")
             compose.waitUntil(10000) { analysis!!.state(1).value.let { !it.busy && (it.dnaPlan != null || it.error != null) } }
             val current = analysis!!.state(1).value

@@ -12,6 +12,16 @@ are checked again, including current drawable bytes before Save. Historical save
 styles and reference ordering use their unchanged readers. No migration, request,
 consumed marker or signing change.
 
+Guided ProjectStylePanel presents that existing manual form first, initializes
+only an unsaved fresh style with neutral text, and keeps the brief separate from
+additional instructions. Optional analysis is mounted only after method selection;
+its existing refresh/journal/consent behavior remains. Dirty edits block method
+switching, and the child saveable-state holder retains unmodified analysis drafts
+across presentation changes. Source-origin primitives survive form restoration;
+sample images stay bounded in memory and selected bytes live in existing assets.
+Saved manual styles enter unchanged target selection and OwnedStyleTrials; there
+is no new generation handoff or prompt version. See [ADR0013](decisions/0013-reference-first-style.md).
+
 
 ## Bounded Trial package-read classification
 

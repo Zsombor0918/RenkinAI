@@ -1,5 +1,20 @@
 # Current implementation
 
+## Phase3A.2 reference-first guided integration
+
+Guided style entry presents the existing brief/reference editor. Only fresh,
+unsaved styles receive neutral starting text; saved text/instructions/order remain
+unchanged. EXTEND can browse local pack candidates and select/order up to5;
+CREATE keeps PNG import and text-only manual styles remain explicit. Sampling,
+preview and Save require no analysis/key; the existing target/Trial path uses the
+saved revision and actual original icon. Optional Legacy/Quick/Standard remain
+behind explicit method selection with paid consent unchanged. Dirty edits block
+method switches; no failed/historical result is automatically adopted.
+See [ADR0013](../decisions/0013-reference-first-style.md). No storage migration,
+prompt/signing/export change. Exact-head Linux/Android/governance evidence is
+pending in the separate Phase3A draft PR, never inherited from PR8.
+
+
 ## Phase3A.1 local reference data path
 
 Separate feature work starts at verified PR8 source38311206. LocalStyleReferences

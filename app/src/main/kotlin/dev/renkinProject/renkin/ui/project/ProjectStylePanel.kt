@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -19,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -78,17 +80,23 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
     var selectedAnalysisPath by rememberSaveable(id) { mutableStateOf<String?>(null) }
     var dnaDirty by rememberSaveable(id) { mutableStateOf(false) }
     var draftEpoch by rememberSaveable(id) { mutableIntStateOf(0) }
+    var localOrigin by rememberSaveable(id) { mutableStateOf<String?>(null) }
+    var candidates by remember(id, source, stamp) { mutableStateOf<LocalReferenceCandidates?>(null) }
+    var methodsOpen by rememberSaveable(id) { mutableStateOf(false) }
+    val analysisDrafts = rememberSaveableStateHolder()
+    val startingBrief = stringResource(R.string.referenceStyleBrief)
     val scope = rememberCoroutineScope()
     val analysis = backend.analysis
     val analysisState = if (analysis != null) analysis.state(id).collectAsState().value else ProjectAnalysisState()
     val manualDirty = specification != savedSpecification || instruction != savedInstruction || hashes != savedHashes
     val dirty = manualDirty || dnaDirty
-    val analysisPath = if (analysis?.supportsDna == true)
-        selectedAnalysisPath ?: initialStyleAnalysisPath(expectedRevision, analysisState) else "LEGACY"
-    val dnaPath = analysisPath != "LEGACY"
+    val analysisPath = selectedAnalysisPath ?: if (guided) "REFERENCE" else if (analysis?.supportsDna == true)
+        initialStyleAnalysisPath(expectedRevision, analysisState) else "LEGACY"
+    val referencePath = analysisPath == "REFERENCE"
+    val dnaPath = analysisPath !in setOf("REFERENCE", "LEGACY")
     val enabled = available && loaded && !busy && !analysisState.busy
     fun applySaved(saved: SavedProjectStyle) {
-        specification = saved.revision?.specification.orEmpty()
+        specification = saved.revision?.specification ?: if (guided) startingBrief else ""
         instruction = saved.revision?.userInstruction.orEmpty()
         hashes = ArrayList(saved.references.map { it.hash })
         savedSpecification = specification
@@ -96,6 +104,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
         savedHashes = ArrayList(hashes)
         expectedRevision = saved.revision?.revision
         analysisRequestId = null; analysisReviewedAt = null; analysisStaleAccepted = false; analysisReviewedSourceStamp = null
+        localOrigin = null
         initialized = true
         dnaDirty = false
         draftEpoch++
@@ -106,6 +115,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
         importedHashes = ArrayList((importedHashes + draft.hashes).distinct())
         analysisRequestId = draft.requestId; analysisReviewedAt = draft.reviewedAt
         analysisStaleAccepted = stale; analysisReviewedSourceStamp = draft.reviewedSourceStamp
+        localOrigin = null
     }
     fun finishSave(saved: SavedProjectStyle) {
         applySaved(saved)
@@ -154,7 +164,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                 SetupHeading(stringResource(R.string.projectStyleTitle), goBack)
                 if (!guided) Text(stringResource(R.string.projectIdentity, id))
                 Text(stringResource(if (guided) R.string.uxStyleLocalSave else R.string.projectStyleLocalOnly))
-                if (mode == ProjectSetupMode.EXTEND && (!guided || advanced))
+                if (mode == ProjectSetupMode.EXTEND && (!guided || advanced || referencePath))
                     Text(stringResource(R.string.projectStyleSource, source.orEmpty()))
                 Text(stringResource(when {
                     analysisState.network -> R.string.styleAnalysisRunning
@@ -186,7 +196,11 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     }), Modifier.testTag("style-trials-reason"))
                 }
                 if (error != null) {
-                    Text(stringResource(if (error == "load") R.string.projectStyleLoadError else R.string.projectStyleWriteError),
+                    Text(stringResource(when (error) {
+                        "load" -> R.string.projectStyleLoadError
+                        "source" -> R.string.referenceStyleSourceError
+                        else -> R.string.projectStyleWriteError
+                    }),
                         Modifier.testTag("project-style-error"))
                     OutlinedButton(onClick = {
                         if (dirty) { reloadAfterDiscard = true; discardOpen = true }
@@ -197,25 +211,98 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     }
                 }
             }
-            if (analysis != null) item { key(draftEpoch) {
+            if (guided && analysis != null) item {
+                if (referencePath) {
+                    OutlinedButton(onClick = { methodsOpen = !methodsOpen }, enabled = enabled && !dirty,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-analysis-options")) {
+                        Text(stringResource(R.string.referenceStyleOptional))
+                    }
+                    if (methodsOpen) for (method in if (analysis.supportsDna) listOf("QUICK", "STANDARD", "LEGACY") else listOf("LEGACY")) {
+                        TextButton(onClick = { selectedAnalysisPath = method; methodsOpen = false }, enabled = enabled && !dirty,
+                            modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-method-$method")) {
+                            Text(stringResource(when (method) {
+                                "QUICK" -> R.string.uxStyleQuickChoice
+                                "STANDARD" -> R.string.uxStyleStandardChoice
+                                else -> R.string.referenceStyleLegacy
+                            }))
+                        }
+                    }
+                } else TextButton(onClick = { selectedAnalysisPath = "REFERENCE" }, enabled = enabled && !dirty,
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-reference-mode")) {
+                    Text(stringResource(R.string.referenceStyleReturn))
+                }
+                if (dirty) Text(stringResource(R.string.referenceStyleUnsaved))
+            }
+            if (analysis != null && !referencePath) item { analysisDrafts.SaveableStateProvider(draftEpoch) {
                 ProjectStyleAnalysisPanel(id, mode, source, stamp, enabled, analysis,
                     expectedRevision, ProjectStyleDraft(specification, instruction, hashes.toList(), analysisRequestId,
                         analysisReviewedAt, analysisStaleAccepted, analysisReviewedSourceStamp), dirty,
                     advanced, { advanced = it }, { busy = it },
                     onDnaSaved = ::finishSave,
                     onUse = ::applyAnalyzed,
-                    selectedPath = analysisPath, onPathChanged = { selectedAnalysisPath = it },
+                    selectedPath = analysisPath, onPathChanged = { if (!dirty) selectedAnalysisPath = it },
                     onDnaDirty = { dnaDirty = it }, onReviewedSave = saveReviewed, guided = guided)
             } }
-            if (analysis != null && !dnaPath &&
+            if (analysis != null && !referencePath && !dnaPath &&
                 analysisState.record?.status != dev.renkinProject.renkin.ai.style.AnalysisStatus.RESULT_SAVED) item {
                 OutlinedButton(onClick = { advanced = !advanced }, enabled = !busy,
                     modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-advanced")) {
                     Text(stringResource(R.string.styleAnalysisAdvanced))
                 }
             }
-            if (analysis == null || advanced || (guided && !dnaPath &&
+            if (referencePath || analysis == null || advanced || (guided && !dnaPath &&
                 analysisState.record?.status != dev.renkinProject.renkin.ai.style.AnalysisStatus.RESULT_SAVED)) {
+            if (referencePath) item {
+                Text(stringResource(R.string.referenceStyleTitle))
+                Text(stringResource(R.string.referenceStyleHelp))
+                if (hashes.isEmpty()) Text(stringResource(R.string.referenceStyleNoImages))
+                if (mode == ProjectSetupMode.EXTEND && backend.localReferences != null) {
+                    OutlinedButton(onClick = {
+                        if (enabled && source != null && stamp != null) {
+                            busy = true
+                            scope.launch {
+                                try { candidates = backend.localReferences!!.sample(id, source, stamp); error = null }
+                                catch (cancel: CancellationException) { throw cancel }
+                                catch (_: Exception) { error = "source" }
+                                finally { busy = false }
+                            }
+                        }
+                    }, enabled = enabled && source != null && stamp != null,
+                        modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-sample-pack")) {
+                        Text(stringResource(R.string.referenceStyleSample))
+                    }
+                }
+            }
+            if (referencePath) candidates?.let { batch ->
+                items(batch.samples.samples.size) { position ->
+                    val sample = batch.samples.samples[position]
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AnalysisThumbnail(sample.hash, { sample.png }, position)
+                        Column {
+                            Text(stringResource(R.string.referenceStyleCandidate, position + 1))
+                            TextButton(onClick = {
+                                if (enabled && hashes.size < 5 && sample.hash !in hashes) {
+                                    busy = true
+                                    scope.launch {
+                                        try {
+                                            val origin = localOrigin?.let(LocalReferenceOrigin::parse)?.merge(batch.origin) ?: batch.origin
+                                            val asset = backend.localReferences!!.select(id, batch, sample.hash)
+                                            importedHashes = ArrayList((importedHashes + asset.hash).distinct())
+                                            hashes = ArrayList(hashes + asset.hash)
+                                            localOrigin = origin.encode(); error = null
+                                        } catch (cancel: CancellationException) { throw cancel }
+                                        catch (_: Exception) { error = "source" }
+                                        finally { busy = false }
+                                    }
+                                }
+                            }, enabled = enabled && hashes.size < 5 && sample.hash !in hashes,
+                                modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-select-candidate-$position")) {
+                                Text(stringResource(if (sample.hash in hashes) R.string.referenceStyleSelected else R.string.referenceStyleSelect))
+                            }
+                        }
+                    }
+                }
+            }
             item {
                 OutlinedTextField(specification, { specification = it }, enabled = enabled,
                     label = { Text(stringResource(R.string.projectStyleDescription)) },
@@ -233,6 +320,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                             specification = draft.specification
                             instruction = draft.instruction
                             hashes = ArrayList(draft.hashes)
+                            localOrigin = null
                             analysisRequestId = null; analysisReviewedAt = null; analysisStaleAccepted = false
                             error = null
                         } catch (cancel: CancellationException) { throw cancel }
@@ -263,6 +351,8 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                                     // and variants remain pinned by the repository's SQL predicate.
                                     backend.discard(id, listOf(hash))
                                     hashes = ArrayList(hashes.filter { it != hash })
+                                    if (localOrigin?.let(LocalReferenceOrigin::parse)?.drawables?.keys?.none { it in hashes } == true)
+                                        localOrigin = null
                                     importedHashes = ArrayList(importedHashes.filter { it != hash })
                                     error = null
                                 } catch (cancel: CancellationException) { throw cancel }
@@ -284,13 +374,14 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
             }
             }
             if (!dnaPath && (!guided || manualDirty || expectedRevision == null) &&
-                !(guided && analysisState.record?.status == dev.renkinProject.renkin.ai.style.AnalysisStatus.RESULT_SAVED &&
+                !(!referencePath && guided && analysisState.record?.status == dev.renkinProject.renkin.ai.style.AnalysisStatus.RESULT_SAVED &&
                     analysisRequestId == null && !manualDirty)) item {
                 Button(onClick = {
                     if (!enabled) return@Button
                     busy = true
                     val draft = ProjectStyleDraft(specification, instruction, hashes.toList(), analysisRequestId,
-                        analysisReviewedAt, analysisStaleAccepted, analysisReviewedSourceStamp)
+                        analysisReviewedAt, analysisStaleAccepted, analysisReviewedSourceStamp,
+                        localReferenceOrigin = localOrigin?.let(LocalReferenceOrigin::parse))
                     val revision = expectedRevision
                     scope.launch {
                         try {
@@ -318,6 +409,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     try {
                         backend.discard(id, (hashes + importedHashes).distinct())
                         importedHashes = arrayListOf(); initialized = false; discardOpen = false
+                        localOrigin = null; candidates = null
                         dnaDirty = false; draftEpoch++
                         if (reloadAfterDiscard) reload++ else onBack()
                     }

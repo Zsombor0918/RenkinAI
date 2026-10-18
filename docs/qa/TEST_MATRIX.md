@@ -1,5 +1,19 @@
 # Regression and test matrix
 
+## Phase3A reference-first route
+
+Extend ProjectPreparationTest with real repository/asset tests for selected PNG
+bytes/order/owner/reopen and changed source/missing drawable/route rejection.
+Extend GuidedProjectRoomJourneyComposeTest through source sampling, two selected
+references, reordering, edited brief, saved-state recreation, durable Save and
+key-free Save followed by the unchanged Trial key-presence gate, true target-original and exact ordered reference
+bytes. Existing manual CREATE/import and Legacy/Quick/Standard tests remain.
+StyleDnaEmulatorTest adds the installed-pack free reference-first path; its runner
+requires5 real cases, zero POSTs for this path and saved references after restart.
+Prompt architecture, migrations and all ADR0012 groups remain unchanged.
+These are contract/persistence checks, not visual-quality scores.
+
+
 ## Trial package storms and genuine input changes
 
 The existing owned-controller suite adds a controlled Prepare suspension plus a
