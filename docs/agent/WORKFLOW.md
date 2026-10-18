@@ -1,5 +1,9 @@
 # Agent, Git and review workflow
 
+## Montage evidence scheduling
+
+ADR0012 remains unchanged: CI/build alone runs the authoritative full suite and HTTP. It additionally retains actual synthetic montage PNGs/metadata, without another unit invocation. Existing Android runner now executes3 write journeys plus1 separate-process restart; strict Python fake-runner assertions require those counts, input roles and zero external posts. Shared-navigation changes also require the existing dispatch-only7-case order check. Historical merge-title governance is not waived.
+
 ## Phase0 retirement verification
 
 Owner authorization in ADR0015 allows only dependency-proven obsolete analysis cases/selectors to be removed. The single automatic full Linux/build and integrated HTTP policy remains; two empty retired analysis groups are removed, historical-data groups retained. Android now requires2 active write/preparation journeys plus1 separate-process restart, with unchanged emulator-only/head/counter guards. Run the explicit form-order diagnostic for these UI-fixture edits. Existing PR10 remains draft/open; its actual owner-selected base is main. No merge/rewrite/new PR. Phase0 evidence must not be presented as completion of montage Phases1–3.

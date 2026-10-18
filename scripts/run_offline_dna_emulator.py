@@ -22,8 +22,11 @@ def valid_device_evidence(evidence):
                        "declined": False, "generation_calls": 0},
         "decline": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True,
                     "declined": True, "generation_calls": 0},
+        "montage": {"loopback_posts": 2, "external_posts": 0, "montage_pages": 2, "trial_prepared": True,
+                    "prompt_version": 3, "generation_calls": 1, "automatic_recomposition": True,
+                    "variant_reviewed": True, "style_approved": True},
         "restart": {"process_restart": True, "loopback_posts": 0, "external_posts": 0,
-                    "saved_projects_reopened": 2, "trial_prepared": True, "uncertain_attempts_replayed": 0},
+                    "saved_projects_reopened": 3, "trial_prepared": True, "uncertain_attempts_replayed": 0},
     }
     if not isinstance(evidence, dict):
         return False
@@ -33,7 +36,7 @@ def valid_device_evidence(evidence):
                                                for key, value in fields.items()):
             return False
     return all(type(evidence[name].get("saved_revision")) is int and evidence[name]["saved_revision"] >= 1
-               for name in ("references", "decline"))
+               for name in ("references", "decline", "montage")) and type(evidence["montage"].get("selected_icons")) is int and 19 <= evidence["montage"]["selected_icons"] <= 29
 
 
 def main():
@@ -75,7 +78,7 @@ def main():
             device("install", "-r", str(path))
         failed = False
         selectors = [",".join(TEST_CLASS + "#" + method for method in
-                               ["referenceFirstJourney", "decliningTrialCannotRestoreTheFrozenPlan"]),
+                               ["referenceFirstJourney", "decliningTrialCannotRestoreTheFrozenPlan", "montageJourney"]),
                      TEST_CLASS + "#restartReadOnly"]
         for index, selector in enumerate(selectors):
             if index == 1:
@@ -87,7 +90,7 @@ def main():
             trace = device("logcat", "-d", "-v", "threadtime", "OfflineDnaTrace:I", "*:S", check=False)
             (output / f"trace-{index}.log").write_text(trace.stdout + trace.stderr, encoding="utf-8")
             (output / f"instrumentation-{index}.log").write_text(log, encoding="utf-8")
-            expected = 2 if index == 0 else 1
+            expected = 3 if index == 0 else 1
             passed = result.returncode == 0 and re.search(rf"OK \({expected} tests?\)", log) is not None
             passed &= "FAILURES!!!" not in log and "INSTRUMENTATION_FAILED" not in log
             summary["runs"].append({"selector": selector, "exit": result.returncode, "tests": expected,

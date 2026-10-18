@@ -1,5 +1,9 @@
 # Regression and test matrix
 
+## Montage acceptance gates
+
+PackMontageTest verifies actual pixels/alpha, varied1–60 member layouts,16→15 redistribution, ordering, compression and real Room save/reopen/source rejection. PackStyleAnalysisTest exercises native loopback Responses plus actual image-edit multipart after separate consent, frozen V3 original/sheets/brief and no replay. Guided navigation covers Back and durable random recommendations. Android retains the old two free/manual journeys plus montageJourney, then restartReadOnly in another PID (3+1). Existing shared safety tests stay; one authoritative full Linux run includes HTTP, no duplicate suite.
+
 ## Montage HTTP and billing coverage
 
 PackStyleAnalysisTest4 cases verify the actual one-shot Responses body, ordered high-detail base64 PNGs, zero POST before consent, durable plain brief/receipt and original sheet hashes; incomplete/503 fail without Save/replay; cancellation and stale source retain consumed rights; a received result recovers local Save without a second POST. Historical journal9, schema8 and persisted old-style9+3 cases run alongside them (33 total). No extra full-suite job or separate HTTP scheduling.

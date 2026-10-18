@@ -302,7 +302,7 @@ internal fun ProjectShell(
             if (guidedWorkflow) ProjectWorkflowHeading(2)
             editorState.SaveableStateProvider("style-$setupProfileId") {
                 stylePanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage, styleStamp,
-                    { route = ProjectRoute.SETUP }, {
+                    { if (guidedWorkflow) guidedStage = 1; route = ProjectRoute.SETUP }, {
                         if (guidedWorkflow) { guidedStage = 3; route = ProjectRoute.SETUP }
                         else route = ProjectRoute.TRIAL
                     })

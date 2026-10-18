@@ -1,0 +1,25 @@
+<resources>
+    <string name="packStyleTitle">Match this icon pack</string>
+    <string name="packStyleError">Could not complete this step. Check the pack and saved project before continuing.</string>
+    <string name="packStyleCount">%1$d icons · %2$d contact sheets</string>
+    <string name="packStyleBrowse">Browse references</string>
+    <string name="packStyleAnalyze">Analyze style</string>
+    <string name="packStyleKey">Local preparation is free. Add an OpenAI key in AI settings to analyze.</string>
+    <string name="packStyleContinue">Continue to Trials</string>
+    <string name="packStyleEdit">Edit style / Details</string>
+    <string name="packStyleBrief">Pack-wide drawing prompt</string>
+    <string name="packStyleInstruction">Additional generation instructions</string>
+    <string name="packStylePreferences">Optional analysis preferences</string>
+    <string name="packStyleSave">Save edits (free)</string>
+    <string name="packStyleAdd">Add</string>
+    <string name="packStyleRemove">Remove</string>
+    <string name="packStyleUp">Move earlier</string>
+    <string name="packStylePreview">Source-pack contact sheet artwork</string>
+    <string name="packStyleConsent">Send %1$d saved contact sheets and preferences in one potentially billable OpenAI analysis request. Image generation requires separate consent. No automatic retry.</string>
+    <string name="packStyleConfirm">Confirm one analysis request</string>
+    <string name="packStyleFailedAnalysis">The latest analysis did not produce a saved current result. Any existing summary belongs to an earlier successful analysis. Uncertain requests are never retried automatically.</string>
+    <string name="packStyleRecover">Save received analysis (no new request)</string>
+    <string name="packStyleOtherApps">Choose other apps</string>
+    <string name="packStyleTrialSheets">Saved style contact sheets (preview in Details)</string>
+    <string name="packStyleRefresh">Prepare a fresh pack sample (free; replaces current analysis)</string>
+</resources>

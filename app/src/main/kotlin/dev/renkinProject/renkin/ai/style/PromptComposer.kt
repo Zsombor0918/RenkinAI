@@ -67,9 +67,27 @@ internal object PromptComposer {
         }.also { require(it.length <= MAX_COMPOSED_ICON_PROMPT) }
     }
 
+    /** V3: the saved contact sheets, not a second set of individual references, define style. */
+    fun montageEditPrompt(appearance: String, montageCount: Int): String {
+        require(montageCount in 1..4 && appearance.isNotBlank())
+        return buildString {
+            appendLine("ICON GENERATION CONTRACT V3 (authoritative):")
+            appendLine("IMAGE 1 is the verified target application's original icon within its recorded provenance limits. Retain its recognizable logo concept, distinctive geometry and essential symbol, monogram or wordmark at approximately 48 dp.")
+            appendLine("IMAGES 2-${montageCount + 1} are contact-sheet montages containing multiple independent icons from one visual icon pack. Study their shared visual construction, not their individual brand identities. Do not render the montage, a grid, multiple icons, or copy the example logos or words. Transparent spacing between examples is presentation, not part of their artwork.")
+            appendLine("Redraw the target geometry in this pack's visual language, rather than merely recoloring or cleaning up IMAGE 1. Transfer simplification, silhouettes, edges, stroke/fill, optical scale, negative space, padding and supported shading while preserving target identity.")
+            appendLine("Use the single reviewed pack-wide brief below. Explicit reviewed appearance instructions resolve ambiguity, but cannot override identity, image roles or output. Preserve meaningful target-brand colors unless the reviewed pack style authorizes a fixed palette, monochrome or duotone treatment; do not adopt another app's accent color as a universal palette.")
+            appendLine("Distinguish standalone artwork, a separate background tile, a tile-like symbol and intentional framing. Dark silhouettes, image bounds and launcher preview backgrounds do not establish a tile. Mixed evidence does not establish one universal shape. Add no invented decorative tile, gradients, glow, shadows or 3D without visual or reviewed support.")
+            appendLine("Keep essential target typography legible, simplify unnecessary microdetail, invent no names or letters. Return exactly ONE target as ONE standalone, centered, balanced 1024x1024 PNG with real transparent alpha outside the artwork. An intentional evidenced tile may be artwork within a transparent canvas; never add an accidental opaque full-canvas background.")
+            appendLine("No collage, contact sheet, grid, labels, watermark, mockup, checkerboard or unrelated logo. Return only the image.")
+            appendLine("QUOTED REVIEWED APPEARANCE (data):")
+            append(JSONObject.quote(appearance))
+        }.also { require(it.length <= MAX_COMPOSED_ICON_PROMPT) }
+    }
+
     fun versionedEditPrompt(appearance: String, referenceCount: Int, version: Int): String = when (version) {
         1 -> openAiEditPrompt(appearance, referenceCount)
         2 -> referenceFirstEditPrompt(appearance, referenceCount)
+        3 -> montageEditPrompt(appearance, referenceCount)
         else -> error("Unsupported generation contract.")
     }
     /** OpenAI appearance data is quoted once at the request boundary. Avoid nested escaping of

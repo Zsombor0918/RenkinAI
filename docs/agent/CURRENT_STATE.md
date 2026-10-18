@@ -1,5 +1,9 @@
 # Current implementation
 
+## Montage Phases1–3
+
+Local checkpoints f8d28668 and8a4c5cd0 implement source sampling/adaptive rendering/persistence and one-shot analysis. Guided integration now uses montage content editing, explicit analysis consent, local text edits, V3 Trial preparation and stable saved random suggestions. Back returns to the logical source summary. Final-head hosted checks/APK are pending; historical governance title91e5737d remains a separate integration blocker. No paid calls or physical-device evidence.
+
 ## Montage analysis operation
 
 One separately consented multimodal analysis is implemented and focused-verified using real loopback HTTP. The existing journal now explicitly dispatches old contract1 and new montage contract2 without changing old bytes. Results are reusable editable brief/summary plus minimal receipt, bound to current montage/source/revision. No provider call occurs on preview, prepare, false consent or restart; uncertain/consumed identities do not replay. A received result can retry only local Save. Main guided UI/V3 Trial integration follows before exposing the route.

@@ -1,6 +1,6 @@
 # ADR0016 - use one persisted pack montage for visual style
 
-Date: October18,2026. Status: owner-authorized Phases1–3; local foundation implemented, UI integration pending.
+Date: October18,2026. Status: owner-authorized Phases1–3; montage, one-shot analysis and TrialV3 integration implemented; final gates pending.
 
 ## Decision
 
@@ -71,3 +71,26 @@ contract2 adds a fingerprinted version/detail distinction and small plain-text
 result. Epochs, UUID consumption, cancellation uncertainty and no retry remain.
 Successful result/local Save failures can recover the received candidate without
 repeating the request, only while its source/owner/revision still match.
+
+
+## Future Trial contract and presentation
+
+Only newly prepared montage requests use generation V3. The optional montageFingerprint
+binds the entire saved payload/result provenance; effective per-target prompt hashes
+bind the exact single reviewed brief and additional instructions. Original PNG first,
+then ordered saved contact-sheet PNGs, without another individually selected reference
+set. V3 explicitly names contact-sheet roles and forbids reproducing example identities
+or a montage. Original recognition permits meaningful geometric redrawing. Native
+n=1,size=1024x1024,background=transparent,output_format=png stay unchanged.
+Historical V1/V2 canonical bytes, text and fingerprints are not upgraded; their consumed
+IDs cannot be reused. Profile invalidation keeps version-aware redacted record hashes.
+
+Fresh EXTEND enters the montage panel; old saved styles and CREATE retain their editor.
+Content changes rebuild/redistribute automatically and clear only current analysis,
+while immutable previous revisions and billing evidence survive. Text editing/preview/
+Save/reopen remain free. One analysis confirmation precedes contract2 submission;
+received-result local recovery never resends. Trial preparation requires a saved current
+analysis and freshly validated source/member bytes, then separate original verification
+and generation consent. Random up-to3 eligible missing-app suggestions are saved using
+existing ProjectSelection; protected/covered apps cannot enter default suggestions.
+Back from Style resets to the source-summary logical step, avoiding a Targets/Style loop.

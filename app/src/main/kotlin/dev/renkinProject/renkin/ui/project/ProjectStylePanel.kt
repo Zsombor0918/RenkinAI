@@ -37,6 +37,9 @@ import kotlinx.coroutines.launch
 internal data class ProjectStyleDraft(val specification: String, val instruction: String, val hashes: List<String>,
     val localReferenceOrigin: LocalReferenceOrigin? = null)
 internal interface ProjectStyleBackend {
+    val montages: LocalPackMontages? get() = null
+    val packAnalysis: PackStyleAnalysis? get() = null
+    fun sourceLabel(source: String): String? = null
     val localReferences: LocalStyleReferences? get() = null
     suspend fun load(id: Long): SavedProjectStyle
     suspend fun importReference(id: Long, uri: Uri): ReferenceAsset
@@ -53,6 +56,37 @@ internal interface ProjectStyleBackend {
 internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?, stamp: String?,
     available: Boolean, backend: ProjectStyleBackend, onBack: () -> Unit, onTrials: (() -> Unit)? = null,
     onStyleSaved: ((SavedProjectStyle) -> Unit)? = null, guided: Boolean = false) {
+    if (mode == ProjectSetupMode.EXTEND && backend.montages != null) {
+        var montagePath by remember(id) { mutableStateOf<Boolean?>(null) }
+        var failed by remember(id) { mutableStateOf(false) }
+        var reload by remember(id) { mutableIntStateOf(0) }
+        LaunchedEffect(id, reload) {
+            failed = false
+            try { montagePath = backend.load(id).revision.let { it == null ||
+                dev.renkinProject.renkin.ai.style.PackMontage.optional(it.analysisProfileJson) != null } }
+            catch (cancel: CancellationException) { throw cancel }
+            catch (_: Exception) { failed = true }
+        }
+        if (montagePath == true) {
+            PackMontagePanel(id, source, stamp, available, backend, onBack, onTrials, onStyleSaved)
+            return
+        }
+        if (montagePath == null) {
+            Column {
+                Text(stringResource(if (failed) R.string.setupUnavailable else R.string.projectInitializing))
+                if (failed) TextButton(onClick = { reload++ }) { Text(stringResource(R.string.setupRescan)) }
+                TextButton(onClick = onBack) { Text(stringResource(R.string.setupBack)) }
+            }
+            return
+        }
+    }
+    ManualProjectStylePanel(id, mode, source, stamp, available, backend, onBack, onTrials, onStyleSaved, guided)
+}
+
+@Composable
+private fun ManualProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?, stamp: String?,
+    available: Boolean, backend: ProjectStyleBackend, onBack: () -> Unit, onTrials: (() -> Unit)?,
+    onStyleSaved: ((SavedProjectStyle) -> Unit)?, guided: Boolean) {
     var initialized by rememberSaveable(id) { mutableStateOf(false) }
     var specification by rememberSaveable(id) { mutableStateOf("") }
     var instruction by rememberSaveable(id) { mutableStateOf("") }

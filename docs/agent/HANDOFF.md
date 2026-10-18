@@ -1,5 +1,9 @@
 # Agent handoff — guided UX Stage 1
 
+## Montage integration handoff
+
+Source baseline6e5ff5d2, same branch/PR10/base main. Keep source-backed PNG pages as the only new style image inputs, contract2 analysis records and V3 Trial fingerprints. Preserve old readers, consumed markers, assets/history, AI1/AI2, original editor, Global Batch and Room21. Current focused/Android work must finish before final-head delivery; paid style fidelity and owner-device signing acceptance remain unverified. Do not restart Phase0 or restore removed analysis services.
+
 ## Montage checkpoint2
 
 Local checkpointf8d28668 is committed. PackStyleGateway/PackStyleAnalysis reuse existing analysis journaling with optional contract2; input sheets are staged and read by hash only after explicit consent. Native33 focused cases pass, including4 new real multimodal HTTP/Room/cancel/recover cases and all selected historical journal/reader/persistence cases. Next wire the complete guided montage panel, immutable TrialV3 original+sheet payload, durable random target suggestions and Back fix; keep V1/V2 bytes and AI1/AI2 unchanged.

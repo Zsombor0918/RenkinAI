@@ -14,6 +14,7 @@ internal interface TrialSessionOwner {
     suspend fun <T> owned(id: Long, action: suspend () -> T): T
     suspend fun targets(): List<CoverageTarget>
     suspend fun reader(source: String): CoverageSourceReader
+    suspend fun montageReader(source: String): CoverageSourceReader = reader(source)
     suspend fun original(key: String): TrialOriginal
     suspend fun settings(): AiSettings
 }
@@ -99,6 +100,26 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             targets.filter { it.selectable }.map { it.key }.toSet()), "stale_targets")
         trialRequire(metadata.sourceStamp == stamp, "stale_source")
         if (reader != null) trialRequire(reader.isCurrent() && reader.index.state == CoverageIndexState.READY && reader.index.stamp.versionCode != null, "stale_source")
+        val montage = PackMontage.optional(revision.analysisProfileJson)
+        if (montage != null) {
+            trialRequire(montage.result != null && route.first == ProjectSetupMode.EXTEND && montage.source == route.second &&
+                montage.setupStamp == stamp, "missing_style")
+            val evidence = MontageEvidence.parse(checkNotNull(revision.analysisEvidenceJson))
+            evidence.validate(id, montage.encode(), revision.specification, style.references.map { it.hash })
+            trialRequire(!evidence.needsRevalidation, "stale_source")
+            val full = owner.montageReader(montage.source)
+            trialRequire(full.isCurrent() && full.stableReferences && projectSourceStamp(full.index) == montage.referenceStamp, "stale_source")
+            withContext(Dispatchers.Default) {
+                montage.members.forEach { member ->
+                    currentCoroutineContext().ensureActive()
+                    trialRequire(full.index.mappings[member.component] == member.drawable && member.component !in full.index.dynamicKeys,
+                        "stale_source")
+                    val bytes = (full.inspectMontageReference(member.drawable) as? ReferenceRead.Rendered)?.png
+                    trialRequire(bytes != null && sha256(bytes) == member.hash, "stale_source")
+                }
+            }
+            trialRequire(full.isCurrent(), "stale_source")
+        }
         val coverage = reader?.let { IconCoverageAnalyzer().analyze(id, targets.filter { it.key in selection.componentKeys }, it) }
         val defaults = chosenOptions[id] ?: owner.settings().let { Triple(it.provider, it.model, it.quality) }
         val context = TrialContext(id, revision.revision, metadata.version, route.first.name, route.second, stamp,
@@ -106,7 +127,9 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             referenceFingerprint(style.references.map { it.hash }), withContext(Dispatchers.IO) { journal.epoch(id) },
             defaults.first, defaults.second, defaults.third, styleFingerprint(revision.specification, revision.userInstruction),
             SavedStyleDna.optional(revision.analysisProfileJson)?.let { dna -> sha256(canonicalJson(json("reviewedDna" to dna.encode(),
-                "choices" to json())).toByteArray()) }.orEmpty()).also { it.validate() }
+                "choices" to json())).toByteArray()) }.orEmpty(),
+            montage?.let { sha256(it.encode().toByteArray()) }.orEmpty()).also { it.validate() }
+        trialRequire(montage == null || context.provider == AiSettings.OPENAI, "stability_references")
         TrialPreparation(context, style, StyleTrialTargetSelector.candidates(route.first.name, targets, selection.componentKeys, coverage))
     }
     private suspend fun history(id: Long) {
@@ -196,7 +219,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
             drawingRecipes = SavedStyleDna.optional(p.style.revision.analysisProfileJson)?.let { dna -> keys.associateWith { key ->
                 val choice=(dna.selectedFamily to DnaSymbolType.UNKNOWN)
                 StyleDnaCompiler.recipe(dna,choice.second,choice.first)
-            } }.orEmpty()).freezeReferenceFirstPrompt()
+            } }.orEmpty()).let { if (p.context.montageFingerprint.isNotEmpty()) it.freezeMontagePrompt() else it.freezeReferenceFirstPrompt() }
         check(current(plan))
         images[id] = bytes
         flow(id).value = flow(id).value.copy(preparation = p, plan = plan,

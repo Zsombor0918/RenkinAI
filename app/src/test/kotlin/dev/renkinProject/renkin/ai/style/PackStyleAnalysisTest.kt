@@ -8,9 +8,13 @@ import androidx.room.Room
 import dev.renkinProject.renkin.data.*
 import dev.renkinProject.renkin.data.project.*
 import dev.renkinProject.renkin.ui.project.*
+import dev.renkinProject.renkin.ai.*
+import dev.renkinProject.renkin.ai.trial.*
+import dev.renkinProject.renkin.apk.CoverageTarget
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.flow.first
 import okhttp3.*
 import okhttp3.mockwebserver.*
 import org.json.JSONArray
@@ -155,5 +159,73 @@ class PackStyleAnalysisTest {
         assertEquals(prompt, saved.revision!!.specification); assertEquals(1, server.requestCount)
         assertEquals(AnalysisStatus.REVIEWED, journal.latest(1)!!.status)
         assertNull(service().recover(1, draft)); assertEquals(1, server.requestCount)
+    }
+    @Test fun savedMontageAnalysisReachesFrozenTrialAndActualMultipartOnlyAfterSeparateConsent() = runBlocking<Unit> {
+        val analysis = service(); val request = analysis.prepare(1, draft, "")
+        server.enqueue(response()); analysis.submit(request, draft, true)
+        server.takeRequest(5, TimeUnit.SECONDS)
+        val target = CoverageTarget("target.app/Main", "Target application")
+        val original = TrialOriginal(projectTestPng(android.graphics.Color.MAGENTA, 1024), "target-component-resource:1")
+        val saved = repo.load(1)
+        repo.saveSelection(1, saved.metadata!!.version, ProjectSelection("EXTEND", "fixture.pack", projectSourceStamp(reader.index),
+            projectCatalogStamp(listOf(target)), listOf(target.key)))
+        val trialsJournal = StyleTrialJournal(context)
+        val imageClient = client.newBuilder().apply { networkInterceptors().clear() }.addNetworkInterceptor { chain ->
+            check(chain.request().url.host == "127.0.0.1" && chain.request().url.port == server.port)
+            check(chain.connection()!!.route().socketAddress.address.isLoopbackAddress)
+            val item = trialsJournal.records(1).single().items.single()
+            assertEquals(TrialStatus.REQUESTING, item.status); assertEquals(1, item.endpointCalls)
+            chain.proceed(chain.request())
+        }.build()
+        val endpoint = server.url("/v1/images/edits")
+        val native = ClientIconGenerationGateway({ "offline-image-not-a-key" }, OpenAiImageClient(imageClient, endpoint),
+            StabilityImageClient(imageClient, endpoint, endpoint))
+        val trialOwner = object : TrialSessionOwner {
+            override suspend fun <T> owned(id: Long, action: suspend () -> T) = mutex.withLock { check(id == 1L && available); action() }
+            override suspend fun targets() = listOf(target)
+            override suspend fun reader(source: String) = reader
+            override suspend fun original(key: String) = original.also { check(key == target.key) }
+            override suspend fun settings() = AiSettings()
+        }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            fun controller() = OwnedStyleTrials(scope, repo, trialsJournal, StyleTrialCoordinator(trialsJournal, native, repo), { true }, trialOwner)
+            suspend fun idle(c: OwnedStyleTrials) = withTimeout(10000) { c.state(1).first { !it.busy } }.also { assertNull(it.error) }
+            val c = controller()
+            c.load(1, ProjectSetupMode.EXTEND, "fixture.pack"); idle(c)
+            c.prepare(1, listOf(target.key), false)
+            val declined = checkNotNull(idle(c).plan)
+            assertEquals(3, declined.promptVersion); assertEquals(draft.images.map(::sha256), declined.referenceHashes)
+            assertEquals(original.hash, declined.inputs.single().originalHash)
+            assertEquals(1, server.requestCount); assertTrue(trialsJournal.records(1).isEmpty())
+            c.cancelPreparation(1); assertNull(c.state(1).value.plan)
+            c.load(1, ProjectSetupMode.EXTEND, "fixture.pack"); assertNull(idle(c).plan)
+            c.prepare(1, listOf(target.key), false); val plan = checkNotNull(idle(c).plan)
+            assertNotEquals(declined.id, plan.id)
+            val output = projectTestPng(size = 1024)
+            server.enqueue(MockResponse().setBody(json("data" to JSONArray().put(json("b64_json" to Base64.encodeToString(output, Base64.NO_WRAP)))).toString()))
+            c.submit(1, plan.id); assertEquals(1, idle(c).variants.size)
+            val wire = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS)); assertEquals("/v1/images/edits", wire.path)
+            val payload = String(wire.body.readByteArray(), Charsets.ISO_8859_1)
+            val pngs = listOf(original.png) + draft.images
+            var last = -1
+            pngs.forEachIndexed { index, png ->
+                val at = payload.indexOf(String(png, Charsets.ISO_8859_1)); assertTrue(at > last); last = at
+                assertTrue(payload.contains("filename=\"input_$index.png\""))
+            }
+            assertEquals(pngs.size, Regex("filename=\"input_").findAll(payload).count())
+            val effective = plan.effectivePrompt(plan.inputs.single())
+            assertTrue(payload.contains(effective)); assertTrue(effective.contains("contact-sheet montages"))
+            assertEquals(1, Regex(Regex.escape(prompt)).findAll(effective).count())
+            for (value in listOf("1024x1024", "transparent", "png")) assertTrue(payload.contains(value))
+            val restored = controller(); restored.load(1, ProjectSetupMode.EXTEND, "fixture.pack"); idle(restored)
+            assertNull(restored.state(1).value.plan)
+            StyleTrialCoordinator(StyleTrialJournal(context), native, repo).submit(plan, pngs.associateBy(::sha256), true, { true })
+            assertEquals(2, server.requestCount)
+            reader.current = false
+            restored.load(1, ProjectSetupMode.EXTEND, "fixture.pack")
+            withTimeout(10000) { restored.state(1).first { !it.busy } }
+            assertNull(restored.state(1).value.preparation)
+        } finally { scope.cancel(); imageClient.connectionPool.evictAll(); imageClient.dispatcher.executorService.shutdownNow() }
     }
 }

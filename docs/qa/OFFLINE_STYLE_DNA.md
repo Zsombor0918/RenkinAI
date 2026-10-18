@@ -1,5 +1,9 @@
 # Offline Style DNA verification
 
+## Current montage EXTEND journeys
+
+The existing harness adds montageJourney to the two retained manual/reference journeys, then force-stops only its emulator app before restartReadOnly (3+1). Montage journey uses actual installed synthetic pack resources, automatic contact sheets, explicit free member removal/recomposition, one loopback multimodal POST after analysis consent, and V3 Trial preparation with the true target original. A second separately consented loopback POST simulates image generation and reaches actual review/approval; no live call is made. The native multipart bytes/output contract and consumed-marker behavior also execute in PackStyleAnalysisTest. Restart reopens three durable synthetic projects and prepares V3 without another analysis call. Earlier Quick/Standard trace descriptions below are historical, not current requirements.
+
 ## Phase0 active offline journeys
 
 The historical filename is retained to reuse CI/evidence tooling. Active Android selectors are referenceFirstJourney, decliningTrialCannotRestoreTheFrozenPlan and restartReadOnly (2+1), all real Compose/resources/Room with no provider submission. It verifies key-free ordered Save, true target original, frozenV2 hash/bytes, decline cannot restore a plan, and two saved projects reopened in another PID. The loopback unit journey now reads archived DNA directly and makes only the actual separately consented image-edit request; retired analysis POST contracts are deliberately removed. Historical trace sections below describe earlier runs, not current active-feature requirements. See [retirement inventory](PHASE0_RETIREMENT.md).

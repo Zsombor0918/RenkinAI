@@ -2,7 +2,7 @@
 
 ## Montage Phases1–3 implementation
 
-[ADR0016](decisions/0016-pack-montage-inputs.md) records the shared montage artifact and adaptive bounds. The local acquisition/render/persistence foundation is implemented first and remains unexposed until analysis and Trial integration. Historical Phase0 results below remain baseline evidence.
+[ADR0016](decisions/0016-pack-montage-inputs.md) records the shared montage artifact and adaptive bounds. The guided montage/one-analysis/V3 Trial integration is implemented on the same PR10; final-head gates remain pending. See the [request, PNG and acceptance contract](qa/MONTAGE_EXTEND.md). Historical Phase0 results below remain baseline evidence.
 
 ## Current owner-authorized Phase0 checkpoint
 

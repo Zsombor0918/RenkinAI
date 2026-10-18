@@ -57,3 +57,11 @@ jobs:
           name: full-suite-evidence
           path: build/compose-regressions/
           if-no-files-found: error
+
+      - name: Retain actual synthetic montage PNG evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pack-montage-evidence
+          path: app/build/montage-evidence/
+          if-no-files-found: error

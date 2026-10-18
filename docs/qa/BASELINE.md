@@ -1,5 +1,9 @@
 # Verification baseline
 
+## Montage current evidence boundary
+
+Historical Phase0 baseline921 Linux/3 Android/67 Python/7 order remains historical. This implementation adds meaningful montage, request and navigation coverage without deleting any Phase0 cases. Local checkpoints:35 focused acquisition/persistence tests, stronger3-image cases, then33 analysis/reader cases passed. V3/navigation RED evidence is retained externally; final-head counts and hosted execution must be taken from fresh artifacts, never inferred from these subtotals.
+
 ## Montage analysis focused results
 
 Windows/JDK17: PackStyleAnalysisTest4, StyleAnalysisJournalTest9, StyleAnalysisSchemaTest8, ProjectAiAnalysisPersistenceTest9 and StyleDnaPersistenceTest3 execute33/33 PASS in2m12s. Fake credential and verified127.0.0.1 MockWebServer only. Default production endpoints were never called. Final integration Linux/Android/APK is still required on its committed head.

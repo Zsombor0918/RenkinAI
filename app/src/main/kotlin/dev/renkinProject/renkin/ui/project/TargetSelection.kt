@@ -115,6 +115,27 @@ internal fun TargetSelection(
     }
     val persistReady = ready && !data.metadataLoading && !data.metadataFailed && !selectionBusy && coverageReady &&
         (mode == ProjectSetupMode.CREATE || (snapshot?.index?.state == dev.renkinProject.renkin.apk.CoverageIndexState.READY && snapshot.index.stamp.versionCode != null))
+    var suggestedThisVisit by rememberSaveable(profileId, mode, source) { mutableStateOf(false) }
+    // The operation's own busy flag must not cancel its suspended durable Save.
+    // Real source/catalog/route changes still cancel and require fresh validation.
+    LaunchedEffect(ready, coverageReady, stamp, data.metadataLoading, data.metadataFailed,
+        data.savedMetadata?.version, guidedStep, data.automaticTrialSuggestions) {
+        if (guidedStep == 3 && data.automaticTrialSuggestions && persistReady && savedSelection == null &&
+            !selectionEdited && !invalidated && !suggestedThisVisit && data.savedMetadata?.activeRevision != null) {
+            val suggested = StyleTrialTargetSelector.recommend(trialCandidates)
+            if (suggested.isNotEmpty()) {
+                suggestedThisVisit = true; selectionBusy = true
+                try {
+                    data.onSaveSelection(data.savedMetadata.version,
+                        ProjectSelection(mode.name, source, sourceStamp, catalogStamp, suggested))
+                    selected = ArrayList(suggested); selectedStamp = checkNotNull(stamp)
+                    selectionSaved = true; selectionError = false
+                } catch (cancel: CancellationException) { throw cancel }
+                catch (_: Exception) { selectionError = true }
+                finally { selectionBusy = false }
+            }
+        }
+    }
     val trialReason = when {
         !persistReady -> if (data.metadataFailed) R.string.setupSelectionSaveError else R.string.projectInitializing
         data.savedMetadata?.activeRevision == null -> R.string.trialSaveStyle
@@ -183,10 +204,25 @@ internal fun TargetSelection(
                     OutlinedTextField(query, { query = it }, label = { Text(stringResource(R.string.setupSearch)) },
                         modifier = Modifier.fillMaxWidth().testTag("setup-search"), singleLine = true)
                     TextButton(onClick = {
-                        selected = ArrayList(StyleTrialTargetSelector.recommend(trialCandidates))
+                        val suggestion = StyleTrialTargetSelector.recommend(trialCandidates).toMutableList()
+                        val alternate = trialCandidates.firstOrNull { it.recommended && it.target.key !in suggestion }?.target?.key
+                        if (suggestion.toSet() == validSelected && alternate != null) suggestion[suggestion.lastIndex] = alternate
+                        selected = ArrayList(suggestion)
                         selectionEdited = true; selectionSaved = false
+                        if (data.automaticTrialSuggestions && suggestion.isNotEmpty()) {
+                            selectionBusy = true
+                            scope.launch {
+                                try {
+                                    data.onSaveSelection(data.savedMetadata?.version ?: 0,
+                                        ProjectSelection(mode.name, source, sourceStamp, catalogStamp, suggestion.sorted()))
+                                    selectionEdited = false; selectionSaved = true; selectionError = false; invalidated = false
+                                } catch (cancel: CancellationException) { throw cancel }
+                                catch (_: Exception) { selectionError = true }
+                                finally { selectionBusy = false }
+                            }
+                        }
                     }, enabled = persistReady, modifier = Modifier.heightIn(min = 48.dp).testTag("setup-select-all")) {
-                        Text(stringResource(R.string.workflowRecommendApps))
+                        Text(stringResource(if (data.automaticTrialSuggestions) R.string.packStyleOtherApps else R.string.workflowRecommendApps))
                     }
                     if (mode == ProjectSetupMode.EXTEND) TextButton(onClick = { missingOnly = !missingOnly },
                         modifier = Modifier.heightIn(min = 48.dp).testTag("setup-filter")) {

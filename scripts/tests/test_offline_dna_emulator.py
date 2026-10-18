@@ -22,8 +22,11 @@ EVIDENCE = {
                    "declined": False, "generation_calls": 0, "saved_revision": 1},
     "decline": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True,
                 "declined": True, "generation_calls": 0, "saved_revision": 1},
+    "montage": {"loopback_posts": 2, "external_posts": 0, "montage_pages": 2, "selected_icons": 29,
+                "trial_prepared": True, "prompt_version": 3, "generation_calls": 1, "saved_revision": 3,
+                "automatic_recomposition": True, "variant_reviewed": True, "style_approved": True},
     "restart": {"process_restart": True, "loopback_posts": 0, "external_posts": 0,
-                "saved_projects_reopened": 2, "trial_prepared": True, "uncertain_attempts_replayed": 0},
+                "saved_projects_reopened": 3, "trial_prepared": True, "uncertain_attempts_replayed": 0},
 }
 
 
@@ -91,7 +94,7 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
                     instrumentation_count += 1
                     if mode == "instrument_timeout":
                         raise subprocess.TimeoutExpired(command, kwargs["timeout"])
-                    expected = 2 if instrumentation_count == 1 else 1
+                    expected = 3 if instrumentation_count == 1 else 1
                     log = f"OK ({expected} tests)\n"
                     if instrumentation_count == 1:
                         if mode == "wrong_count":
@@ -157,7 +160,7 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
         installs = [index for index, (command, _) in enumerate(commands) if command[3:4] == ["install"]]
         self.assertEqual(3, len(installs))
         self.assertTrue(all(build < index for index in installs))
-        self.assertEqual([2, 1], [run["tests"] for run in summary["runs"]])
+        self.assertEqual([3, 1], [run["tests"] for run in summary["runs"]])
         stop = next(index for index, (command, _) in enumerate(commands) if command[3:6] == ["shell", "am", "force-stop"])
         phases = [index for index, (command, _) in enumerate(commands) if command[3:6] == ["shell", "am", "instrument"]]
         self.assertLess(phases[0], stop)
@@ -203,6 +206,12 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
 
     def test_external_posts_missing_journeys_wrong_counters_and_json_types_fail(self):
         mutations = [
+            ("montage", "loopback_posts", 0),
+            ("montage", "selected_icons", 0),
+            ("montage", "prompt_version", 2),
+            ("montage", "automatic_recomposition", False),
+            ("montage", "generation_calls", 0),
+            ("montage", "variant_reviewed", False),
             ("references", "external_posts", 1),
             ("decline", "generation_calls", 1),
             ("decline", "declined", False),

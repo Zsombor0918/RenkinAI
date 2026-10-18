@@ -1,5 +1,9 @@
 # Architecture
 
+## Montage EXTEND integration
+
+Fresh EXTEND uses LocalPackMontages and PackMontagePanel; old saved/manual/CREATE paths retain their existing editor. One consented Responses operation stores a plain pack-wide brief. Future TrialV3 binds the full montage payload fingerprint, exact brief, original identity, ordered sheet bytes and effective prompt hashes; V1/V2 readers/text remain unchanged. Random eligible suggestions are persisted with the existing selection row; recommendations never submit requests. No new database, batch engine or signing path.
+
 ## Single montage style request
 
 PackStyleAnalysis performs one explicit operation with the existing StyleAnalysisJournal, owner lock, epochs and consumed UUID files. New optional request contract2 binds high-detail montage hashes and frozen instruction/preferences; historical contract1 encodings/fingerprints remain unchanged. PackStyleGateway streams saved PNG inputs into one bounded Responses POST and validates only style_prompt/summary. Received-result local Save can recover without another POST; cancellation/unknown outcomes never replay. Reuse existing revision/montage evidence for the saved result; no new state-machine/store or old DNA transport. Guided wiring is the next increment.

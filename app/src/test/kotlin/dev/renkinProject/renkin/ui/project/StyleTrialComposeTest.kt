@@ -174,11 +174,19 @@ class StyleTrialComposeTest {
     }
     @Test fun maxThreeDistinctTargetsManualChangeAndZeroOneTwoCasesAreVisible() {
         val b = Backend(preparation(n = 4)); show(b)
-        scroll("trial-target-p1/Main"); compose.onNodeWithTag("trial-target-p1/Main").assertIsNotEnabled()
-        scroll("trial-target-p0/Main"); compose.onNodeWithTag("trial-target-p0/Main").performClick()
-        scroll("trial-target-p1/Main"); compose.onNodeWithTag("trial-target-p1/Main").performClick()
+        // Recommendations are random; the capacity/replacement guarantee is independent of which three were suggested.
+        val unselected = (0..3).single { index ->
+            scroll("trial-target-p$index/Main")
+            compose.onNodeWithTag("trial-target-p$index/Main").fetchSemanticsNode().config[
+                androidx.compose.ui.semantics.SemanticsProperties.ToggleableState] == androidx.compose.ui.state.ToggleableState.Off
+        }
+        val removed = (0..3).first { it != unselected }
+        scroll("trial-target-p$unselected/Main"); compose.onNodeWithTag("trial-target-p$unselected/Main").assertIsNotEnabled()
+        scroll("trial-target-p$removed/Main"); compose.onNodeWithTag("trial-target-p$removed/Main").performClick()
+        scroll("trial-target-p$unselected/Main"); compose.onNodeWithTag("trial-target-p$unselected/Main").performClick()
         prepare(); assertEquals(3, b.flow.value.plan!!.inputs.size); assertEquals(3, b.flow.value.plan!!.inputs.map { it.key }.distinct().size)
-        assertTrue(b.flow.value.plan!!.inputs.any { it.key == "p1/Main" }); assertEquals(0, b.paidPlans)
+        assertTrue(b.flow.value.plan!!.inputs.any { it.key == "p$unselected/Main" })
+        assertFalse(b.flow.value.plan!!.inputs.any { it.key == "p$removed/Main" }); assertEquals(0, b.paidPlans)
     }
     @Test fun originalAndGenerated48PxAndLargeAlphaPreviewsHaveAccessibleLabels() {
         val b = Backend(preparation(n = 1)); show(b); val row = generate(b).single()

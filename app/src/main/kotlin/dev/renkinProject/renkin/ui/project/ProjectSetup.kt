@@ -69,7 +69,8 @@ internal data class ProjectSetupData(
     val metadataLoading: Boolean = false,
     val metadataFailed: Boolean = false,
     val onSaveSelection: suspend (Long, ProjectSelection) -> ProjectAiMetadata = { _, _ -> error("Preparation persistence unavailable") },
-    val launcherInventoryChanged: Boolean = false
+    val launcherInventoryChanged: Boolean = false,
+    val automaticTrialSuggestions: Boolean = false
 )
 
 /** Optional instrumentation sink. Production has no logger; values are fixed codes only. */
@@ -131,11 +132,16 @@ internal fun rememberProjectSetupData(
     var metadata by remember(profileId) { mutableStateOf<ProjectAiMetadata?>(null) }
     var metadataLoading by remember(profileId) { mutableStateOf(true) }
     var metadataFailed by remember(profileId) { mutableStateOf(false) }
+    var automaticSuggestions by remember(profileId) { mutableStateOf(false) }
     LaunchedEffect(profileId, page) {
         if (page == ProjectSetupPage.TARGETS && profileId != null) {
             metadataLoading = true
             metadataFailed = false
-            try { metadata = viewModel.projectMetadata(profileId) }
+            try {
+                val saved = viewModel.projectStyleBackend.load(profileId)
+                metadata = saved.metadata
+                automaticSuggestions = dev.renkinProject.renkin.ai.style.PackMontage.optional(saved.revision?.analysisProfileJson) != null
+            }
             catch (cancel: CancellationException) { throw cancel }
             catch (_: Exception) { metadataFailed = true }
             finally { metadataLoading = false }
@@ -198,7 +204,7 @@ internal fun rememberProjectSetupData(
         appIcon = { key -> ProjectOriginalIcon(viewModel.applicationList.find { it.key == key }?.icon) },
         savedMetadata = metadata, metadataLoading = metadataLoading, metadataFailed = metadataFailed,
         onSaveSelection = { version, selection -> viewModel.saveProjectSelection(checkNotNull(profileId), version, selection).also { metadata = it } },
-        launcherInventoryChanged = launcherChanged)
+        launcherInventoryChanged = launcherChanged, automaticTrialSuggestions = automaticSuggestions)
 }
 
 @Composable

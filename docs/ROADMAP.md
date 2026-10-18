@@ -1,5 +1,9 @@
 # RenkinAI roadmap
 
+## Montage EXTEND scope
+
+Phases1–3 connect automatic adaptive contact sheets, one explicit pack-wide visual analysis and separately consented original-plus-montage Trials. Later batch completion must reuse Global Batch; no bulk engine, subscriptions, CREATE redesign or live visual experiment is part of this work. Final exact-head gates and owner acceptance remain mandatory.
+
 ## Montage checkpoint2 service verified
 
 The one-shot saved-sheet analysis and local-result recovery are implemented with explicit cost consent/no replay and33 focused passing cases. The primary UX is still unexposed until Phase3 connects the complete source→montage→analysis→Trial journey. This is not live visual acceptance or completion of all phases.

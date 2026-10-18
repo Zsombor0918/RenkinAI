@@ -27,6 +27,23 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleTrialPlanTest {
     @get:Rule val temporary = TemporaryFolder()
+    @Test fun montageContractBindsContactSheetsWithoutReinterpretingHistoricalReferences() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(refs = 2)
+            val old = f.plan(listOf("a/Main")).freezeReferenceFirstPrompt()
+            val legacy = old.encode()
+            val context = JSONObject(old.context.encode()).put("montageFingerprint", "d".repeat(64))
+            val next = old.copy(context = TrialContext.parse(context), promptVersion = 3, promptHashes = emptyMap())
+            val frozen = next.copy(promptHashes = next.inputs.associate { it.key to sha256(next.effectivePrompt(it).toByteArray()) })
+            frozen.validate()
+            assertEquals(frozen, StyleTrialPlan.parse(frozen.encode()))
+            val text = frozen.effectivePrompt(frozen.inputs.single())
+            assertTrue(text.contains("contact-sheet montages"))
+            assertTrue(text.contains("IMAGE 1")); assertTrue(text.contains("ONE standalone"))
+            assertEquals(legacy, StyleTrialPlan.parse(legacy).encode())
+            assertTrue(runCatching { old.copy(promptVersion = 3).validate() }.isFailure)
+        }
+    }
     @Test fun newPromptVersionBindsEffectiveBytesAndCannotMutateARestoredRequest() = runBlocking {
         StyleTrialFixture(temporary.root).use { f ->
             f.initialize(refs = 2)

@@ -141,7 +141,6 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
             item {
                 SetupHeading(stringResource(R.string.trialTitle), onBack)
                 Text(name, style = MaterialTheme.typography.titleLarge)
-                Text(stringResource(R.string.guidedTrialBoundary))
                 if (p != null) Text(stringResource(R.string.guidedTrialSummary, p.context.revision,
                     review.current.size, review.current.count { it.reviewStatus != "UNREVIEWED" }), Modifier.testTag("trial-style"))
                 if (state.busy) WavyLoadingBar(Modifier.fillMaxWidth())
@@ -193,6 +192,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 TrialExpandButton(optionsExpanded, { optionsExpanded = !optionsExpanded },
                     stringResource(R.string.guidedTrialOptions), "trial-options-toggle")
                 if (optionsExpanded) {
+                    Text(stringResource(R.string.guidedTrialBoundary))
                     Text(stringResource(R.string.projectIdentity, id)); Text(mode.name); source?.let { Text(it) }
                     p?.let { preparation ->
                         Text(stringResource(R.string.trialRevision, preparation.context.revision, preparation.style.references.size))
@@ -255,7 +255,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                         Text(stringResource(R.string.guidedTrialPrepare))
                     } else OutlinedButton(onClick = { backend.prepare(id, selected.toList(), allowCovered) }, enabled = canPrepare,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("trial-prepare")) { Text(stringResource(R.string.guidedTrialPrepare)) }
-                    Text(stringResource(if (canPrepare) R.string.guidedTrialPrepareHelp else when {
+                    if (!canPrepare) Text(stringResource(when {
                         state.busy -> R.string.guidedTrialWait
                         !state.hasKey -> R.string.guidedTrialKeyReason
                         !refsValid -> R.string.guidedTrialReferenceReason
@@ -364,8 +364,8 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 TrialPreview(id, input.originalHash, backend, "trial-frozen-${input.requestId}", 72, false, true,
                     stringResource(R.string.trialOriginalApp))
             }
-            if (plan.referenceHashes.isNotEmpty()) Text(stringResource(R.string.guidedTrialStyleOnlyReferences))
-            plan.referenceHashes.forEachIndexed { index, hash ->
+            if (plan.referenceHashes.isNotEmpty()) Text(stringResource(if (plan.promptVersion == 3) R.string.packStyleTrialSheets else R.string.guidedTrialStyleOnlyReferences))
+            if (plan.promptVersion != 3) plan.referenceHashes.forEachIndexed { index, hash ->
                 Text(stringResource(R.string.projectStyleReferenceNumber, index + 1))
                 TrialPreview(id, hash, backend, "trial-frozen-reference-$index", 72, false, true,
                     stringResource(R.string.projectStyleReferencePreview))
@@ -380,6 +380,13 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
             }
             TrialExpandButton(consentDetails, { consentDetails = !consentDetails }, stringResource(R.string.guidedTrialDetails), "trial-consent-details")
             if (consentDetails) {
+                if (plan.promptVersion == 3) {
+                    plan.referenceHashes.forEachIndexed { index, hash ->
+                        TrialPreview(id, hash, backend, "trial-frozen-reference-$index", 200, false, true,
+                            stringResource(R.string.packStylePreview))
+                    }
+                    Text(plan.effectivePrompt(plan.inputs.first()), Modifier.testTag("trial-effective-prompt"))
+                }
                 Text(plan.specification); if (plan.instruction.isNotBlank()) Text(plan.instruction); Text(plan.fingerprint)
                 Text(stringResource(R.string.trialStylePack, plan.context.sourcePackage ?: stringResource(R.string.styleAnalysisOwnSource)),
                     Modifier.testTag("trial-style-source"))
