@@ -1,5 +1,9 @@
 # Agent handoff — guided UX Stage 1
 
+## Montage checkpoint2
+
+Local checkpointf8d28668 is committed. PackStyleGateway/PackStyleAnalysis reuse existing analysis journaling with optional contract2; input sheets are staged and read by hash only after explicit consent. Native33 focused cases pass, including4 new real multimodal HTTP/Room/cancel/recover cases and all selected historical journal/reader/persistence cases. Next wire the complete guided montage panel, immutable TrialV3 original+sheet payload, durable random target suggestions and Back fix; keep V1/V2 bytes and AI1/AI2 unchanged.
+
 ## Montage checkpoint1
 
 Baseline6e5ff5d2; same branch/PR10. LocalPackMontages and tagged PackMontage/evidence use existing assets/revisions and backup rekey; no schema change. Automatic layout redistributes edited member lists, actual PNG pixels/hashes/stamps remain bound. Keep the new route unexposed until the one-shot consented analysis and V3 montage Trial handoff are complete. V1/V2/consumed/history/signing/AI1/AI2 remain preserved. Final-head gates follow stable integration, not each small commit.

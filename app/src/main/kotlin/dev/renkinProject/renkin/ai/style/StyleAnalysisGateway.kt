@@ -53,19 +53,26 @@ internal data class StyleAnalysisRequest(val context: AnalysisContext, val image
     val description: String, val userInstruction: String,
     val model: String = DEFAULT_ANALYSIS_MODEL, val detail: String = "low",
     val requestId: String = UUID.randomUUID().toString(), val localReport: ReferenceSampleReport? = null,
-    val algorithm: String = REFERENCE_ALGORITHM) {
+    val algorithm: String = REFERENCE_ALGORITHM, val contract: Int = 1) {
     val promptHash: String get() = sha256(canonicalJson(json("description" to description, "instruction" to userInstruction)).toByteArray())
     val fingerprint: String get() = sha256(canonicalJson(json("context" to context.encode(),
         "hashes" to JSONArray(images.map { it.hash }), "promptHash" to promptHash,
         "model" to model, "detail" to detail, "schema" to 1, "algorithm" to algorithm,
-        "localReport" to localReport?.encode())).toByteArray())
+        "localReport" to localReport?.encode()).also { if (contract != 1) it.put("contract", contract) }).toByteArray())
     fun validate() {
         context.validate(); require(UUID.fromString(requestId).toString() == requestId)
         require(algorithm in setOf(REFERENCE_ALGORITHM, PREVIOUS_REFERENCE_ALGORITHM, LEGACY_REFERENCE_ALGORITHM))
-        require(model in ANALYSIS_MODELS && detail == "low" && images.size in 1..12)
+        require(contract in 1..2 && model in ANALYSIS_MODELS)
+        require(if (contract == 1) detail == "low" && images.size in 1..12 else detail == "high" && images.size in 1..4 && localReport == null)
         cleanText(description, 6000, true); cleanText(userInstruction, 2000, true)
-        require(images.map { it.hash }.distinct().size == images.size && images.sumOf { it.png.size.toLong() } <= 4L * 1024 * 1024)
-        images.forEach { validateAnalysisPng(it.png); require(it.hash == sha256(it.png)) }
+        require(images.map { it.hash }.distinct().size == images.size && images.sumOf { it.png.size.toLong() } <= (if (contract == 1) 4L else 16L) * 1024 * 1024)
+        images.forEach {
+            if (contract == 1) validateAnalysisPng(it.png) else {
+                val (w, h) = dev.renkinProject.renkin.data.project.inspectPng(it.png)
+                require(w <= 5 * MONTAGE_CELL && h <= 3 * MONTAGE_CELL)
+            }
+            require(it.hash == sha256(it.png))
+        }
         localReport?.let { it.validate(); require(it.valid >= images.size && it.lowSample == (images.size < 8)) }
     }
 }
@@ -74,8 +81,10 @@ internal data class AnalysisUsage(val inputTokens: Long, val outputTokens: Long)
     init { require(inputTokens in 0..1000000000 && outputTokens in 0..1000000000) }
 }
 internal sealed interface StyleAnalysisOutcome {
+    data class MontagePrompt(val prompt: String, val summary: String, val responseId: String, val usage: AnalysisUsage?) : StyleAnalysisOutcome
     data class Suggested(val style: StyleProfileV1, val responseId: String, val usage: AnalysisUsage?) : StyleAnalysisOutcome
     data object Refused : StyleAnalysisOutcome
+    data object Incomplete : StyleAnalysisOutcome
     data object InvalidResponse : StyleAnalysisOutcome
     data object InvalidInput : StyleAnalysisOutcome
     data object Unauthorized : StyleAnalysisOutcome

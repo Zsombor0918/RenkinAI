@@ -1,5 +1,9 @@
 # RenkinAI roadmap
 
+## Montage checkpoint2 service verified
+
+The one-shot saved-sheet analysis and local-result recovery are implemented with explicit cost consent/no replay and33 focused passing cases. The primary UX is still unexposed until Phase3 connects the complete source→montage→analysis→Trial journey. This is not live visual acceptance or completion of all phases.
+
 ## Montage checkpoint1 in progress
 
 Phase1 local sampling/composition/persistence exists and is focused-tested before the single analysis and Trial integration. The ordinary guided workflow will change only when the complete montage path works; no half-working default is exposed. Phases2–3 remain authorized work on the same PR10, with historical governance independent.

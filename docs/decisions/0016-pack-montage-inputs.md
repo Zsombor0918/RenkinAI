@@ -56,3 +56,18 @@ missing or stale source bytes fail closed. Existing historical codecs and V1/V2
 Trial bytes remain immutable. The new foundation stays unexposed until the single
 analysis and montage Trial route are connected; future generation needs its own
 version. Rollback must retain the new saved-data reader and evidence rekey path.
+
+## One-shot analysis boundary
+
+Use gpt-5.4-mini through Responses with high-detail saved sheet PNGs, store=false,
+stream=false, reasoning effort none and4096 output-token cap. One request asks for
+only style_prompt and summary strings, then strict local bounds validate them.
+The model's image input/Responses/structured-output support and current token
+pricing are documented on its [official model page](https://developers.openai.com/api/docs/models/gpt-5.4-mini).
+No dollar-price guarantee is hardcoded; consent describes one potentially billable
+operation whose input/output tokens determine cost. The streaming request body
+holds base64 for one PNG at a time. Existing journal contract1 stays byte-compatible;
+contract2 adds a fingerprinted version/detail distinction and small plain-text
+result. Epochs, UUID consumption, cancellation uncertainty and no retry remain.
+Successful result/local Save failures can recover the received candidate without
+repeating the request, only while its source/owner/revision still match.

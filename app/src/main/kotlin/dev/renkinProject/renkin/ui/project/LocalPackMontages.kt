@@ -92,7 +92,7 @@ internal class LocalPackMontages(private val repository: ProjectAiRepository,
         check(reader.isCurrent())
     }
 
-    private suspend fun readMembers(reader: CoverageSourceReader, members: List<MontageMember>): List<SampledReference> = members.map { m ->
+    private suspend fun readMembers(reader: CoverageSourceReader, members: List<MontageMember>): List<SampledReference> = withContext(Dispatchers.Default) { members.map { m ->
         currentCoroutineContext().ensureActive()
         check(reader.isCurrent() && m.component !in reader.index.dynamicKeys && reader.index.mappings[m.component] == m.drawable)
         val png = (reader.inspectMontageReference(m.drawable) as? ReferenceRead.Rendered)?.png ?: error("Source icon unavailable")
@@ -100,11 +100,13 @@ internal class LocalPackMontages(private val repository: ProjectAiRepository,
         SampledReference(m.component, m.drawable, m.hash, png, referenceFeatures(png))
     }
 
+    }
+
     suspend fun save(id: Long, expected: Long?, draft: MontageDraft, brief: String = MONTAGE_STARTING_BRIEF,
-        instruction: String = ""): SavedProjectStyle = owner.owned(id) {
+        instruction: String = "", expectedVersion: Long? = null): SavedProjectStyle = owner.owned(id) {
         validateOwned(id, draft)
         repository.importReferences(id, draft.images.map { bytes -> { ByteArrayInputStream(bytes) } })
         // No new store, key, journal or paid permission. Existing optimistic revision check applies.
-        repository.saveMontageStyle(id, expected, draft.montage, brief, instruction)
+        repository.saveMontageStyle(id, expected, draft.montage, brief, instruction, expectedVersion)
     }
 }

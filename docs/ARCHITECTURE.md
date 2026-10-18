@@ -1,5 +1,9 @@
 # Architecture
 
+## Single montage style request
+
+PackStyleAnalysis performs one explicit operation with the existing StyleAnalysisJournal, owner lock, epochs and consumed UUID files. New optional request contract2 binds high-detail montage hashes and frozen instruction/preferences; historical contract1 encodings/fingerprints remain unchanged. PackStyleGateway streams saved PNG inputs into one bounded Responses POST and validates only style_prompt/summary. Received-result local Save can recover without another POST; cancellation/unknown outcomes never replay. Reuse existing revision/montage evidence for the saved result; no new state-machine/store or old DNA transport. Guided wiring is the next increment.
+
 ## Pack montage local artifact
 
 LocalPackMontages reuses the source reader, geometry-proportional sampler, private PNG assets and existing revision JSON. PackMontage stores ordered source members and sheet hashes/stamps; MontageEvidence binds profile/payload/brief and participates in backup rekey. Automatic30-member selection and content edits use the same adaptive transparent sheets, preserving256px source pixels with bounded pages. A separate fit-render path preserves nonsquare resource proportions without changing historical render bytes. No Room migration/store or restored old analysis transport. UI/analysis/new generation integration follows before exposure; see [ADR0016](decisions/0016-pack-montage-inputs.md).

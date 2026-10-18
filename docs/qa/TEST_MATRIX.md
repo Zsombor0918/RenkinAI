@@ -1,5 +1,9 @@
 # Regression and test matrix
 
+## Montage HTTP and billing coverage
+
+PackStyleAnalysisTest4 cases verify the actual one-shot Responses body, ordered high-detail base64 PNGs, zero POST before consent, durable plain brief/receipt and original sheet hashes; incomplete/503 fail without Save/replay; cancellation and stale source retain consumed rights; a received result recovers local Save without a second POST. Historical journal9, schema8 and persisted old-style9+3 cases run alongside them (33 total). No extra full-suite job or separate HTTP scheduling.
+
 ## Montage local contracts
 
 PackMontageTest tests actual pixel/alpha preservation across1,2,7,14,15,16,29,30,31,60 members; reorder/remove redistribution; proportional wordmark rendering; high-entropy PNG bounds; real Room/asset save/reopen/history/rekey and stale/cross-owner rejection. ReferenceSamplerTest adds a30-representative proportionality RED/GREEN. Historical style/analysis persistence classes run in the same focused union. No test count inflation by separate duplicated matrices.

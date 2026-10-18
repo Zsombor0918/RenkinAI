@@ -103,11 +103,11 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
     }
 
     internal suspend fun saveMontageStyle(id: Long, expected: Long?, montage: dev.renkinProject.renkin.ai.style.PackMontage,
-        brief: String, instruction: String): SavedProjectStyle {
+        brief: String, instruction: String, expectedVersion: Long? = null): SavedProjectStyle {
         val payload = montage.encode()
         val evidence = dev.renkinProject.renkin.ai.style.MontageEvidence(id, sha256(payload.toByteArray()), sha256(brief.trim().toByteArray()))
         return saveRevision(id, expected, brief, instruction, montage.pages.map { it.hash }, "EXTEND", montage.source,
-            montage.setupStamp, payload, evidence.encode())
+            montage.setupStamp, payload, evidence.encode(), expectedVersion)
     }
 
     private suspend fun saveRevision(id: Long, expectedRevision: Long?, specification: String,
