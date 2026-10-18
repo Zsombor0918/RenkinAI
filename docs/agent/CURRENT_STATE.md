@@ -1,5 +1,9 @@
 # Current implementation
 
+## Phase4A retained Linux fixture failure
+
+Sourcea383625c passes Android5/5 but Linux1026/1 fails at the old V1 label expectation in the existing offline HTTP Trial journey. The new follow-up aligns that test with frozen V2 prompt hashes and semantic roles, retaining identity/order/consent/replay guards; production code is unchanged. Exact corrected-head results remain in draft PR10, not inferred from artifact-upload steps.
+
 ## Phase4A bounded generation-contract implementation
 
 Owner authorizes work from PR8 integration91e5737d on separate feat/reference-first-prompt-v2. Newly prepared OpenAI Trials use V2; restored V1 requests and fingerprints remain unchanged. Effective prompt hashes are frozen and revalidated before claim. Historical DNA duplicate lines are removed conservatively; manual reviewed prose/instructions stay. Reference-first remains primary; old analysis compatibility remains, with no new algorithm investment. Exact final-head verification and fresh APK evidence belong in the new draft PR audit. No live/key/phone, signing, Room or protected-branch changes.

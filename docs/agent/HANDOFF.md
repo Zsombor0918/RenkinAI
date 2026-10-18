@@ -1,5 +1,9 @@
 # Agent handoff — guided UX Stage 1
 
+## Phase4A offline HTTP follow-up
+
+CI39118171451 on a383625c gives1025 PASS/1 FAIL: retained offline Trial test line317 still requires V1 wording. Android39118171487 passes5/5. Keep both artifacts. Update only that test to V2 hash/semantic assertions, run focused offline/gateway checks, then one full Linux/build and the existing five Android journeys on the corrected head. Do not modify production code to restore obsolete duplicated wording. Audit remains BLOCKED until actual gates finish.
+
 ## Phase4A generation-contract boundary
 
 Source baseline91e5737d is the owner-merged Phase3A integration on PR8, not main. Separate feat/reference-first-prompt-v2 implements immutable new Trial contractV2 and conservative DNA appearance deduplication, retaining missing-version V1 byte/fingerprint behavior and existing consent/no-replay. Final source SHA, mandatory results and verified APK belong in its own external draft PR audit after commit. Keep that PR open/unmerged. Visual quality, Samsung/OEM identity and installed-signature compatibility remain unproven; matching owner-controlled signing may be needed without uninstall/data reset. Stop after Phase4A; Phase4B removal and any paid visual pilot need separate authorization. Older pending prose below is historical, not final evidence.

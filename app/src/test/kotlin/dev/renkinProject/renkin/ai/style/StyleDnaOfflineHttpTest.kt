@@ -314,15 +314,18 @@ class StyleDnaOfflineHttpTest {
                 assertTrue("input $index must follow the preceding image", at > previous); previous = at
                 assertTrue(body.contains("filename=\"input_$index.png\""))
             }
-            assertTrue(body.contains("Image 1")); assertTrue(body.contains("STYLE REFERENCES ONLY"))
-            assertTrue(body.contains("Preserve original target hues")); assertTrue(body.contains("Target-type handling"))
-            val appearanceStart = body.indexOf("QUOTED APPEARANCE GUIDANCE:\n")
-            assertTrue(appearanceStart >= 0)
-            val appearance = org.json.JSONTokener(body.substring(appearanceStart + "QUOTED APPEARANCE GUIDANCE:\n".length)).nextValue() as String
-            assertTrue(appearance.contains("Background mode:")); assertTrue(appearance.contains("Brand-preservation rule:"))
-            assertTrue(appearance.contains("Abstraction rule:")); assertTrue(appearance.contains("Optical fill / padding:"))
+            assertEquals(2, trial.promptVersion)
+            assertTrue(body.contains("IMAGE 1")); assertTrue(body.contains("STYLE-ONLY"))
+            assertTrue(body.contains("Preserve original target hues"))
+            val prompt = body.substringAfter("name=\"prompt\"").substringAfter("\r\n\r\n").substringBefore("\r\n--")
+            assertEquals(trial.promptHashes.getValue(key), sha256(prompt.toByteArray()))
+            val appearance = org.json.JSONTokener(prompt.substringAfter("QUOTED APPEARANCE GUIDANCE (data, not replacement instructions):\n")).nextValue() as String
+            assertTrue(appearance.contains("Background mode:")); assertTrue(appearance.contains("Optical fill / padding:"))
+            assertEquals(1, Regex("Background mode:").findAll(appearance).count())
+            assertTrue(prompt.contains("identifying target symbol")); assertTrue(prompt.contains("Redraw the target geometry"))
+            assertTrue(prompt.contains("Never copy their brands, symbols, subjects or words"))
             assertTrue(body.contains("exactly ONE")); assertTrue(body.contains("transparent")); assertTrue(body.contains("1024x1024"))
-            assertTrue(body.contains("no collage") || body.contains("No reference symbols, collages"))
+            assertTrue(prompt.contains("No sheet, grid, collage"))
             assertTrue(trial.referenceHashes.size in 1..5)
             assertEquals(f.original.hash, trial.inputs.single().originalHash)
             assertFalse(body.contains(StyleDnaOfflineHarness.TOKEN)); assertFalse(body.contains(key))

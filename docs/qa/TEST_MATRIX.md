@@ -1,5 +1,7 @@
 # Regression and test matrix
 
+The [offline Trial alignment](../changes/2026-10-18-offline-trial-contract-assertions.md) retains the original full-wire journey and replaces obsolete V1-only labels for newly prepared V2 plans with exact effective prompt hashes, role/identity/redrawing semantics and one construction rule set. Original-first bytes/order, source membership, endpoint markers and restart checks remain.
+
 ## Phase4A immutable generation requests
 
 Existing PromptComposer/StyleTrialPlan/Gateway/Journal classes cover duplicate-rule removal, unique instructions, V1 exact golden fingerprint/prompt, V2 effective hashes/tampering, 1?5 ordered reference PNGs, original-first native multipart, explicit consent and consumed-version/restart safety. Existing guided free Save journey requires a frozen V2 plan; the same five Android journeys verify version/hash roundtrip without additional POSTs. Run focused classes during development, then one authoritative final-head Linux/build, Python/governance and Android. No extra group or automatic full-suite duplication. Protocol success does not measure aesthetic fidelity.

@@ -1,5 +1,7 @@
 # Documentation index
 
+Phase4A final-gate follow-up: [offline Trial contract assertions](changes/2026-10-18-offline-trial-contract-assertions.md). The failed a383625c full run remains evidence until a corrected-head execution passes.
+
 Current Phase4A: [versioned generation contract](decisions/0014-versioned-trial-generation-contract.md) and [implementation evidence](changes/2026-10-18-reference-first-prompt-v2.md). Phase3A is merged into PR8 at91e5737d, not main. This phase has its own stacked draft PR; final-head results remain external.
 
 Current owner-approved Phase3A: [reference-first decision](decisions/0013-reference-first-style.md),
