@@ -1,5 +1,8 @@
 # Documentation index
 
+Current focused follow-up: [montage Trial model and safe request inspection](decisions/0017-montage-trial-model-default.md).
+Only future montage defaults change; historical V3 text/requests and AI1/AI2 remain.
+
 ## Montage Phases1–3 implementation
 
 [ADR0016](decisions/0016-pack-montage-inputs.md) records the shared montage artifact and adaptive bounds. The guided montage/one-analysis/V3 Trial integration is implemented on the same PR10; exact final-head gates and APK receipt are recorded on PR10. See the [request, PNG and acceptance contract](qa/MONTAGE_EXTEND.md). Historical Phase0 results below remain baseline evidence.

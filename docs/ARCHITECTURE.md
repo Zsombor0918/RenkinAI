@@ -1,5 +1,14 @@
 # Architecture
 
+## Montage request inspection and model scope
+
+Actual multipart inspection confirms one V3 contract/brief and original-first saved
+montage order, with no legacy default style. Newly prepared montage Trials default
+to Sunburst/high at the controller's existing option boundary; explicit options
+and frozen model/quality remain authoritative. Global AI1/AI2 and historical/manual
+defaults stay unchanged. No production logger or new prompt version is introduced;
+synthetic test receipts exclude credentials and image contents. See [ADR0017](decisions/0017-montage-trial-model-default.md).
+
 ## Montage presentation lifetime
 
 Published contact-sheet ImageBitmaps remain managed by Compose/Android after a producer key changes; they must not be recycled while retained draw nodes may still reference them. Rendering scratch bitmaps remain explicitly released. Guided V3 results use a compact presentation that keeps advanced target/options/evidence accessible without duplicating the pre-generation selector above generated images. No persistence, frozen request, billing, original resolver or legacy editor architecture changes.

@@ -55,6 +55,22 @@ submits. Model capability/size documentation is linked in [ADR0016](../decisions
 
 ## Separately consented generation
 
+Targeted request diagnosis from b9e6556e confirms the reviewed effective V3 text is
+the actual multipart prompt, with one brief and no historical/global style append.
+The before/default model is inherited Flare/medium; future montage preparation now
+defaults to Sunburst/high under [ADR0017](../decisions/0017-montage-trial-model-default.md).
+Existing explicit Trial options still apply. Global AI1/AI2/manual defaults are
+unchanged. Already frozen V3 model/quality and artistic text are never upgraded.
+
+PackStyleAnalysisTest extends the existing Save→analysis→Trial→native HTTP test:
+strict actual fields, exact prompt/hash, original/sheet hashes/order/count, no old
+prompt envelope, explicit cheaper option and historical Flare V3 serialization/body.
+The existing Android montage journey checks the new model/quality in both the plan
+and actual wire. A synthetic full-prompt/parameter/image-metadata JSON receipt is
+exported as v3-image-edit-request.json in the existing pack-montage-evidence artifact.
+It contains no headers, key, owner data or raw PNG bytes; no production logging.
+Neither that report nor passing mocks establish real aesthetic superiority.
+
 New montage TrialV3 binds the saved montage payload/result fingerprint, exact
 reviewed brief, separate instructions, source/original evidence, ordered PNG hashes
 and per-target effective prompt hashes. V1/V2 canonical bytes/text remain unchanged.
@@ -69,7 +85,8 @@ geometric redrawing, distinguishes a dark silhouette from an evidenced tile,
 preserves meaningful brand colors unless the reviewed style authorizes a fixed
 palette, and forbids copying example identities or rendering a montage/collage.
 Exactly one balanced standalone target PNG with real outside alpha is requested.
-No provider/model change or AI1/AI2 request change is introduced.
+Provider and AI1/AI2 request behavior remain unchanged; the later scoped future
+montage model-default decision above supersedes the initial inherited default.
 
 Random up-to3 eligible missing targets are saved once with existing ProjectSelection.
 Protected/covered/unknown targets are excluded from automatic suggestions; manual

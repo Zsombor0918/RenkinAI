@@ -1,5 +1,17 @@
 # Agent handoff — guided UX Stage 1
 
+## Targeted montage request follow-up
+
+Continue existing PR10/branch from b9e6556e without restarting montage work. Actual
+HTTP evidence excludes legacy prompt contamination, duplicate brief and wrong image
+order in the synthetic V3 route. Owner-authorized fallback changes only future
+montage defaults to Sunburst/high; frozen requests and all consent/no-replay paths
+remain. Test-only JSON records actual text/parameters and image metadata without
+credentials/raw images. Final exact SHA, hosted checks and any verified APK receipt
+are recorded externally on PR10 after committing. Stop at this correction; visual
+quality needs separately authorized real testing. Historical91e5737d governance and
+unknown installed-signature compatibility remain independent blockers/risks.
+
 ## Linux loopback fixture follow-up
 
 Source5779b096 hosted Linux executes934 cases:933 PASS/1 FAIL in the new montage multipart fixture; native transport guard rejects a MockWebServer localhost alias. Pin only that test endpoint to literal127.0.0.1, retain socket/port and all payload/variant/no-replay assertions. Focused same case1/1 PASS locally in43s. Source5779b096 hosted Android4/4, order7/7 and Python67/67 PASS. No production code changes in this follow-up; final corrected-head gates/APK remain on PR10. Historical91e5737d governance remains separate and BLOCKED.

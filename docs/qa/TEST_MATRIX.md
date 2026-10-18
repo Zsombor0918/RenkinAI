@@ -1,5 +1,15 @@
 # Regression and test matrix
 
+## Targeted V3 request introspection
+
+Extend the existing native PackStyleAnalysisTest and Android montageJourney without
+adding a suite or duplicate full execution. Inspect exact actual prompt/hash, PNG
+order/count/roles and output fields, plus future-only Sunburst/high, explicit option
+override and historical V3 Flare serialization/wire behavior. Existing V1/V2 golden,
+manual/AI1/AI2, cancel/consumed/restart protections remain required. Full synthetic
+request JSON is retained in the existing montage evidence artifact; visual fidelity
+is not established by protocol tests. See [ADR0017](../decisions/0017-montage-trial-model-default.md).
+
 ## Native montage frame and compact review
 
 The existing montageJourney now captures real Compose frames after automatic preparation and analysis reload, then asserts compact result UI, original-first native multipart, separate consent, decline, review/approval and Back navigation. Screenshot-induced draw exposed the new sheet image lifetime race before delivery. Old/manual UI retains all assertions;26 selected guided/manual UI cases pass after compact presentation. No new matrix or obsolete-feature test restoration.

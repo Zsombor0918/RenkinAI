@@ -89,6 +89,32 @@ class PackStyleAnalysisTest {
     @After fun close() {
         client.connectionPool.evictAll(); client.dispatcher.executorService.shutdownNow(); server.shutdown(); db.close()
     }
+    /** Inspect actual multipart bytes, never request headers, credentials or image contents.
+     * Test-only: the exported prompt contains synthetic fixture text, never owner data. */
+    private fun imageEditDiagnostic(wire: RecordedRequest): JSONObject {
+        val boundary = checkNotNull(wire.getHeader("Content-Type")).substringAfter("boundary=")
+        val payload = String(wire.body.clone().readByteArray(), Charsets.ISO_8859_1)
+        val fields = JSONObject()
+        val images = JSONArray()
+        payload.split("--$boundary").filter { it.startsWith("\r\nContent-Disposition:") }.forEach { part ->
+            val headers = part.substringBefore("\r\n\r\n")
+            val name = Regex("name=\"([^\"]+)\"").find(headers)!!.groupValues[1]
+            val bytes = part.substringAfter("\r\n\r\n").removeSuffix("\r\n").toByteArray(Charsets.ISO_8859_1)
+            if (name == "image[]") {
+                val dimensions = inspectPng(bytes)
+                images.put(json("position" to images.length() + 1,
+                    "role" to if (images.length() == 0) "target_original_identity" else "pack_style_contact_sheet",
+                    "sha256" to sha256(bytes), "bytes" to bytes.size,
+                    "width" to dimensions.first, "height" to dimensions.second))
+            } else {
+                require(name in setOf("model", "prompt", "n", "size", "quality", "background", "output_format"))
+                require(!fields.has(name)) { "Duplicate request field" }
+                fields.put(name, String(bytes, Charsets.UTF_8))
+            }
+        }
+        return json("endpoint" to "/v1/images/edits", "fields" to fields, "images" to images,
+            "input_fidelity" to "provider default; not sent", "system_developer_messages" to "none; Image API multipart")
+    }
     @Test fun oneActualMultimodalPostUsesSavedSheetsAfterConsentAndPersistsAReusableBrief() = runBlocking<Unit> {
         val analysis = service(); val request = analysis.prepare(1, draft, "Keep essential monograms")
         assertNull(journal.latest(1)); assertEquals(0, server.requestCount)
@@ -207,6 +233,10 @@ class PackStyleAnalysisTest {
             server.enqueue(MockResponse().setBody(json("data" to JSONArray().put(json("b64_json" to Base64.encodeToString(output, Base64.NO_WRAP)))).toString()))
             c.submit(1, plan.id); assertEquals(1, idle(c).variants.size)
             val wire = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS)); assertEquals("/v1/images/edits", wire.path)
+            val diagnostic = imageEditDiagnostic(wire)
+            File("build/montage-evidence/v3-image-edit-request.json").also {
+                checkNotNull(it.parentFile).mkdirs(); it.writeText(diagnostic.toString(2))
+            }
             val payload = String(wire.body.readByteArray(), Charsets.ISO_8859_1)
             val pngs = listOf(original.png) + draft.images
             var last = -1
@@ -216,13 +246,53 @@ class PackStyleAnalysisTest {
             }
             assertEquals(pngs.size, Regex("filename=\"input_").findAll(payload).count())
             val effective = plan.effectivePrompt(plan.inputs.single())
-            assertTrue(payload.contains(effective)); assertTrue(effective.contains("contact-sheet montages"))
+            val fields = diagnostic.getJSONObject("fields")
+            assertEquals(effective, fields.getString("prompt"))
+            assertEquals(plan.promptHashes.getValue(target.key), sha256(fields.getString("prompt").toByteArray(Charsets.UTF_8)))
+            assertEquals(1, Regex("ICON GENERATION CONTRACT V3").findAll(effective).count())
+            assertTrue(effective.contains("contact-sheet montages containing multiple independent icons"))
+            assertTrue(effective.contains("Do not render the montage, a grid, multiple icons, or copy the example logos"))
+            assertTrue(effective.contains("Redraw the target geometry"))
+            assertTrue(effective.contains("Dark silhouettes, image bounds and launcher preview backgrounds do not establish a tile"))
+            for (legacy in listOf(AiSettings.DEFAULT_STYLE, "STYLE SPECIFICATION:", "TARGET / EDIT / OUTPUT CONTRACT",
+                "ICON GENERATION CONTRACT V2", "Additional target drawing guidance:", "Reviewed Style DNA family"))
+                assertFalse(legacy, effective.contains(legacy))
             assertEquals(1, Regex(Regex.escape(prompt)).findAll(effective).count())
-            for (value in listOf("1024x1024", "transparent", "png")) assertTrue(payload.contains(value))
+            for ((name, value) in listOf("n" to "1", "size" to "1024x1024", "background" to "transparent", "output_format" to "png"))
+                assertEquals(value, fields.getString(name))
+            val diagnosticImages = diagnostic.getJSONArray("images")
+            assertEquals(pngs.size, diagnosticImages.length())
+            pngs.forEachIndexed { index, bytes ->
+                assertEquals(sha256(bytes), diagnosticImages.getJSONObject(index).getString("sha256"))
+                assertEquals(if (index == 0) "target_original_identity" else "pack_style_contact_sheet",
+                    diagnosticImages.getJSONObject(index).getString("role"))
+            }
+            assertFalse(diagnostic.toString().contains("offline-image-not-a-key"))
+            assertEquals("gpt-image-2.5-sunburst", fields.getString("model"))
+            assertEquals("high", fields.getString("quality"))
+            assertEquals(plan.context.model, fields.getString("model")); assertEquals(plan.context.quality, fields.getString("quality"))
+            // Changing future defaults cannot reinterpret an already frozen V3 request.
+            val historical = plan.copy(context = plan.context.copy(model = "gpt-image-2.5-flare", quality = "medium"))
+            val encoded = historical.encode()
+            assertEquals(encoded, StyleTrialPlan.parse(encoded).encode())
+            val oldBody = buildImageEditRequest("synthetic-only", AiSettings(model = historical.context.model,
+                quality = historical.context.quality, referenceNames = draft.images.indices.map { "img_0_$it.png" }),
+                pngs, historical.appearance(historical.inputs.single()), historical.promptVersion).body as MultipartBody
+            fun oldField(name: String) = okio.Buffer().also { buffer ->
+                oldBody.parts.single { it.headers?.get("Content-Disposition") == "form-data; name=\"$name\"" }.body.writeTo(buffer)
+            }.readUtf8()
+            assertEquals("gpt-image-2.5-flare", oldField("model")); assertEquals("medium", oldField("quality"))
+            assertEquals(effective, oldField("prompt"))
             val restored = controller(); restored.load(1, ProjectSetupMode.EXTEND, "fixture.pack"); idle(restored)
             assertNull(restored.state(1).value.plan)
             StyleTrialCoordinator(StyleTrialJournal(context), native, repo).submit(plan, pngs.associateBy(::sha256), true, { true })
             assertEquals(2, server.requestCount)
+            // Existing explicit options remain available; only the montage default changes.
+            restored.options(1, AiSettings.OPENAI, "gpt-image-1-mini", "low"); idle(restored)
+            restored.prepare(1, listOf(target.key), false)
+            val explicit = checkNotNull(idle(restored).plan)
+            assertEquals("gpt-image-1-mini", explicit.context.model); assertEquals("low", explicit.context.quality)
+            restored.cancelPreparation(1); assertEquals(2, server.requestCount)
             reader.current = false
             restored.load(1, ProjectSetupMode.EXTEND, "fixture.pack")
             withTimeout(10000) { restored.state(1).first { !it.busy } }

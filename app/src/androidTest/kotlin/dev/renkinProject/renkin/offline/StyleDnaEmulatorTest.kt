@@ -352,6 +352,7 @@ class StyleDnaEmulatorTest {
         prepareVisibleTrial()
         val plan = fixture.trials.state(1).value.plan!!
         assertEquals(3, plan.promptVersion); assertEquals(saved.references.map { it.hash }, plan.referenceHashes)
+        assertEquals("gpt-image-2.5-sunburst", plan.context.model); assertEquals("high", plan.context.quality)
         assertEquals(stylePrompt, plan.specification)
         assertEquals(runBlocking { currentTrialOriginal(app, target.key) }.hash, plan.inputs.single().originalHash)
         assertTrue(plan.effectivePrompt(plan.inputs.single()).contains("contact-sheet montages"))
@@ -379,6 +380,9 @@ class StyleDnaEmulatorTest {
         val imageWire = fixture.server!!.takeRequest(5, java.util.concurrent.TimeUnit.SECONDS)!!
         assertEquals("/v1/images/edits", imageWire.path)
         val imageBody = String(imageWire.body.readByteArray(), Charsets.ISO_8859_1)
+        fun field(name: String) = imageBody.substringAfter("name=\"$name\"").substringAfter("\r\n\r\n").substringBefore("\r\n--")
+        assertEquals("gpt-image-2.5-sunburst", field("model")); assertEquals("high", field("quality"))
+        assertEquals(confirmedPlan.effectivePrompt(confirmedPlan.inputs.single()), field("prompt"))
         val original = runBlocking { currentTrialOriginal(app, target.key) }
         var position = -1
         (listOf(original.png) + saved.references.map { runBlocking { fixture.repo.referenceBytes(1, it.hash) } }).forEach { bytes ->

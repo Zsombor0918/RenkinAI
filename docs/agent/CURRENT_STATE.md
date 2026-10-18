@@ -1,5 +1,15 @@
 # Current implementation
 
+## Focused montage generation diagnosis
+
+Baseline b9e6556e actual multipart is clean: exact frozen V3 prompt, one reviewed
+brief, true original then saved sheets, no global white-outline or DNA contamination.
+The conditional model-upgrade regression first fails on inherited Flare/medium.
+Future montage preparation now defaults to Sunburst/high, leaving explicit options,
+global/manual/AI1/AI2 defaults and old V1/V2/V3 interpretation unchanged. Synthetic
+request diagnostics are retained with CI montage evidence. Exact final-head results
+belong in PR10; real visual quality and the owner's actual request remain unverified.
+
 ## Hosted montage verification refinement
 
 Source5779b096 hosted Linux executes934 cases:933 PASS/1 FAIL in the new montage multipart fixture; native transport guard rejects a MockWebServer localhost alias. Pin only that test endpoint to literal127.0.0.1, retain socket/port and all payload/variant/no-replay assertions. Focused same case1/1 PASS locally in43s. Source5779b096 hosted Android4/4, order7/7 and Python67/67 PASS. No production code changes in this follow-up; final corrected-head gates/APK remain on PR10. Historical91e5737d governance remains separate and BLOCKED.
