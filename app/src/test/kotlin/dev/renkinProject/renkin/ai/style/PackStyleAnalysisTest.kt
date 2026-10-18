@@ -177,7 +177,8 @@ class PackStyleAnalysisTest {
             assertEquals(TrialStatus.REQUESTING, item.status); assertEquals(1, item.endpointCalls)
             chain.proceed(chain.request())
         }.build()
-        val endpoint = server.url("/v1/images/edits")
+        val endpoint = server.url("/v1/images/edits").newBuilder().host("127.0.0.1").build()
+        assertEquals("127.0.0.1", endpoint.host)
         val native = ClientIconGenerationGateway({ "offline-image-not-a-key" }, OpenAiImageClient(imageClient, endpoint),
             StabilityImageClient(imageClient, endpoint, endpoint))
         val trialOwner = object : TrialSessionOwner {

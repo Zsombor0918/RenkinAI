@@ -1,5 +1,9 @@
 # Agent handoff — guided UX Stage 1
 
+## Linux loopback fixture follow-up
+
+Source5779b096 hosted Linux executes934 cases:933 PASS/1 FAIL in the new montage multipart fixture; native transport guard rejects a MockWebServer localhost alias. Pin only that test endpoint to literal127.0.0.1, retain socket/port and all payload/variant/no-replay assertions. Focused same case1/1 PASS locally in43s. Source5779b096 hosted Android4/4, order7/7 and Python67/67 PASS. No production code changes in this follow-up; final corrected-head gates/APK remain on PR10. Historical91e5737d governance remains separate and BLOCKED.
+
 ## Closed montage implementation scope
 
 Preserved local commits f8d28668/8a4c5cd0 and integration44c89295 from baseline6e5ff5d2. Follow-up closes demonstrated Android fixture readiness/literal-loopback issues, compacts only the new montage Trial screen, and removes premature recycling of Compose-published sheet bitmaps. Native captured-frame regression exercises analysis Save/reopen/content edits, actual multipart generation and review; existing V1/V2 and shared safety remain. Final exact source SHA, hosted Linux/Android/Python/order, APK/hash/certificate and historical governance blocker are recorded in the PR10 audit. Next safe work is owner/device acceptance and separately authorized visual pilot, not new features.

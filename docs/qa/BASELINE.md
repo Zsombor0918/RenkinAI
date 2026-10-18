@@ -1,5 +1,9 @@
 # Verification baseline
 
+## First hosted934-case result
+
+Source5779b096 hosted Linux executes934 cases:933 PASS/1 FAIL in the new montage multipart fixture; native transport guard rejects a MockWebServer localhost alias. Pin only that test endpoint to literal127.0.0.1, retain socket/port and all payload/variant/no-replay assertions. Focused same case1/1 PASS locally in43s. Source5779b096 hosted Android4/4, order7/7 and Python67/67 PASS. No production code changes in this follow-up; final corrected-head gates/APK remain on PR10. Historical91e5737d governance remains separate and BLOCKED.
+
 ## Montage targeted acceptance evidence
 
 Controlled initial-Save RED demonstrates self-cancellation when busy is part of its effect key; corrected guided3/3 passes. The88-case targeted run had87 passes/1 obsolete fixed-position recommendation assertion; its generalized capacity/replacement case then passes. Later guided/manual UI26/26 passes. Android source44c89295 manual2 pass; new journey first failed on async Browse readiness, then literal-loopback policy and lazy approval materialization. Corrected focused montage1/1 and separate-process restart1/1 pass. Compact/captured-frame follow-up exposes an actual recycled published bitmap; its final-head result is taken from PR10 artifacts, not inferred. Python67/67 local pass; no paid/provider/phone access.

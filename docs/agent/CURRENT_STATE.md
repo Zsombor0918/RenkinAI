@@ -1,5 +1,9 @@
 # Current implementation
 
+## Hosted montage verification refinement
+
+Source5779b096 hosted Linux executes934 cases:933 PASS/1 FAIL in the new montage multipart fixture; native transport guard rejects a MockWebServer localhost alias. Pin only that test endpoint to literal127.0.0.1, retain socket/port and all payload/variant/no-replay assertions. Focused same case1/1 PASS locally in43s. Source5779b096 hosted Android4/4, order7/7 and Python67/67 PASS. No production code changes in this follow-up; final corrected-head gates/APK remain on PR10. Historical91e5737d governance remains separate and BLOCKED.
+
 ## Montage acceptance follow-up
 
 Phases1–3 are connected: automatic sheets, one consented analysis and separately consented V3 Trial/review. The initial suggestion Save has a controlled-suspension regression against self-cancellation. Actual Android rendering also exposed a published-bitmap recycle race during analysis reload; Compose now owns published image lifetime. Only guided montage Trials use compact result-first presentation; old/manual paths remain. Exact final-head hosted status and APK receipt are on PR10. Historical91e5737d title governance remains independently BLOCKED.
