@@ -1,5 +1,9 @@
 # Verification baseline
 
+## Montage targeted acceptance evidence
+
+Controlled initial-Save RED demonstrates self-cancellation when busy is part of its effect key; corrected guided3/3 passes. The88-case targeted run had87 passes/1 obsolete fixed-position recommendation assertion; its generalized capacity/replacement case then passes. Later guided/manual UI26/26 passes. Android source44c89295 manual2 pass; new journey first failed on async Browse readiness, then literal-loopback policy and lazy approval materialization. Corrected focused montage1/1 and separate-process restart1/1 pass. Compact/captured-frame follow-up exposes an actual recycled published bitmap; its final-head result is taken from PR10 artifacts, not inferred. Python67/67 local pass; no paid/provider/phone access.
+
 ## Montage current evidence boundary
 
 Historical Phase0 baseline921 Linux/3 Android/67 Python/7 order remains historical. This implementation adds meaningful montage, request and navigation coverage without deleting any Phase0 cases. Local checkpoints:35 focused acquisition/persistence tests, stronger3-image cases, then33 analysis/reader cases passed. V3/navigation RED evidence is retained externally; final-head counts and hosted execution must be taken from fresh artifacts, never inferred from these subtotals.

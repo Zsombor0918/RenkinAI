@@ -90,7 +90,7 @@ from historical checkpoint totals. CI retains synthetic montage PNGs/metadata.
 
 Normal screens emphasize the pack label, sheets, one analysis action, brief summary
 and Continue. Prompt/preferences/source details remain collapsed under Edit Style.
-Trial shows originals/results and review controls; evidence/model options/full V3
+After generation, compact guided V3 Trial places the original/result pair and review controls before duplicate target-selection information. All target and preview controls remain in Details. Published sheet bitmaps are managed by Compose/Android rather than recycled at a producer restart. Evidence/model options/full V3
 prompt/sheet previews are under Details. Back from Style returns to source summary,
 not another target-selection loop; saved choices survive.
 

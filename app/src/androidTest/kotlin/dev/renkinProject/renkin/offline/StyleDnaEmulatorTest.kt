@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -106,7 +107,8 @@ class StyleDnaEmulatorTest {
             }
         }
         private val imageGateway = server?.let { loopback ->
-            val endpoint = loopback.url("/v1/images/edits")
+            // MockWebServer may expose localhost; the debug policy permits only literal loopback.
+            val endpoint = loopback.url("/v1/images/edits").newBuilder().host("127.0.0.1").build()
             ClientIconGenerationGateway({ "offline-emulator-image-not-a-real-key" }, OpenAiImageClient(analysisClient, endpoint),
                 StabilityImageClient(analysisClient, endpoint, endpoint))
         }
@@ -127,6 +129,7 @@ class StyleDnaEmulatorTest {
             })
         val trials = trace.trials(actualTrials, scope)
         val style = object : ProjectStyleBackend {
+            override fun sourceLabel(source: String) = packInfo.applicationName.also { check(source == pack) }
             private val owner = object : AnalysisSessionOwner {
                 override suspend fun <T> owned(id: Long, operation: suspend () -> T) = this@Fixture.owned(id, operation)
                 override suspend fun catalogStamp() = error("No target inventory for pack analysis")
@@ -134,7 +137,8 @@ class StyleDnaEmulatorTest {
             }
             override val montages = if (name == "montage") LocalPackMontages(repo, ReferenceSampler(), owner) else null
             override val packAnalysis = montages?.let { local -> PackStyleAnalysis(repo, local, legacyJournal,
-                PackStyleGateway({ "offline-emulator-never-a-real-key" }, analysisClient, server!!.url("/v1/responses"))::analyze, { true }, owner) }
+                PackStyleGateway({ "offline-emulator-never-a-real-key" }, analysisClient,
+                    server!!.url("/v1/responses").newBuilder().host("127.0.0.1").build())::analyze, { true }, owner) }
             override val localReferences = LocalStyleReferences(repo, ReferenceSampler(), object : AnalysisSessionOwner {
                 override suspend fun <T> owned(id: Long, operation: suspend () -> T) = this@Fixture.owned(id, operation)
                 override suspend fun catalogStamp() = error("Free style does not read targets")
@@ -288,6 +292,10 @@ class StyleDnaEmulatorTest {
         compose.waitUntil(15000) { compose.onAllNodesWithTag("pack-sheet-0").fetchSemanticsNodes().isNotEmpty() }
         screenshot("automatic-montage")
         click("pack-montage", "pack-browse")
+        // Resource scanning is asynchronous; Compose idleness is not its completion.
+        compose.waitUntil(15000) {
+            compose.onAllNodes(hasTestTag("pack-browse") and isEnabled()).fetchSemanticsNodes().size == 1
+        }
         val removed = originalMontage.members.first().hash
         click("pack-montage", "pack-toggle-$removed")
         compose.waitUntil(15000) { runBlocking { fixture.repo.load(1).revision!!.revision } > initial.revision!!.revision }
@@ -304,6 +312,9 @@ class StyleDnaEmulatorTest {
                     encodePackStyleText(stylePrompt to "Shared construction with preserved target identity; no invented tile or palette.")))))).toString()))
         click("pack-montage", "pack-analyze")
         assertEquals(0, fixture.server!!.requestCount)
+        compose.waitUntil(15000) {
+            compose.onAllNodes(hasTestTag("pack-analysis-confirm") and isEnabled()).fetchSemanticsNodes().size == 1
+        }
         compose.onNodeWithTag("pack-analysis-confirm").assertIsEnabled().performClick()
         compose.waitUntil(15000) { runBlocking { fixture.repo.load(1).revision?.specification } == stylePrompt }
         val saved = runBlocking { fixture.repo.load(1) }
@@ -324,6 +335,12 @@ class StyleDnaEmulatorTest {
         }
         val selectedBeforeBack = runBlocking { fixture.repo.metadata(1)!!.selectionJson }
         click("project-targets", "setup-back")
+        compose.waitUntil(15000) {
+            if (compose.onAllNodesWithTag("pack-montage").fetchSemanticsNodes().isEmpty()) false else try {
+                compose.onNodeWithTag("pack-montage").performScrollToNode(hasTestTag("pack-continue"))
+                compose.onAllNodes(hasTestTag("pack-continue") and isEnabled()).fetchSemanticsNodes().size == 1
+            } catch (_: AssertionError) { false }
+        }
         click("pack-montage", "setup-back")
         compose.onNodeWithTag("workflow-step").assertTextContains("1 of 4", substring = true)
         click("project-targets", "setup-project-style")
@@ -357,6 +374,8 @@ class StyleDnaEmulatorTest {
                 fixture.trials.state(1).value.let { !it.busy && it.variants.size == 1 }
         }
         val generated = fixture.trials.state(1).value.variants.single()
+        compose.onNodeWithTag("trial-count").assertDoesNotExist()
+        compose.onNodeWithTag("trial-target-${target.key}").assertDoesNotExist()
         val imageWire = fixture.server!!.takeRequest(5, java.util.concurrent.TimeUnit.SECONDS)!!
         assertEquals("/v1/images/edits", imageWire.path)
         val imageBody = String(imageWire.body.readByteArray(), Charsets.ISO_8859_1)
@@ -372,7 +391,13 @@ class StyleDnaEmulatorTest {
                 fixture.trials.state(1).value.let { !it.busy && it.variants.single().reviewStatus == "ACCEPTED" }
         }
         click("project-trials-1", "trial-approve-style")
-        compose.waitUntil(15000) { compose.onAllNodesWithTag("trial-ready").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(15000) {
+            try {
+                compose.onNodeWithTag("project-trials-1").performScrollToNode(hasTestTag("trial-ready"))
+                compose.onAllNodesWithTag("trial-ready").fetchSemanticsNodes().size == 1
+            } catch (_: AssertionError) { false }
+        }
+        compose.onNodeWithTag("trial-ready").assertIsDisplayed()
         screenshot("trial-review")
         assertEquals(2, fixture.server!!.requestCount); assertEquals(1, fixture.gatewayCalls.get())
         assertEquals(1, fixture.trialJournal.records(1).size)
@@ -382,7 +407,7 @@ class StyleDnaEmulatorTest {
             "variant_reviewed" to true, "style_approved" to true))
     }
     private fun screenshot(stage: String) {
-        val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
         try { File(app.filesDir, "offline-$stage.png").outputStream().use { check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)) } }
         finally { bitmap.recycle() }
     }

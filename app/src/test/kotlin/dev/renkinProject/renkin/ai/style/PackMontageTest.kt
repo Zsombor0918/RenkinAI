@@ -80,9 +80,16 @@ class PackMontageTest {
         assertEquals(1, edited.size) // Removal redistributes the prior two-page selection automatically.
         val output = File("build/montage-evidence").apply { mkdirs() }
         pages.forEachIndexed { index, bytes -> File(output, "sheet-${index + 1}.png").writeBytes(bytes) }
+        val beforeEdit = renderMontages(input.take(16))
+        beforeEdit.forEachIndexed { index, bytes -> File(output, "before-16-sheet-${index + 1}.png").writeBytes(bytes) }
+        File(output, "after-15-sheet-1.png").writeBytes(edited.single())
         File(output, "metadata.json").writeText(JSONObject().put("icons", 30).put("pages", pages.size)
             .put("dimensions", org.json.JSONArray(pages.map { inspectPng(it).let { (w, h) -> "${w}x$h" } }))
-            .put("png_bytes", org.json.JSONArray(pages.map { it.size })).put("source_pixels_per_icon", 256).toString(2))
+            .put("png_bytes", org.json.JSONArray(pages.map { it.size })).put("source_pixels_per_icon", 256)
+            .put("automatic_edit", JSONObject().put("before_icons", 16).put("after_icons", 15)
+                .put("before_pages", beforeEdit.size).put("after_pages", edited.size)
+                .put("before_hashes", org.json.JSONArray(beforeEdit.map(::sha256)))
+                .put("after_hashes", org.json.JSONArray(edited.map(::sha256)))).toString(2))
         // Poorly compressible source art must still fit the real private-asset and HTTP limits.
         val noisy = (0 until 15).map { index ->
             val image = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)

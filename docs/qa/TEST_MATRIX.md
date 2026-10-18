@@ -1,5 +1,9 @@
 # Regression and test matrix
 
+## Native montage frame and compact review
+
+The existing montageJourney now captures real Compose frames after automatic preparation and analysis reload, then asserts compact result UI, original-first native multipart, separate consent, decline, review/approval and Back navigation. Screenshot-induced draw exposed the new sheet image lifetime race before delivery. Old/manual UI retains all assertions;26 selected guided/manual UI cases pass after compact presentation. No new matrix or obsolete-feature test restoration.
+
 ## Montage acceptance gates
 
 PackMontageTest verifies actual pixels/alpha, varied1–60 member layouts,16→15 redistribution, ordering, compression and real Room save/reopen/source rejection. PackStyleAnalysisTest exercises native loopback Responses plus actual image-edit multipart after separate consent, frozen V3 original/sheets/brief and no replay. Guided navigation covers Back and durable random recommendations. Android retains the old two free/manual journeys plus montageJourney, then restartReadOnly in another PID (3+1). Existing shared safety tests stay; one authoritative full Linux run includes HTTP, no duplicate suite.

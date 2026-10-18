@@ -127,6 +127,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
     val ordered = state.variants.sortedWith(compareByDescending<IconAssetVariant> { it.createdAt }.thenByDescending { it.id })
     val currentIds = review.current.map { it.id }.toSet()
     val latest = ordered.filter { it.id in currentIds }.distinctBy { it.componentKey }
+    val compact = guided && p?.context?.montageFingerprint?.isNotEmpty() == true
     val latestIds = latest.map { it.id }.toSet()
     val previous = ordered.filter { it.id !in latestIds }
     val frozenNames = state.records.sortedBy { it.confirmedAt }.flatMap { it.plan.inputs }.associate { it.key to it.name }
@@ -140,7 +141,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
                 SetupHeading(stringResource(R.string.trialTitle), onBack)
-                Text(name, style = MaterialTheme.typography.titleLarge)
+                if (!compact) Text(name, style = MaterialTheme.typography.titleLarge)
                 if (p != null) Text(stringResource(R.string.guidedTrialSummary, p.context.revision,
                     review.current.size, review.current.count { it.reviewStatus != "UNREVIEWED" }), Modifier.testTag("trial-style"))
                 if (state.busy) WavyLoadingBar(Modifier.fillMaxWidth())
@@ -190,9 +191,10 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                     }), Modifier.testTag("trial-latest-failure"), color = MaterialTheme.colorScheme.error)
                 }
                 TrialExpandButton(optionsExpanded, { optionsExpanded = !optionsExpanded },
-                    stringResource(R.string.guidedTrialOptions), "trial-options-toggle")
+                    stringResource(if (compact) R.string.guidedTrialDetails else R.string.guidedTrialOptions), "trial-options-toggle")
                 if (optionsExpanded) {
                     Text(stringResource(R.string.guidedTrialBoundary))
+                    if (compact) Text(stringResource(R.string.guidedTrialApprovalBoundary))
                     Text(stringResource(R.string.projectIdentity, id)); Text(mode.name); source?.let { Text(it) }
                     p?.let { preparation ->
                         Text(stringResource(R.string.trialRevision, preparation.context.revision, preparation.style.references.size))
@@ -210,11 +212,11 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                         modifier = Modifier.heightIn(min = 48.dp).testTag("trial-editor")) { Text(stringResource(R.string.projectClassicEditor)) }
                 }
             }
-            if (p != null) {
+            if (p != null && (!compact || latest.isEmpty() || optionsExpanded)) {
                 item {
-                    Text(stringResource(if (guided) R.string.guidedTrialChosenApps else R.string.guidedTrialChooseApps),
+                    if (!compact || optionsExpanded) Text(stringResource(if (guided) R.string.guidedTrialChosenApps else R.string.guidedTrialChooseApps),
                         style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-                    Text(stringResource(R.string.trialCount, selected.size, p.candidates.count { it.recommended }), Modifier.testTag("trial-count"))
+                    if (!compact || optionsExpanded) Text(stringResource(R.string.trialCount, selected.size, p.candidates.count { it.recommended }), Modifier.testTag("trial-count"))
                     if (!state.hasKey) Text(stringResource(R.string.trialNoKey), Modifier.testTag("trial-no-key"))
                     if (!refsValid) Text(stringResource(R.string.trialStabilityRefs), Modifier.testTag("trial-reference-error"))
                     if (p.candidates.none { it.recommended }) Text(stringResource(R.string.trialNoEligible), Modifier.testTag("trial-empty"))
@@ -244,7 +246,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                         }
                         if (!candidate.eligible) Text(stringResource(if (candidate.reason == "protected_local") R.string.trialProtected else R.string.trialUnproven))
                         if (candidate.overrideRequired) Text(stringResource(R.string.trialCovered))
-                        TrialExpandButton(details, { details = !details }, stringResource(R.string.guidedTrialDetails), "trial-target-details-$key")
+                        if (!compact || optionsExpanded) TrialExpandButton(details, { details = !details }, stringResource(R.string.guidedTrialDetails), "trial-target-details-$key")
                         if (details) Text(key, style = MaterialTheme.typography.bodySmall)
                     }
                 }
@@ -265,10 +267,10 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 }
             }
             if (latest.isNotEmpty()) item {
-                Text(stringResource(R.string.guidedTrialCurrentResults), style = MaterialTheme.typography.titleLarge,
+                if (!compact) Text(stringResource(R.string.guidedTrialCurrentResults), style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.testTag("trial-current-results").semantics { heading() })
-                Text(stringResource(R.string.guidedTrialReviewHelp))
-                TrialExpandButton(previewOptionsExpanded, { previewOptionsExpanded = !previewOptionsExpanded },
+                if (!compact) Text(stringResource(R.string.guidedTrialReviewHelp))
+                if (!compact || optionsExpanded) TrialExpandButton(previewOptionsExpanded, { previewOptionsExpanded = !previewOptionsExpanded },
                     stringResource(R.string.guidedTrialPreviewOptions), "trial-preview-options-toggle")
                 if (previewOptionsExpanded) Row {
                     TextButton(onClick = { dark = !dark }, Modifier.weight(1f).heightIn(min = 48.dp).testTag("trial-preview-theme")) {
@@ -283,7 +285,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 TrialResult(id, variant, label(variant.componentKey), state, p, backend, enabled, allowCovered,
                     refsValid, dark, checker, appIcon) { recheckId = it }
             }
-            item {
+            if (!compact || latest.isNotEmpty()) item {
                 val canApprove = enabled && review.canApprove && !review.ready
                 if (!review.ready) Button(onClick = { backend.approve(id) }, enabled = canApprove,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("trial-approve-style")) {
@@ -298,7 +300,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                     review.unreviewed.isNotEmpty() -> R.string.guidedTrialReviewReason
                     else -> R.string.guidedTrialAcceptReason
                 }), Modifier.testTag("trial-approval-reason"))
-                Text(stringResource(R.string.guidedTrialApprovalBoundary))
+                if (!compact) Text(stringResource(R.string.guidedTrialApprovalBoundary))
             }
             if (previous.isNotEmpty()) item {
                 TrialExpandButton(historyExpanded, { historyExpanded = !historyExpanded },

@@ -229,9 +229,12 @@ internal fun PackMontagePanel(id: Long, source: String?, stamp: String?, availab
 private fun MontagePng(bytes: ByteArray, tag: String, modifier: Modifier) {
     var expanded by remember { mutableStateOf(false) }
     val image by produceState<ImageBitmap?>(null, bytes) {
+        value = null
         val bitmap = withContext(Dispatchers.Default) { BitmapFactory.decodeByteArray(bytes, 0, bytes.size) }
         value = bitmap?.asImageBitmap()
-        awaitDispose { bitmap?.recycle() }
+        // Published images may still be referenced by Compose's retained draw nodes.
+        // Let Bitmap/Compose release them after those references disappear; recycling
+        // on a byte-array key change can invalidate a frame during a saved-style reload.
     }
     val checker = Modifier.drawBehind { drawAlphaCheckerboard(Color.White, Color(0xffdddddd)) }
     image?.let { bitmap ->

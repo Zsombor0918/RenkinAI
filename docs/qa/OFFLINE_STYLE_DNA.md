@@ -1,5 +1,9 @@
 # Offline Style DNA verification
 
+## Current fixture synchronization and screenshots
+
+Wait within the existing15 seconds for asynchronous Browse to re-enable, explicit analysis consent to materialize, restored Style to become ready and lazy approval status to scroll into view. Dispatch each click once. MockWebServer URLs are explicitly literal127.0.0.1, matching the unchanged debug-only cleartext and socket guards; localhost aliases remain denied. Real Compose-frame captures expose retained-image lifetime errors. Saved synthetic screenshots stay under the emulator fixture app files; no physical device or owner data is accessed.
+
 ## Current montage EXTEND journeys
 
 The existing harness adds montageJourney to the two retained manual/reference journeys, then force-stops only its emulator app before restartReadOnly (3+1). Montage journey uses actual installed synthetic pack resources, automatic contact sheets, explicit free member removal/recomposition, one loopback multimodal POST after analysis consent, and V3 Trial preparation with the true target original. A second separately consented loopback POST simulates image generation and reaches actual review/approval; no live call is made. The native multipart bytes/output contract and consumed-marker behavior also execute in PackStyleAnalysisTest. Restart reopens three durable synthetic projects and prepares V3 without another analysis call. Earlier Quick/Standard trace descriptions below are historical, not current requirements.

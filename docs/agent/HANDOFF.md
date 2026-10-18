@@ -1,5 +1,9 @@
 # Agent handoff — guided UX Stage 1
 
+## Closed montage implementation scope
+
+Preserved local commits f8d28668/8a4c5cd0 and integration44c89295 from baseline6e5ff5d2. Follow-up closes demonstrated Android fixture readiness/literal-loopback issues, compacts only the new montage Trial screen, and removes premature recycling of Compose-published sheet bitmaps. Native captured-frame regression exercises analysis Save/reopen/content edits, actual multipart generation and review; existing V1/V2 and shared safety remain. Final exact source SHA, hosted Linux/Android/Python/order, APK/hash/certificate and historical governance blocker are recorded in the PR10 audit. Next safe work is owner/device acceptance and separately authorized visual pilot, not new features.
+
 ## Montage integration handoff
 
 Source baseline6e5ff5d2, same branch/PR10/base main. Keep source-backed PNG pages as the only new style image inputs, contract2 analysis records and V3 Trial fingerprints. Preserve old readers, consumed markers, assets/history, AI1/AI2, original editor, Global Batch and Room21. Current focused/Android work must finish before final-head delivery; paid style fidelity and owner-device signing acceptance remain unverified. Do not restart Phase0 or restore removed analysis services.

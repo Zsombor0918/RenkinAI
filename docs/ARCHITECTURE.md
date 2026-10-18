@@ -1,5 +1,9 @@
 # Architecture
 
+## Montage presentation lifetime
+
+Published contact-sheet ImageBitmaps remain managed by Compose/Android after a producer key changes; they must not be recycled while retained draw nodes may still reference them. Rendering scratch bitmaps remain explicitly released. Guided V3 results use a compact presentation that keeps advanced target/options/evidence accessible without duplicating the pre-generation selector above generated images. No persistence, frozen request, billing, original resolver or legacy editor architecture changes.
+
 ## Montage EXTEND integration
 
 Fresh EXTEND uses LocalPackMontages and PackMontagePanel; old saved/manual/CREATE paths retain their existing editor. One consented Responses operation stores a plain pack-wide brief. Future TrialV3 binds the full montage payload fingerprint, exact brief, original identity, ordered sheet bytes and effective prompt hashes; V1/V2 readers/text remain unchanged. Random eligible suggestions are persisted with the existing selection row; recommendations never submit requests. No new database, batch engine or signing path.

@@ -2,6 +2,12 @@
 
 ## Montage EXTEND scope
 
+Local end-to-end acceptance now reaches V3 native multipart generation simulation,
+review/approval and a separate-process reopen. Compact guided result presentation
+and published-image lifetime are corrected from native evidence. The next gate is
+the exact final-head hosted build/Android/order and independently verified APK on
+PR10, followed by owner integration/device decisions; no further feature phase starts.
+
 Phases1–3 connect automatic adaptive contact sheets, one explicit pack-wide visual analysis and separately consented original-plus-montage Trials. Later batch completion must reuse Global Batch; no bulk engine, subscriptions, CREATE redesign or live visual experiment is part of this work. Final exact-head gates and owner acceptance remain mandatory.
 
 ## Montage checkpoint2 service verified

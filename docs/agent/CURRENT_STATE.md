@@ -1,5 +1,9 @@
 # Current implementation
 
+## Montage acceptance follow-up
+
+Phases1–3 are connected: automatic sheets, one consented analysis and separately consented V3 Trial/review. The initial suggestion Save has a controlled-suspension regression against self-cancellation. Actual Android rendering also exposed a published-bitmap recycle race during analysis reload; Compose now owns published image lifetime. Only guided montage Trials use compact result-first presentation; old/manual paths remain. Exact final-head hosted status and APK receipt are on PR10. Historical91e5737d title governance remains independently BLOCKED.
+
 ## Montage Phases1–3
 
 Local checkpoints f8d28668 and8a4c5cd0 implement source sampling/adaptive rendering/persistence and one-shot analysis. Guided integration now uses montage content editing, explicit analysis consent, local text edits, V3 Trial preparation and stable saved random suggestions. Back returns to the logical source summary. Final-head hosted checks/APK are pending; historical governance title91e5737d remains a separate integration blocker. No paid calls or physical-device evidence.
