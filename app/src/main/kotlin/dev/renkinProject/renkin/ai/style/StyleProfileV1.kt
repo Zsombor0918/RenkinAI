@@ -64,20 +64,5 @@ internal data class StyleProfileV1(
                 r.get("mixedStyleWarning") as? Boolean ?: error("Expected boolean."), category(r.stringValue("selfAssessment")))
                 .also { it.validate() }
         }
-        /** Supported strict subset only. Length/range/depth rules are also checked in Kotlin. */
-        fun jsonSchema(): JSONObject {
-            fun category(values: Array<out Enum<*>>) = json("type" to "string", "enum" to JSONArray(values.map(::wire)))
-            fun texts() = json("type" to "array", "maxItems" to 6, "items" to json("type" to "string", "maxLength" to 160))
-            val properties = json("schemaVersion" to json("type" to "integer", "enum" to JSONArray(listOf(1))),
-                "archetype" to category(StyleArchetype.entries.toTypedArray()), "paletteArgb" to texts(),
-                "backgroundMode" to category(StyleBackground.entries.toTypedArray()), "stroke" to category(StyleStroke.entries.toTypedArray()),
-                "cornerTreatment" to category(StyleCorners.entries.toTypedArray()), "opticalPadding" to category(StylePadding.entries.toTypedArray()),
-                "detailLevel" to category(StyleDetail.entries.toTypedArray()), "forbiddenFeatures" to texts(),
-                "identityPreservationNotes" to texts(), "shortStyleDescription" to json("type" to "string", "maxLength" to 800),
-                "uncertaintyNotes" to texts(), "mixedStyleWarning" to json("type" to "boolean"),
-                "selfAssessment" to category(StyleAssessment.entries.toTypedArray()))
-            return json("type" to "object", "properties" to properties,
-                "required" to JSONArray(properties.keys().asSequence().toList()), "additionalProperties" to false)
-        }
     }
 }

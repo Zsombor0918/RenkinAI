@@ -1,5 +1,9 @@
 # Documentation index
 
+## Current owner-authorized Phase0 checkpoint
+
+[ADR0015](decisions/0015-retire-active-dna-analysis.md) and the [retirement inventory](qa/PHASE0_RETIREMENT.md) supersede old active-analysis product guidance below. Existing PR10 on feat/reference-first-prompt-v2 now targets main as set by the owner; this task preserves that actual base. Phase0 removes obsolete services/UI while retaining historical readers and shared safeguards. Phase1–3 montages/one analysis/montage Trials remain unimplemented; prior sections are historical evidence.
+
 Phase4A final-gate follow-up: [offline Trial contract assertions](changes/2026-10-18-offline-trial-contract-assertions.md). The failed a383625c full run remains evidence until a corrected-head execution passes.
 
 Current Phase4A: [versioned generation contract](decisions/0014-versioned-trial-generation-contract.md) and [implementation evidence](changes/2026-10-18-reference-first-prompt-v2.md). Phase3A is merged into PR8 at91e5737d, not main. This phase has its own stacked draft PR; final-head results remain external.

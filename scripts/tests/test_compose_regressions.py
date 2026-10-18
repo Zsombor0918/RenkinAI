@@ -134,12 +134,12 @@ class ComposeRunnerFaultTests(unittest.TestCase):
                 self.assertNotEqual(0, code)
                 self.assertTrue(summary["cases"]["full-suite"]["malformed_reports"])
 
-    def test_production_selectors_keep_original_cases_and_all_seven_analysis_groups(self):
+    def test_production_selectors_keep_active_and_historical_compatibility_coverage(self):
         self.assertEqual([RUNNER.CREATION], RUNNER.CASES["creation"])
         self.assertEqual([RUNNER.INGRESS], RUNNER.CASES["ingress"])
         self.assertEqual([RUNNER.CREATION, RUNNER.INGRESS], RUNNER.CASES["both"])
-        required = {"ReferenceSamplerTest", "StyleAnalysisSchemaTest", "PromptComposerTest", "StyleAnalysisGatewayTest",
-                    "StyleAnalysisJournalTest", "ProjectStyleAnalysisComposeTest", "ProjectAiAnalysisPersistenceTest", "OwnedStyleAnalysisTest"}
+        required = {"ReferenceSamplerTest", "StyleAnalysisSchemaTest", "PromptComposerTest",
+                    "StyleAnalysisJournalTest", "ProjectAiAnalysisPersistenceTest"}
         selectors = {selector.rsplit(".", 1)[-1] for group in RUNNER.CASES.values() for selector in group}
         self.assertTrue(required <= selectors)
         self.assertEqual([], RUNNER.CASES["full-suite"])

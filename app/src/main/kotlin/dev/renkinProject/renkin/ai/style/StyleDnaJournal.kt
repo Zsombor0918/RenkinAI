@@ -7,6 +7,8 @@ import org.json.JSONArray
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
+internal data class HistoricalDnaReceipt(val responseId: String, val usage: AnalysisUsage? = null)
+
 internal enum class DnaStatus { PREPARED, REQUESTING, RESULT_SAVED, REVIEWED, FAILED, UNCERTAIN }
 internal data class DnaStepState(val id: String,val status: String = "PENDING",val responseId: String? = null,val usage: AnalysisUsage? = null) {
     fun json()=json("id" to id,"status" to status,"responseId" to responseId,"usage" to usage?.let { json("input" to it.inputTokens,"output" to it.outputTokens) })
@@ -109,7 +111,7 @@ internal class StyleDnaJournal(context: Context,private val fault: (String)->Uni
         check(p.id in shared.active && r.status in setOf(DnaStatus.PREPARED,DnaStatus.REQUESTING))
         require(r.steps.single { it.id==s.id }.status=="PENDING")
         r.copy(status=DnaStatus.REQUESTING,steps=r.steps.map { if(it.id==s.id)it.copy(status="SUBMITTED") else it }) }
-    fun completed(p: StyleDnaPlan,s: DnaStep,response: DnaCallResult.Received,newReports: List<DnaIconReport>)=mutate(p) { r->
+    fun completed(p: StyleDnaPlan,s: DnaStep,response: HistoricalDnaReceipt,newReports: List<DnaIconReport>)=mutate(p) { r->
         require(r.steps.single { it.id==s.id }.status=="SUBMITTED")
         r.copy(steps=r.steps.map { if(it.id==s.id)it.copy(status="DONE",responseId=response.responseId,usage=response.usage) else it },reports=r.reports+newReports) }
     fun result(p: StyleDnaPlan,result: SavedStyleDna)=mutate(p) { r->require(r.steps.all { it.status=="DONE" } && r.reports==result.reports)

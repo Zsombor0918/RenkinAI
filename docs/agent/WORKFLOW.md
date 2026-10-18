@@ -1,5 +1,9 @@
 # Agent, Git and review workflow
 
+## Phase0 retirement verification
+
+Owner authorization in ADR0015 allows only dependency-proven obsolete analysis cases/selectors to be removed. The single automatic full Linux/build and integrated HTTP policy remains; two empty retired analysis groups are removed, historical-data groups retained. Android now requires2 active write/preparation journeys plus1 separate-process restart, with unchanged emulator-only/head/counter guards. Run the explicit form-order diagnostic for these UI-fixture edits. Existing PR10 remains draft/open; its actual owner-selected base is main. No merge/rewrite/new PR. Phase0 evidence must not be presented as completion of montage Phases1–3.
+
 ## Phase4A stacked verification
 
 Use the existing PR base feat/ux-flow-stabilization and separate draft feature branch. No CI scheduling change: ADR0012 single full Linux/build plus Python/governance and existing five Android journeys. Record exact final SHA externally after commit; initial BLOCKED audit is retained until evidence supports a final result. No shared Compose harness/order change is introduced by request-contract assertions.

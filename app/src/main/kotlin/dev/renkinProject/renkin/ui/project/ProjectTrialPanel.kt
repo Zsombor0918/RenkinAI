@@ -199,23 +199,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                         Text(checkNotNull(preparation.style.revision).specification)
                         if (preparation.style.revision.userInstruction.isNotBlank()) Text(preparation.style.revision.userInstruction)
                         TrialOptions(preparation.context, enabled) { provider, model, quality -> backend.options(id, provider, model, quality) }
-                        SavedStyleDna.optional(preparation.style.revision.analysisProfileJson)?.let { dna ->
-                            Text(stringResource(R.string.styleDnaTargetHelp))
-                            selected.forEach { key ->
-                                val choice = preparation.dnaChoices[key] ?: (dna.selectedFamily to DnaSymbolType.UNKNOWN)
-                                Text(label(key), style = MaterialTheme.typography.titleMedium)
-                                TextButton(onClick = { backend.dnaChoice(id,key,DNA_PACK_STYLE,choice.second) },enabled=enabled,
-                                    modifier=Modifier.heightIn(min=48.dp).testTag("trial-dna-pack-$key")) { Text(stringResource(R.string.styleDnaOverall)) }
-                                dna.dna.families.forEach { family -> TextButton(onClick = { backend.dnaChoice(id, key, family.id, choice.second) },
-                                    enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("trial-dna-family-${family.id}-$key")) {
-                                    Text("${family.id} ${if (choice.first == family.id) "✓" else ""}")
-                                } }
-                                DnaSymbolType.entries.forEach { type -> TextButton(onClick = { backend.dnaChoice(id, key, choice.first, type) },
-                                    enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("trial-dna-type-${type.name}-$key")) {
-                                    Text("${type.name} ${if (choice.second == type) "✓" else ""}")
-                                } }
-                            }
-                        }
+
                         Text(stringResource(R.string.trialSuggestion))
                     }
                     OutlinedButton(onClick = { trace?.invoke("trial.reload.user", "button"); backend.load(id, mode, source) }, enabled = enabled,
@@ -375,14 +359,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 plan.context.revision))
             plan.inputs.forEach { input ->
                 Text(input.name, style = MaterialTheme.typography.titleMedium)
-                p?.let { preparation -> SavedStyleDna.optional(preparation.style.revision?.analysisProfileJson)?.let { dna ->
-                    val choice = preparation.dnaChoices[input.key] ?: (dna.selectedFamily to DnaSymbolType.UNKNOWN)
-                    Text(if(choice.first == DNA_PACK_STYLE) stringResource(R.string.styleDnaOverall) else stringResource(R.string.styleDnaChosenFamily,choice.first))
-                    Text(if(choice.second == DnaSymbolType.UNKNOWN) stringResource(R.string.styleDnaTypeUnknown)
-                        else stringResource(R.string.styleDnaChosenType,choice.second.name.lowercase().replace('_',' ')))
-                    val family = StyleDnaCompiler.family(dna,choice.first)
-                    Text(stringResource(R.string.styleDnaFrozenPolicy,family.colorPolicy.name.lowercase().replace('_',' ')))
-                } }
+
                 Text(stringResource(R.string.trialOriginalApp), Modifier.testTag("trial-original-label-${input.requestId}"))
                 TrialPreview(id, input.originalHash, backend, "trial-frozen-${input.requestId}", 72, false, true,
                     stringResource(R.string.trialOriginalApp))

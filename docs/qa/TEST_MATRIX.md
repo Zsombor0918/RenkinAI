@@ -1,5 +1,9 @@
 # Regression and test matrix
 
+## Phase0 retirement coverage
+
+[The exact inventory](PHASE0_RETIREMENT.md) lists111 removed/replaced old JUnit identities and7 replacement identities, expected net104 fewer than1026. Historical journal/format/backup tests, real archived-DNA-to-image multipart, V1 golden/V2 hash, original identity/order, source changes, consent/cancel/uncertainty/consumed and active manual/guided journeys remain. New Android expectation is2+1 active reference/decline/restart cases, replacing obsolete Quick/Standard/incomplete analysis journeys. These are deliberate product removals, not hidden skipped failures. Final Linux XML must establish actual count; local Windows symlink baseline remains documented. No montage or real visual acceptance is asserted.
+
 The [offline Trial alignment](../changes/2026-10-18-offline-trial-contract-assertions.md) retains the original full-wire journey and replaces obsolete V1-only labels for newly prepared V2 plans with exact effective prompt hashes, role/identity/redrawing semantics and one construction rule set. Original-first bytes/order, source membership, endpoint markers and restart checks remain.
 
 ## Phase4A immutable generation requests

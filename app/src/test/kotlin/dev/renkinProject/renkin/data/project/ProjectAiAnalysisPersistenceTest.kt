@@ -103,7 +103,9 @@ class ProjectAiAnalysisPersistenceTest {
     }
     @Test fun fullFormatFiveBackupRestoresStructuredStyleRefsAndRequiresFreshValidation() = runBlocking {
         val saved = save(); val journal = StyleAnalysisJournal(context); val candidate = analysisFixtureRequest()
-        StyleAnalysisCoordinator(journal, StyleAnalysisGateway { StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_unreviewed", null) }).submit(candidate, true) { true }
+        check(journal.claim(candidate))
+        journal.finish(candidate.context.profileId, candidate.requestId, StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_unreviewed", null))
+        journal.release(candidate.context.profileId, candidate.requestId)
         val bytes = export(); val zipped = entries(bytes)
         assertEquals(6, JSONObject(String(zipped.getValue("manifest.json"))).getInt("format"))
         assertFalse(zipped.keys.any { it.contains("style_analysis") })

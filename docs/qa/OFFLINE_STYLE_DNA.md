@@ -1,5 +1,9 @@
 # Offline Style DNA verification
 
+## Phase0 active offline journeys
+
+The historical filename is retained to reuse CI/evidence tooling. Active Android selectors are referenceFirstJourney, decliningTrialCannotRestoreTheFrozenPlan and restartReadOnly (2+1), all real Compose/resources/Room with no provider submission. It verifies key-free ordered Save, true target original, frozenV2 hash/bytes, decline cannot restore a plan, and two saved projects reopened in another PID. The loopback unit journey now reads archived DNA directly and makes only the actual separately consented image-edit request; retired analysis POST contracts are deliberately removed. Historical trace sections below describe earlier runs, not current active-feature requirements. See [retirement inventory](PHASE0_RETIREMENT.md).
+
 ## Phase4A generation version check
 
 The retained reference-first Android journey additionally checks V2 plan parse/hash equality after free Save and before any paid image consent. The native image-edit request and exact ordered PNG bytes are covered by local MockWebServer tests in the single authoritative unit suite. Existing Quick/Standard/incomplete/restart counts and the five-journey runner remain unchanged. No live endpoint or key is used.

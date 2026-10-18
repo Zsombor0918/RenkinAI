@@ -19,18 +19,11 @@ internal fun dnaStrings(a: JSONArray, max: Int, length: Int = 240): List<String>
     require(a.length() <= max)
     return (0 until a.length()).map { cleanText(a.get(it) as? String ?: error("Expected bounded text."), length) }
 }
-internal fun dnaObject(properties: JSONObject) = json("type" to "object", "properties" to properties,
-    "required" to JSONArray(properties.keys().asSequence().toList()), "additionalProperties" to false)
-internal fun dnaText(max: Int = 240) = json("type" to "string", "maxLength" to max)
-internal fun dnaArray(items: JSONObject, max: Int) = json("type" to "array", "items" to items, "maxItems" to max)
-internal inline fun <reified T : Enum<T>> dnaEnum() = json("type" to "string", "enum" to JSONArray(enumValues<T>().map { it.name }))
 internal data class DnaObservation(val value: String, val provenance: DnaProvenance) {
     fun json() = json("value" to value.also { require(cleanText(it,240).isNotEmpty()) }, "provenance" to provenance.name)
     companion object {
         fun parse(r: JSONObject): DnaObservation { r.exactKeys(setOf("value","provenance"))
             return DnaObservation(r.stringValue("value"), DnaProvenance.valueOf(r.stringValue("provenance"))).also { it.json() } }
-        // UNKNOWN still needs an explicit description, never an empty placeholder.
-        fun schema() = dnaObject(json("value" to dnaText().put("pattern", DNA_OBSERVATION_PATTERN), "provenance" to dnaEnum<DnaProvenance>()))
     }
 }
 internal data class DnaIconReport(val sampleId: String, val sampleHash: String, val familyVote: DnaFamilyVote,
@@ -54,11 +47,6 @@ internal data class DnaIconReport(val sampleId: String, val sampleHash: String, 
                 PackColorPolicy.valueOf(r.stringValue("color_policy")),DnaTile.valueOf(r.stringValue("tile_vote")),DnaDepth.valueOf(r.stringValue("depth_vote")),
                 r.stringValue("outlier_reason")).also { it.json() }
         }
-        fun schema() = dnaObject(json("schema" to json("type" to "integer","enum" to JSONArray(listOf(1))),
-            "sample_id" to dnaText(48),"sample_hash" to dnaText(64),"family_vote" to dnaEnum<DnaFamilyVote>(),
-            "symbol_type" to dnaEnum<DnaSymbolType>(), "traits" to dnaObject(json(*DNA_TRAITS.map { it to DnaObservation.schema() }.toTypedArray())),
-            "color_policy" to dnaEnum<PackColorPolicy>(),"tile_vote" to dnaEnum<DnaTile>(),"depth_vote" to dnaEnum<DnaDepth>(),
-            "outlier_reason" to dnaText(),"do_not_copy_reference_logo" to json("type" to "boolean","enum" to JSONArray(listOf(true)))))
     }
 }
 internal data class DnaRule(val value: String, val provenance: DnaProvenance, val evidenceIds: List<String>) {
@@ -71,7 +59,6 @@ internal data class DnaRule(val value: String, val provenance: DnaProvenance, va
     companion object {
         fun parse(r: JSONObject): DnaRule { r.exactKeys(setOf("value","provenance","evidence_ids"))
             return DnaRule(r.stringValue("value"),DnaProvenance.valueOf(r.stringValue("provenance")),dnaStrings(r.getJSONArray("evidence_ids"),24,48)).also { it.json() } }
-        fun schema() = dnaObject(json("value" to dnaText(),"provenance" to dnaEnum<DnaProvenance>(),"evidence_ids" to dnaArray(dnaText(48),24)))
     }
 }
 internal data class DnaColorRole(val role: String, val colors: List<String>, val observedCount: Int, val strength: String) {
@@ -83,9 +70,6 @@ internal data class DnaColorRole(val role: String, val colors: List<String>, val
     companion object {
         fun parse(r: JSONObject): DnaColorRole { r.exactKeys(setOf("role","colors","observed_count","strength"))
             return DnaColorRole(r.stringValue("role"),dnaStrings(r.getJSONArray("colors"),6,9),r.longValue("observed_count").also { require(it in 0..24) }.toInt(),r.stringValue("strength")).also { it.json() } }
-        fun schema() = dnaObject(json("role" to json("type" to "string","enum" to JSONArray(listOf("neutral","accent","brand","background"))),
-            "colors" to dnaArray(dnaText(9),6),"observed_count" to json("type" to "integer","minimum" to 0,"maximum" to 24),
-            "strength" to json("type" to "string","enum" to JSONArray(listOf("RECURRING","VARIABLE","TENTATIVE","UNKNOWN")))))
     }
 }
 internal data class DnaFamily(val id: String, val evidenceIds: List<String>, val applicability: List<DnaSymbolType>,
@@ -115,11 +99,6 @@ internal data class DnaFamily(val id: String, val evidenceIds: List<String>, val
                 (0 until roles.length()).map { DnaColorRole.parse(roles.getJSONObject(it)) },DNA_DRAWING.associateWith { DnaRule.parse(drawing.getJSONObject(it)) },
                 rules("must"),rules("should"),rules("must_not")).also { require(r.longValue("observed_count") == it.observedCount.toLong()); it.json() }
         }
-        fun schema() = dnaObject(json("family_id" to dnaText(48),"observed_count" to json("type" to "integer","minimum" to 1,"maximum" to 24),
-            "evidence_ids" to dnaArray(dnaText(48),24),"applicability" to dnaArray(dnaEnum<DnaSymbolType>(),5),"tile" to dnaEnum<DnaTile>(),
-            "depth" to dnaEnum<DnaDepth>(),"color_policy" to dnaEnum<PackColorPolicy>(),"color_roles" to dnaArray(DnaColorRole.schema(),4),
-            "drawing" to dnaObject(json(*DNA_DRAWING.map { it to DnaRule.schema() }.toTypedArray())),
-            "must" to dnaArray(DnaRule.schema(),6),"should" to dnaArray(DnaRule.schema(),6),"must_not" to dnaArray(DnaRule.schema(),6)))
     }
 }
 internal data class StyleDnaV1(val families: List<DnaFamily>, val recommendedFamily: String, val uncertainty: List<String>) {
@@ -137,8 +116,6 @@ internal data class StyleDnaV1(val families: List<DnaFamily>, val recommendedFam
             return StyleDnaV1((0 until a.length()).map { DnaFamily.parse(a.getJSONObject(it)) },r.stringValue("recommended_family"),
                 dnaStrings(r.getJSONArray("uncertainty"),6)).also { it.encode() }
         }
-        fun schema() = dnaObject(json("schema" to json("type" to "integer","enum" to JSONArray(listOf(1))),
-            "families" to dnaArray(DnaFamily.schema(),8),"recommended_family" to dnaText(48),"uncertainty" to dnaArray(dnaText(),6)))
     }
 }
 internal object StyleDnaCodec {
@@ -171,20 +148,8 @@ internal object StyleDnaCodec {
         reportCheck(DnaReportFailure.HASH) { require(reports.all { bindings[it.sampleId] == it.sampleHash }) }
         return bindings.keys.map { id -> reports.single { it.sampleId == id } }
     }
-    fun reportsSchema(max: Int) = dnaObject(json("schema" to json("type" to "integer","enum" to JSONArray(listOf(1))),
-        "reports" to dnaArray(DnaIconReport.schema(),max).put("minItems",max)))
-    fun reportsSchema(bindings: Map<String,String>): JSONObject {
-        require(bindings.size in 1..24); bindings.forEach { (id,hash) -> dnaId(id); dnaHash(hash) }
-        return reportsSchema(bindings.size).also { schema ->
-            val properties = schema.getJSONObject("properties").getJSONObject("reports").getJSONObject("items").getJSONObject("properties")
-            properties.getJSONObject("sample_id").put("enum",JSONArray(bindings.keys.toList()))
-            properties.getJSONObject("sample_hash").put("enum",JSONArray(bindings.values.toList()))
-        }
-    }
 }
 
-// Anchored, bounded, nonblank and free of ISO controls, matching cleanText.
-internal const val DNA_OBSERVATION_PATTERN = "^[^\\u0000-\\u001F\\u007F-\\u009F]{0,239}[^\\s\\u0000-\\u001F\\u007F-\\u009F][^\\u0000-\\u001F\\u007F-\\u009F]{0,239}$"
 internal enum class DnaReportFailure {
     JSON_INVALID, JSON_SIZE, JSON_DEPTH, JSON_DUPLICATE, ROOT, FIELDS, SCHEMA,
     COUNT, BINDING_FORMAT, ENUM, PROVENANCE, TEXT, DUPLICATE_ID, MEMBERSHIP, HASH;

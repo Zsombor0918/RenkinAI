@@ -7,9 +7,5 @@
     <string name="referenceStyleSelect">Select reference</string>
     <string name="referenceStyleSelected">Selected</string>
     <string name="referenceStyleNoImages">No references selected. Saving now creates a text-only manual style.</string>
-    <string name="referenceStyleOptional">Optional AI analysis (may cost money)</string>
-    <string name="referenceStyleReturn">Return to references and brief</string>
-    <string name="referenceStyleUnsaved">Save or explicitly discard your edits before switching methods. Previous analysis results are not adopted automatically.</string>
     <string name="referenceStyleSourceError">Local source references are unavailable or have changed. Check the source pack before selecting or saving; your draft is retained.</string>
-    <string name="referenceStyleLegacy">Legacy analysis (optional)</string>
 </resources>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run synthetic Style DNA journeys only on an explicitly selected emulator."""
+"""Run active synthetic reference/Trial journeys only on an explicitly selected emulator."""
 import argparse
 import hashlib
 import json
@@ -18,13 +18,12 @@ TEST_CLASS = "dev.renkinProject.renkin.offline.StyleDnaEmulatorTest"
 
 def valid_device_evidence(evidence):
     expected = {
-        "quick": {"samples": 12, "reports": 12, "loopback_posts": 1, "external_posts": 0, "trial_prepared": True},
-        "standard": {"samples": 24, "reports": 24, "loopback_posts": 5, "external_posts": 0, "trial_prepared": True},
-        "failure": {"loopback_posts": 2, "external_posts": 0, "consumed_attempts": 2, "accepted_styles": 0,
-                    "incomplete_reason": "RESPONSE_INCOMPLETE_MAX_OUTPUT_TOKENS", "cancel_reason": "CANCELLED_NO_REPLAY"},
-        "references": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True},
+        "references": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True,
+                       "declined": False, "generation_calls": 0},
+        "decline": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True,
+                    "declined": True, "generation_calls": 0},
         "restart": {"process_restart": True, "loopback_posts": 0, "external_posts": 0,
-                    "saved_projects_reopened": 3, "trial_prepared": True, "uncertain_attempts_replayed": 0},
+                    "saved_projects_reopened": 2, "trial_prepared": True, "uncertain_attempts_replayed": 0},
     }
     if not isinstance(evidence, dict):
         return False
@@ -34,7 +33,7 @@ def valid_device_evidence(evidence):
                                                for key, value in fields.items()):
             return False
     return all(type(evidence[name].get("saved_revision")) is int and evidence[name]["saved_revision"] >= 1
-               for name in ("quick", "standard", "references"))
+               for name in ("references", "decline"))
 
 
 def main():
@@ -76,7 +75,7 @@ def main():
             device("install", "-r", str(path))
         failed = False
         selectors = [",".join(TEST_CLASS + "#" + method for method in
-                               ["quickJourney", "standardJourney", "incompleteAndCancel", "referenceFirstJourney"]),
+                               ["referenceFirstJourney", "decliningTrialCannotRestoreTheFrozenPlan"]),
                      TEST_CLASS + "#restartReadOnly"]
         for index, selector in enumerate(selectors):
             if index == 1:
@@ -88,7 +87,7 @@ def main():
             trace = device("logcat", "-d", "-v", "threadtime", "OfflineDnaTrace:I", "*:S", check=False)
             (output / f"trace-{index}.log").write_text(trace.stdout + trace.stderr, encoding="utf-8")
             (output / f"instrumentation-{index}.log").write_text(log, encoding="utf-8")
-            expected = 4 if index == 0 else 1
+            expected = 2 if index == 0 else 1
             passed = result.returncode == 0 and re.search(rf"OK \({expected} tests?\)", log) is not None
             passed &= "FAILURES!!!" not in log and "INSTRUMENTATION_FAILED" not in log
             summary["runs"].append({"selector": selector, "exit": result.returncode, "tests": expected,

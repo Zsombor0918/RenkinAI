@@ -1,5 +1,9 @@
 # RenkinAI roadmap
 
+## Owner-authorized montage direction and Phase0 checkpoint
+
+The October18 Phase0–3 instruction supersedes optional Legacy/Quick/Standard as an active product direction. Phase0 removes their exclusive implementations/tests with historical compatibility. The remaining checkpoints are Phase1 automatic20–30 source icons/montages, Phase2 one consented pack-wide analysis, Phase3 stable random target selection and original+montage generation. They remain unimplemented at this checkpoint. Manual references/Trial remain a working fallback; no visual-quality claim or paid pilot. See [inventory](qa/PHASE0_RETIREMENT.md).
+
 ## Owner-authorized Phase4A
 
 Phase3A merged into the PR8 feature branch as91e5737d. A separate stacked Phase4A PR implements concise versioned future OpenAI Trial contracts, deduplicated historical drawing guidance and immutable request compatibility. Final-head automated acceptance is recorded externally; visual acceptance remains separate. Phase4B old-analysis retirement and a paid visual pilot are not started.

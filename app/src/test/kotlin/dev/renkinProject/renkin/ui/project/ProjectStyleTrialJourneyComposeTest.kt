@@ -37,7 +37,6 @@ class ProjectStyleTrialJourneyComposeTest {
     @get:Rule val temporary = TemporaryFolder()
     private lateinit var f: StyleTrialFixture
     private lateinit var scope: CoroutineScope
-    private lateinit var analysis: OwnedStyleAnalysis
     private lateinit var trials: OwnedStyleTrials
     private lateinit var analysisJournal: StyleAnalysisJournal
     private lateinit var backend: ProjectStyleBackend
@@ -48,9 +47,7 @@ class ProjectStyleTrialJourneyComposeTest {
     private var metadata by mutableStateOf<ProjectAiMetadata?>(null)
     private var dark by mutableStateOf(false)
     private var key = true
-    private var analysisCalls = 0
     private var imageCalls = 0
-    private var analysisOutcome: StyleAnalysisOutcome = StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_fixture", AnalysisUsage(43, 92))
     private val mutex = Mutex()
     // A diverse source pool, rather than assuming twelve shapes are all perceptually unique.
     private var reader = FixtureReferenceReader((0 until 30).associate { "icon$it" to analysisFixturePng(it % 3, it) })
@@ -62,15 +59,6 @@ class ProjectStyleTrialJourneyComposeTest {
         RenkinPackRepository(f.db).replaceEverything(home.profiles, emptyList())
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         analysisJournal = StyleAnalysisJournal(f.context)
-        val analysisGateway = StyleAnalysisGateway {
-            analysisCalls++; analysisOutcome
-        }
-        analysis = OwnedStyleAnalysis(scope, f.repo, analysisJournal, ReferenceSampler(),
-            StyleAnalysisCoordinator(analysisJournal, analysisGateway), { key }, object : AnalysisSessionOwner {
-                override suspend fun <T> owned(id: Long, operation: suspend () -> T) = this@ProjectStyleTrialJourneyComposeTest.owned(id, operation)
-                override suspend fun catalogStamp() = projectCatalogStamp(f.targets)
-                override suspend fun reader(source: String, referenceIndex: Boolean): CoverageSourceReader = reader
-            })
         trials = OwnedStyleTrials(scope, f.repo, f.journal, StyleTrialCoordinator(f.journal, f.successful { imageCalls++ }, f.repo),
             { key }, object : TrialSessionOwner {
                 override suspend fun <T> owned(id: Long, action: suspend () -> T) = this@ProjectStyleTrialJourneyComposeTest.owned(id, action)
@@ -80,7 +68,6 @@ class ProjectStyleTrialJourneyComposeTest {
                 override suspend fun settings() = AiSettings()
             })
         backend = object : ProjectStyleBackend {
-            override val analysis get() = this@ProjectStyleTrialJourneyComposeTest.analysis
             override suspend fun load(id: Long) = owned(id) { f.repo.load(id) }
             override suspend fun importReference(id: Long, uri: android.net.Uri) = error("No picker is used by this journey")
             override suspend fun referencePreview(id: Long, hash: String) = f.repo.referenceBytes(id, hash)
@@ -88,8 +75,7 @@ class ProjectStyleTrialJourneyComposeTest {
             override suspend fun discard(id: Long, hashes: List<String>) { owned(id) { f.repo.discardDraftReferences(id, hashes) } }
             override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft,
                 mode: ProjectSetupMode, source: String?, stamp: String?): SavedProjectStyle {
-                val saved = if (draft.analysisRequestId != null) analysis.save(id, expected, draft, mode, source)
-                else owned(id) { f.repo.saveStyle(id, expected, draft.specification, draft.instruction, draft.hashes, mode.name, source, stamp) }
+                val saved = owned(id) { f.repo.saveStyle(id, expected, draft.specification, draft.instruction, draft.hashes, mode.name, source, stamp) }
                 metadata = saved.metadata; return saved
             }
         }
@@ -134,7 +120,7 @@ class ProjectStyleTrialJourneyComposeTest {
     }
     private fun settle() {
         compose.waitForIdle()
-        compose.waitUntil(10000) { !analysis.state(1).value.busy && !trials.state(1).value.busy }
+        compose.waitUntil(10000) { !trials.state(1).value.busy }
         compose.waitForIdle()
     }
     private fun click(list: String, tag: String) {
@@ -150,7 +136,11 @@ class ProjectStyleTrialJourneyComposeTest {
     }
     private fun style() { click("project-targets", "setup-project-style") }
     private fun manualSave() {
-        click("project-style-1", "project-style-advanced")
+        // Backend load completes independently of the frame clock. The removed
+        // advanced-mode click previously happened to let that read settle.
+        compose.waitUntil(10000) {
+            compose.onAllNodes(hasTestTag("project-style-description") and isEnabled()).fetchSemanticsNodes().size == 1
+        }
         compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-description"))
         compose.onNodeWithTag("project-style-description").performTextInput("manual outline")
         click("project-style-1", "project-style-save")
@@ -170,7 +160,7 @@ class ProjectStyleTrialJourneyComposeTest {
         compose.setContent { Content() }; open()
         compose.onNodeWithTag("setup-trials").performScrollTo().assertIsNotEnabled()
         compose.onNodeWithTag("setup-trials-reason").assertTextContains("Save a project style", substring = true)
-        assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
+        assertNull(analysisJournal.latest(1)); assertEquals(0, imageCalls)
     }
     @Test fun manualTargetsFirstSaveStyleShowsTrialEntryAboveAnalysisAndKeepsSavedSelection() {
         key = false; compose.setContent { Content() }; open(); saveTargets(); style(); manualSave()
@@ -179,7 +169,7 @@ class ProjectStyleTrialJourneyComposeTest {
         assertNull(trials.state(1).value.error)
         compose.onNodeWithTag("trial-no-key").assertExists()
         assertEquals(3, trials.state(1).value.preparation!!.candidates.size)
-        assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
+        assertNull(analysisJournal.latest(1)); assertEquals(0, imageCalls)
         assertEquals(0, runBlocking { f.repo.load(1).references.size })
         val saved = runBlocking { f.repo.load(1) }.metadata!!
         assertNull(saved.sourceStamp)
@@ -208,39 +198,8 @@ class ProjectStyleTrialJourneyComposeTest {
         click("project-trials-1", "trial-accept-${row.id}")
         assertFalse(trials.state(1).value.ready)
         click("project-trials-1", "trial-approve-style")
-        assertTrue(trials.state(1).value.ready); assertEquals(1, imageCalls); assertEquals(0, analysisCalls)
+        assertTrue(trials.state(1).value.ready); assertEquals(1, imageCalls); assertNull(analysisJournal.latest(1))
         assertEquals("NOT_APPLIED", runBlocking { f.repo.trialVariants(1).single().applyStatus })
-    }
-    @Test fun extendTargetsThenTwelveSampleAnalysisUseSaveAndReopenReachesTrialsWithFiveRefs() {
-        dark = true; val restoration = StateRestorationTester(compose); restoration.setContent { Content() }
-        open(extend = true); saveTargets(); style()
-        // The panel's initial Room load is independent of controller/network busy.
-        // Materialize and observe its enabled action before the existing click assertions.
-        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-prepare"))
-        compose.waitUntil(10000) {
-            compose.onAllNodes(hasTestTag("style-analysis-prepare") and isEnabled()).fetchSemanticsNodes().size == 1
-        }
-        click("project-style-1", "style-analysis-prepare")
-        assertEquals(12, analysis.state(1).value.samples!!.samples.size); assertEquals(0, analysisCalls)
-        click("project-style-1", "style-analysis-start")
-        compose.onNodeWithTag("style-analysis-confirm-paid").performClick(); settle()
-        assertEquals(AnalysisStatus.RESULT_SAVED, analysis.state(1).value.record!!.status)
-        assertNull(runBlocking { f.repo.load(1).revision }); assertEquals(1, analysisCalls)
-        click("project-style-1", "style-analysis-use")
-        compose.onNodeWithTag("style-analysis-confirm-use").performClick(); settle()
-        // Use imports five PNGs locally in the panel coroutine, independently of
-        // the controller's network busy flag. Observe its completed draft before Save.
-        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-status"))
-        compose.waitUntil(10000) {
-            compose.onAllNodes(hasTestTag("project-style-status") and hasText("Unsaved style changes"))
-                .fetchSemanticsNodes().size == 1
-        }
-        compose.onNodeWithTag("project-style-status").assertTextEquals("Unsaved style changes")
-        assertNull(runBlocking { f.repo.load(1).revision })
-        click("project-style-1", "project-style-save"); awaitSavedStyle(); back(); enterTrials()
-        assertEquals(5, trials.state(1).value.preparation!!.style.references.size)
-        restoration.emulateSavedInstanceStateRestore(); settle()
-        assertNotNull(trials.state(1).value.preparation); assertEquals(0, imageCalls); assertEquals(1, analysisCalls)
     }
     @Test fun savedStyleWithoutTargetsExplainsExactlyWhatToSaveOnTheRoutedTrialScreen() {
         compose.setContent { Content() }; open(); style(); manualSave()
@@ -248,7 +207,7 @@ class ProjectStyleTrialJourneyComposeTest {
         compose.onNodeWithTag("trial-error").assertTextContains("Save selected targets", substring = true)
         compose.onNodeWithTag("trial-targets").assertIsEnabled().performClick(); settle()
         compose.onNodeWithTag("setup-save-selection").assertExists()
-        assertEquals(0, imageCalls); assertEquals(0, analysisCalls)
+        assertEquals(0, imageCalls); assertNull(analysisJournal.latest(1))
     }
     @Test fun extendManualStyleWorksWithoutCloudAnalysisOrUploadedReferences() {
         dark = true; compose.setContent { Content() }; open(extend = true); style(); manualSave()
@@ -258,7 +217,7 @@ class ProjectStyleTrialJourneyComposeTest {
         click("project-trials-1", "trial-prepare")
         assertEquals(3, trials.state(1).value.plan!!.inputs.size)
         compose.onNodeWithTag("trial-decline").performClick(); settle()
-        assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
+        assertNull(analysisJournal.latest(1)); assertEquals(0, imageCalls)
     }
     @Test fun dirtyStyleHasAccessibleSaveReasonBeforeTrialNavigation() {
         compose.setContent { Content() }; open(); saveTargets(); style(); manualSave()
@@ -267,7 +226,7 @@ class ProjectStyleTrialJourneyComposeTest {
         compose.onNodeWithTag("project-style-1").performScrollToIndex(0)
         compose.onNodeWithTag("style-trials").assertIsNotEnabled()
         compose.onNodeWithTag("style-trials-reason").assertTextContains("Save your style changes", substring = true)
-        assertEquals(0, analysisCalls); assertEquals(0, imageCalls)
+        assertNull(analysisJournal.latest(1)); assertEquals(0, imageCalls)
     }
     @Test fun changedSourceOnReloadOffersTargetsRemediationWithoutAnyGeneration() {
         compose.setContent { Content() }; open(extend = true); saveTargets(); style(); manualSave(); back(); enterTrials()
@@ -277,30 +236,6 @@ class ProjectStyleTrialJourneyComposeTest {
         assertEquals("stale_targets", trials.state(1).value.error)
         compose.onNodeWithTag("trial-error").assertTextContains("saved targets or source changed", substring = true)
         compose.onNodeWithTag("trial-targets").assertIsEnabled().performClick(); settle()
-        assertNull(trials.state(1).value.plan); assertEquals(0, imageCalls); assertEquals(0, analysisCalls)
-    }
-    @Test fun rejectedAnalysisExplainsConsumedConsentAndManualStyleStillReachesTrials() {
-        analysisOutcome = StyleAnalysisOutcome.RequestRejected(400)
-        compose.setContent { Content() }; open(extend = true); saveTargets(); style()
-        // The initial Room load also gates this retained rejection journey.
-        // Observe the real enabled action within the existing readiness bound.
-        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-prepare"))
-        compose.waitUntil(10000) {
-            compose.onAllNodes(hasTestTag("style-analysis-prepare") and isEnabled()).fetchSemanticsNodes().size == 1
-        }
-        click("project-style-1", "style-analysis-prepare")
-        val first = analysis.state(1).value.preparation!!.requestId
-        click("project-style-1", "style-analysis-start")
-        compose.onNodeWithTag("style-analysis-confirm-paid").performClick(); settle()
-        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-failed"))
-        compose.onNodeWithTag("style-analysis-failed").assertTextContains("request format", substring = true)
-        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("style-analysis-next-step"))
-        compose.onNodeWithTag("style-analysis-next-step").assertTextContains("previous confirmation is consumed", substring = true)
-        assertEquals(1, analysisCalls); assertEquals(0, imageCalls)
-        click("project-style-1", "style-analysis-prepare")
-        assertNotEquals(first, analysis.state(1).value.preparation!!.requestId)
-        assertEquals(1, analysisCalls)
-        manualSave(); back(); enterTrials()
-        assertNotNull(trials.state(1).value.preparation); assertEquals(1, analysisCalls); assertEquals(0, imageCalls)
+        assertNull(trials.state(1).value.plan); assertEquals(0, imageCalls); assertNull(analysisJournal.latest(1))
     }
 }

@@ -212,7 +212,7 @@ class OwnedStyleTrialsTest {
         assertNull(idle(c).plan);assertNull(c.preview(1,frozen.inputs.single().originalHash))
         c.submit(1,frozen.id);assertEquals(0,calls);assertTrue(f.journal.records(1).isEmpty())
     }
-    @Test fun dnaFamilyReferenceMismatchBlocksAndChangedChoiceInvalidatesFrozenOriginalFirstRequest() = runBlocking {
+    @Test fun historicalSavedFamilyUsesItsBoundReferencesAtTheOriginalFirstRequestBoundary() = runBlocking {
         val (analysis, art) = dnaFixturePlan(DnaAnalysisMode.QUICK,12)
         val reports = dnaFixtureReports(analysis).mapIndexed { index, r -> if(index < 6) r else r.copy(familyVote=DnaFamilyVote.SOLID) }
         val raw = synthesizeDnaLocally(reports,art)
@@ -232,15 +232,7 @@ class OwnedStyleTrialsTest {
         val c = controller()
         val first = prepared(c)
         assertEquals(hashes,first.referenceHashes)
-        c.dnaChoice(1,"a/Main","family2",DnaSymbolType.WORDMARK); idle(c)
-        c.submit(1,first.id); assertEquals(0,calls)
-        c.prepare(1,listOf("a/Main"),false)
-        assertEquals("dna_reference_mismatch",idle(c).error); assertNull(c.state(1).value.plan); assertEquals(0,calls)
-        c.dnaChoice(1,"a/Main",DNA_PACK_STYLE,DnaSymbolType.WORDMARK); idle(c)
-        c.prepare(1,listOf("a/Main"),false)
-        val frozen = idle(c).plan!!
-        assertNotEquals(first.context.dnaFingerprint,frozen.context.dnaFingerprint)
-        assertTrue(frozen.drawingRecipes.getValue("a/Main").contains("WORDMARK"))
+        val frozen = first
         c.submit(1,frozen.id); assertNull(idle(c).error)
         val request = requests.single()
         assertArrayEquals(f.originals.getValue("a/Main").png,request.originalPng)

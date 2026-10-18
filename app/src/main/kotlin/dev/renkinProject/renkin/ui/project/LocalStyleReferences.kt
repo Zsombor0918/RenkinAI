@@ -5,6 +5,13 @@ import dev.renkinProject.renkin.data.project.*
 import java.io.ByteArrayInputStream
 import org.json.JSONObject
 
+/** Existing project owner lock and current source readers; no provider capability. */
+internal interface AnalysisSessionOwner {
+    suspend fun <T> owned(id: Long, operation: suspend () -> T): T
+    suspend fun catalogStamp(): String
+    suspend fun reader(source: String, referenceIndex: Boolean): dev.renkinProject.renkin.apk.CoverageSourceReader
+}
+
 /** Draft provenance only, never a second reference store or permission to submit a request. */
 internal data class LocalReferenceOrigin(val profileId: Long, val source: String,
     val setupStamp: String, val referenceStamp: String, val drawables: Map<String, String>) {

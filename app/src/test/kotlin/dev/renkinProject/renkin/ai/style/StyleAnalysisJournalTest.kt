@@ -22,6 +22,11 @@ class StyleAnalysisJournalTest {
     private fun journal() = StyleAnalysisJournal(analysisFixtureContext(temporary.root))
     private fun suggested() = StyleAnalysisOutcome.Suggested(analysisFixtureStyle(), "resp_fixture", AnalysisUsage(40, 60))
 
+    private fun archive(journal: StyleAnalysisJournal, request: StyleAnalysisRequest) {
+        assertTrue(journal.claim(request))
+        journal.finish(request.context.profileId, request.requestId, suggested())
+        journal.release(request.context.profileId, request.requestId)
+    }
     @Test fun historicalAlgorithmFingerprintsRemainReadableAndNewEvidenceSurvivesReopen() = runBlocking {
         val old = analysisFixtureRequest().copy(algorithm = LEGACY_REFERENCE_ALGORITHM)
         val j = journal(); assertTrue(j.claim(old)); j.finish(4, old.requestId, suggested()); j.release(4, old.requestId)
@@ -39,95 +44,72 @@ class StyleAnalysisJournalTest {
         assertEquals(analysisFixtureStyle(), reopened.style)
         assertFalse(journal().claim(current))
     }
-    @Test fun noConsentAndStaleContextWriteNoFilesAndCallNoGateway() = runBlocking {
-        val journal = journal(); val calls = AtomicInteger()
-        val coordinator = StyleAnalysisCoordinator(journal, StyleAnalysisGateway { calls.incrementAndGet(); suggested() })
-        assertNull(coordinator.submit(analysisFixtureRequest(), false) { true })
-        assertNull(coordinator.submit(analysisFixtureRequest(), true) { false })
-        assertEquals(0, calls.get()); assertFalse(File(temporary.root, "style_analysis").exists())
-    }
-    @Test fun durableRequestingPrecedesCallAndResultReloadDoesNotRebillSameConsent() = runBlocking {
-        val journal = journal(); val request = analysisFixtureRequest(); var calls = 0
-        val gateway = StyleAnalysisGateway { input ->
-            calls++; val marker = checkNotNull(journal.read(input.context.profileId, input.requestId))
-            assertEquals(AnalysisStatus.REQUESTING, marker.status); assertEquals("UNKNOWN", marker.billingCertainty)
-            assertArrayEquals(input.images[0].png, journal.image(input.context.profileId, input.images[0].hash)); suggested()
-        }
-        val result = checkNotNull(StyleAnalysisCoordinator(journal, gateway).submit(request, true) { true })
-        assertEquals(AnalysisStatus.RESULT_SAVED, result.status); assertEquals("RESPONSE_RECEIVED", result.billingCertainty)
+
+    @Test fun historicalRequestMarkerAndSavedResultReloadCannotReclaimConsent() = runBlocking {
+        val j = journal(); val request = analysisFixtureRequest()
+        assertTrue(j.claim(request))
+        val marker = checkNotNull(j.read(4, request.requestId))
+        assertEquals(AnalysisStatus.REQUESTING, marker.status); assertEquals("UNKNOWN", marker.billingCertainty)
+        assertArrayEquals(request.images[0].png, j.image(4, request.images[0].hash))
+        val result = j.finish(4, request.requestId, suggested()); j.release(4, request.requestId)
+        assertEquals(AnalysisStatus.RESULT_SAVED, result.status)
         assertEquals(request.fingerprint, result.fingerprint); assertEquals(request.promptHash, result.promptHash)
-        assertEquals(result, journal().latest(4))
-        assertEquals(result, StyleAnalysisCoordinator(journal(), gateway).submit(request, true) { true })
-        assertEquals(1, calls)
+        assertEquals(result, journal().latest(4)); assertFalse(journal().claim(request))
     }
-    @Test fun concurrentDoubleTapAndReconstructedCoordinatorSubmitExactlyOnce() = runBlocking {
-        val journal = journal(); val request = analysisFixtureRequest(); val entered = CompletableDeferred<Unit>(); val release = CompletableDeferred<Unit>()
-        val calls = AtomicInteger(); val gateway = StyleAnalysisGateway { calls.incrementAndGet(); entered.complete(Unit); release.await(); suggested() }
-        val one = async { StyleAnalysisCoordinator(journal, gateway).submit(request, true) { true } }
-        entered.await()
-        val duplicate = StyleAnalysisCoordinator(journal(), gateway).submit(request, true) { true }
-        assertEquals(AnalysisStatus.REQUESTING, duplicate!!.status)
+
+    @Test fun historicalJournalClaimsReserveAnIdentityBeforeReopening() = runBlocking {
+        val j = journal(); val request = analysisFixtureRequest()
+        assertTrue(j.claim(request)); assertFalse(journal().claim(request))
         val another = request.copy(requestId = UUID.randomUUID().toString())
-        try { StyleAnalysisCoordinator(journal(), gateway).submit(another, true) { true }; fail("Concurrent analysis must be rejected") }
-        catch (_: IllegalStateException) { }
-        release.complete(Unit); one.await(); assertEquals(1, calls.get())
+        assertThrows(IllegalStateException::class.java) { journal().claim(another) }
+        j.finish(4, request.requestId, suggested()); j.release(4, request.requestId)
+        assertEquals(AnalysisStatus.RESULT_SAVED, journal().latest(4)!!.status)
+        assertFalse(journal().claim(request))
     }
-    @Test fun cancellationAndColdRecoveryAreUncertainAndNeverAutomaticallyResend() = runBlocking {
-        val journal = journal(); val request = analysisFixtureRequest(); val entered = CompletableDeferred<Unit>(); var calls = 0
-        val gateway = StyleAnalysisGateway { calls++; entered.complete(Unit); awaitCancellation() }
-        val job = launch { StyleAnalysisCoordinator(journal, gateway).submit(request, true) { true } }
-        entered.await(); job.cancelAndJoin()
+
+    @Test fun historicalInterruptedAndColdRecordsCannotBeClaimedAgain() = runBlocking {
+        val j = journal(); val request = analysisFixtureRequest()
+        assertTrue(j.claim(request)); j.interrupted(4, request.requestId); j.release(4, request.requestId)
         assertEquals(AnalysisStatus.UNCERTAIN, journal().latest(4)!!.status)
-        StyleAnalysisCoordinator(journal(), StyleAnalysisGateway { calls++; suggested() }).submit(request, true) { true }
-        assertEquals(1, calls)
-        // A true process restart loses the live registry; releasing models that exact boundary.
+        assertFalse(journal().claim(request))
         val crashed = request.copy(requestId = UUID.randomUUID().toString())
-        assertTrue(journal.claim(crashed)); journal.release(4, crashed.requestId)
+        assertTrue(j.claim(crashed)); j.release(4, crashed.requestId)
         assertEquals(AnalysisStatus.UNCERTAIN, journal().latest(4)!!.status)
-        assertFalse(journal.claim(crashed))
+        assertFalse(journal().claim(crashed))
     }
-    @Test fun explicitRetryNeedsFreshRequestIdentityAndFreshConfirmation() = runBlocking {
-        val journal = journal(); var calls = 0
-        val coordinator = StyleAnalysisCoordinator(journal, StyleAnalysisGateway { calls++; StyleAnalysisOutcome.Uncertain })
-        val request = analysisFixtureRequest(); coordinator.submit(request, true) { true }
-        coordinator.submit(request, true) { true }; assertEquals(1, calls)
-        val retry = request.copy(requestId = UUID.randomUUID().toString())
-        assertEquals(request.fingerprint, retry.fingerprint)
-        coordinator.submit(retry, false) { true }; assertEquals(1, calls)
-        coordinator.submit(retry, true) { true }; assertEquals(2, calls)
-    }
-    @Test fun markerFailureAndCorruptedRecordFailClosedBeforeAnyPost() = runBlocking {
-        val blocker = File(temporary.root, "style_analysis").apply { writeText("a file, not a directory") }
-        var calls = 0; val request = analysisFixtureRequest()
-        try { StyleAnalysisCoordinator(journal(), StyleAnalysisGateway { calls++; suggested() }).submit(request, true) { true }; fail("Marker write must fail") }
-        catch (_: Exception) { assertEquals(0, calls) }
+
+
+    @Test fun markerFailureAndCorruptedHistoricalRecordFailClosed() = runBlocking {
+        val blocker = File(temporary.root, "style_analysis").apply { writeText("not a directory") }
+        val request = analysisFixtureRequest()
+        assertTrue(runCatching { journal().claim(request) }.isFailure)
         assertTrue(blocker.delete())
-        val journal = journal(); assertTrue(journal.claim(request)); journal.release(4, request.requestId)
+        val j = journal(); assertTrue(j.claim(request)); j.release(4, request.requestId)
         File(temporary.root, "style_analysis/4/request-${request.requestId}.json").writeText("corrupted")
-        try { StyleAnalysisCoordinator(journal(), StyleAnalysisGateway { calls++; suggested() }).submit(request, true) { true }; fail("Corruption must not replay") }
-        catch (_: Exception) { assertEquals(0, calls) }
+        assertTrue(runCatching { journal().read(4, request.requestId) }.isFailure)
     }
+
     @Test fun explicitCleanupRetainsConsentMarkersAndReleasesOnlyUnpinnedImages() = runBlocking {
         val journal = journal(); val request = analysisFixtureRequest()
-        StyleAnalysisCoordinator(journal, StyleAnalysisGateway { suggested() }).submit(request, true) { true }
+        archive(journal, request)
         journal.reviewed(4, request.requestId, 2)
         assertEquals(AnalysisStatus.REVIEWED, journal.read(4, request.requestId)!!.status)
         assertFalse(File(temporary.root, "style_analysis/4/images/${request.images[0].hash}.png").exists())
         assertFalse(journal().claim(request))
         val second = request.copy(requestId = UUID.randomUUID().toString())
-        StyleAnalysisCoordinator(journal, StyleAnalysisGateway { suggested() }).submit(second, true) { true }
+        archive(journal, second)
         journal.discard(4, second.requestId)
         assertEquals(AnalysisStatus.FAILED, journal.read(4, second.requestId)!!.status); assertFalse(journal.claim(second))
     }
     @Test fun fullRestoreAndProfileDeleteRotateEpochAndBlockOldPreparation() = runBlocking {
         val journal = journal(); val request = analysisFixtureRequest()
-        StyleAnalysisCoordinator(journal, StyleAnalysisGateway { suggested() }).submit(request, true) { true }
+        archive(journal, request)
         journal().invalidateAll()
         assertNotEquals(request.context.storageEpoch, journal.epoch(4))
         assertEquals(AnalysisStatus.FAILED, journal.read(4, request.requestId)!!.status)
         assertThrows(IllegalArgumentException::class.java) { journal.claim(request.copy(requestId = UUID.randomUUID().toString())) }
         val fresh = request.copy(context = request.context.copy(storageEpoch = journal.epoch(4)), requestId = UUID.randomUUID().toString())
-        StyleAnalysisCoordinator(journal, StyleAnalysisGateway { suggested() }).submit(fresh, true) { true }
+        archive(journal, fresh)
         journal().invalidateProfile(4)
         val tombstone = journal.read(4, fresh.requestId)!!
         assertNull(tombstone.context); assertNull(tombstone.styleJson); assertTrue(tombstone.hashes.isEmpty()); assertEquals("", tombstone.description)

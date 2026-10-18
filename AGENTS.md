@@ -1,5 +1,9 @@
 # RenkinAI agent instructions
 
+## Owner-authorized analysis retirement (October 18, 2026)
+
+The explicit Phase0–3 task authorizes removing exclusively obsolete Legacy/Quick/Standard production code and tests. [ADR0015](docs/decisions/0015-retire-active-dna-analysis.md) and the [exact inventory](docs/qa/PHASE0_RETIREMENT.md) record that exception to earlier all-case retention. Shared functional, persistence, identity, signing and billing safety coverage remains mandatory. ADR0012 scheduling remains unchanged. Existing PR10/branch must be reused for this task; no new branch or PR is required. This checkpoint implements Phase0 only; later montage stages are not claimed.
+
 ## Owner-approved lean verification (October 17, 2026)
 
 This policy supersedes earlier requirements below to execute every historical group

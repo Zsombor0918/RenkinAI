@@ -1,5 +1,9 @@
 # Agent handoff — guided UX Stage 1
 
+## Phase0 checkpoint handoff
+
+Source baseline7db94f1e; same feat/reference-first-prompt-v2 and open draft PR10. Actual PR base is main, already changed by owner; do not retarget or modify protected branches. Old active analysis machinery is removed; existing manual editor/local references/Trial remain. Keep historical codecs/compiler/journals and all consumed markers. See [exact inventory](../qa/PHASE0_RETIREMENT.md) and [ADR0015](../decisions/0015-retire-active-dna-analysis.md). Next authorized step is Phase1:20–30 actual pack icons, durable detailed montage bytes/provenance and composition editor, replacing the1–5-reference default only when complete. Phase2/3 follow sequentially; none is claimed here. No paid/live/key/phone/signing action. Final SHA/checks/APK evidence is published externally after commit; older pending sections are historical.
+
 ## Phase4A offline HTTP follow-up
 
 CI39118171451 on a383625c gives1025 PASS/1 FAIL: retained offline Trial test line317 still requires V1 wording. Android39118171487 passes5/5. Keep both artifacts. Update only that test to V2 hash/semantic assertions, run focused offline/gateway checks, then one full Linux/build and the existing five Android journeys on the corrected head. Do not modify production code to restore obsolete duplicated wording. Audit remains BLOCKED until actual gates finish.

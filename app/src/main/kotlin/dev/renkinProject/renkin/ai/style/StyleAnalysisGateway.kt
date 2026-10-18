@@ -88,4 +88,4 @@ internal sealed interface StyleAnalysisOutcome {
     data object Uncertain : StyleAnalysisOutcome
     data object StaleSource : StyleAnalysisOutcome
 }
-internal fun interface StyleAnalysisGateway { suspend fun analyze(request: StyleAnalysisRequest): StyleAnalysisOutcome }
+// Historical request/result models are retained for journal and backup readers only.

@@ -1,5 +1,9 @@
 # Verification baseline
 
+## Phase0 checkpoint verification boundary
+
+The initial cleanup targeted run executes124 Windows cases:117 PASS, six obsolete advanced-toggle fixture failures and the known Windows-only canonical symlink assertion. The toggle was removed from the fixture and actual enabled-form readiness is awaited within its existing10-second bound; no production readiness gate or assertion was weakened. Unit and Android sources compile; strict Python67/67 PASS with Git sh on PATH. Corrected ProjectStyleTrialJourneyComposeTest7/7 PASS in47s; all other focused cases retain their recorded first-run evidence. Final hosted results belong in PR10 after execution, not inferred here. Net test retirement is catalogued in [the inventory](PHASE0_RETIREMENT.md); historical baseline failures below are not waived.
+
 ## Actual hosted queued-load reproduction
 
 aef0dca0 hosted Android records plan assignment then queued-load clearing within18ms, followed by missing trial-decline and dependent missing Standard completion evidence. Saved revision1 survives. Focused local controlled RED repeats current plan becoming null after the queued read (1/1); corrected final-head results remain external on PR8. This supersedes the earlier merely suspected scheduling explanation, without retroactively claiming an exact trace of75e.

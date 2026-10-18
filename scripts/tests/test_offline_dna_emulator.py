@@ -18,16 +18,12 @@ RUNNER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(RUNNER)
 HEAD = "a" * 40
 EVIDENCE = {
-    "quick": {"samples": 12, "reports": 12, "loopback_posts": 1, "external_posts": 0,
-              "saved_revision": 1, "trial_prepared": True},
-    "standard": {"samples": 24, "reports": 24, "loopback_posts": 5, "external_posts": 0,
-                 "saved_revision": 1, "trial_prepared": True},
-    "failure": {"loopback_posts": 2, "external_posts": 0, "consumed_attempts": 2,
-                "accepted_styles": 0, "incomplete_reason": "RESPONSE_INCOMPLETE_MAX_OUTPUT_TOKENS",
-                "cancel_reason": "CANCELLED_NO_REPLAY"},
-    "references": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True, "saved_revision": 1},
+    "references": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True,
+                   "declined": False, "generation_calls": 0, "saved_revision": 1},
+    "decline": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True,
+                "declined": True, "generation_calls": 0, "saved_revision": 1},
     "restart": {"process_restart": True, "loopback_posts": 0, "external_posts": 0,
-                "saved_projects_reopened": 3, "trial_prepared": True, "uncertain_attempts_replayed": 0},
+                "saved_projects_reopened": 2, "trial_prepared": True, "uncertain_attempts_replayed": 0},
 }
 
 
@@ -95,7 +91,7 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
                     instrumentation_count += 1
                     if mode == "instrument_timeout":
                         raise subprocess.TimeoutExpired(command, kwargs["timeout"])
-                    expected = 4 if instrumentation_count == 1 else 1
+                    expected = 2 if instrumentation_count == 1 else 1
                     log = f"OK ({expected} tests)\n"
                     if instrumentation_count == 1:
                         if mode == "wrong_count":
@@ -161,7 +157,7 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
         installs = [index for index, (command, _) in enumerate(commands) if command[3:4] == ["install"]]
         self.assertEqual(3, len(installs))
         self.assertTrue(all(build < index for index in installs))
-        self.assertEqual([4, 1], [run["tests"] for run in summary["runs"]])
+        self.assertEqual([2, 1], [run["tests"] for run in summary["runs"]])
         stop = next(index for index, (command, _) in enumerate(commands) if command[3:6] == ["shell", "am", "force-stop"])
         phases = [index for index, (command, _) in enumerate(commands) if command[3:6] == ["shell", "am", "instrument"]]
         self.assertLess(phases[0], stop)
@@ -207,16 +203,15 @@ class OfflineDnaEmulatorRunnerTests(unittest.TestCase):
 
     def test_external_posts_missing_journeys_wrong_counters_and_json_types_fail(self):
         mutations = [
-            ("quick", "external_posts", 1),
-            ("standard", "loopback_posts", 6),
-            ("failure", "accepted_styles", 1),
-            ("failure", "cancel_reason", "RETRY_ALLOWED"),
+            ("references", "external_posts", 1),
+            ("decline", "generation_calls", 1),
+            ("decline", "declined", False),
             ("restart", "uncertain_attempts_replayed", 1),
-            ("quick", "loopback_posts", True),
-            ("standard", "samples", 24.0),
+            ("references", "loopback_posts", True),
+            ("references", "selected_references", 2.0),
             ("restart", "process_restart", 1),
-            ("quick", "saved_revision", True),
-            ("standard", "saved_revision", 0),
+            ("references", "saved_revision", True),
+            ("decline", "saved_revision", 0),
             ("references", "loopback_posts", 1),
             ("references", "selected_references", 0),
             ("references", "saved_revision", 0),

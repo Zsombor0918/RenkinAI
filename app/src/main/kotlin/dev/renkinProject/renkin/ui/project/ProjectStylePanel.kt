@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -36,10 +35,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 internal data class ProjectStyleDraft(val specification: String, val instruction: String, val hashes: List<String>,
-    val analysisRequestId: String? = null, val analysisReviewedAt: Long? = null, val allowStaleSource: Boolean = false,
-    val analysisReviewedSourceStamp: String? = null, val localReferenceOrigin: LocalReferenceOrigin? = null)
+    val localReferenceOrigin: LocalReferenceOrigin? = null)
 internal interface ProjectStyleBackend {
-    val analysis: ProjectAnalysisBackend? get() = null
     val localReferences: LocalStyleReferences? get() = null
     suspend fun load(id: Long): SavedProjectStyle
     suspend fun importReference(id: Long, uri: Uri): ReferenceAsset
@@ -66,35 +63,18 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
     var savedHashes by rememberSaveable(id) { mutableStateOf(arrayListOf<String>()) }
     // Keep removed/replaced draft imports too, so explicit discard can release them.
     var importedHashes by rememberSaveable(id) { mutableStateOf(arrayListOf<String>()) }
-    var analysisRequestId by rememberSaveable(id) { mutableStateOf<String?>(null) }
-    var analysisReviewedAt by rememberSaveable(id) { mutableStateOf<Long?>(null) }
-    var analysisStaleAccepted by rememberSaveable(id) { mutableStateOf(false) }
-    var analysisReviewedSourceStamp by rememberSaveable(id) { mutableStateOf<String?>(null) }
     var loaded by remember(id) { mutableStateOf(false) }
     var busy by remember(id) { mutableStateOf(false) }
-    var advanced by rememberSaveable(id) { mutableStateOf(false) }
     var error by remember(id) { mutableStateOf<String?>(null) }
     var reload by remember(id) { mutableIntStateOf(0) }
     var discardOpen by rememberSaveable(id) { mutableStateOf(false) }
     var reloadAfterDiscard by rememberSaveable(id) { mutableStateOf(false) }
-    var selectedAnalysisPath by rememberSaveable(id) { mutableStateOf<String?>(null) }
-    var dnaDirty by rememberSaveable(id) { mutableStateOf(false) }
-    var draftEpoch by rememberSaveable(id) { mutableIntStateOf(0) }
     var localOrigin by rememberSaveable(id) { mutableStateOf<String?>(null) }
     var candidates by remember(id, source, stamp) { mutableStateOf<LocalReferenceCandidates?>(null) }
-    var methodsOpen by rememberSaveable(id) { mutableStateOf(false) }
-    val analysisDrafts = rememberSaveableStateHolder()
     val startingBrief = stringResource(R.string.referenceStyleBrief)
     val scope = rememberCoroutineScope()
-    val analysis = backend.analysis
-    val analysisState = if (analysis != null) analysis.state(id).collectAsState().value else ProjectAnalysisState()
-    val manualDirty = specification != savedSpecification || instruction != savedInstruction || hashes != savedHashes
-    val dirty = manualDirty || dnaDirty
-    val analysisPath = selectedAnalysisPath ?: if (guided) "REFERENCE" else if (analysis?.supportsDna == true)
-        initialStyleAnalysisPath(expectedRevision, analysisState) else "LEGACY"
-    val referencePath = analysisPath == "REFERENCE"
-    val dnaPath = analysisPath !in setOf("REFERENCE", "LEGACY")
-    val enabled = available && loaded && !busy && !analysisState.busy
+    val dirty = specification != savedSpecification || instruction != savedInstruction || hashes != savedHashes
+    val enabled = available && loaded && !busy
     fun applySaved(saved: SavedProjectStyle) {
         specification = saved.revision?.specification ?: if (guided) startingBrief else ""
         instruction = saved.revision?.userInstruction.orEmpty()
@@ -103,33 +83,14 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
         savedInstruction = instruction
         savedHashes = ArrayList(hashes)
         expectedRevision = saved.revision?.revision
-        analysisRequestId = null; analysisReviewedAt = null; analysisStaleAccepted = false; analysisReviewedSourceStamp = null
         localOrigin = null
         initialized = true
-        dnaDirty = false
-        draftEpoch++
-    }
-    fun applyAnalyzed(draft: AnalyzedDraft, stale: Boolean) {
-        specification = draft.specification
-        hashes = ArrayList(draft.hashes)
-        importedHashes = ArrayList((importedHashes + draft.hashes).distinct())
-        analysisRequestId = draft.requestId; analysisReviewedAt = draft.reviewedAt
-        analysisStaleAccepted = stale; analysisReviewedSourceStamp = draft.reviewedSourceStamp
-        localOrigin = null
     }
     fun finishSave(saved: SavedProjectStyle) {
         applySaved(saved)
         error = null
         if (guided) onStyleSaved?.invoke(saved)
     }
-    val saveReviewed: (suspend (AnalyzedDraft, Boolean) -> Unit)? = if (guided) { { reviewed, stale ->
-        applyAnalyzed(reviewed, stale)
-        try {
-            finishSave(backend.save(id, expectedRevision, ProjectStyleDraft(specification, instruction, hashes.toList(),
-                analysisRequestId, analysisReviewedAt, analysisStaleAccepted, analysisReviewedSourceStamp), mode, source, stamp))
-        } catch (cancel: CancellationException) { throw cancel }
-        catch (failure: Exception) { error = "save"; throw failure }
-    } } else null
     LaunchedEffect(id, reload) {
         loaded = false
         error = null
@@ -164,11 +125,9 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                 SetupHeading(stringResource(R.string.projectStyleTitle), goBack)
                 if (!guided) Text(stringResource(R.string.projectIdentity, id))
                 Text(stringResource(if (guided) R.string.uxStyleLocalSave else R.string.projectStyleLocalOnly))
-                if (mode == ProjectSetupMode.EXTEND && (!guided || advanced || referencePath))
+                if (mode == ProjectSetupMode.EXTEND)
                     Text(stringResource(R.string.projectStyleSource, source.orEmpty()))
                 Text(stringResource(when {
-                    analysisState.network -> R.string.styleAnalysisRunning
-                    analysisState.busy -> R.string.styleAnalysisPreparing
                     busy -> R.string.projectStyleSaving
                     !loaded -> R.string.projectInitializing
                     dirty -> R.string.projectStyleDirty
@@ -211,48 +170,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     }
                 }
             }
-            if (guided && analysis != null) item {
-                if (referencePath) {
-                    OutlinedButton(onClick = { methodsOpen = !methodsOpen }, enabled = enabled && !dirty,
-                        modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-analysis-options")) {
-                        Text(stringResource(R.string.referenceStyleOptional))
-                    }
-                    if (methodsOpen) for (method in if (analysis.supportsDna) listOf("QUICK", "STANDARD", "LEGACY") else listOf("LEGACY")) {
-                        TextButton(onClick = { selectedAnalysisPath = method; methodsOpen = false }, enabled = enabled && !dirty,
-                            modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-method-$method")) {
-                            Text(stringResource(when (method) {
-                                "QUICK" -> R.string.uxStyleQuickChoice
-                                "STANDARD" -> R.string.uxStyleStandardChoice
-                                else -> R.string.referenceStyleLegacy
-                            }))
-                        }
-                    }
-                } else TextButton(onClick = { selectedAnalysisPath = "REFERENCE" }, enabled = enabled && !dirty,
-                    modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-reference-mode")) {
-                    Text(stringResource(R.string.referenceStyleReturn))
-                }
-                if (dirty) Text(stringResource(R.string.referenceStyleUnsaved))
-            }
-            if (analysis != null && !referencePath) item { analysisDrafts.SaveableStateProvider(draftEpoch) {
-                ProjectStyleAnalysisPanel(id, mode, source, stamp, enabled, analysis,
-                    expectedRevision, ProjectStyleDraft(specification, instruction, hashes.toList(), analysisRequestId,
-                        analysisReviewedAt, analysisStaleAccepted, analysisReviewedSourceStamp), dirty,
-                    advanced, { advanced = it }, { busy = it },
-                    onDnaSaved = ::finishSave,
-                    onUse = ::applyAnalyzed,
-                    selectedPath = analysisPath, onPathChanged = { if (!dirty) selectedAnalysisPath = it },
-                    onDnaDirty = { dnaDirty = it }, onReviewedSave = saveReviewed, guided = guided)
-            } }
-            if (analysis != null && !referencePath && !dnaPath &&
-                analysisState.record?.status != dev.renkinProject.renkin.ai.style.AnalysisStatus.RESULT_SAVED) item {
-                OutlinedButton(onClick = { advanced = !advanced }, enabled = !busy,
-                    modifier = Modifier.heightIn(min = 48.dp).testTag("project-style-advanced")) {
-                    Text(stringResource(R.string.styleAnalysisAdvanced))
-                }
-            }
-            if (referencePath || analysis == null || advanced || (guided && !dnaPath &&
-                analysisState.record?.status != dev.renkinProject.renkin.ai.style.AnalysisStatus.RESULT_SAVED)) {
-            if (referencePath) item {
+            item {
                 Text(stringResource(R.string.referenceStyleTitle))
                 Text(stringResource(R.string.referenceStyleHelp))
                 if (hashes.isEmpty()) Text(stringResource(R.string.referenceStyleNoImages))
@@ -273,7 +191,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     }
                 }
             }
-            if (referencePath) candidates?.let { batch ->
+            candidates?.let { batch ->
                 items(batch.samples.samples.size) { position ->
                     val sample = batch.samples.samples[position]
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -321,7 +239,6 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                             instruction = draft.instruction
                             hashes = ArrayList(draft.hashes)
                             localOrigin = null
-                            analysisRequestId = null; analysisReviewedAt = null; analysisStaleAccepted = false
                             error = null
                         } catch (cancel: CancellationException) { throw cancel }
                         catch (_: Exception) { error = "import" }
@@ -341,7 +258,7 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                 Column(Modifier.fillMaxWidth().testTag("project-style-reference-$position")) {
                     ProjectReferencePreview(id, hash, backend)
                     Text(stringResource(R.string.projectStyleReferenceNumber, position + 1))
-                    if (!guided || advanced) Text(hash.take(12))
+                    if (!guided) Text(hash.take(12))
                     TextButton(onClick = {
                         if (enabled) {
                             busy = true
@@ -372,15 +289,11 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                     }
                 }
             }
-            }
-            if (!dnaPath && (!guided || manualDirty || expectedRevision == null) &&
-                !(!referencePath && guided && analysisState.record?.status == dev.renkinProject.renkin.ai.style.AnalysisStatus.RESULT_SAVED &&
-                    analysisRequestId == null && !manualDirty)) item {
+            if (!guided || dirty || expectedRevision == null) item {
                 Button(onClick = {
                     if (!enabled) return@Button
                     busy = true
-                    val draft = ProjectStyleDraft(specification, instruction, hashes.toList(), analysisRequestId,
-                        analysisReviewedAt, analysisStaleAccepted, analysisReviewedSourceStamp,
+                    val draft = ProjectStyleDraft(specification, instruction, hashes.toList(),
                         localReferenceOrigin = localOrigin?.let(LocalReferenceOrigin::parse))
                     val revision = expectedRevision
                     scope.launch {
@@ -410,7 +323,6 @@ internal fun ProjectStylePanel(id: Long, mode: ProjectSetupMode, source: String?
                         backend.discard(id, (hashes + importedHashes).distinct())
                         importedHashes = arrayListOf(); initialized = false; discardOpen = false
                         localOrigin = null; candidates = null
-                        dnaDirty = false; draftEpoch++
                         if (reloadAfterDiscard) reload++ else onBack()
                     }
                     catch (cancel: CancellationException) { throw cancel }

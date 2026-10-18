@@ -1,5 +1,9 @@
 # Current implementation
 
+## Phase0 active-analysis retirement
+
+From7db94f1e, active Legacy/Quick/Standard analysis transports/coordinators/controller/UI and runtime synthesis are removed. Manual/free references and the current TrialV2 path remain usable. Historical saved styles, evidence, journals, consumed IDs and frozenV1/V2 readers remain; no data/schema/signing or AI1/AI2/Global Batch change. [Inventory](../qa/PHASE0_RETIREMENT.md) lists the deliberately retired test identities. Phase1–3 montage acquisition, new one-shot analysis and montage generation are NOT IMPLEMENTED in this checkpoint. Exact committed-head verification belongs in PR10, not inherited from older counts below.
+
 ## Phase4A retained Linux fixture failure
 
 Sourcea383625c passes Android5/5 but Linux1026/1 fails at the old V1 label expectation in the existing offline HTTP Trial journey. The new follow-up aligns that test with frozen V2 prompt hashes and semantic roles, retaining identity/order/consent/replay guards; production code is unchanged. Exact corrected-head results remain in draft PR10, not inferred from artifact-upload steps.
