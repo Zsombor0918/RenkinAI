@@ -1,5 +1,17 @@
 # Current implementation
 
+## Phase0 hosted refinement fixture follow-up
+
+Source8f33ce56 runs921 Linux cases:920 PASS/1 FAIL in the retained
+StyleTrialComposeTest refinement journey. Its LazyColumn Save action was not
+materialized; the fixture now scrolls the container to the real visible/enabled
+button before one click. Android also read Room before Save completed (0 references before the callback,2 in the durable snapshot); await actual post-Save target-screen navigation within the existing15 seconds. No production edit or weakened assertion. XML comparison
+also finds112 old identities removed/replaced and7 replacements (net105), including
+one annotated wide-analysis case missed by the initial source regex. Final-head
+results remain external; preserve the initial failed artifact. Governance also
+rejects historical owner-merge91e5737d after PR10's base changed to main; do not
+rewrite history or silently weaken the guard. Phases1–3 remain unimplemented.
+
 ## Phase0 active-analysis retirement
 
 From7db94f1e, active Legacy/Quick/Standard analysis transports/coordinators/controller/UI and runtime synthesis are removed. Manual/free references and the current TrialV2 path remain usable. Historical saved styles, evidence, journals, consumed IDs and frozenV1/V2 readers remain; no data/schema/signing or AI1/AI2/Global Batch change. [Inventory](../qa/PHASE0_RETIREMENT.md) lists the deliberately retired test identities. Phase1–3 montage acquisition, new one-shot analysis and montage generation are NOT IMPLEMENTED in this checkpoint. Exact committed-head verification belongs in PR10, not inherited from older counts below.

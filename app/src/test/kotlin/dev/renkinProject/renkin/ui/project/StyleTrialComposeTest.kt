@@ -281,7 +281,10 @@ class StyleTrialComposeTest {
         scroll("trial-options-toggle"); compose.onNodeWithTag("trial-options-toggle").performClick()
         scroll("trial-refine"); compose.onNodeWithTag("trial-refine").performClick()
         compose.onNodeWithTag("project-style-description").performScrollTo().performTextReplacement("refined solid")
-        compose.onNodeWithTag("project-style-save").performScrollTo().performClick()
+        // The expanded manual form is a LazyColumn: materialize the real
+        // retained Save action before interacting with its semantics node.
+        compose.onNodeWithTag("project-style-1").performScrollToNode(hasTestTag("project-style-save"))
+        compose.onNodeWithTag("project-style-save").assertIsDisplayed().assertIsEnabled().performClick()
         compose.onNodeWithTag("style-trials").performScrollTo().performClick()
         scroll("trial-history-toggle"); compose.onNodeWithTag("trial-history-toggle").performClick()
         scroll("trial-historical-${row.id}"); compose.onNodeWithTag("trial-historical-${row.id}").assertExists()

@@ -255,6 +255,11 @@ class StyleDnaEmulatorTest {
         click("project-style-1", "project-style-select-candidate-1")
         click("project-style-1", "project-style-up-1")
         click("project-style-1", "project-style-save")
+        // Save's IO transaction outlives Compose idleness. The parent route is
+        // entered only after the durable Save callback; observe that boundary.
+        compose.waitUntil(15000) {
+            compose.onAllNodesWithTag("project-targets").fetchSemanticsNodes().isNotEmpty()
+        }
         val saved = runBlocking { fixture.repo.load(1) }
         assertEquals(2, saved.references.size)
         assertNull(saved.revision!!.analysisProfileJson)

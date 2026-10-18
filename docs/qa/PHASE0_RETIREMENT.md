@@ -30,7 +30,7 @@ The active DNA family/type picker was also removed. Historical styles continue t
 
 ## Test identities removed or replaced
 
-Source comparison finds111 old JUnit method identities removed/replaced and7 replacement identities, a net reduction of104. Baseline hosted XML contains1026 cases; expected new inventory is922, to be confirmed by actual Linux XML. This is deliberate feature retirement, not a successful-test claim.
+Source comparison finds112 old JUnit method identities removed/replaced and7 replacement identities, a net reduction of105. Baseline hosted XML contains1026 cases; observed inventory is921, confirmed from first Linux XML (920 pass/1 retained refinement-fixture failure). This is deliberate feature retirement, not a successful-test claim.
 
 Whole retired classes tested obsolete transports/controller/analysis UI. Mixed classes retain saved-data, backup, source/owner, immutable-request, HTTP/image ordering and consent/replay protections. Four coordinator-backed journal cases became direct archived-journal tests; two obsolete cloud-consent-only cases were removed because active Trial consent/replay remains covered. The archived-DNA-to-image HTTP journey now seeds saved data directly instead of making an obsolete analysis request.
 
@@ -159,6 +159,7 @@ Whole retired classes tested obsolete transports/controller/analysis UI. Mixed c
 - `restoredResultAndRecompositionKeepCandidateWithoutAnotherPostOrSave`
 - `sameProfileCandidateFromDifferentModeOrSourceCannotBeConfirmedOrUsed`
 - `sourceAndPreparationStalenessAreVisibleAndOnlySourceCanBeReviewed`
+- `wideStyleDarkLightRestorationRetainsAccessibleFortyEightDpActionsWithoutRequests`
 
 ### `app/src/test/kotlin/dev/renkinProject/renkin/ui/project/ProjectStyleGuidedFlowComposeTest.kt`
 

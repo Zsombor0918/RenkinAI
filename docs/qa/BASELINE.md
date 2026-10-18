@@ -1,5 +1,17 @@
 # Verification baseline
 
+## Phase0 hosted refinement fixture follow-up
+
+Source8f33ce56 runs921 Linux cases:920 PASS/1 FAIL in the retained
+StyleTrialComposeTest refinement journey. Its LazyColumn Save action was not
+materialized; the fixture now scrolls the container to the real visible/enabled
+button before one click. Android also read Room before Save completed (0 references before the callback,2 in the durable snapshot); await actual post-Save target-screen navigation within the existing15 seconds. No production edit or weakened assertion. XML comparison
+also finds112 old identities removed/replaced and7 replacements (net105), including
+one annotated wide-analysis case missed by the initial source regex. Final-head
+results remain external; preserve the initial failed artifact. Governance also
+rejects historical owner-merge91e5737d after PR10's base changed to main; do not
+rewrite history or silently weaken the guard. Phases1–3 remain unimplemented.
+
 ## Phase0 checkpoint verification boundary
 
 The initial cleanup targeted run executes124 Windows cases:117 PASS, six obsolete advanced-toggle fixture failures and the known Windows-only canonical symlink assertion. The toggle was removed from the fixture and actual enabled-form readiness is awaited within its existing10-second bound; no production readiness gate or assertion was weakened. Unit and Android sources compile; strict Python67/67 PASS with Git sh on PATH. Corrected ProjectStyleTrialJourneyComposeTest7/7 PASS in47s; all other focused cases retain their recorded first-run evidence. Final hosted results belong in PR10 after execution, not inferred here. Net test retirement is catalogued in [the inventory](PHASE0_RETIREMENT.md); historical baseline failures below are not waived.

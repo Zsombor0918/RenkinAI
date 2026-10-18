@@ -1,5 +1,17 @@
 # Agent handoff — guided UX Stage 1
 
+## Phase0 hosted refinement fixture follow-up
+
+Source8f33ce56 runs921 Linux cases:920 PASS/1 FAIL in the retained
+StyleTrialComposeTest refinement journey. Its LazyColumn Save action was not
+materialized; the fixture now scrolls the container to the real visible/enabled
+button before one click. Android also read Room before Save completed (0 references before the callback,2 in the durable snapshot); await actual post-Save target-screen navigation within the existing15 seconds. No production edit or weakened assertion. XML comparison
+also finds112 old identities removed/replaced and7 replacements (net105), including
+one annotated wide-analysis case missed by the initial source regex. Final-head
+results remain external; preserve the initial failed artifact. Governance also
+rejects historical owner-merge91e5737d after PR10's base changed to main; do not
+rewrite history or silently weaken the guard. Phases1–3 remain unimplemented.
+
 ## Phase0 checkpoint handoff
 
 Source baseline7db94f1e; same feat/reference-first-prompt-v2 and open draft PR10. Actual PR base is main, already changed by owner; do not retarget or modify protected branches. Old active analysis machinery is removed; existing manual editor/local references/Trial remain. Keep historical codecs/compiler/journals and all consumed markers. See [exact inventory](../qa/PHASE0_RETIREMENT.md) and [ADR0015](../decisions/0015-retire-active-dna-analysis.md). Next authorized step is Phase1:20–30 actual pack icons, durable detailed montage bytes/provenance and composition editor, replacing the1–5-reference default only when complete. Phase2/3 follow sequentially; none is claimed here. No paid/live/key/phone/signing action. Final SHA/checks/APK evidence is published externally after commit; older pending sections are historical.
