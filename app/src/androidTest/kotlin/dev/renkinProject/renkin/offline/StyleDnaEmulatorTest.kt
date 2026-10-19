@@ -517,7 +517,10 @@ class StyleDnaEmulatorTest {
             compose.waitUntil(15000) { other.trials.state(1).value.let { !it.busy && it.preparation != null } }
             other.trials.prepare(1, listOf(target.key), false)
             compose.waitUntil(15000) { other.trials.state(1).value.let { !it.busy && it.plan != null } }
-            assertEquals(3, other.trials.state(1).value.plan!!.promptVersion)
+            val frozen = other.trials.state(1).value.plan!!
+            assertEquals(4, frozen.promptVersion)
+            assertEquals("gpt-image-2.5-sunburst", frozen.context.model); assertEquals("medium", frozen.context.quality)
+            assertEquals(frozen, StyleTrialPlan.parse(frozen.encode()))
             assertEquals(0, other.server!!.requestCount); assertEquals(0, other.gatewayCalls.get())
         }
         evidence("restart", json("process_restart" to true, "loopback_posts" to 0, "external_posts" to 0,

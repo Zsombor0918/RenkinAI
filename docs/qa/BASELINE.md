@@ -1,5 +1,15 @@
 # Verification baseline
 
+## Hosted937-case preview fixture correction
+
+First hosted quality sourceeb943a8b runs937/1:936 pass, one immediate label assertion
+precedes completed asynchronous decoding. The narrow correction waits for the real
+Image description with Compose's default timeout and retains all original checks.
+The failed XML/log ZIP is independently verified; final-head focused/hosted results
+are recorded on PR10 rather than inferred from this initial run.
+Android3/4 passes on that source; restart's expected3/actual4 is a stale fixture
+assertion, not lost state. Require V4/Sunburst/medium and plan serialization equality.
+
 ## V4 quality and cost optimization evidence
 
 Baseline9e0f3511, preserved preview commitc6a4a122. Focused density regression passes

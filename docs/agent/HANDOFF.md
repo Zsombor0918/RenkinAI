@@ -1,5 +1,18 @@
 # Agent handoff — guided UX Stage 1
 
+Android acceptance oneb943a8b passes its first3 journeys but restart expects obsolete3
+and restores4. Correct the fixture to V4/Sunburst/medium plus round-trip, retaining
+zero replay. Instrumentation Kotlin compiles locally in11s; final hosted run remains
+required and no compilation-only result is called Android PASS.
+
+## Final quality acceptance fixture
+
+eb943a8b Linux937/1 fails only the old preview-label assertion before asynchronous
+decode completes. Keep that verified failure artifact, then await actual Image
+semantics without changing timeout/click/assertion rigor. No runtime fix follows.
+Run corrected-head gates and verify the matching APK; do not repeat successful
+unchanged-head full suites or add feature work. Historical governance stays BLOCKED.
+
 ## Closed quality and balanced-contract scope
 
 Preserve preview checkpointc6a4a122. Complete future V4/Sunburst-medium with high

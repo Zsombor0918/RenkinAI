@@ -218,6 +218,9 @@ class StyleTrialComposeTest {
         val b = Backend(preparation(n = 1)); show(b); val row = generate(b).single()
         scroll("trial-large-true-${row.id}"); compose.onNodeWithTag("trial-large-true-${row.id}").assertExists()
         scroll("trial-48-true-${row.id}")
+        compose.waitUntil {
+            compose.onAllNodesWithContentDescription("Generated at 48 px launcher size").fetchSemanticsNodes().size == 1
+        }
         compose.onNodeWithContentDescription("Generated at 48 px launcher size").assertExists()
         val bounds = compose.onNodeWithTag("trial-48-true-${row.id}").getUnclippedBoundsInRoot()
         assertEquals(48f, (bounds.right - bounds.left).value, .1f)

@@ -1,5 +1,15 @@
 # Current implementation
 
+## Hosted preview readiness refinement
+
+eb943a8b hosted Linux executes937 cases:936 PASS/1 FAIL at the old immediate preview
+accessibility assertion. Image decoding now runs on Default; a scrolled container
+can precede its Image semantics. The test waits for exactly one real decoded-image
+description using the existing Compose default bound. Runtime code is unchanged;
+exact corrected-head results and fresh APK are recorded on PR10.
+The same source's Android first3 journeys pass; restart incorrectly expects V3 and
+observes correct V4. Align only the fixture's version/model/quality/round-trip checks.
+
 ## Provisional cost-balanced montage Trial
 
 Owner reports Sunburst improvement and higher cost; screenshots reveal qualitative
