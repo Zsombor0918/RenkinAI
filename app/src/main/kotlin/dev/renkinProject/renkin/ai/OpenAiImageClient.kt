@@ -1,6 +1,7 @@
 package dev.renkinProject.renkin.ai
 
 import android.util.Base64
+import dev.renkinProject.renkin.ai.style.PromptComposer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -24,6 +25,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 internal const val MAX_AI_RESPONSE_BYTES = 16 * 1024 * 1024
+internal class ImageApiException(val status: Int, val kind: String, message: String) : IOException(message)
 
 @Singleton
 class OpenAiImageClient internal constructor(private val client: OkHttpClient, private val endpoint: HttpUrl) {
@@ -36,20 +38,25 @@ class OpenAiImageClient internal constructor(private val client: OkHttpClient, p
         .retryOnConnectionFailure(false).followRedirects(false).followSslRedirects(false).build()
     }
 
-    suspend fun edit(key: String, settings: AiSettings, images: List<ByteArray>): ByteArray =
+    suspend fun edit(key: String, settings: AiSettings, images: List<ByteArray>,
+        promptOverride: String? = null, beforeEndpoint: suspend (Int) -> Unit = {}, promptVersion: Int = 1): ByteArray =
         withContext(Dispatchers.IO) {
-            val request = buildImageEditRequest(key, settings, images).newBuilder().url(endpoint).build()
+            val request = buildImageEditRequest(key, settings, images, promptOverride, promptVersion).newBuilder().url(endpoint).build().withOneShotBody()
+            beforeEndpoint(1)
             decodeImageResponse(execute(client.newCall(request)))
         }
 }
 
-internal fun buildImageEditRequest(key: String, settings: AiSettings, images: List<ByteArray>): Request {
+internal fun buildImageEditRequest(key: String, settings: AiSettings, images: List<ByteArray>, promptOverride: String? = null, promptVersion: Int = 1): Request {
     settings.validate()
+    require(promptVersion in 1..4 && (promptVersion == 1 || promptOverride != null))
+    require(promptOverride == null || promptOverride.isNotBlank() && promptOverride.length <= MAX_COMPOSED_ICON_PROMPT)
     require(images.size == settings.referenceNames.size + 1 && images.size in 1..6)
     require(images.all { it.isNotEmpty() && it.size <= 4 * 1024 * 1024 }) { "An input icon is too large." }
     val body = MultipartBody.Builder().setType(MultipartBody.FORM)
         .addFormDataPart("model", settings.model)
-        .addFormDataPart("prompt", iconPrompt(settings.style, images.size - 1, settings.appInstruction))
+        .addFormDataPart("prompt", promptOverride?.let { PromptComposer.versionedEditPrompt(it, images.size - 1, promptVersion) }
+            ?: iconPrompt(settings.style, images.size - 1, settings.appInstruction))
         .addFormDataPart("n", "1")
         .addFormDataPart("size", "1024x1024")
         .addFormDataPart("quality", settings.quality)
@@ -88,17 +95,22 @@ internal suspend fun execute(call: Call): String = suspendCancellableCoroutine {
                         bytes.write(buffer, 0, count)
                     }
                     val text = bytes.toString("UTF-8")
-                    if (!it.isSuccessful) throw IOException(apiErrorMessage(it.code, text, it.header("Retry-After")))
+                    if (!it.isSuccessful) throw ImageApiException(it.code, apiFailureKind(it.code, text), apiErrorMessage(it.code, text, it.header("Retry-After")))
                     text
                 }
                 if (continuation.isActive) continuation.resume(payload)
             } catch (error: Exception) {
                 if (continuation.isActive) continuation.resumeWithException(
-                    IOException(if (error is IOException) error.message else "Invalid API response.")
+                    if (error is ImageApiException) error else IOException(if (error is IOException) error.message else "Invalid API response.")
                 )
             }
         }
     })
+}
+
+internal fun apiFailureKind(status: Int, body: String): String {
+    val code = runCatching { JSONObject(body).optJSONObject("error")?.optString("code") }.getOrNull()
+    return if (code in setOf("model_not_found", "invalid_model", "unsupported_model")) "model_unavailable" else "http_$status"
 }
 
 internal fun apiErrorMessage(status: Int, body: String, retryAfter: String?): String {

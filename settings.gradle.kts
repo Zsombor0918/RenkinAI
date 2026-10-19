@@ -19,3 +19,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Renkin"
 include(":app")
+// Synthetic, permission-free icon pack used only by offline emulator checks.
+include(":offline-fixture")

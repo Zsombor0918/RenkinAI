@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="workflowProgress">Step %1$d of 4 · %2$s</string>
+    <string name="workflowProjectSource">Project and source</string>
+    <string name="workflowStyle">Review and save style</string>
+    <string name="workflowTrials">Choose apps and review trials</string>
+    <string name="workflowCompletion">Progress and next steps</string>
+    <string name="workflowCreateSummary">Create a style without a source pack</string>
+    <string name="workflowExtendSummary">Extend · %1$s</string>
+    <string name="workflowSelectedSource">Selected source pack</string>
+    <string name="workflowSourceLocal">Source inspection stays on this device.</string>
+    <string name="workflowSourceAvailable">Source pack available</string>
+    <string name="workflowSourceUnavailable">Source inspection failed. Change the source or review a manual style.</string>
+    <string name="workflowSourceChecking">Checking source coverage locally…</string>
+    <string name="workflowMissingCoverage">%1$d eligible apps need coverage</string>
+    <string name="workflowSavedRevision">Style saved · revision %1$d</string>
+    <string name="workflowContinueStyle">Continue to style</string>
+    <string name="workflowContinueTargets">Continue to trials</string>
+    <string name="workflowReviewStyle">Review saved style</string>
+    <string name="workflowDetails">Details</string>
+    <string name="workflowChooseApps">Choose 1–3 apps</string>
+    <string name="workflowRecommendApps">Suggest up to 3 eligible apps</string>
+    <string name="workflowMaximumApps">Choose at most three apps. Clear one selection to choose another.</string>
+    <string name="workflowAppUnavailable">This app is unavailable or unverified. Refresh apps in the classic editor.</string>
+    <string name="workflowSaveTargets">Save selection and continue</string>
+    <string name="workflowSavedTargetsContinue">Continue with saved apps</string>
+    <string name="workflowChooseReason">Choose 1–3 eligible apps before continuing.</string>
+    <string name="workflowCoveredReason">A covered app needs explicit replacement approval before generation.</string>
+    <string name="workflowStoredTrials">Saved trial images: %1$d</string>
+    <string name="workflowRequestsAttention">Request history: %1$d unfinished or unsuccessful items. See Details.</string>
+    <string name="workflowReviewCounts">Accepted for this context: %1$d · Awaiting review: %2$d</string>
+    <string name="workflowApproved">Trial set approved</string>
+    <string name="workflowApprovalPending">Trial set approval pending</string>
+    <string name="workflowRequestRunning">A confirmed request is still running.</string>
+    <string name="workflowCheckingStatus">Checking saved status…</string>
+    <string name="workflowReviewContext">Review source, style and selected apps before continuing.</string>
+    <string name="workflowEditorBoundary">Accepted trials remain in trial history. Applying this trial set is planned. The classic editor manages existing manual icons and pack builds/installations.</string>
+    <string name="workflowContinueReview">Continue trial review</string>
+</resources>

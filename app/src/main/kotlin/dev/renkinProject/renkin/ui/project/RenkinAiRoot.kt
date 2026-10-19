@@ -115,9 +115,29 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
         homeDialogs = { if (viewModel.whatsNewVisible) WhatsNewDialog(viewModel::dismissWhatsNew) },
         setupData = { mode, page, id, source -> rememberProjectSetupData(viewModel, mode, page, id, source) },
         readSetupContext = viewModel::projectMetadata,
-        stylePanel = { id, mode, source, stamp, back ->
+        stylePanel = { id, mode, source, stamp, back, trials ->
             ProjectStylePanel(id, mode, source, stamp, home.actionsEnabled && id == home.activeProfileId,
-                viewModel.projectStyleBackend, back)
+                viewModel.projectStyleBackend, back, trials, onStyleSaved = { trials() }, guided = true)
+        },
+        bindTrialContext = viewModel.projectTrials::bindContext,
+        trialPanel = { id, mode, source, back, refine, editor ->
+            ProjectTrialPanel(id, home.profiles.find { it.id == id }?.name.orEmpty(), mode, source,
+                home.actionsEnabled && id == home.activeProfileId, viewModel.projectTrials, back, refine, editor,
+                appIcon = { key -> ProjectOriginalIcon(viewModel.applicationList.find { it.key == key }?.icon) })
+        },
+        guidedWorkflow = true,
+        guidedTrialPanel = { id, mode, source, back, refine, editor, complete ->
+            ProjectTrialPanel(id, home.profiles.find { it.id == id }?.name.orEmpty(), mode, source,
+                home.actionsEnabled && id == home.activeProfileId, viewModel.projectTrials, back, refine, editor,
+                appIcon = { key -> ProjectOriginalIcon(viewModel.applicationList.find { it.key == key }?.icon) },
+                onComplete = complete,
+                appName = { key -> viewModel.applicationList.find { it.key == key }?.appName }, guided = true)
+        },
+        completionPanel = { id, mode, source, back, refine, targets, editor, homeRoute ->
+            ProjectCompletionPanel(id, home.profiles.find { it.id == id }?.name.orEmpty(), mode, source,
+                viewModel.iconPacks.find { it.packageName == source }?.applicationName,
+                home.actionsEnabled && id == home.activeProfileId, viewModel.projectStyleBackend,
+                viewModel.projectTrials, back, refine, targets, editor, homeRoute)
         },
         editor = { navigateHome ->
             MainColumn(viewModel.iconPacks, onNavigateHome = navigateHome,
@@ -126,7 +146,7 @@ internal fun RenkinAiRoot(viewModel: MainViewModel) {
     )
 }
 
-private enum class ProjectRoute { HOME, SETUP, STYLE, EDITOR }
+private enum class ProjectRoute { HOME, SETUP, STYLE, TRIAL, COMPLETE, EDITOR }
 
 /** UI-only routes/forms; profile operations are user callbacks, never restoration effects. */
 @Composable
@@ -145,9 +165,17 @@ internal fun ProjectShell(
     homeDialogs: @Composable () -> Unit = {},
     setupData: @Composable (ProjectSetupMode, ProjectSetupPage, Long?, String?) -> ProjectSetupData = { _, _, _, _ -> ProjectSetupData() },
     readSetupContext: suspend (Long) -> ProjectAiMetadata? = { null },
-    stylePanel: @Composable (Long, ProjectSetupMode, String?, String?, () -> Unit) -> Unit = { _, _, _, _, back ->
+    stylePanel: @Composable (Long, ProjectSetupMode, String?, String?, () -> Unit, () -> Unit) -> Unit = { _, _, _, _, back, _ ->
         TextButton(onClick = back) { Text(stringResource(R.string.projectBackHome)) }
     },
+    bindTrialContext: (Long, ProjectSetupMode, String?) -> Unit = { _, _, _ -> },
+    trialPanel: @Composable (Long, ProjectSetupMode, String?, () -> Unit, () -> Unit, () -> Unit) -> Unit = { _, _, _, back, _, _ ->
+        TextButton(onClick = back) { Text(stringResource(R.string.setupBack)) }
+    },
+    guidedWorkflow: Boolean = false,
+    guidedTrialPanel: (@Composable (Long, ProjectSetupMode, String?, () -> Unit, () -> Unit, () -> Unit, () -> Unit) -> Unit)? = null,
+    completionPanel: @Composable (Long, ProjectSetupMode, String?, () -> Unit, () -> Unit, () -> Unit, () -> Unit, () -> Unit) -> Unit =
+        { _, _, _, back, _, _, _, _ -> TextButton(onClick = back) { Text(stringResource(R.string.setupBack)) } },
     editor: @Composable (onNavigateHome: () -> Unit) -> Unit
 ) {
     var route by rememberSaveable { mutableStateOf(ProjectRoute.HOME) }
@@ -161,11 +189,13 @@ internal fun ProjectShell(
     var setupContexts by rememberSaveable { mutableStateOf(hashMapOf<String, String>()) }
     var exitOpen by rememberSaveable { mutableStateOf(false) }
     var styleStamp by rememberSaveable { mutableStateOf<String?>(null) }
+    var guidedStage by rememberSaveable { mutableIntStateOf(1) }
     var contextBusy by remember { mutableStateOf(false) }
     var contextFailed by remember { mutableStateOf(false) }
     var contextRequest by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     val editorState = rememberSaveableStateHolder()
+    androidx.compose.runtime.SideEffect { bindTrialContext(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage) }
 
     LaunchedEffect(operation, state.availability, state.activeProfileId, state.busy) {
         if (operation is ProjectSessionState.Opened) {
@@ -199,7 +229,9 @@ internal fun ProjectShell(
     val cancelOperation = { pendingSetup = false; onCancel() }
     val setupBack = {
         if (!state.busy) {
-            when (setupPage) {
+            if (guidedWorkflow && setupPage == ProjectSetupPage.TARGETS && guidedStage == 3) {
+                route = ProjectRoute.STYLE
+            } else when (setupPage) {
                 ProjectSetupPage.SOURCE -> route = ProjectRoute.HOME
                 ProjectSetupPage.PROFILE -> setupPage = ProjectSetupPage.SOURCE
                 ProjectSetupPage.TARGETS -> if (setupMode == ProjectSetupMode.EXTEND) setupPage = ProjectSetupPage.PROFILE
@@ -242,18 +274,52 @@ internal fun ProjectShell(
             }
         }
         BackHandler(enabled = !ready) { if (!state.busy) navigateHome() }
+    } else if (route == ProjectRoute.COMPLETE) {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            if (guidedWorkflow) ProjectWorkflowHeading(4)
+            completionPanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage,
+                { route = ProjectRoute.TRIAL }, { route = ProjectRoute.STYLE },
+                { guidedStage = 3; route = ProjectRoute.SETUP },
+                { pendingSetup = false; onOpen(setupProfileId ?: state.activeProfileId) }, navigateHome)
+        }
+    } else if (route == ProjectRoute.TRIAL) {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            if (guidedWorkflow) ProjectWorkflowHeading(3)
+            editorState.SaveableStateProvider("trials-$setupProfileId") {
+                val back = { guidedStage = 3; route = ProjectRoute.SETUP }
+                val refine = { route = ProjectRoute.STYLE }
+                val openEditor = { pendingSetup = false; onOpen(setupProfileId ?: state.activeProfileId) }
+                val guidedPanel = guidedTrialPanel
+                if (guidedWorkflow && guidedPanel != null) {
+                    guidedPanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage,
+                        back, refine, openEditor, { route = ProjectRoute.COMPLETE })
+                } else trialPanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage,
+                    back, refine, openEditor)
+            }
+        }
     } else if (route == ProjectRoute.STYLE) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            if (guidedWorkflow) ProjectWorkflowHeading(2)
             editorState.SaveableStateProvider("style-$setupProfileId") {
-                stylePanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage, styleStamp) {
-                    route = ProjectRoute.SETUP
-                }
+                stylePanel(setupProfileId ?: state.activeProfileId, setupMode, sourcePackage, styleStamp,
+                    { if (guidedWorkflow) guidedStage = 1; route = ProjectRoute.SETUP }, {
+                        if (guidedWorkflow) { guidedStage = 3; route = ProjectRoute.SETUP }
+                        else route = ProjectRoute.TRIAL
+                    })
             }
         }
     } else if (route == ProjectRoute.SETUP) {
         BackHandler { if (operation is ProjectSessionState.ConfirmSave) cancelOperation() else setupBack() }
         val data = setupData(setupMode, setupPage, setupProfileId, sourcePackage)
+        val currentSourceStamp = if (setupMode == ProjectSetupMode.EXTEND) {
+            (data.coverage as? CoverageUiState.Ready)?.snapshot?.takeIf {
+                it.profileId == setupProfileId && it.index.stamp.packageName == sourcePackage &&
+                    it.index.state == dev.renkinProject.renkin.apk.CoverageIndexState.READY && it.index.stamp.versionCode != null
+            }?.let { projectSourceStamp(it.index) }
+        } else null
+        val openStyle = { styleStamp = currentSourceStamp; route = ProjectRoute.STYLE }
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
+            if (guidedWorkflow) ProjectWorkflowHeading(if (setupPage == ProjectSetupPage.TARGETS) guidedStage else 1)
             editorState.SaveableStateProvider("setup-$setupProfileId-$setupMode-$sourcePackage") {
                 ProjectSetup(setupMode, setupPage, setupProfileId, sourcePackage, state, data,
                     onSource = { sourcePackage = it; setupPage = ProjectSetupPage.PROFILE },
@@ -261,13 +327,17 @@ internal fun ProjectShell(
                     onNewProfile = { createOpen = true },
                     onBack = setupBack,
                     onChangeSource = { setupPage = ProjectSetupPage.SOURCE },
-                    onStyle = {
-                        styleStamp = (data.coverage as? CoverageUiState.Ready)?.snapshot?.let { projectSourceStamp(it.index) }
-                        route = ProjectRoute.STYLE
-                    },
+                    onStyle = openStyle,
+                    onTrials = { route = ProjectRoute.TRIAL },
                     onEditor = {
                         pendingSetup = false
                         onOpen(if (setupPage == ProjectSetupPage.TARGETS) setupProfileId ?: state.activeProfileId else state.activeProfileId)
+                    }, guidedStep = if (guidedWorkflow) guidedStage else null,
+                    onContinue = {
+                        if (savedStyleMatchesSetup(data.savedMetadata, setupProfileId ?: state.activeProfileId,
+                                setupMode, sourcePackage, currentSourceStamp)) {
+                            guidedStage = 3
+                        } else openStyle()
                     })
             }
         }
@@ -275,8 +345,8 @@ internal fun ProjectShell(
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
             ProjectHome(state.copy(busy = state.busy || contextBusy, operationFailed = state.operationFailed || contextFailed),
                 onOpen = { pendingSetup = false; onOpen(it) },
-                onCreate = { setupMode = ProjectSetupMode.CREATE; sourcePackage = null; createOpen = true },
-                onExtend = { setupMode = ProjectSetupMode.EXTEND; setupPage = ProjectSetupPage.SOURCE; sourcePackage = null; route = ProjectRoute.SETUP },
+                onCreate = { guidedStage = 1; setupMode = ProjectSetupMode.CREATE; sourcePackage = null; createOpen = true },
+                onExtend = { guidedStage = 1; setupMode = ProjectSetupMode.EXTEND; setupPage = ProjectSetupPage.SOURCE; sourcePackage = null; route = ProjectRoute.SETUP },
                 onClassicEditor = { pendingSetup = false; onOpen(state.activeProfileId) },
                 onRetry = onRetry,
                 onSetup = { id ->
@@ -292,6 +362,7 @@ internal fun ProjectShell(
                                     setupMode = if (saved != null) ProjectSetupMode.valueOf(saved.mode)
                                         else if (sourcePackage == null) ProjectSetupMode.CREATE else ProjectSetupMode.EXTEND
                                     if (setupMode == ProjectSetupMode.CREATE) sourcePackage = null
+                                    guidedStage = 1
                                     pendingSetup = true
                                     onOpen(id)
                                 }

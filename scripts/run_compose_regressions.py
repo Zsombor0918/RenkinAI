@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Retain real profile-form regressions separately and together; fail on any failure."""
+"""One full verification, selected subsystem union, or explicit UI order diagnostic."""
+import argparse
 import json
 from pathlib import Path
 import shutil
@@ -7,7 +8,9 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
-ROOT = Path(__file__).resolve().parents[1]
+# Preserve an explicitly used ASCII junction on Windows. Resolving it reintroduces
+# accented profile paths that AGP rejects before configuration.
+ROOT = Path(__file__).absolute().parents[1]
 OUTPUT = ROOT / "build" / "compose-regressions"
 PACKAGE = "dev.renkinProject.renkin.ui.project."
 CREATION = PACKAGE + "ProjectShellComposeTest.confirmedCreationRecompositionAndRestorationDoNotResubmitOrOpenEarly"
@@ -33,13 +36,33 @@ CASES = {
     "reference-sampler": ["dev.renkinProject.renkin.ai.style.ReferenceSamplerTest"],
     "analysis-schema-composer": ["dev.renkinProject.renkin.ai.style.StyleAnalysisSchemaTest",
                                   "dev.renkinProject.renkin.ai.style.PromptComposerTest"],
-    "analysis-gateway": ["dev.renkinProject.renkin.ai.style.StyleAnalysisGatewayTest"],
     "analysis-journal": ["dev.renkinProject.renkin.ai.style.StyleAnalysisJournalTest"],
-    "analysis-style-ui": [PACKAGE + "ProjectStyleAnalysisComposeTest"],
-    "analysis-persistence-session": ["dev.renkinProject.renkin.data.project.ProjectAiAnalysisPersistenceTest",
-                                      PACKAGE + "OwnedStyleAnalysisTest"],
+    "analysis-persistence-session": ["dev.renkinProject.renkin.data.project.ProjectAiAnalysisPersistenceTest"],
+    "trial-domain": ["dev.renkinProject.renkin.ai.trial.StyleTrialTargetSelectorTest",
+                     "dev.renkinProject.renkin.ai.trial.StyleTrialPlanTest"],
+    "trial-gateway": ["dev.renkinProject.renkin.ai.trial.StyleTrialGatewayTest"],
+    "trial-journal": ["dev.renkinProject.renkin.ai.trial.StyleTrialJournalTest"],
+    "trial-ui": [PACKAGE + "StyleTrialComposeTest", PACKAGE + "ProjectStyleTrialJourneyComposeTest"],
+    "trial-persistence-session": ["dev.renkinProject.renkin.data.project.StyleTrialPersistenceTest",
+                                  "dev.renkinProject.renkin.data.project.StyleTrialMigrationTest",
+                                  PACKAGE + "OwnedStyleTrialsTest"],
+    "style-dna-integration": ["dev.renkinProject.renkin.ai.style.StyleDnaReproductionTest",
+                              "dev.renkinProject.renkin.ai.style.StyleDnaWorkflowTest",
+                              "dev.renkinProject.renkin.data.project.StyleDnaPersistenceTest"],
+    "guided-ux": [PACKAGE + "ProjectStyleGuidedFlowComposeTest",
+                        PACKAGE + "GuidedTrialComposeTest",
+                        PACKAGE + "ProjectSelectionComposeTest",
+                        PACKAGE + "ProjectGuidedNavigationComposeTest",
+                        PACKAGE + "GuidedProjectRoomJourneyComposeTest",
+                        "dev.renkinProject.renkin.testing.WindowsAtomicFileTest"],
+    "offline-dna-http": ["dev.renkinProject.renkin.ai.style.StyleDnaOfflineHttpTest"],
     "full-suite": [],
 }
+
+
+def gradle_wrapper():
+    """Run the native wrapper without changing any Gradle task or selector."""
+    return str(ROOT / "gradlew.bat") if sys.platform == "win32" else "./gradlew"
 
 
 def check_reports(reports, selectors, exit_code):
@@ -66,18 +89,37 @@ def check_reports(reports, selectors, exit_code):
     return {"exit": exit_code, "passed": passed, "missing_selectors": missing, "malformed_reports": malformed, **counts}
 
 
-def main():
+def select_runs(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    choice = parser.add_mutually_exclusive_group()
+    choice.add_argument("--group", action="append", choices=CASES,
+                        help="Select a subsystem; repeated groups share one deduplicated invocation")
+    choice.add_argument("--order-check", action="store_true",
+                        help="Explicit isolated/together/shared-form diagnostic (no full suite)")
+    args = parser.parse_args(argv)
+    if args.order_check:
+        return {name: CASES[name] for name in ("creation", "ingress", "both", "shared-form")}
+    groups = list(dict.fromkeys(args.group or ["full-suite"]))
+    if "full-suite" in groups and len(groups) != 1:
+        parser.error("full-suite already covers every group; select it alone")
+    selectors = list(dict.fromkeys(selector for name in groups for selector in CASES[name]))
+    return {groups[0] if len(groups) == 1 else "targeted": selectors}
+
+
+def main(argv=None):
+    runs = select_runs(argv)
     OUTPUT.mkdir(parents=True, exist_ok=True)
     head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    summary = {"head": head, "cases": {}}
+    dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip())
+    summary = {"head": head, "dirty": dirty, "requested_runs": runs, "cases": {}}
     failed = False
-    for name, selectors in CASES.items():
+    for name, selectors in runs.items():
         destination = OUTPUT / name
         if destination.exists():
             shutil.rmtree(destination)
         destination.mkdir(exist_ok=True)
         tasks = ["compileDebugKotlin", "testDebugUnitTest", "assembleDebug"] if name == "full-suite" else ["testDebugUnitTest"]
-        command = ["./gradlew", *tasks, "--console=plain"]
+        command = [gradle_wrapper(), *tasks, "--console=plain"]
         for selector in selectors:
             command.extend(["--tests", selector])
         # Prior run XML must never substitute for a command which produced no results.
@@ -107,6 +149,9 @@ def main():
     schema20 = ROOT / "app/schemas/dev.renkinProject.renkin.data.RenkinPackDatabase/20.json"
     summary["room_schema_20_exported"] = schema20.is_file()
     failed |= not schema20.is_file()
+    schema21 = ROOT / "app/schemas/dev.renkinProject.renkin.data.RenkinPackDatabase/21.json"
+    summary["room_schema_21_exported"] = schema21.is_file()
+    failed |= not schema21.is_file()
     (OUTPUT / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     return int(failed)
 

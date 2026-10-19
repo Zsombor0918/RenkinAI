@@ -5,7 +5,7 @@ on:
   push:
     branches: [dev, main, "feature/**"]
   pull_request:
-    branches: [dev, main]
+    branches: [dev, main, "feat/style-trials-m5", "feat/style-dna-v1", "feat/ux-flow-stabilization"]
 
 jobs:
   build:
@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Delivery verifies the exact source head, including stacked draft PRs.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           # Arcticons-Font ships as a git submodule; the build copies the font from it.
           submodules: recursive
 
@@ -28,14 +30,19 @@ jobs:
           # v3 defaults to the retired "tools" package, which sdkmanager cannot resolve.
           packages: platform-tools
 
-      - name: Compile
-        run: ./gradlew compileDebugKotlin
+      - name: Authoritative full unit suite and debug build
+        run: python3 scripts/run_compose_regressions.py --group full-suite
 
-      - name: Unit tests
-        run: ./gradlew testDebugUnitTest
-
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
+      - name: Verify debug APK identity, signature and SHA-256
+        run: |
+          for apk in app/build/outputs/apk/debug/*.apk; do
+            test -s "$apk"
+            "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk" > /tmp/renkinai-debug-badging.txt
+            cat /tmp/renkinai-debug-badging.txt
+            grep -E "^package: name='hu[.]zsombor[.]renkinai[.]dev' " /tmp/renkinai-debug-badging.txt
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk"
+            sha256sum "$apk"
+          done
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -43,9 +50,18 @@ jobs:
           name: RenkinAI-debug
           path: app/build/outputs/apk/debug/*.apk
 
-      - name: Upload test reports on failure
-        if: failure()
+      - name: Retain authoritative full-suite evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
-          path: app/build/reports/tests/
+          name: full-suite-evidence
+          path: build/compose-regressions/
+          if-no-files-found: error
+
+      - name: Retain actual synthetic montage PNG evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pack-montage-evidence
+          path: app/build/montage-evidence/
+          if-no-files-found: error

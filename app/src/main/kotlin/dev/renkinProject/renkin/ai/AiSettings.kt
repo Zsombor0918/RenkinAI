@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
+internal const val MAX_COMPOSED_ICON_PROMPT = 32000
+
 /** Global, deliberately independent of Renkin's per-profile rendering preferences. No secrets. */
 data class AiSettings(
     val provider: String = PROVIDERS.first(),

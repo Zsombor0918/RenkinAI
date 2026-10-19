@@ -314,9 +314,10 @@ interface ProfileDao {
         StyleRevision::class,
         ReferenceAsset::class,
         StyleReference::class,
-        IconAssetVariant::class
+        IconAssetVariant::class,
+        dev.renkinProject.renkin.data.project.StyleTrialApproval::class
     ],
-    version = 20
+    version = 21
 )
 abstract class RenkinPackDatabase : RoomDatabase() {
     abstract fun renkinPackDao(): RenkinPackDao
@@ -558,6 +559,10 @@ abstract class RenkinPackDatabase : RoomDatabase() {
             }
         }
 
+        internal val MIGRATION_20_21 = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) = dev.renkinProject.renkin.data.project.StyleTrialSchema.migrate(db)
+        }
+
         internal val ALL_MIGRATIONS = arrayOf(
             MIGRATION_1_2,
             MIGRATION_2_3,
@@ -577,7 +582,8 @@ abstract class RenkinPackDatabase : RoomDatabase() {
             MIGRATION_16_17,
             MIGRATION_17_18,
             MIGRATION_18_19,
-            MIGRATION_19_20
+            MIGRATION_19_20,
+            MIGRATION_20_21
         )
 
         private fun insertDefaultProfile(db: SupportSQLiteDatabase) {

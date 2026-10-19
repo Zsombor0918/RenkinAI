@@ -1,0 +1,11 @@
+<resources>
+    <string name="referenceStyleBrief">Match the visual treatment of the selected reference icons. Preserve the recognizable identity and meaningful colors of the original target app icon. Use references for style, never copy their logos or symbols.</string>
+    <string name="referenceStyleTitle">Visual references and style brief</string>
+    <string name="referenceStyleHelp">Choose 1–5 references that belong together. Fewer is fine; different colors need not mean different styles. Inspect each image and arrange the selected references below.</string>
+    <string name="referenceStyleSample">Browse local source-pack references (free)</string>
+    <string name="referenceStyleCandidate">Candidate %1$d</string>
+    <string name="referenceStyleSelect">Select reference</string>
+    <string name="referenceStyleSelected">Selected</string>
+    <string name="referenceStyleNoImages">No references selected. Saving now creates a text-only manual style.</string>
+    <string name="referenceStyleSourceError">Local source references are unavailable or have changed. Check the source pack before selecting or saving; your draft is retained.</string>
+</resources>

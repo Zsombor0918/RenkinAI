@@ -1,5 +1,27 @@
 # Renkin AI – personal fork
 
+Local guided UX development now presents **Project/source -> Style -> Trials ->
+Completion** on `feat/ux-flow-stabilization`, stacked above draft PR7. A fresh project
+recommends Quick DNA; Legacy/manual editing remains available. Save advances only
+after persistence, one to three named targets feed separate trial consent, and
+completion reports review/approval without automatically applying or building icons.
+Advanced sections retain source/request details and full history. No paid call occurs
+from navigation, local preparation or Save. [Owner phone check and later plans](docs/qa/GUIDED_UX_OWNER_CHECK.md);
+[implementation evidence](docs/changes/2026-10-14-guided-ux-implementation.md).
+Device, signing-update and actual generated style quality remain owner acceptance gates.
+
+The following Style DNA/M5 checkpoint descriptions retain their earlier evidence.
+
+Opt-in Style DNA D0–D3 is developed in stacked draft [PR #7](https://github.com/Zsombor0918/RenkinAI/pull/7)
+above working PR #6. Code tests pass925/925 and all22 regression groups; final-head
+evidence is in the PR audit. In Project AI style choose Legacy, Quick or Standard,
+then **Prepare locally** to inspect exclusions and labeled samples without a key or paid call.
+Quick uses up-to12 individual reports/local synthesis; Standard uses up-to24 reports
+and separately listed synthesis. Each paid action needs explicit frozen-plan consent;
+review/edit families and explicitly Save before choosing a target-specific trial recipe.
+The original target icon supplies identity. Deep is disabled and improved generated
+visual quality is unverified. [Complete scope and limitations](docs/changes/2026-10-14-style-dna-verification.md).
+
 AI icon generation, persistent missing-icon batches and per-app prompt instructions. [Hungarian setup, architecture and limitations](docs/AI_FORK_HU.md).
 Based on the upstream Renkin project below; GPLv3 and upstream attribution retained.
 
@@ -11,9 +33,24 @@ user-entered provider key; ordinary icon editing and pack assembly remain local.
 The unreleased Projects home lists real Renkin profiles, creates a separate profile
 and offers separate Create/Extend target preparation with read-only, mapped-and-drawn
 source coverage. Search/select targets, save project style text and references locally,
-or explicitly confirm optional reviewed AI style analysis in Style Setup. Trial-icon
-generation and public backend/credits remain future work; device/provider acceptance
-is tracked separately in the current-state and QA documents.
+or explicitly confirm optional reviewed AI style analysis in Style Setup. The new
+Style Trials source prepares up to three separately confirmed icons, preserves
+original/RAW history and explicit style approval without Apply or batch. The tested
+implementation is in [PR #6](https://github.com/Zsombor0918/RenkinAI/pull/6), awaiting
+owner review/merge. Public backend/credits remain future work. Device/provider
+acceptance is tracked separately in the current-state and QA documents.
+
+Trial walkthrough: choose apps → **Save project target selection**; open **Project AI style**,
+enter a manual description under **Advanced: edit style and references** or review optional analysis,
+then **Save**. **Style trial icons** is visible at the top and explains missing
+prerequisites. Choose one to three apps → **Review frozen trial inputs** → the
+separate paid confirmation. Inspect **Original app icon** and its resource/type metadata separately from **Style reference pack**. If Android/OEM art is unverified, consciously check each genuine symbol/native colors before enabling payment; decline incorrect originals. Compare Original/Generated, Accept/Reject, then approve
+the common style separately. Local sampling, navigation and Save send no AI request.
+OpenAI trials now require one standalone target icon: original image1 supplies the
+symbol, later images supply visual style only, never their logos. MIXED source motifs
+stay observations. Native target colors have priority unless a reviewed fixed/mono/duotone style intentionally recolors them. Local analysis inspects up to300 mappings, reports representative geometry and measured palette roles in Advanced, and uploads at most12 samples only after explicit consent. Old collages remain unchanged: mark them **Not suitable** and
+separately confirm any new paid retry. The corrected Flip8 one-icon acceptance is
+still required before merge; structural PNG validation cannot judge recognition.
 
 The overview, screenshots and release badges below originate from **upstream
 Renkin**, not a published RenkinAI release. Fork builds come from this repository's
@@ -100,3 +137,7 @@ Required checks and observed main-protection status: [agent workflow](docs/agent
 ## License
 
 GPLv3, same as upstream. See [LICENSE](LICENSE).
+
+## Experimental Style DNA
+
+Project STYLE optionally scans detailed local exclusion reasons, then prepares Quick (up to12 individual reports/one request/local synthesis) or Standard (up to24 images in groups of6 plus one synthesis, maximum5 charged submissions). Every step is frozen and separately listed in consent, with no replay after interruption. Per-image reports and multi-family rules stay editable; explicit reviewed Save creates an immutable revision. M5 applies the chosen family to the genuine original target only. Legacy aggregate analysis and all classic workflows remain. Deep and real visual A/B are deferred; improved provider quality is not established by mocks. See [ADR0008](docs/decisions/0008-style-dna-stacked-development.md).

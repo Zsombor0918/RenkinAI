@@ -1,5 +1,313 @@
 # Architecture
 
+## Future montage V4 and balanced quality
+
+New montage plans freeze V4 effective text and existing context model/quality;
+default Sunburst/medium, explicit high still premium. V1/V2/V3 reconstruction remains
+unchanged. Native multipart keeps original-first actual sheets and one brief.
+Version-aware profile tombstones retain one all-zero sentinel and consumed rights
+without retaining images or granting replay. No new store/endpoint/schema. Pricing
+calculations are offline scenarios, never in-app billing promises. See [ADR0018](decisions/0018-balanced-montage-restyling.md).
+
+## Density-correct Trial preview
+
+The review decoder samples against physical destination pixels, not dp counts.
+It reads unchanged repository PNGs, decodes off the main thread and preserves
+Compose-owned published bitmap lifetime. Only presentation changes; original,
+montage, provider, RAW asset and exported source bytes are not resized by this path.
+
+## Montage request inspection and model scope
+
+Actual multipart inspection confirms one V3 contract/brief and original-first saved
+montage order, with no legacy default style. Newly prepared montage Trials default
+to Sunburst/high at the controller's existing option boundary; explicit options
+and frozen model/quality remain authoritative. Global AI1/AI2 and historical/manual
+defaults stay unchanged. No production logger or new prompt version is introduced;
+synthetic test receipts exclude credentials and image contents. See [ADR0017](decisions/0017-montage-trial-model-default.md).
+
+## Montage presentation lifetime
+
+Published contact-sheet ImageBitmaps remain managed by Compose/Android after a producer key changes; they must not be recycled while retained draw nodes may still reference them. Rendering scratch bitmaps remain explicitly released. Guided V3 results use a compact presentation that keeps advanced target/options/evidence accessible without duplicating the pre-generation selector above generated images. No persistence, frozen request, billing, original resolver or legacy editor architecture changes.
+
+## Montage EXTEND integration
+
+Fresh EXTEND uses LocalPackMontages and PackMontagePanel; old saved/manual/CREATE paths retain their existing editor. One consented Responses operation stores a plain pack-wide brief. Future TrialV3 binds the full montage payload fingerprint, exact brief, original identity, ordered sheet bytes and effective prompt hashes; V1/V2 readers/text remain unchanged. Random eligible suggestions are persisted with the existing selection row; recommendations never submit requests. No new database, batch engine or signing path.
+
+## Single montage style request
+
+PackStyleAnalysis performs one explicit operation with the existing StyleAnalysisJournal, owner lock, epochs and consumed UUID files. New optional request contract2 binds high-detail montage hashes and frozen instruction/preferences; historical contract1 encodings/fingerprints remain unchanged. PackStyleGateway streams saved PNG inputs into one bounded Responses POST and validates only style_prompt/summary. Received-result local Save can recover without another POST; cancellation/unknown outcomes never replay. Reuse existing revision/montage evidence for the saved result; no new state-machine/store or old DNA transport. Guided wiring is the next increment.
+
+## Pack montage local artifact
+
+LocalPackMontages reuses the source reader, geometry-proportional sampler, private PNG assets and existing revision JSON. PackMontage stores ordered source members and sheet hashes/stamps; MontageEvidence binds profile/payload/brief and participates in backup rekey. Automatic30-member selection and content edits use the same adaptive transparent sheets, preserving256px source pixels with bounded pages. A separate fit-render path preserves nonsquare resource proportions without changing historical render bytes. No Room migration/store or restored old analysis transport. UI/analysis/new generation integration follows before exposure; see [ADR0016](decisions/0016-pack-montage-inputs.md).
+
+## Phase0 removal boundary
+
+Active Legacy/Quick/Standard transport/coordinator/controller/service/UI no longer exists. Outbound strict-schema builders and local new-analysis synthesis are removed; immutable saved-data parsers/compiler and journal/epoch/consumed boundaries remain for backups/history/Trial reconstruction. LocalStyleReferences reuses the extracted owner-lock port and shared PNG thumbnail without an analysis service. Saved DNA Trials retain their stored selected family and reference binding; the active family/type selector is gone. Manual style Save and TrialV1/V2 generation remain, with no replacement cloud pipeline. [ADR0015](decisions/0015-retire-active-dna-analysis.md) records the dependency and rollback boundary. Montage stages remain future work.
+
+## Phase4A versioned Trial generation
+
+New OpenAI Trial preparation freezes generation promptV2 plus per-target full UTF-8 prompt hashes in the existing schema1 plan. Those optional fields bind effective request text to its fingerprint; parse/claim rejects changed text/version/hash. Missing fields retain byte-identical V1 composition and serialization. Coordinator and native multipart factory dispatch the same version. No mandatory analysis, new store, migration, model or signing change. One quoted reviewed brief merges only exact duplicate historical recipe lines, omitting recognized compiler metadata while keeping unique instructions. The authoritative contract separates original identity from geometric transformation, reference-only treatment, tile versus silhouette and reviewed color choices. See [ADR0014](decisions/0014-versioned-trial-generation-contract.md).
+
+Queue-drain snapshots iterate concurrent entries rather than using Kotlin
+Map.toMap's size/singleton shortcut, which can throw if release removes the last
+pending read between size and iterator.next. The existing conditional removal,
+route match and local-read-only scheduling remain authoritative. This changes
+neither the event model nor paid permissions or persisted state.
+
+
+## Local reference-first draft boundary
+
+LocalStyleReferences uses AnalysisSessionOwner only for its existing owner lock and
+fresh source readers; it has no provider or credential dependency. Sampling offers
+up to12 deduplicated geometry/color-diverse candidates, without assigning a common
+palette or automatically selecting five. Selection copies actual rendered PNGs
+through ProjectAiRepository. LocalReferenceOrigin is transient form provenance,
+not a new store: profile/source/setup/reference stamps and hash-to-drawable binding
+are checked again, including current drawable bytes before Save. Historical saved
+styles and reference ordering use their unchanged readers. No migration, request,
+consumed marker or signing change.
+
+Guided ProjectStylePanel presents that existing manual form first, initializes
+only an unsaved fresh style with neutral text, and keeps the brief separate from
+additional instructions. Optional analysis is mounted only after method selection;
+its existing refresh/journal/consent behavior remains. Dirty edits block method
+switching, and the child saveable-state holder retains unmodified analysis drafts
+across presentation changes. Source-origin primitives survive form restoration;
+sample images stay bounded in memory and selected bytes live in existing assets.
+Saved manual styles enter unchanged target selection and OwnedStyleTrials; there
+is no new generation handoff or prompt version. See [ADR0013](decisions/0013-reference-first-style.md).
+
+
+## Bounded Trial package-read classification
+
+ObserveCoverageInvalidation keeps its original callbacks by default. Trial alone
+receives typed package hints through ProjectTrialBackend; OwnedStyleTrials checks
+source/saved-target membership and freshly revalidates the existing catalog under
+its owner. Only non-input package hints with an unchanged live catalog avoid the
+full local reload. This preserves prepared bytes and approval, with controls busy
+until the catalog check completes. A hint cannot downgrade an unconditional pending
+read; route replacement/release and cancellation keep their prior semantics.
+No new monitor, timer, persistence, schema or paid-request mechanism exists.
+
+## Current trial plan retention during read-only reload
+
+OwnedStyleTrials retains a frozen plan while a coalesced local read is busy, then uses existing current(plan) checks and same-plan/staging guards before keeping it. The guard runs across suspensions so explicit cancellation cannot resurrect a plan. Changed route/context/original/recipe/epoch or read failure clears staging/proof; paid confirmation remains disabled until idle and submit independently rechecks. Suspending key/approval reads finish before the final StateFlow merge. No paid retry, consumed marker, journal format or Room migration is added.
+
+Raw per-image logo_silhouette may name a source symbol. Only closed abstract construction phrases from that field enter local family/global recipes; unknown/negated/identity-appended descriptions remain evidence-only. Separately supported abstract family synthesis is retained. This boundary follows an actual new full-suite source-identity failure and preserves the authoritative original-first contract.
+
+## Bounded generation recipe compilation
+
+Existing V1 traits/drawing fields feed explicit generation labels and separate brand-preservation/abstraction constraints. Geometry/contour use silhouette evidence. Global fallback pools only nonunknown synthesis rules with at least two cited samples and60 percent pack support; unsupported/conflicting traits stay unestablished. Raw reports/partition remain immutable. Default representative selection excludes flagged outliers within chosen membership. Promptv2 uses the existing version field; plan/result readers accept frozen v1 and v2 and the gateway retains v1 instructions. New/frozen recipe comparison still protects current consent. No Room/schema/backup shape or transport-role change. See [ADR0011](decisions/0011-generation-useful-dna-recipes.md).
+
+## Offline Style DNA verification boundary
+
+The existing gateway/coordinator/controller/Room/journal ownership remains. Incomplete
+Responses reasons are allowlisted into fixed diagnostics without saving raw output or
+granting a replay. Tests own localhost routing and synthetic credentials; release
+configuration has no fixture switch. A separate permission-free offline-fixture APK
+supplies generated Android resources. Debug-only visibility and exact127.0.0.1
+cleartext policy support instrumented Compose journeys over real disk persistence.
+The host runner verifies an explicit emulator serial and qemu identity before any
+install/stop, then checks logs/counters across a real process restart. See
+[ADR0010](decisions/0010-offline-style-dna-validation.md) and
+[commands and limits](qa/OFFLINE_STYLE_DNA.md). No schema/signing/identity change.
+
+## Derived overall DNA view and reference membership
+
+StyleDnaReview derives a pack-wide DnaFamily without inserting it into the stored
+V1 partition. The reserved __pack__ selection is independent of valid family IDs;
+new candidates default to it, while old selected IDs and compiled specifications
+are unchanged. Conservative finite synonyms merge only supported observations;
+60% and at least two OBSERVED reports produce INFERRED global rules. Conflicting
+surface/palette observations cannot impose a universal tile/recoloring policy.
+This is an additive compatible-reader capability, not a Room/backup format migration.
+
+Reference recommendation round-robins observed construction/type groups inside the
+selected evidence set, retaining source order, uniqueness and a five-image bound.
+Save checks membership. Existing shared-reference trial plans keep their exact
+hashes/order; an incompatible per-target family is rejected before staging or any
+paid endpoint. Changed family/type still invalidates context and consent through
+the retained fingerprint/recipe guards. Original extraction and native multipart
+assembly stay intact. Saved previews fall back to owner-checked immutable assets
+after journal thumbnail collection. See [ADR0008](decisions/0008-style-dna-stacked-development.md).
+
+## DNA report contract and safe rejection
+
+Image-step request schemas bind count exactly and constrain IDs/hashes to the
+frozen step's allowed sets. Nonempty observation text includes a bounded pattern;
+UNKNOWN remains explicit text. Client validation still verifies exact field/type,
+enum/provenance/text, unique membership and ID/hash pairs independently. A swapped
+hash remains rejected even though it belongs to the allowed set. REPORT_* codes
+only refine the existing journal reason; no raw content/cause, persisted field,
+schema migration, retry or recovery permission is added. Existing generic records
+remain readable and unchanged. See [record](changes/2026-10-15-dna-report-contract.md).
+
+## DNA returned-format envelope depth
+
+The DNA response parser uses the strict reader's optional single exact object-path
+allowance for root text.format.schema only (depth14). Its actual report and grammar
+schemas require14 when echoed in a full Responses envelope; Legacy's shallower
+schema fits the unchanged12. Other paths, array lookalikes and all default callers
+retain12. Whole-envelope128KiB/array128, duplicate/surrogate/number validation and
+actual output/report/grammar/security conditions remain. No ignored subtree skips
+validation. Only fixed rejection categories enter the existing reason field; no
+raw response, new persisted field, journal/schema/transport change or retry exists.
+See [ADR0008](decisions/0008-style-dna-stacked-development.md) and
+[evidence](changes/2026-10-15-dna-response-envelope.md). Device cause is not uniquely proven.
+
+## DNA plan lifetime and diagnostic stages
+
+Composition disposal does not consume/invalidate a ready unsubmitted DNA plan.
+The existing VM retains its bounded samples/plan while idle; preparation replaces
+it and explicit submission consumes it. Busy local preparation still cancels;
+process loss never restores executable consent. Every endpoint independently
+rechecks the existing full context and durable consumed marker before transport.
+No second owner or new storage exists.
+
+Envelope/status validation, report decoding/binding and synthesis/evidence
+validation have distinct allowlisted codes. Cancellation/local persistence retain
+prior recovery. Historical generic reasons are read without reinterpretation or
+mutation; UI keeps them under Details and labels no-plan thumbnails as previews.
+Wire/model/schema/quotas, Room19/20/21, fingerprints, key presence semantics and
+signing remain. See [reproduced boundaries](changes/2026-10-15-dna-provider-result-correction.md).
+
+## DNA refresh and current-plan presentation
+
+OwnedStyleAnalysis performs suspending local reads before atomic StateFlow merges.
+History/credential refresh never restores preparation or job/network flags; live
+record updates that changed since the read began take precedence. Free preparation
+retains older history, while the panel presents the new plan and its own disabled
+reason separately. Existing source/lifecycle invalidation still refreshes key
+presence locally; there is no second session owner or new credential channel.
+Paid consent, context rechecks, one-shot transport, journal formats/consumed IDs
+and reviewed immutable Save remain unchanged. See [evidence](changes/2026-10-15-dna-plan-refresh.md).
+
+## DNA private storage and local diagnostics
+
+StyleDnaJournal canonicalizes only the Context-owned no-backup parent before
+constructing its existing root. Root/profile/record/backup/new descendants retain
+canonical-versus-absolute and containment checks; child links are never normalized
+into trust. Aliases share locks, bytes and the consumed ledger. There is no format
+change, history reset or speculative corruption recovery.
+OwnedStyleAnalysis exposes only ephemeral allowlisted stage/category enums for
+free-preparation errors. History integrity/read errors stay fail closed; a source
+read is not evidence of low disk space. No raw exception/path/ID is exposed or
+persisted. Separate paid consent, ownership, quotas and no-replay remain authoritative.
+
+## Guided presentation and ownership
+
+`RenkinAiRoot` enables the four-step shell without changing classic editor or intent
+priority. The shell stores routes only. `ProjectWorkflow` derives source readiness
+and completion from existing metadata, saved revisions and owned trial state.
+`TargetSelection` hydrates current saved keys and awaits the existing durable save
+before advancing. Default API-compatible shell consumers remain supported.
+
+`ProjectStylePanel` owns the local editable draft; the selected aggregate/DNA child
+propagates dirty and saving state. DNA/aggregate saves return a persisted
+`SavedProjectStyle` before parent synchronization/navigation. Per-record source
+validity is separate from current operation errors. Nothing converts legacy styles.
+`trialReviewSummary` checks all current successful variants, owner/context/request
+proof and current failures before exposing approval. History presentation does not
+remove journal or Room evidence. Completion performs read-only local revalidation. Trial confirmation decline/dismiss
+also requests existing local approval proof, without setting ready or authorizing a request.
+
+Owned controllers remain the only async request owners. `OwnedStyleTrials` coalesces
+a latest local load for another profile while its authorized network operation runs;
+release/context guards drop obsolete routes. The drain calls only `load`, never
+prepare/submit. Existing session mutexes, consumed markers, uncertain recovery,
+immutable original/RAW assets, repository transactions and one-shot gateways remain.
+No database, global lifecycle singleton or second request coordinator was added.
+See [ADR0009](decisions/0009-guided-project-workflow.md) and the
+[implementation inventory](changes/2026-10-14-guided-ux-implementation.md).
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
+## Current opt-in Style DNA architecture
+
+Separate stacked PR7 adds diagnostics, individually labeled reports, independently validated
+family synthesis, typed editable revision evidence and a target-specific recipe compiler.
+Quick1 and Standardup-to5 one-shot submissions use their own durable consumed-step journal.
+Only a consciously reviewed immutable revision enters M5; original componentC supplies
+identity at the existing native request factory. Stable opaque interiors improve new
+family palette measurement without changing legacy aggregate measurement. Room21,
+full/shareformat6/payload3 and historical optional JSON/fingerprints remain compatible.
+
+The code architecture is regression-verified at89eacb0d (925 tests/all22 groups).
+Provider visual quality and device/signing acceptance remain separate. See
+[ADR0008](decisions/0008-style-dna-stacked-development.md) and
+[closed scope](changes/2026-10-14-style-dna-verification.md). Earlier records below
+retain their original dates/results.
+
+Checkpoint73cd29e8 / Android38434288813 compiled and ran897 tests with exactly one new neutral-tile policy failure; all previous/new original, wire, journal and UI tests passed. The follow-up distinguishes recurring neutral/background mass from varying significant chromatic accents, preserving brand colors even when the tile dominates area. Genuine final-head results and all21 XML/benchmark evidence are recorded in PR#6.
+
+
+Implementation checkpoint ab80db86 / Android38433644576 stopped at production compilation: nullable Resources.getDrawableForDensity result needs explicit fail-closed handling. No Android assertions/APK ran at that head. The follow-up preserves the resource-only contract, adds missing/disabled/wrong-user originals and a neutral-tile brand-accent regression, and strengthens source-switch multipart fixtures with distinct B2 bytes. Final executed results remain in PR#6.
+
+
+## October13 style fidelity and component original refinement
+
+Owner comment6149883090 is implemented incrementally on PR#6 from422ef578. Local EXTEND now inspects up to300 mappings and selects proportional geometry-family medoids plus minority checks, with real alpha-aware Oklab palette swatches and measured roles/prevalence/distributions. Varied native logo hues alone are not mixed drawing styles; fixed palettes require recurring evidence. Advanced shows bounded local measurements separately from model inference. Cloud remains one separately confirmed low-detail request, same model/V1 schema, <=12 thumbnails/4MiB; manual CREATE and0–5 ordered generation refs remain.
+
+M5 already used exact component icons independently of EXTEND. It now resolves the enabled current-user component declared full resource, compares activity API bytes, freezes optional versioned evidence and displays Original app icon separately from the style pack. OEM overlays remain possible: new resource originals display UNVERIFIED_ORIGINAL and require conscious plan-specific verification before separate paid consent. Missing resource fails closed. Equal bytes retain old origin stamps and historical approvals; real differences/version/config changes stale the plan. Source packs provide style/coverage only. Legacy editor, AI1/AI2, Roomv21, backup/history, keys/build/install and M6 read-only guards remain.
+
+Actual test-first red95cd7786:144 XML/883 tests/4 failures/0 errors/skips; red812bc7da:144 XML/885 tests/5 failures/0 errors/skips, all new regressions only. Final-head automated/XML/benchmark/APK evidence is recorded in PR#6 after execution. No live API call or physical device run. [ADR0007](decisions/0007-style-fidelity-and-component-originals.md) defines the current boundaries. PR remains draft/open/unmerged for owner verification.
+
+## OpenAI single-target output contract — October 13
+
+PromptComposer.openAiTrialAppearance validates saved style/project/app text without
+nested escaping. openAiEditPrompt is the one authoritative OpenAI target/edit/output
+assembler: original image1, ordered style-only2..N, no borrowed reference symbols,
+one centered transparent1024 PNG and explicit collage exclusions. All appearance
+data, including MIXED categories/brand observations/conflicting instructions, is
+quoted below this precedence. Essential target typography is allowed. The full
+escaped body is bounded to32000; gateway preflight and frozen-plan validation share
+the same helper. The native OpenAI multipart factory always assembles it for a
+non-null override, preventing a raw M5 override from dropping the contract.
+
+Null overrides still call the untouched historical iconPrompt; reference order,
+fields/options/n=1 and one-shot transport bytes remain. Stability uses the previous
+composeSaved prompt and separate init_image/style_image/background endpoints,
+exactly one reference and distinct endpoint counters. No analysis/vision retry or
+new model call, schema, stored revision/approval mutation or automatic regeneration.
+PNG validation remains structural, not collage/logo classification. ADR0006 and
+the [corrective note](changes/2026-10-13-single-icon-trial-contract.md) record this
+boundary; device artwork acceptance is separate from actual automated evidence.
+
+## October 13 corrective boundaries
+
+Keep the existing Activity VM, shell, owned controllers, Room v21 and format6.
+The correction has no migration, package, source-parser, signing, install or AI1/AI2
+controller change. STYLE trial entry is visible above analysis; TARGETS reads its
+existing saved metadata to gate trials, and the existing TRIAL Back/targets route
+returns to preparation. These UI prerequisites never authorize a POST.
+
+The shell passes null sourceStamp when opening STYLE for CREATE, regardless of
+available coverage input. For EXTEND it accepts only a snapshot matching the chosen
+profile and source package. An irrelevant snapshot must not cause saveRevision to
+erase compatible target selection; genuine context-change invalidation stays intact.
+
+OwnedStyleTrials emits bounded local prerequisite codes instead of exception text.
+The analysis adapter retains safe HTTP400/402/422 rejection status and only the
+allowlisted insufficient_quota code; no raw server body enters journals or UI.
+Schema maxItems6/maxLength160/800 matches the unrelaxed Kotlin checks. Official
+structured-output docs support these restrictions for the existing non-fine-tuned
+gpt-5.4-mini; the separate one-shot/consumed-consent boundary is retained.
+
+AtomicFile base or backup existence is readable durability; .new-only plans and
+consumed item markers are reservations, never permission. Orphan plans count against
+the existing 256-plan quota and cannot reuse their UUID. Partial image writes can
+be rewritten only from freshly consented immutable inputs; .new-only results never
+claim a completed charge or PNG. Fresh result insertion atomically invalidates the
+revision approval; idempotent installation does not. Accepted reads also check all
+current successes, closing stale or restored approval gaps. ADR0005/0006 record this.
+
+Only an explicitly authorized one-request Python contract probe was live: synthetic
+artwork, HTTP200/618 tokens, no inventories. It does not certify Android, the owner's
+source pack, image generation, Samsung behavior or provider quality.
+
 > Personal AI fork: see [AI_FORK_HU.md](AI_FORK_HU.md). The Kotlin namespace stays upstream;
 > the installed app ID is `hu.zsombor.renkinai` (`.dev` for debug), generated packs use
 > `${BuildConfig.APPLICATION_ID}.pack` plus per-profile suffixes. Single-icon AI accepts through the upload
@@ -12,11 +320,13 @@ installable Android icon packs on-device.
 Codex 04 source audit: October 12, 2026. Accepted base is owner-merged PR #4
 `6aed9e08ee5619c1061481972dc172546c7f5abe`; code head 47503e5c on
 `feat/automatic-style-analysis-m4` is offline-verified: 792 tests, all groups/APK.
-PR #5 owner merge/device acceptance is pending; final-head checks are in its audit.
+Owner merged #5 as af7bdb10 at 16:10:49 UTC on October 12. Final aceb691c
+passed its own complete checks; provider/device acceptance is separate. M5 source
+starts exclusively from that accepted main; head-specific evidence is in QA and PR #6.
 Historical Codex 03 starting main was
 `aefeb1b69e7757c757c60ac2f00ce2125893e1e6`, then `feat/project-ai-persistence-m3`.
 Entry map: [INDEX](INDEX.md); implementation/limitations: [CURRENT_STATE](agent/CURRENT_STATE.md).
-Codex 00–03 are owner-merged. Codex 04 adds a separate reviewed style-analysis path;
+Codex 00–04 are owner-merged. Codex 04 adds a separate reviewed style-analysis path;
 legacy editor/AI/build paths remain. Fresh feature evidence belongs in QA, not this
 source description.
 
@@ -231,7 +541,7 @@ session; provider, build/sign/install and result contracts are unchanged.
 - **DataStore Preferences** (`data/DataPreferences.kt`) — all settings. Typed accessors:
   Composable `DataStore.getXValue()` for reading in composition; `Preferences.getXValue()`
   for reading a captured snapshot off the main thread.
-- **Room — `RenkinPackDatabase`** (file `"renkinPack"`, v20) — profiles + rendered and base icons
+- **Room — `RenkinPackDatabase`** (file `"renkinPack"`, v21) — profiles + rendered and base icons
   of the last built/saved pack per profile. `isCustomIcon` marks hand-picked vs refresh-generated
   rows; `isLegacyIcon` records pre-classification uncertainty without guessing the origin. In the
   Global options UI, only unsaved refresh output is Generated; saved/built non-custom rows are
@@ -603,13 +913,13 @@ variant before/after rendering. Material You-advertised sources, calendar/clock 
 animated/state/level/layer drawables are excluded or counted unsupported. Current
 night variants are explicitly stamped, not promised representative of other themes.
 
-ReferenceSampler sorts all source mappings, uniformly covers at most 120 candidates,
+ReferenceSampler sorts all source mappings, uniformly covers at most 300 candidates in the EXTEND controller (sampler compatibility default120),
 validates the existing 96px probe and a separately owned static 256px software PNG,
 and drops corrupt/empty/low-alpha, exact-SHA or near-perceptual duplicates. 64px
 features measure alpha occupancy/bounds, padding, brightness/saturation/contrast,
-quantized palette, edges and center occupancy; outline is a heuristic, not measured
-stroke width or recognition confidence. A medoid plus greedy farthest-first with
-source/hash tie-breaks selects at most 12. The report records actual examined/valid/
+actual alpha-weighted Oklab palette, edges and center occupancy; outline is a heuristic, not measured
+stroke width or recognition confidence. Proportional geometry families with density medoids, minority checks and
+source/hash tie-breaks select at most12. The report records actual examined/valid/
 duplicate/unsupported/broken counts and low-sample/mixed warnings. Zero samples
 cannot produce an analysis request. CREATE uses up to five owned manual PNGs, no pack.
 
@@ -709,3 +1019,151 @@ Restore still spans separate legacy stores and is not distributed ACID. v19 APKs
 cannot open v20; use forward repair or deliberate pre-upgrade backup recovery, never
 a claimed in-place downgrade. Codex 05 must independently revalidate selected targets,
 source and 0–5 owned refs, and require fresh paid consent for trial images.
+
+
+## Style trials and reusable readiness (Codex 05 source)
+
+[ADR 0006](decisions/0006-style-trial-consent-and-recovery.md) records the fact
+register, alternatives and new cost/approval/storage decisions. MainViewModel
+injects StyleTrialServices and owns one OwnedStyleTrials controller in its existing
+scope/session mutex. TRIAL is reachable from TARGETS and a clean saved STYLE draft.
+RenkinAiRoot preserves stable classic editor result registrations, external ingress
+priority and profile Save/Cancel. No second VM, Room database or navigation framework.
+
+TrialContext freezes profile/revision/version/mode/source/index/catalog/selection,
+ordered reference fingerprint, provider/model/quality and separate trial epoch.
+StyleTrialPlan adds exact saved description/instruction and their style fingerprint,
+1–3 real original hash+origin
+and unique item/plan UUIDs. A zero eligible selection creates no plan. Unknown/dynamic/
+work-user/locked/protected local entries fail closed; covered overrides are explicit.
+Stable sorted first/middle/last suggestions avoid ranking every phone icon at API
+resolution and make no complexity claim. currentTrialOriginal checks a real enabled current-user launcher
+component and its declared full resource, with package/configuration stamps before/after a bounded1024 draw, preserving alpha and
+rejecting empty/broken resources. Only previews are sampled into Compose bitmaps.
+
+ProjectTrialPanel reads on entry/resume, permits selection/configuration and then
+shows immutable PNG/ref/text hashes in a separate cost confirmation. PromptComposer
+composeSaved quotes the saved description and separate instruction under identity/
+transparent rules; the new optional composed prompt does not rewrite legacy global
+AI settings. OpenAI keeps original-first ordered image[] multipart, size/quality/
+transparent PNG/n=1. Stability requires one ref, explicitly displays fixed endpoints
+and up to 2N calls, and does not silently truncate references or send GPT options.
+No fabricated exact USD estimate or provider/account availability promise.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Preparation
+    Preparation --> Confirmation: freeze actual inputs
+    Confirmation --> Preparation: decline
+    Confirmation --> Pending: new explicit paid consent
+    Pending --> Requesting: durable endpoint marker
+    Requesting --> PngSaved: validated atomic PNG
+    Requesting --> Uncertain: sent interruption
+    Pending --> Skipped: stop or stale
+    PngSaved --> Reviewable: owned files and Room variant
+    PngSaved --> PngSaved: local repair only
+    Reviewable --> Accepted: explicit per-image review
+    Reviewable --> Rejected: explicit rejection
+    Accepted --> Ready: separate common-style approval
+    Ready --> Preparation: changed context needs new review
+```
+
+The dedicated AtomicFile journal has <=256 consumed 64 KiB plans/profile, 64 MiB
+staging, <=4 MiB original/ref snapshots and <=8 MiB normalized RAW staging. Requesting
+and one counter per real endpoint precede enqueue. One-shot multipart wrapping
+retains bytes/type/length and forbids pinned OkHttp's 503 Retry-After:0 follow-up,
+besides disabled redirects/retries. Serial confirmation consumes each UUID once;
+Stop and cold recovery never replay a paid endpoint. The existing VM job may
+continue already confirmed work through Activity recreation. M4 and AI2 journals stay
+separate. Existing AI1/AI2 receive the narrow shared-client one-shot correction only.
+
+Result staging precedes original+RAW project installs and one transactional asset/
+variant insert keyed by request UUID; REVIEWABLE follows Room commit. Split-file/DB/
+marker recovery only reuses already validated local bytes. Existing reviews remain
+immutable under idempotent recovery. Storage errors remain PNG_SAVED/visible, without
+false success or automatic rebilling. The 4 MiB project quota is unchanged. Variants
+pin original input as well as RAW/edited assets; explicit draft cleanup cannot remove
+those originals. Profile delete clears staging/private metadata but retains consumed
+tombstones/epoch; full restore rotates the global trial epoch before identity replacement.
+
+Room 20→21 adds nullable IconAssetVariant.trialContextJson plus StyleTrialApproval,
+linked to the existing immutable profile/revision. Only explicit reviews can Accept/
+Reject and only a separate current approval can mark readiness. It references exact
+accepted IDs/context/time, requires one accepted image and review of every current
+success; uncertain/skipped states remain distinct. New style/source/targets/refs/epoch
+never inherit that decision. Review and readiness are never Apply or future spend.
+
+Format 6/payload v3 exports completed original/RAW/variant/approval history; share
+remaps IDs/owners and makes approval stale, full restore marks revalidation and
+invalidates local request epochs. Legacy formats/payloads keep old pixels without
+inferred trial approval. Backup validators check PNG chunks/CRC/hash/ownership and
+actual alpha/nonempty 1024 RAW before mutation. The new trial payload excludes journals/credentials and adds no signing material;
+existing full-backup pack-keystore behavior remains unchanged. Asset lease/FKs/pins
+and separate legacy stores stay.
+A populated v21 cannot be downgraded to v20: forward repair or explicit compatible
+pre-upgrade backup recovery, with the same app/pack signing identities, is required.
+
+OwnedStyleTrials.accepted supplies M6 read-only AcceptedTrialVariant only after
+fresh source/selection/catalog/revision/refs/configuration/original hash+origin/epoch
+verification and actual accepted approval+PNG checks. It submits/applies nothing;
+M6 must validate identical inputs again before reusing bytes. M6 gallery/bulk Apply,
+new batch permission and M7 edit remain unimplemented. Head-specific automated evidence
+is recorded in [QA](qa/BASELINE.md) and PR #6; device/provider quality and actual cost are untested.
+
+Consumed per-item UUIDs also have a separate device-wide AtomicFile ledger (8,192
+markers maximum). Another plan/profile cannot reuse an item UUID; deletion and
+restore retain these markers. Reaching the bound fails closed before a POST.
+
+
+Explicit local revalidation retains the immutable generation context/original origin
+and records a separate reviewContext/reviewOriginalOrigin in evidence schema v2
+(v1 remains readable). After source/selection/epoch or share changes, identical
+profile/revision/original pixels/ordered refs/provider/model/quality can be rechecked
+and accepted locally, then approved separately, with zero POST. Changed artwork,
+style revision or refs cannot reuse the old PNG. Eligibility and fresh owner/source
+checks still fail closed. Read-only M6 reuse requires this current review proof and
+current approval, never merely an old ACCEPTED status. Historical regeneration may
+prepare a new current-input plan, but always needs new paid confirmation.
+
+
+The current input also hashes the actual saved specification plus separate user
+instruction. Reused numerical profile/revision IDs after restore cannot imply
+identical style text. Unknown historical style hashes remain viewable and cannot
+authorize a new request/reuse. Result insertion checks the saved text and ordered
+refs again under the asset lease. A 32,000-character composed-prompt ceiling keeps
+quoted maximum-length saved inputs intact and is validated before cost consent.
+Native multipart factories remain compatible; only actual network requests receive
+the whole-body one-shot wrapper (pinned4.12 does not propagate child flags).
+Provider model/account failures use safe typed categories with no raw server text,
+no automatic fallback/retry. Historical cards display their actual producer options.
+
+Profile deletion writes schema-valid redacted tombstones: the style fingerprint
+matches the redacted text, and Stability retains one all-zero sentinel reference
+hash so its real provider and two endpoint counters remain readable. Prepared=false,
+rotated epoch, missing images and retained device-wide consumed item IDs prohibit
+replay under the old or another owner. Other profiles' records/assets stay intact.
+
+
+## Style DNA opt-in development on stacked PR7
+
+New feat/style-dna-v1 starts at PR6 head454bd5ec; PR6 and main are unchanged. D0 adds safe local missing/unrenderable/dynamic/stateful/render/alpha/resource reasons, independent Oklab color duplicate veto and bounded up-to600 local candidates/24 selected images. Legacy sampler defaults120/12 and M4 aggregate12 remain. New algorithmv3 accepts oldv1/v2 journals without rewriting their fingerprints.
+
+D1 Quick uses up-to12 labeled image parts and one report per image, with conservative independent local synthesis. Standard explicitly opts into up-to24 images in six-image groups and one separately listed text synthesis (maximum5 submissions). Same documented gpt-5.4-mini alias/snapshot, explicit low/high detail, strict Responses text.format/store:false, max12288 output tokens/step, bounded5MiB body/128KiB response. Model availability and quality remain unverified; low is not presumed cheaper. Deep and live A/B are deferred.
+
+D2 versioned reports and multi-family drawing grammar use a tagged style_dna payload in existing nullable revision JSON; Roomv21 and full/shareformat6/payload3 stay. Existing V1 rows/history remain unchanged. Explicit human review and Save create an immutable revision with up-to5 selected private refs. Legacy-only readers reject new grammar before restore writes; safe rollback needs a compatible forward reader. Device-local journals stay out of backups and retain global consumed IDs across delete/restore.
+
+D3 M5 optionally freezes target-specific drawing recipes, explicit family/symbol-type choices and DNA fingerprint in compatible optional plan/context fields. Original component C remains exclusive identity; B only style. Original verification and separate paid consent remain. Null-override AI1/AI2 bodies, non-DNA Stability paths, editor, profile, watch, signing/install and historical PNGs remain.
+
+Test-first b2df166a: hosted904 tests with exactly6 new assertion failures; no old failures. Current new implementation/integration execution is pending hosted CI, not claimed green. Local Python52 guards pass; local Gradle/full runner fail before configuration at distribution download. All old21 groups/selectors remain plus one additive DNA integration group. Zero live/paid requests, no device test, merge or force push. Owner visual acceptance remains open.
+
+
+## Style DNA integration and compilation follow-up
+
+Implementation2bf8ca7e CI38469333350 failed KSP parsing StyleTrialPlan.kt:117 at an extra closing parenthesis; no Android assertions or APK ran. The correction retains all old fields and optional recipes. Existing full M5 prompt assertions are extended with the new modernization prohibition; all prior exact prompt/image/legacy-byte assertions remain. New MockWebServer, real Room/full-share backup/owned-controller and320dp/dark/restoration/source-switch Compose fixtures join the additive DNA group. Renderer fixtures cover dark-on-dark visible artwork, alpha exclusions, state/animation versus real render exceptions; bounded300/600 local scans have50/150/500/1500 synthetic mappings. Retain all21 old groups, with22 total. Symlink companions, partial reports, consumed steps, native-color veto, and explicit manual Save are guarded. Current corrected execution is pending, not claimed passed. Zero live/paid requests or physical visual test.
+
+
+## Style DNA measured duotone correction
+
+Corrected integration head4531da8a compiled production and test Kotlin successfully, then Android CI38476057333 executed925 tests with exactly one new golden assertion failure: genuine white/cyan artwork was classified FIXED_PALETTE instead of DUOTONE. Independent failure artifact11853479616 is213996 bytes, SHA256 f3bf8d5964db87a4e273c39558a55b49e55cdbdb4689b536a5e4d0e88b6fa206. All924 other tests passed, including the six original red regressions and new wire/Room/UI integrations; no successful APK at that checkpoint.
+
+DNA family palette measurement now samples stable opaque interior paint before aggregating recurring colors. It excludes interpolated boundary mixtures, retains all existing geometry, falls back when too few interior pixels exist, and recycles its single256px bitmap. Existing legacy aggregate and sampler measurements stay unchanged. The same golden assertions remain; corrected full Android/all22/governance/XML/APK execution is required. No live or paid API request or physical device test occurred.

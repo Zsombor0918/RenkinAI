@@ -102,6 +102,14 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
             if (evidence.userEdited) "USER" else "AUTO_ANALYSIS")
     }
 
+    internal suspend fun saveMontageStyle(id: Long, expected: Long?, montage: dev.renkinProject.renkin.ai.style.PackMontage,
+        brief: String, instruction: String, expectedVersion: Long? = null): SavedProjectStyle {
+        val payload = montage.encode()
+        val evidence = dev.renkinProject.renkin.ai.style.MontageEvidence(id, sha256(payload.toByteArray()), sha256(brief.trim().toByteArray()))
+        return saveRevision(id, expected, brief, instruction, montage.pages.map { it.hash }, "EXTEND", montage.source,
+            montage.setupStamp, payload, evidence.encode(), expectedVersion)
+    }
+
     private suspend fun saveRevision(id: Long, expectedRevision: Long?, specification: String,
         userInstruction: String, orderedHashes: List<String>, mode: String?, source: String?, sourceStamp: String?,
         analysisProfileJson: String? = null, analysisEvidenceJson: String? = null,
@@ -169,7 +177,7 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
 
     suspend fun snapshot(): ProjectAiSnapshot = withAssetLease { database.withTransaction { snapshotUnlocked() } }
     private suspend fun snapshotUnlocked() = ProjectAiSnapshot(dao.allMetadata(), dao.allRevisions(),
-        dao.allAssets(), dao.allReferences(), dao.allVariants())
+        dao.allAssets(), dao.allReferences(), dao.allVariants(), dao.allApprovals())
 
     /** Only unknown files/temp files are collected. Draft imports with Room rows remain pinned;
      * active/history/variant records cannot lose their images. No automatic startup GC. */
@@ -188,11 +196,15 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
             require(hashes.size <= 5 && hashes.distinct().size == hashes.size && hashes.all { it.matches(Regex("[a-f0-9]{64}")) })
             require((row.analysisProfileJson == null) == (row.analysisEvidenceJson == null)) { "Incomplete analysis evidence." }
             row.analysisEvidenceJson?.let { evidence ->
-                ReviewedAnalysisEvidence.parse(evidence).validate(row.profileId, checkNotNull(row.analysisProfileJson), row.specification, row.origin, hashes)
+                if (dev.renkinProject.renkin.ai.style.PackMontage.optional(row.analysisProfileJson) != null)
+                    dev.renkinProject.renkin.ai.style.MontageEvidence.parse(evidence).validate(row.profileId,
+                        checkNotNull(row.analysisProfileJson), row.specification, hashes)
+                else ReviewedAnalysisEvidence.parse(evidence).validate(row.profileId, checkNotNull(row.analysisProfileJson), row.specification, row.origin, hashes)
             }
         }
 
         fun validateSnapshot(data: ProjectAiSnapshot, profileIds: Set<Long>) {
+            validateTrialSnapshot(data)
             require(data.metadata.map { it.profileId }.distinct().size == data.metadata.size)
             require(data.revisions.map { it.profileId to it.revision }.distinct().size == data.revisions.size)
             require(data.assets.map { it.profileId to it.hash }.distinct().size == data.assets.size)
@@ -239,6 +251,7 @@ class ProjectAiRepository(val database: RenkinPackDatabase, val files: ProjectAs
             dao.insertRevisions(data.revisions)
             dao.insertReferences(data.references)
             dao.insertVariants(data.variants)
+            dao.putApprovals(data.approvals)
             data.metadata.forEach { dao.putMetadata(it) }
         }
     }

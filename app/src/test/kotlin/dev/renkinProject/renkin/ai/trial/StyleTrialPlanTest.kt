@@ -1,0 +1,227 @@
+package dev.renkinProject.renkin.ai.trial
+
+import android.content.ComponentName
+import org.robolectric.Shadows.shadowOf
+import android.app.Application
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.Drawable
+import dev.renkinProject.renkin.R
+import dev.renkinProject.renkin.ai.pngBytes
+import dev.renkinProject.renkin.ai.AiSettings
+import dev.renkinProject.renkin.ai.style.PromptComposer
+import dev.renkinProject.renkin.data.project.sha256
+import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
+import org.junit.*
+import org.junit.Assert.*
+import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+
+@RunWith(RobolectricTestRunner::class)
+@Config(application = Application::class, sdk = [33])
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+class StyleTrialPlanTest {
+    @Test fun futureMontageContractReconstructsIdentityInsteadOfTracingPlatformBadges() {
+        val appearance = "Reviewed style: matte symbol\nProject instruction: owner preference\nApp instruction: "
+        val old = PromptComposer.versionedEditPrompt(appearance, 2, 3)
+        assertEquals("6b7313c2b2db905e50e3f9c1fe8d3df396a2f88b9d365c78686cd0c106af4a7f", sha256(old.toByteArray()))
+        java.io.File("build/montage-evidence").apply { mkdirs() }.resolve("v3-prompt-golden.txt").writeText(old)
+        val next = PromptComposer.versionedEditPrompt("Reviewed style: matte symbol\nProject instruction: owner preference", 2, 4)
+        assertTrue(next.length < old.length)
+        for (meaning in listOf("identity, not a rendering template", "contact-sheet montages", "platform badge",
+            "standalone", "gloss", "48 dp", "ONE standalone", "transparent alpha", "owner preference"))
+            assertTrue(meaning, next.contains(meaning))
+        assertEquals(1, Regex("matte symbol").findAll(next).count())
+        assertFalse(next.contains("App instruction: "))
+        assertEquals(old, PromptComposer.versionedEditPrompt(appearance, 2, 3))
+    }
+    @get:Rule val temporary = TemporaryFolder()
+    @Test fun montageContractBindsContactSheetsWithoutReinterpretingHistoricalReferences() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(refs = 2)
+            val old = f.plan(listOf("a/Main")).freezeReferenceFirstPrompt()
+            val legacy = old.encode()
+            val context = JSONObject(old.context.encode()).put("montageFingerprint", "d".repeat(64))
+            val next = old.copy(context = TrialContext.parse(context), promptVersion = 3, promptHashes = emptyMap())
+            val frozen = next.copy(promptHashes = next.inputs.associate { it.key to sha256(next.effectivePrompt(it).toByteArray()) })
+            frozen.validate()
+            assertEquals(frozen, StyleTrialPlan.parse(frozen.encode()))
+            val text = frozen.effectivePrompt(frozen.inputs.single())
+            assertTrue(text.contains("contact-sheet montages"))
+            assertTrue(text.contains("IMAGE 1")); assertTrue(text.contains("ONE standalone"))
+            assertEquals(legacy, StyleTrialPlan.parse(legacy).encode())
+            assertTrue(runCatching { old.copy(promptVersion = 3).validate() }.isFailure)
+        }
+    }
+    @Test fun newPromptVersionBindsEffectiveBytesAndCannotMutateARestoredRequest() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(refs = 2)
+            val old = f.plan(listOf("a/Main"))
+            val frozenOld = old.encode(); val oldFingerprint = old.fingerprint
+            val next = old.freezeReferenceFirstPrompt()
+            assertEquals(1, StyleTrialPlan.parse(frozenOld).promptVersion)
+            assertEquals(frozenOld, StyleTrialPlan.parse(frozenOld).encode())
+            assertEquals(oldFingerprint, StyleTrialPlan.parse(frozenOld).fingerprint)
+            assertFalse(frozenOld.contains("promptVersion")); assertFalse(frozenOld.contains("promptHashes"))
+            assertNotEquals(old.fingerprint, next.fingerprint)
+            assertEquals(next, StyleTrialPlan.parse(next.encode()))
+            assertEquals(sha256(next.effectivePrompt(next.inputs.single()).toByteArray()), next.promptHashes.getValue("a/Main"))
+            assertTrue(runCatching { next.copy(promptHashes = mapOf("a/Main" to "0".repeat(64))).validate() }.isFailure)
+            assertTrue(runCatching { next.copy(specification = "changed", context = next.context.copy(
+                styleFingerprint = styleFingerprint("changed", next.instruction))).validate() }.isFailure)
+            assertTrue(runCatching { StyleTrialPlan.parse(JSONObject(next.encode()).put("promptVersion", 3).toString()) }.isFailure)
+            assertTrue(runCatching { StyleTrialPlan.parse(JSONObject(next.encode()).also { it.remove("promptHashes") }.toString()) }.isFailure)
+            assertTrue(runCatching { StyleTrialPlan.parse(JSONObject(next.encode()).put("promptVersion", 1).toString()) }.isFailure)
+            val maximum = old.copy(specification = "\"".repeat(6000), instruction = "\\".repeat(2000),
+                context = old.context.copy(dnaFingerprint = "e".repeat(64),
+                    styleFingerprint = styleFingerprint("\"".repeat(6000), "\\".repeat(2000))),
+                drawingRecipes = mapOf("a/Main" to "\\".repeat(6000))).freezeReferenceFirstPrompt()
+            maximum.validate()
+            assertEquals(maximum, StyleTrialPlan.parse(maximum.encode()))
+        }
+    }
+    @Test fun historicalV1CanonicalFingerprintRemainsAnExactGolden() {
+        val context = TrialContext(1, 1, 0, "CREATE", null, null, "a".repeat(64), "b".repeat(64),
+            referenceFingerprint(emptyList()), "initial", "OpenAI", "gpt-image-2.5-flare", "medium")
+        val plan = StyleTrialPlan(context, "outline", "", emptyList(), listOf(TrialInput("target/Main", "Target",
+            "c".repeat(64), "component-resource", "22222222-2222-2222-2222-222222222222")), "11111111-1111-1111-1111-111111111111")
+        // Android JSONObject.quote escapes the component slash as \/ in canonical bytes.
+        assertEquals("ec4677faf200588ca7602d7e987b2006e69b57693892db901e3c4ee4585c8ebd", plan.fingerprint)
+        assertEquals(plan.encode(), StyleTrialPlan.parse(plan.encode()).encode())
+    }
+    @Test fun frozenPlanRoundTripsAndEveryCostInputChangesFingerprint() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(); val p = f.plan(); assertEquals(p, StyleTrialPlan.parse(p.encode()))
+            for (changed in listOf(p.copy(instruction = "changed", context = p.context.copy(styleFingerprint = styleFingerprint(p.specification, "changed"))), p.copy(context = p.context.copy(quality = "high")),
+                p.copy(context = p.context.copy(catalogStamp = "b".repeat(64))), p.copy(context = p.context.copy(epoch = "restored:initial")),
+                p.copy(inputs = p.inputs.reversed()), p.copy(inputs = p.inputs.map { it.copy(originalHash = "c".repeat(64)) })))
+                assertNotEquals(p.fingerprint, changed.fingerprint)
+            assertEquals(3, p.endpointMaximum)
+        }
+    }
+    @Test fun optionalOriginalEvidenceRoundTripsWithoutRewritingLegacyPlanFingerprints() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(); val old = f.plan()
+            assertEquals(old.encode(), StyleTrialPlan.parse(old.encode()).encode())
+            assertFalse(old.encode().contains("originalEvidence"))
+            val evidence = OriginalIconEvidence("APP_COMPONENT_RESOURCE", "adaptive", 0, 420, 123, false)
+            val updated = old.copy(inputs = old.inputs.map { it.copy(originalEvidence = evidence) })
+            assertNotEquals(old.fingerprint, updated.fingerprint)
+            assertEquals(updated, StyleTrialPlan.parse(updated.encode()))
+            assertTrue(runCatching { OriginalIconEvidence.parse(evidence.json().put("verification", "PRISTINE")) }.isFailure)
+        }
+    }
+    @Test fun strictSchemaTamperingDuplicateTargetsAndStabilityReferenceCountsReject() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(); val p = f.plan()
+            assertTrue(runCatching { p.copy(inputs = p.inputs + p.inputs.first()).validate() }.isFailure)
+            assertTrue(runCatching { p.copy(context = p.context.copy(provider = AiSettings.STABILITY)).validate() }.isFailure)
+            assertTrue(runCatching { StyleTrialPlan.parse(JSONObject(p.encode()).put("schema", 2).toString()) }.isFailure)
+            assertTrue(runCatching { StyleTrialPlan.parse(p.encode().dropLast(1) + ",\"schema\":1}") }.isFailure)
+        }
+    }
+    @Test fun composerPreservesSeparateUserInstructionEscapingAndMaximumValidSavedInputs() {
+        val text = PromptComposer.composeSaved("x".repeat(6000), "u".repeat(2000))
+        assertTrue(text.length <= 16000); assertTrue(text.contains("u".repeat(2000)))
+        assertTrue(PromptComposer.composeSaved("outline", "quoted \"value\"").contains("\\\"value\\\""))
+        assertTrue(text.contains("original app identity")); assertTrue(text.contains("transparent PNG"))
+        assertTrue(PromptComposer.composeSaved("\"".repeat(6000), "\"".repeat(2000)).length <= dev.renkinProject.renkin.ai.MAX_COMPOSED_ICON_PROMPT)
+    }
+    @Test fun numericalRevisionReuseCannotMakeDifferentStyleTextAnIdenticalInput() = runBlocking {
+        StyleTrialFixture(temporary.root).use { f ->
+            f.initialize(); val p = f.plan()
+            val other = p.context.copy(styleFingerprint = styleFingerprint("different restored style", p.instruction))
+            assertFalse(p.context.sameArtworkInputs(other))
+            assertTrue(runCatching { p.copy(context = other).validate() }.isFailure)
+            val legacy = p.context.copy(styleFingerprint = "")
+            assertEquals(legacy, TrialContext.parse(org.json.JSONObject(legacy.encode())))
+            assertFalse(legacy.sameArtworkInputs(p.context))
+            assertTrue(runCatching { f.journal.claim(p.copy(context = legacy), f.images(p)) }.isFailure)
+        }
+    }
+    @Test fun realVectorAdaptiveAndTransparentOriginalRenderingIsBoundedAndRejectsBrokenArtwork() {
+        val application = RuntimeEnvironment.getApplication()
+        val vector = checkNotNull(application.getDrawable(R.drawable.ic_github))
+        val adaptive = AdaptiveIconDrawable(ColorDrawable(Color.BLUE), ColorDrawable(Color.RED))
+        for (drawable in listOf(vector, adaptive)) assertTrue(renderTrialOriginal(drawable).size <= 4 * 1024 * 1024)
+        val output = java.io.File("build/montage-evidence").apply { mkdirs() }
+        output.resolve("original-vector-1024.png").writeBytes(renderTrialOriginal(vector))
+        output.resolve("original-adaptive-1024.png").writeBytes(renderTrialOriginal(adaptive))
+        val native = android.graphics.Bitmap.createBitmap(48, 48, android.graphics.Bitmap.Config.ARGB_8888)
+        try {
+            val canvas = android.graphics.Canvas(native)
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { color = Color.RED }
+            canvas.drawCircle(24f, 24f, 22f, paint)
+            paint.color = Color.WHITE; paint.textSize = 17f; canvas.drawText("AB", 11f, 30f, paint)
+            val bitmap = android.graphics.drawable.BitmapDrawable(application.resources, native)
+            val layered = android.graphics.drawable.LayerDrawable(arrayOf(ColorDrawable(Color.TRANSPARENT), bitmap))
+            for ((name, drawable) in listOf("bitmap48" to bitmap, "layered48" to layered)) {
+                val png = renderTrialOriginal(drawable)
+                assertEquals(1024 to 1024, dev.renkinProject.renkin.data.project.inspectPng(png))
+                assertEquals(48, native.width); assertEquals(48, native.height)
+                output.resolve("original-$name-1024.png").writeBytes(png)
+                val decoded = android.graphics.BitmapFactory.decodeByteArray(png, 0, png.size)
+                try {
+                    assertEquals(0, Color.alpha(decoded.getPixel(0, 0)))
+                    val small = android.graphics.Bitmap.createScaledBitmap(decoded, 48, 48, true)
+                    try { output.resolve("original-$name-launcher48.png").writeBytes(small.pngBytes()) }
+                    finally { small.recycle() }
+                } finally { decoded.recycle() }
+            }
+            output.resolve("original-native-detail.json").writeText(JSONObject().put("bitmap_native_width", native.width)
+                .put("bitmap_native_height", native.height).put("bitmap_density", native.density)
+                .put("rendered_width", 1024).put("rendered_height", 1024)
+                .put("detail_is_not_created_by_upscaling", true).toString(2))
+        } finally { native.recycle() }
+        assertTrue(runCatching { renderTrialOriginal(ColorDrawable(Color.TRANSPARENT)) }.isFailure)
+        val broken = object : Drawable() {
+            override fun draw(canvas: android.graphics.Canvas) { error("broken resource") }
+            override fun setAlpha(alpha: Int) {}
+            override fun setColorFilter(filter: android.graphics.ColorFilter?) {}
+            override fun getOpacity() = android.graphics.PixelFormat.TRANSLUCENT
+        }
+        assertTrue(runCatching { renderTrialOriginal(broken) }.isFailure)
+    }
+    @Test fun exactAliasResourceRemainsOriginalWhenTheActivityApiReturnsThemedArtwork() = runBlocking {
+        val context = RuntimeEnvironment.getApplication()
+        val component = ComponentName(context.packageName, context.packageName + ".OriginalAlias")
+        val shadow = shadowOf(context.packageManager)
+        val info = shadow.addActivityIfNotPresent(component)
+        info.icon = R.drawable.ic_github
+        info.enabled = true; info.applicationInfo.enabled = true
+        val sourcePackB = renderTrialOriginal(checkNotNull(context.getDrawable(R.mipmap.ic_launcher_foreground)))
+        val genuineC = renderTrialOriginal(checkNotNull(context.getDrawable(R.drawable.ic_github)))
+        assertNotEquals(sha256(sourcePackB), sha256(genuineC))
+        for (appliedA in listOf(Color.WHITE, Color.GREEN)) {
+            shadow.addActivityIcon(component, ColorDrawable(appliedA))
+            val original = currentTrialOriginal(context, component.flattenToString())
+            assertArrayEquals("A themed display/API icon must not replace exact component resource C", genuineC, original.png)
+            assertTrue(original.origin.contains(component.flattenToString()))
+            assertNotEquals(sha256(sourcePackB), original.hash)
+        }
+    }
+    @Test fun wrongUserDisabledAndUnresolvableComponentResourcesFailWithoutSubstitution() = runBlocking {
+        val context = RuntimeEnvironment.getApplication(); val shadow = shadowOf(context.packageManager)
+        val component = ComponentName(context.packageName, context.packageName + ".UnsafeOriginalAlias")
+        val info = shadow.addActivityIfNotPresent(component)
+        info.icon = Int.MAX_VALUE; info.enabled = true; info.applicationInfo.enabled = true
+        shadow.addActivityIcon(component, ColorDrawable(Color.WHITE))
+        assertTrue(runCatching { currentTrialOriginal(context, component.flattenToString()) }.isFailure)
+        info.icon = R.drawable.ic_github; val uid = info.applicationInfo.uid
+        info.applicationInfo.uid = (android.os.Process.myUid() / 100000 + 1) * 100000 + 12345
+        assertTrue(runCatching { currentTrialOriginal(context, component.flattenToString()) }.isFailure)
+        info.applicationInfo.uid = uid; info.enabled = false
+        assertTrue(runCatching { currentTrialOriginal(context, component.flattenToString()) }.isFailure)
+    }
+    @Test fun removedComponentNeverFallsBackToTheApplicationOrSourcePack() = runBlocking {
+        val context = RuntimeEnvironment.getApplication()
+        val key = context.packageName + "/MissingLauncherAlias"
+        assertTrue(runCatching { currentTrialOriginal(context, key) }.isFailure)
+    }
+}

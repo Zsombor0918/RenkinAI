@@ -11,6 +11,9 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
+import okhttp3.MultipartBody
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Request
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -27,6 +30,85 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class AiImagePipelineTest {
+    /** Frozen a1c2310 AI1/AI2 prompt: do not derive the oracle from iconPrompt. */
+    private fun legacyPromptSnapshot(style: String, refs: Int, instruction: String): String = """
+        Create ONE Android launcher icon. Image 1 is the original app icon: preserve its distinctive
+        visual identity and symbol, while redrawing it in the requested style.
+        ${if (refs == 0) "No style reference images were supplied; follow the specification below."
+          else "Images 2 through ${refs + 1} are STYLE REFERENCES ONLY. Match their stroke weight, " +
+            "optical size, padding, palette and complexity. Do not copy their app symbols."}
+        STYLE SPECIFICATION:
+        $style
+        APP-SPECIFIC INSTRUCTION (optional; subject to the shared style and output contract):
+        ${instruction.ifBlank { "No additional instruction; inherit the shared style." }}
+        OUTPUT CONTRACT:
+        One centered icon, square canvas, genuine transparent alpha outside the artwork.
+        No text, watermark, checkerboard, solid background, device mockup, collage or contact sheet.
+        Preserve recognizability at 48 px. Return only the image.
+    """.trimIndent()
+    private fun bytes(body: okhttp3.RequestBody) = Buffer().also { body.writeTo(it) }.readByteArray()
+
+    @Test fun legacyAi1Ai2MultipartBytesAndAllOptionStringsMatchPreFixSnapshot() {
+        val models = listOf("gpt-image-2.5-flare", "gpt-image-2.5-sunburst", "gpt-image-1-mini")
+        val qualities = listOf("low", "medium", "high")
+        assertEquals(models, AiSettings.MODELS); assertEquals(qualities, AiSettings.QUALITIES)
+        assertEquals(listOf("OpenAI", "Stability AI"), AiSettings.PROVIDERS)
+        // Both empty AI1 instruction and an AI2 per-app instruction, all legacy options/ref counts.
+        for (refs in 0..5) for (instruction in listOf("", "keep the antenna"))
+            for (model in models) for (quality in qualities) {
+                val settings = AiSettings(style = "white outline; preserve the symbol", model = model, quality = quality,
+                    referenceNames = (0 until refs).map { "img_0_$it.png" }, appInstruction = instruction)
+                val images = (0..refs).map { byteArrayOf(0, 127, 255.toByte(), it.toByte()) }
+                val actual = buildImageEditRequest("offline-credential", settings, images)
+                val multipart = actual.body as MultipartBody
+                // Random MIME boundary is the only nonsemantic value; use the actual boundary for
+                // the independently frozen pre-fix body to compare every serialized byte.
+                val expected = MultipartBody.Builder(multipart.boundary).setType(MultipartBody.FORM)
+                    .addFormDataPart("model", model)
+                    .addFormDataPart("prompt", legacyPromptSnapshot(settings.style, refs, instruction))
+                    .addFormDataPart("n", "1").addFormDataPart("size", "1024x1024")
+                    .addFormDataPart("quality", quality).addFormDataPart("background", "transparent")
+                    .addFormDataPart("output_format", "png")
+                images.forEachIndexed { index, png ->
+                    expected.addFormDataPart("image[]", "input_$index.png", png.toRequestBody("image/png".toMediaType()))
+                }
+                assertArrayEquals("Legacy AI1/AI2 request changed", bytes(expected.build()), bytes(multipart))
+                assertEquals("https://api.openai.com/v1/images/edits", actual.url.toString())
+                assertEquals("POST", actual.method); assertEquals("Bearer offline-credential", actual.header("Authorization"))
+            }
+    }
+    @Test fun legacyStabilityStyleAndBackgroundBodiesRemainByteIdenticalToPreFixSnapshot() {
+        val source = byteArrayOf(0, 1, 255.toByte()); val reference = byteArrayOf(3, 127, 4)
+        for (instruction in listOf("", "keep the antenna")) {
+            val settings = AiSettings(provider = "Stability AI", style = "white monoline", appInstruction = instruction)
+            val actual = buildStabilityStyleRequest("offline-credential", settings, source, reference)
+            val body = actual.body as MultipartBody
+            val prompt = """
+                Redraw the recognizable symbol from the input app icon as one minimal Android launcher icon.
+                Preserve its distinctive app identity and composition. Apply this shared icon-pack style:
+                white monoline
+                App-specific instruction (keep the shared style and output rules): $instruction
+                Square canvas, centered artwork, balanced padding, simple silhouette, no lettering, no watermark,
+                no tile or scene. The next API step removes the background and makes real transparency.
+            """.trimIndent()
+            val expected = MultipartBody.Builder(body.boundary).setType(MultipartBody.FORM)
+                .addFormDataPart("init_image", "app-icon.png", source.toRequestBody("image/png".toMediaType()))
+                .addFormDataPart("style_image", "style-reference.png", reference.toRequestBody("image/png".toMediaType()))
+                .addFormDataPart("prompt", prompt).addFormDataPart("composition_fidelity", "0.9")
+                .addFormDataPart("change_strength", "0.7").addFormDataPart("output_format", "png").build()
+            assertArrayEquals(bytes(expected), bytes(body))
+            assertEquals("https://api.stability.ai/v2beta/stable-image/control/style-transfer", actual.url.toString())
+            assertEquals("image/*", actual.header("Accept"))
+        }
+        val actual = buildStabilityRemoveBackgroundRequest("offline-credential", source)
+        val body = actual.body as MultipartBody
+        val expected = MultipartBody.Builder(body.boundary).setType(MultipartBody.FORM)
+            .addFormDataPart("image", "stylized.png", source.toRequestBody("image/png".toMediaType()))
+            .addFormDataPart("output_format", "png").build()
+        assertArrayEquals(bytes(expected), bytes(body))
+        assertEquals("https://api.stability.ai/v2beta/stable-image/edit/remove-background", actual.url.toString())
+    }
+
     @Test fun editSendsOriginalFirstAndSeparateReferencesWithoutAndroidIdentifiers() {
         val settings = AiSettings(style = "White outline", referenceNames = listOf("img_1_1.png", "img_2_2.png"))
         val request = buildImageEditRequest("test-key-only", settings,

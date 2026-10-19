@@ -1,5 +1,165 @@
 # Agent, Git and review workflow
 
+## V4 montage acceptance evidence
+
+The existing Android validator now requires exact prompt_version4 for the new montage
+journey; stale V3 and V2 receipts fail. Test count, separate-process restart, actual
+loopback/external counters and all other gates remain unchanged. ADR0012 still gives
+one full hosted suite/build; no additional workflow or automatic unit matrix is added.
+
+## Montage evidence scheduling
+
+ADR0012 remains unchanged: CI/build alone runs the authoritative full suite and HTTP. It additionally retains actual synthetic montage PNGs/metadata, without another unit invocation. Existing Android runner now executes3 write journeys plus1 separate-process restart; strict Python fake-runner assertions require those counts, input roles and zero external posts. Shared-navigation changes also require the existing dispatch-only7-case order check. Historical merge-title governance is not waived.
+
+## Phase0 retirement verification
+
+Owner authorization in ADR0015 allows only dependency-proven obsolete analysis cases/selectors to be removed. The single automatic full Linux/build and integrated HTTP policy remains; two empty retired analysis groups are removed, historical-data groups retained. Android now requires2 active write/preparation journeys plus1 separate-process restart, with unchanged emulator-only/head/counter guards. Run the explicit form-order diagnostic for these UI-fixture edits. Existing PR10 remains draft/open; its actual owner-selected base is main. No merge/rewrite/new PR. Phase0 evidence must not be presented as completion of montage Phases1–3.
+
+## Phase4A stacked verification
+
+Use the existing PR base feat/ux-flow-stabilization and separate draft feature branch. No CI scheduling change: ADR0012 single full Linux/build plus Python/governance and existing five Android journeys. Record exact final SHA externally after commit; initial BLOCKED audit is retained until evidence supports a final result. No shared Compose harness/order change is introduced by request-contract assertions.
+
+## Phase3A stacked feature verification
+
+CI, offline Android and governance add PR base feat/ux-flow-stabilization so the
+separate reference-first draft PR receives the same gates. Scheduling remains
+ADR0012: one automatic full unit suite/build, no duplicate HTTP job. Android adds
+one local reference-first journey to the retained Quick/Standard/incomplete-cancel
+and restart paths (4 writes/preparations plus1 independent restart process).
+The evidence validator requires zero loopback/external POSTs for reference-first,
+ordered saved references, Trial preparation and three saved projects reopened.
+Only the explicit qemu-guarded emulator may be installed/stopped. No phone access.
+
+
+## Owner-approved lean verification (October 17, 2026)
+
+This policy supersedes earlier requirements below to execute every historical group
+on every PR. It changes scheduling only; all Kotlin cases/assertions remain.
+[ADR0012](../decisions/0012-lean-verification.md) records the owner authorization and exact execution inventory.
+CI/build alone runs the full unit suite, compile and debug assembly through
+`python scripts/run_compose_regressions.py --group full-suite`, retaining exact-head
+XML/HTML/logs, required selectors and real Room19/20/21 exports. HTTP contracts are
+included there, not in a second automatic job. Android instrumentation and strict
+Python/governance checks remain separate; hosted Standard/restart remain BLOCKED.
+For development use `--group trial-persistence-session` (or another existing name);
+repeat `--group` to run a deduplicated union in one Gradle invocation. No argument
+also selects only full-suite. `--order-check` explicitly runs creation, ingress,
+both and shared-form separately; run it for shared UI harness/order changes and
+before owner pre-merge/release review, via the dispatch-only Profile form workflow.
+Record its exact SHA and result; a missing diagnostic is NOT RUN, never PASS.
+Older results below remain historical, not final-head evidence. No safety/data,
+billing, signing, API, test failure condition or owner-review requirement is waived.
+
+
+## Synthetic emulator transition evidence
+
+The offline runner additionally retains tag-filtered trace-0.log and trace-1.log from the explicit emulator after each instrumentation command. Test-owned delegates record actual input/backend boundaries, observed state and child completion, plus Save/read/journal events with monotonic thread/process identity. Logging never changes a dispatcher or grants success; absent transitions may reflect StateFlow conflation or watcher attachment. No raw credentials, image bytes, SQL arguments or provider prose are logged. Existing gates and strict counter/assertion checks remain.
+
+## Offline DNA gates and Unicode Windows paths
+
+The original23 regression groups remain; an additive offline HTTP group requires
+the new disk-Room/controller/actual-wire suite and incomplete-reason regressions.
+The runner preserves an explicit ASCII junction path so AGP's Windows path guard
+can stay enabled. A new Offline Style DNA workflow runs failing HTTP and emulator
+jobs on the actual PR head and retains reports. Its host runner refuses physical
+serials/qemu mismatches, builds the three APKs, records hashes/source/dirty status,
+and verifies separate instrumentation processes. It never reads a provider key.
+These are workflow gates; no new branch-protection context is claimed configured.
+The existing CI build also pins checkout to the PR head (or event SHA on push/
+dispatch), retaining all tasks while making final APK provenance explicit.
+See [offline commands](../qa/OFFLINE_STYLE_DNA.md) and
+[ADR0010](../decisions/0010-offline-style-dna-validation.md).
+
+## PR8 final APK verification
+
+The existing CI compile/unit/assemble/upload sequence retains every task. After
+assembly an additive SDK35 aapt/apksigner/sha256sum step verifies the debug package
+hu.zsombor.renkinai.dev, nonempty APK, complete signature and certificate/hash.
+The hosted6fd75af2 run proved rg unavailable after a successful974-test/assemble
+run; package matching therefore uses standard grep with an anchored exact pattern.
+Download that exact run's artifact and compare its APK SHA256 to this output.
+This verifies the artifact, not installed-certificate compatibility or phone
+acceptance. No signing configuration, dependency, required gate or protection rule
+changes. Final exact-head all23/XML/schema and audit checks remain mandatory.
+
+## Native Windows guided UX verification
+
+The complete Compose runner now has 23 groups, retaining all 22 previous groups and
+selectors and adding five guided classes plus the AtomicFile harness class. Windows invokes the absolute native
+`gradlew.bat`; POSIX still invokes `./gradlew`. Task/selector/XML/skipped/error/exit
+requirements are unchanged. The final full-suite group compiles, tests and assembles
+on the exact committed HEAD after the isolated runs.
+
+Git snapshot reads normalize CRLF before matching the same exact four impact
+declarations. Strict declaration/body/path/link requirements remain; a retained test
+proves native Windows blobs work. Hook fixture text explicitly uses LF matching
+`.gitattributes`, so the real pre-commit whitespace gate is still exercised.
+All three workflows additionally trigger for PRs targeting `feat/style-dna-v1`.
+No required job or guard was removed and no server protection setting was changed.
+See [ADR0009](../decisions/0009-guided-project-workflow.md).
+
+Local setup is process-scoped via portable `env.ps1` (JDK17/API36/build-tools35.0.0,
+Python3.14/Git shell on PATH). Run `python -m unittest discover -s scripts/tests -v`,
+`python scripts/run_compose_regressions.py`, `python scripts/check_docs.py --base
+origin/feat/style-dna-v1 --head HEAD`, and the commit range/PR audit guards.
+Record final-head evidence externally; do not substitute earlier remote CI or a stale APK.
+The stacked PR stays draft; PASS WITH RISKS still requires explicit owner review.
+
+The Windows-only API30+ AtomicFile shadow preserves Android atomic replacement in
+Robolectric; non-Windows invokes the original method. Four mandatory harness guards
+and unchanged journal/controller guards verify base/backup/unfinished-write durability.
+Changes to shared Java shadows, test resources and the harness-test package also trigger
+the same mandatory isolated workflow, preserving coverage for harness-only corrections.
+Its narrow8-test pass does not replace the unfiltered/all23 gates; see the
+[platform correction](../changes/2026-10-14-windows-atomic-test-harness.md).
+
+## Earlier checkpoint records
+
+The dated evidence below is historical; it does not replace the local guided UX checks.
+
+## Closing-head legacy rejection-journey readiness
+
+Closing docs-only63e5e5be passed Android38478557077 and925/925 complete unfiltered
+tests. Full regressions38478557064 failed1/23 isolated trial-ui assertions because
+the retained rejection journey clicked style-analysis-prepare while its independent
+initial Room load kept the real button disabled. All other21 commands, including
+DNA26/26 and full925/925, passed. Independent artifact11856632498,644124bytes,
+SHA25682ec516e2af3be8bdba3fa42687adaf7b69135a0f8b7635f2f5e4e4f40abbb5b
+retains the actual failure; it is not erased by full-suite success.
+
+The test-only follow-up materializes and observes the actual enabled semantics within
+the existing10000ms bound in that second journey, exactly as the earlier EXTEND journey
+already does. Every displayed/enabled/click, error, consumed-consent, fresh-ID, manual
+Save and zero-image-call assertion remains unchanged. No runtime, selector, timeout,
+idling rule or signing/data change. Its own final-head all22/Android/governance,
+independent XML/schema and fresh APK are still required in PR7's audit.
+
+## October 14 — Style DNA closing-head verification
+
+Style DNA code89eacb0d passes original Android tasks and all22 runner groups:
+149 XML/925 actual tests, zero failures/errors/skips, all selectors and genuine schema
+exports present. Independent artifact11857125237 is638786 bytes, SHA256
+`076d772e6961d67ef9a50652fe5cdfed117b2cf90451c4964fcff8eea9585f12`.
+Initial b2df166a904/6 and corrected compilation4531da8a925/1 remain observed red evidence.
+No selector, assertion, timeout, idling, failure condition or existing job was weakened.
+
+For the closing docs-only HEAD run all mandatory local guards/range checks, complete
+runner and Gradle attempt, then hosted Android/all22/commit-conventions/documentation-audit.
+Local SDK/bootstrap network failure is not Android success. Independently download final-head
+XML/schema evidence and APK, verify package/digests/signature and update PR7's audit with
+the final SHA. BLOCKED stays until mandatory gates finish; PASS WITH RISKS may record
+explicit device/live gaps without claiming owner review/merge. Keep stacked draft unmerged.
+
+## October 13 owner reproduction coverage
+
+The existing trial-ui group additionally includes ProjectStyleTrialJourneyComposeTest.
+All21 groups and previous selectors remain. NativeSDK33/320dp tests traverse the
+actual shell/targets/style/trial routes with real Room, sampler and owned controllers.
+Only artwork, session ownership callbacks and provider ports are fixtures; this is
+not a full Android MainViewModel/Hilt or phone test. The red checkpoint requires
+recorded failing assertions before corrective changes are declared verified.
+
+
 Start with [AGENTS.md](../../AGENTS.md); setup is in [CONTRIBUTING](../../CONTRIBUTING.md).
 The shared scripts own the automatic rules. This document explains their limits
 and the external settings required to turn checks into enforced merge conditions.
@@ -217,3 +377,41 @@ Final Codex 04 reread on October 12 also reports
 `require_extra_approval_for_unattributed_changes: true`. No author/review status is
 fabricated and no ruleset write occurred. PR #5's latest final-head audit/checks
 determine readiness; owner acceptance and merge remain separate from green CI.
+
+
+## Codex 05 additive verification
+
+PR #5 is owner-merged as af7bdb10 on October 12 at 16:10:49 UTC; its final aceb691c
+checks are historical evidence for the new M5 branch. The runner retains every
+M1–M4 selector and adds five trial-domain/gateway/journal/UI/persistence-session
+groups, followed by the same unfiltered compile/unit/APK command. Genuine schemas
+19/20/21 are retained and a missing current export fails. A new synthetic fault
+case verifies this boundary; fixture schema text is never Android evidence.
+Regression path filters now also include AI, project/transfer data, DB and schema
+changes, so a final HTTP or persistence correction cannot silently skip regression
+evidence. Original CI, governance, hooks and exact required contexts are unchanged.
+Final-head XML/counts/APK plus the single complete audit declaration remain required.
+No live request, main push/merge, ruleset write or independent review is inferred.
+
+
+## Style DNA test-first stacked development
+
+Branch feat/style-dna-v1 starts from verified PR6 head454bd5ec, with mainaf7bdb10 unchanged. Both owner specifications were read in full. Legacy one-shot analysis and original-first trials already work. New test-only assertions reproduce missing reason categories, coarse-color duplicate bias, the24-reference boundary, absent per-image reports/family grammar and unevidenced modernization guidance. Hosted assertion execution is required before production changes. The three workflow base filters add feat/style-trials-m5 so a stacked draft receives the same unchanged jobs and complete21-group runner. No selector, timeout, test or approval check is removed. Local Android dependency access is unavailable; hosted CI supplies Android evidence. Zero live or paid provider calls. Deep and physical visual A/B remain deferred; no merge or force push.
+
+
+## Style DNA opt-in development on stacked PR7
+
+New feat/style-dna-v1 starts at PR6 head454bd5ec; PR6 and main are unchanged. D0 adds safe local missing/unrenderable/dynamic/stateful/render/alpha/resource reasons, independent Oklab color duplicate veto and bounded up-to600 local candidates/24 selected images. Legacy sampler defaults120/12 and M4 aggregate12 remain. New algorithmv3 accepts oldv1/v2 journals without rewriting their fingerprints.
+
+D1 Quick uses up-to12 labeled image parts and one report per image, with conservative independent local synthesis. Standard explicitly opts into up-to24 images in six-image groups and one separately listed text synthesis (maximum5 submissions). Same documented gpt-5.4-mini alias/snapshot, explicit low/high detail, strict Responses text.format/store:false, max12288 output tokens/step, bounded5MiB body/128KiB response. Model availability and quality remain unverified; low is not presumed cheaper. Deep and live A/B are deferred.
+
+D2 versioned reports and multi-family drawing grammar use a tagged style_dna payload in existing nullable revision JSON; Roomv21 and full/shareformat6/payload3 stay. Existing V1 rows/history remain unchanged. Explicit human review and Save create an immutable revision with up-to5 selected private refs. Legacy-only readers reject new grammar before restore writes; safe rollback needs a compatible forward reader. Device-local journals stay out of backups and retain global consumed IDs across delete/restore.
+
+D3 M5 optionally freezes target-specific drawing recipes, explicit family/symbol-type choices and DNA fingerprint in compatible optional plan/context fields. Original component C remains exclusive identity; B only style. Original verification and separate paid consent remain. Null-override AI1/AI2 bodies, non-DNA Stability paths, editor, profile, watch, signing/install and historical PNGs remain.
+
+Test-first b2df166a: hosted904 tests with exactly6 new assertion failures; no old failures. Current new implementation/integration execution is pending hosted CI, not claimed green. Local Python52 guards pass; local Gradle/full runner fail before configuration at distribution download. All old21 groups/selectors remain plus one additive DNA integration group. Zero live/paid requests, no device test, merge or force push. Owner visual acceptance remains open.
+
+
+## Style DNA integration and compilation follow-up
+
+Implementation2bf8ca7e CI38469333350 failed KSP parsing StyleTrialPlan.kt:117 at an extra closing parenthesis; no Android assertions or APK ran. The correction retains all old fields and optional recipes. Existing full M5 prompt assertions are extended with the new modernization prohibition; all prior exact prompt/image/legacy-byte assertions remain. New MockWebServer, real Room/full-share backup/owned-controller and320dp/dark/restoration/source-switch Compose fixtures join the additive DNA group. Renderer fixtures cover dark-on-dark visible artwork, alpha exclusions, state/animation versus real render exceptions; bounded300/600 local scans have50/150/500/1500 synthetic mappings. Retain all21 old groups, with22 total. Symlink companions, partial reports, consumed steps, native-color veto, and explicit manual Save are guarded. Current corrected execution is pending, not claimed passed. Zero live/paid requests or physical visual test.

@@ -10,6 +10,26 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [33])
 class PromptComposerTest {
+    @Test fun repeatedCompiledDnaMustBecomeOneAppearanceBriefWithoutLosingUniqueInstructions() {
+        // Compiler envelope fixture; the real compiler/native image path is tested at the gateway.
+        val recipe = "Reviewed Style DNA family family1; symbol type WORDMARK. Evidence counts are sampled observations, not confidence.\n" +
+            "Background mode: none; standalone forms.\nEdges / corners: soft [OBSERVED, 3/4 sampled reports]\n" +
+            "Unestablished traits: Optical fill / padding. Retain target geometry; do not invent a style rule.\n" +
+            "Pack consistency: Apply supported rules across the target; 4 analyzed samples, not an entire-pack measurement. Dimensions are qualitative unless explicitly measured.\n" +
+            "No reference symbols, collages, generic modernization or arbitrary dark rounded tiles."
+        assertEquals("Historical V1 reproduces the duplicated rule", 2, Regex("Background mode:").findAll(
+            dev.renkinProject.renkin.ai.trial.dnaTrialAppearance(recipe, recipe, "keep my antenna")).count())
+        val prompt = PromptComposer.referenceFirstAppearance(recipe, "keep my antenna", recipe, "keep target monogram")
+        assertEquals(1, Regex("Background mode:").findAll(prompt).count())
+        assertTrue(prompt.contains("keep my antenna"))
+        assertTrue(prompt.contains("keep target monogram"))
+        assertFalse(prompt.contains("sampled reports")); assertFalse(prompt.contains("family "))
+        assertFalse(prompt.contains("Unestablished traits:"))
+        val different = PromptComposer.referenceFirstAppearance("Owner's unique accent\n$recipe", "separate", "Unique target rule")
+        assertTrue(different.contains("Owner's unique accent")); assertTrue(different.contains("Unique target rule"))
+        val editedMetadata = PromptComposer.referenceFirstAppearance("$recipe\nPack consistency: preserve the asymmetric notch", "")
+        assertTrue(editedMetadata.contains("Pack consistency: preserve the asymmetric notch"))
+    }
     @Test fun canonicalOutputSurvivesStructuredReloadAndKeepsIdentityAndFormat() {
         val style = analysisFixtureStyle()
         val text = PromptComposer.compose(style, "use mint", "keep the antenna")

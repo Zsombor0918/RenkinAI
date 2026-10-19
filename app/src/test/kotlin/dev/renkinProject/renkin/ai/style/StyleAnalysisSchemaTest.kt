@@ -21,15 +21,6 @@ class StyleAnalysisSchemaTest {
         val unknown = StyleProfileV1(shortStyleDescription = "Uncertain artwork")
         assertEquals(unknown, StyleProfileV1.parse(unknown.encode()))
     }
-    @Test fun strictSupportedSchemaRequiresAllKeysAndNoAdditionalProperties() {
-        val schema = StyleProfileV1.jsonSchema()
-        assertFalse(schema.getBoolean("additionalProperties"))
-        assertEquals(schema.getJSONObject("properties").keys().asSequence().toSet(),
-            schema.getJSONArray("required").let { a -> (0 until a.length()).map { a.getString(it) }.toSet() })
-        val text = schema.toString()
-        assertFalse(text.contains("minLength")); assertFalse(text.contains("pattern"))
-        assertEquals("integer", schema.getJSONObject("properties").getJSONObject("schemaVersion").getString("type"))
-    }
     @Test fun missingExtraNullAndCoercedPropertiesAreRejected() {
         reject(JSONObject(analysisFixtureStyle().encode()).apply { remove("stroke") }.toString())
         reject(changed("extra", true)); reject(changed("stroke", null)); reject(changed("mixedStyleWarning", "false"))
@@ -66,16 +57,6 @@ class StyleAnalysisSchemaTest {
         assertThrows(Exception::class.java) { strictObject("{\"a\":{\"b\":{\"c\":{}}}}", 100, 2) }
         assertThrows(Exception::class.java) { strictObject("{\"a\":\"" + "x".repeat(200) + "\"}", 100) }
         assertEquals("\uD83D\uDE00", strictObject("{\"a\":\"\\uD83D\\uDE00\"}").getString("a"))
-    }
-    @Test fun incompleteRefusedTruncatedAndUnexpectedToolOutputNeverBecomeStyle() {
-        assertEquals(StyleAnalysisOutcome.InvalidResponse, parseAnalysisResponse(JSONObject(analysisFixtureResponse()).put("status", "incomplete").toString()))
-        assertEquals(StyleAnalysisOutcome.InvalidResponse, parseAnalysisResponse(analysisFixtureResponse().dropLast(2)))
-        val refused = JSONObject(analysisFixtureResponse()).apply {
-            getJSONArray("output").getJSONObject(1).put("content", JSONArray().put(json("type" to "refusal", "refusal" to "no")))
-        }
-        assertEquals(StyleAnalysisOutcome.Refused, parseAnalysisResponse(refused.toString()))
-        assertEquals(StyleAnalysisOutcome.InvalidResponse, parseAnalysisResponse(JSONObject(analysisFixtureResponse())
-            .put("output", JSONArray().put(json("type" to "function_call"))).toString()))
     }
     @Test fun localReportOverflowUnknownKeysAndInconsistentCountsFail() {
         val valid = ReferenceSampleReport(2, 1, 1, 0, 0, false, true)

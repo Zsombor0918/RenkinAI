@@ -139,7 +139,8 @@ class MainViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val projectAiRepository: ProjectAiRepository,
     private val aiSettingsStore: AiSettingsStore,
-    private val styleAnalysisServices: dev.renkinProject.renkin.ai.style.StyleAnalysisServices
+    private val styleTrialServices: dev.renkinProject.renkin.ai.trial.StyleTrialServices,
+    private val packStyleServices: dev.renkinProject.renkin.ai.style.PackStyleServices
 ) : AndroidViewModel(application), IconPreviewBuilder {
     private val installerCatalog = InstallerCatalog(application)
     /**
@@ -197,18 +198,37 @@ class MainViewModel @Inject constructor(
 
     private suspend fun <T> projectOperation(id: Long, action: suspend () -> T): T =
         withProjectOwner(profileSessionOperations, id, { activeProfileId }, { profileSummaryReady && !isRefreshing }, action)
-    private val projectAnalysis = dev.renkinProject.renkin.ui.project.OwnedStyleAnalysis(viewModelScope, projectAiRepository,
-        styleAnalysisServices.journal, styleAnalysisServices.sampler, styleAnalysisServices.coordinator, styleAnalysisServices::hasOpenAiKey,
-        object : dev.renkinProject.renkin.ui.project.AnalysisSessionOwner {
+    internal suspend fun projectMetadata(id: Long) = projectAiRepository.metadata(id)
+    internal val projectTrials = dev.renkinProject.renkin.ui.project.OwnedStyleTrials(viewModelScope, projectAiRepository,
+        styleTrialServices.journal, styleTrialServices.coordinator, styleTrialServices::hasKey,
+        object : dev.renkinProject.renkin.ui.project.TrialSessionOwner {
+            override suspend fun <T> owned(id: Long, action: suspend () -> T): T = projectOperation(id, action)
+            override suspend fun targets() = dev.renkinProject.renkin.ui.project.revalidateLauncherTargets(coverageTargets(), coverageLauncherIdentity())
+            override suspend fun reader(source: String) = coverageReader(source, true)
+            override suspend fun montageReader(source: String) = appProvider.referenceReader(source)
+            override suspend fun original(key: String) = dev.renkinProject.renkin.ai.trial.currentTrialOriginal(getApplication(), key)
+            override suspend fun settings() = aiSettingsStore.load()
+        })
+    internal val projectStyleBackend: ProjectStyleBackend = object : ProjectStyleBackend {
+        override fun sourceLabel(source: String) = this@MainViewModel.iconPacks.find { it.packageName == source }?.applicationName
+        private val owner = object : dev.renkinProject.renkin.ui.project.AnalysisSessionOwner {
             override suspend fun <T> owned(id: Long, operation: suspend () -> T): T = projectOperation(id, operation)
-            override suspend fun catalogStamp() = dev.renkinProject.renkin.ui.project.projectCatalogStamp(
-                dev.renkinProject.renkin.ui.project.revalidateLauncherTargets(coverageTargets(), coverageLauncherIdentity()))
+            override suspend fun catalogStamp() = error("Pack style does not depend on target inventory")
             override suspend fun reader(source: String, referenceIndex: Boolean) =
                 if (referenceIndex) appProvider.referenceReader(source) else coverageReader(source, true)
-        })
-    internal suspend fun projectMetadata(id: Long) = projectAiRepository.metadata(id)
-    internal val projectStyleBackend: ProjectStyleBackend = object : ProjectStyleBackend {
-        override val analysis get() = projectAnalysis
+        }
+        override val montages = dev.renkinProject.renkin.ui.project.LocalPackMontages(
+            projectAiRepository, dev.renkinProject.renkin.ai.style.ReferenceSampler(), owner)
+        override val packAnalysis = dev.renkinProject.renkin.ui.project.PackStyleAnalysis(projectAiRepository, montages,
+            packStyleServices.journal, packStyleServices.gateway::analyze, packStyleServices::hasKey, owner)
+        override val localReferences = dev.renkinProject.renkin.ui.project.LocalStyleReferences(
+            projectAiRepository, dev.renkinProject.renkin.ai.style.ReferenceSampler(),
+            object : dev.renkinProject.renkin.ui.project.AnalysisSessionOwner {
+                override suspend fun <T> owned(id: Long, operation: suspend () -> T): T = projectOperation(id, operation)
+                override suspend fun catalogStamp() = error("Local references do not need target inventory")
+                override suspend fun reader(source: String, referenceIndex: Boolean) =
+                    if (referenceIndex) appProvider.referenceReader(source) else coverageReader(source, true)
+            })
         override suspend fun load(id: Long) = projectOperation(id) {
             projectAiRepository.load(id)
         }
@@ -231,9 +251,7 @@ class MainViewModel @Inject constructor(
         }
         override suspend fun save(id: Long, expected: Long?, draft: ProjectStyleDraft,
             mode: ProjectSetupMode, source: String?, stamp: String?) =
-            if (draft.analysisRequestId != null) projectAnalysis.save(id, expected, draft, mode, source)
-            else projectOperation(id) { projectAiRepository.saveStyle(id, expected, draft.specification, draft.instruction, draft.hashes,
-                mode.name, source, stamp) }
+            localReferences.save(id, expected, draft, mode, source, stamp)
     }
     internal suspend fun saveProjectSelection(id: Long, expectedVersion: Long, selection: ProjectSelection) =
         projectOperation(id) {
