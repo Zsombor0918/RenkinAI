@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -36,6 +37,8 @@ import dev.renkinProject.renkin.ui.RenkinAlertDialog
 import dev.renkinProject.renkin.ui.WavyLoadingBar
 import dev.renkinProject.renkin.ui.drawAlphaCheckerboard
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import dev.renkinProject.renkin.ui.theme.CardShape
 
 internal data class TrialReviewSummary(val current: List<IconAssetVariant>,
@@ -516,22 +519,22 @@ private fun TrialComparison(id: Long, hash: String, backend: ProjectTrialBackend
 @Composable
 private fun TrialPreview(id: Long, hash: String, backend: ProjectTrialBackend, tag: String, size: Int,
     dark: Boolean, checker: Boolean, label: String) {
-    var unavailable by remember(id, hash, backend, size) { mutableStateOf(false) }
-    val bitmap by produceState<Bitmap?>(null, id, hash, backend, size) {
-        var decoded: Bitmap? = null
+    val density = LocalDensity.current.density
+    var unavailable by remember(id, hash, backend, size, density) { mutableStateOf(false) }
+    val bitmap by produceState<Bitmap?>(null, id, hash, backend, size, density) {
+        value = null; unavailable = false
         try {
             val bytes = backend.preview(id, hash)
             if (bytes != null) {
-                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-                val sample = Integer.highestOneBit((maxOf(bounds.outWidth, bounds.outHeight) / size).coerceAtLeast(1))
-                decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
+                val decoded = withContext(Dispatchers.Default) { decodeTrialPreview(bytes, size, density) }
                 value = decoded
                 unavailable = decoded == null
             } else unavailable = true
         } catch (cancel: CancellationException) { throw cancel }
         catch (_: Exception) { value = null; unavailable = true }
-        awaitDispose { decoded?.recycle() }
+        // Published bitmaps may still be held by Compose draw nodes after a key change.
+        // Let Android/Compose release them; never recycle displayed pixels here.
+        awaitDispose { }
     }
     val background = if (dark) Color(0xff202020) else Color.White
     Box(Modifier.size(size.dp).background(background).drawBehind {
@@ -541,4 +544,14 @@ private fun TrialPreview(id: Long, hash: String, backend: ProjectTrialBackend, t
         bitmap?.let { Image(it.asImageBitmap(), label, Modifier.fillMaxSize()) }
         if (unavailable) Text(stringResource(R.string.trialImageUnavailable), style = MaterialTheme.typography.labelSmall)
     }
+}
+
+/** Decode the actual review asset; never used as a generation input. */
+internal fun decodeTrialPreview(bytes: ByteArray, sizeDp: Int, density: Float): Bitmap? {
+    require(sizeDp > 0 && density.isFinite() && density > 0)
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    val pixels = kotlin.math.ceil(sizeDp * density.toDouble()).toInt().coerceAtLeast(1)
+    val sample = Integer.highestOneBit((maxOf(bounds.outWidth, bounds.outHeight) / pixels).coerceAtLeast(1))
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
 }

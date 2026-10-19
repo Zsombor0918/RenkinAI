@@ -117,6 +117,32 @@ class StyleTrialComposeTest {
     }
     private fun scroll(tag: String) { compose.onNodeWithTag("project-trials-1").performScrollToNode(hasTestTag(tag)) }
     private fun prepare() { scroll("trial-prepare"); compose.onNodeWithTag("trial-prepare").performClick() }
+    @Test fun denseDisplayPreviewKeepsAvailableImageDetailWithoutChangingStoredPixelsOrCallingProvider() {
+        val source = android.graphics.Bitmap.createBitmap(1024, 1024, android.graphics.Bitmap.Config.ARGB_8888)
+        val pixels = IntArray(1024 * 1024) { if ((it % 1024) / 4 % 2 == 0) android.graphics.Color.RED else android.graphics.Color.BLUE }
+        source.setPixels(pixels, 0, 1024, 0, 0, 1024, 1024)
+        val bytes = java.io.ByteArrayOutputStream().use { source.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it); it.toByteArray() }
+        source.recycle()
+        val before = sha256(bytes)
+        val decoded = checkNotNull(decodeTrialPreview(bytes, 128, 3f))
+        val display = android.graphics.Bitmap.createScaledBitmap(decoded, 384, 384, true)
+        try {
+            val output = java.io.File("build/montage-evidence").apply { mkdirs() }
+            java.io.File(output, "preview-source-1024.png").writeBytes(bytes)
+            java.io.File(output, "preview-3x.png").outputStream().use {
+                display.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+            }
+            assertTrue("128dp at3x needs at least384 source pixels, got ${decoded.width}", decoded.width >= 384)
+            var red = 0; var blue = 0
+            for (y in 0 until display.height) for (x in 0 until display.width) {
+                val c = display.getPixel(x, y)
+                if (android.graphics.Color.red(c) > 178 && android.graphics.Color.blue(c) < 77) red++
+                if (android.graphics.Color.blue(c) > 178 && android.graphics.Color.red(c) < 77) blue++
+            }
+            assertTrue("Retain source colors: red=$red blue=$blue", red > 1000 && blue > 1000)
+            assertEquals(before, sha256(bytes))
+        } finally { if (display !== decoded) display.recycle(); decoded.recycle() }
+    }
     @Test fun packageBroadcastsReachTrialAsTypedInvalidationsWithoutAnUnconditionalReload() {
         val b = Backend(preparation(ProjectSetupMode.EXTEND, 1)); show(b); compose.waitForIdle()
         val loads = b.loads

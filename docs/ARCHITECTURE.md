@@ -1,5 +1,12 @@
 # Architecture
 
+## Density-correct Trial preview
+
+The review decoder samples against physical destination pixels, not dp counts.
+It reads unchanged repository PNGs, decodes off the main thread and preserves
+Compose-owned published bitmap lifetime. Only presentation changes; original,
+montage, provider, RAW asset and exported source bytes are not resized by this path.
+
 ## Montage request inspection and model scope
 
 Actual multipart inspection confirms one V3 contract/brief and original-first saved

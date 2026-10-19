@@ -1,5 +1,13 @@
 # Verification baseline
 
+## Dense-screen Trial image reproduction
+
+Windows native decoder RED:128dp at3x decodes128px rather than at least384. Actual
+source and enlarged-display PNGs are retained; an earlier window-capture fixture
+times out before assertion and is not mislabeled an application defect. Exact
+corrected-head checks and immutable byte evidence follow in PR10. No new full
+suite is run while debugging this focused presentation defect.
+
 ## Targeted montage request/model follow-up
 
 From b9e6556e, one extended native HTTP regression executes RED on expected

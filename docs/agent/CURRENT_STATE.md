@@ -1,5 +1,14 @@
 # Current implementation
 
+## Trial preview density correction
+
+From9e0f3511, owner Samsung screenshots motivate image-path inspection. The actual
+review decoder's native regression proves128px decoded for128dp at3x (384px needed).
+The correction samples for physical pixels, runs decode off Main and retains
+published bitmap lifetime without changing saved/provider PNGs. Native original
+detail, actual RAW quality and billing cannot be inferred from JPEG screenshots.
+Versioned prompt/economic optimization follows in this same owner-authorized task.
+
 ## Focused montage generation diagnosis
 
 Baseline b9e6556e actual multipart is clean: exact frozen V3 prompt, one reviewed

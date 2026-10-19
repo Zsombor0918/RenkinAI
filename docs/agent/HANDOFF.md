@@ -1,5 +1,14 @@
 # Agent handoff — guided UX Stage 1
 
+## Image quality and economic continuation
+
+Same branch/PR10, baseline9e0f3511. A native RED demonstrates dp/pixel confusion in
+Trial preview:128 instead of384 source pixels at3x. Fix presentation only and keep
+input/RAW bytes and billing state unchanged. Continue the authorized concise V4
+contract and measured-versus-hypothetical pricing study, retaining V1/V2/V3 readers
+and Sunburst/high as premium. Final exact-head gates, APK and historical governance
+status belong in the PR audit after commit. No live requests or phone/key access.
+
 ## Targeted montage request follow-up
 
 Continue existing PR10/branch from b9e6556e without restarting montage work. Actual

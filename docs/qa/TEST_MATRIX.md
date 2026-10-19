@@ -1,5 +1,12 @@
 # Regression and test matrix
 
+## Dense-screen preview detail
+
+One native pixel regression checks the actual review decoder at3x, with a fine
+striped1024 source and384px display evidence. Original bytes remain hash-identical;
+the preview cannot turn into a provider input. Existing Android review/restart
+journeys remain required, with no new matrix or provider calls.
+
 ## Targeted V3 request introspection
 
 Extend the existing native PackStyleAnalysisTest and Android montageJourney without
