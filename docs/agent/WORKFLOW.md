@@ -1,5 +1,12 @@
 # Agent, Git and review workflow
 
+## V4 montage acceptance evidence
+
+The existing Android validator now requires exact prompt_version4 for the new montage
+journey; stale V3 and V2 receipts fail. Test count, separate-process restart, actual
+loopback/external counters and all other gates remain unchanged. ADR0012 still gives
+one full hosted suite/build; no additional workflow or automatic unit matrix is added.
+
 ## Montage evidence scheduling
 
 ADR0012 remains unchanged: CI/build alone runs the authoritative full suite and HTTP. It additionally retains actual synthetic montage PNGs/metadata, without another unit invocation. Existing Android runner now executes3 write journeys plus1 separate-process restart; strict Python fake-runner assertions require those counts, input roles and zero external posts. Shared-navigation changes also require the existing dispatch-only7-case order check. Historical merge-title governance is not waived.

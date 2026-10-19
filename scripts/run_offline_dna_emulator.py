@@ -23,7 +23,7 @@ def valid_device_evidence(evidence):
         "decline": {"loopback_posts": 0, "external_posts": 0, "selected_references": 2, "trial_prepared": True,
                     "declined": True, "generation_calls": 0},
         "montage": {"loopback_posts": 2, "external_posts": 0, "montage_pages": 2, "trial_prepared": True,
-                    "prompt_version": 3, "generation_calls": 1, "automatic_recomposition": True,
+                    "prompt_version": 4, "generation_calls": 1, "automatic_recomposition": True,
                     "variant_reviewed": True, "style_approved": True},
         "restart": {"process_restart": True, "loopback_posts": 0, "external_posts": 0,
                     "saved_projects_reopened": 3, "trial_prepared": True, "uncertain_attempts_replayed": 0},

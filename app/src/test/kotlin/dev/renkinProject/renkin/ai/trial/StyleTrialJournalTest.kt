@@ -22,6 +22,37 @@ class StyleTrialJournalTest {
     private lateinit var f: StyleTrialFixture
     @Before fun setup() = runBlocking { f = StyleTrialFixture(temporary.root); f.initialize() }
     @After fun close() { f.close() }
+    @Test fun montageDeletionKeepsReadableConsumedTombstonesWithoutReplayingRequests() = runBlocking {
+        val saved = f.repo.load(1)
+        val ref = f.repo.importReference(1, java.io.ByteArrayInputStream(projectTestPng())).hash
+        f.repo.saveStyle(1, saved.revision!!.revision, saved.revision.specification, saved.revision.userInstruction, listOf(ref))
+        val plans = (3..4).map { version ->
+            val base = f.plan(listOf("a/Main"))
+            base.copy(context = base.context.copy(montageFingerprint = "d".repeat(64))).freezeMontagePrompt(version)
+        }
+        for (p in plans) {
+            // The former deletion transform clears every montage reference. Both frozen
+            // contracts correctly reject that body; retain one zero sentinel instead.
+            val withoutRefs = p.copy(referenceHashes = emptyList(), context = p.context.copy(
+                referenceFingerprint = referenceFingerprint(emptyList())))
+            assertTrue(runCatching { withoutRefs.freezeMontagePrompt(p.promptVersion) }.isFailure)
+            assertTrue(f.journal.claim(p, f.images(p)))
+            f.journal.begin(p, p.inputs.single().requestId); f.journal.endpoint(p, p.inputs.single().requestId, 1)
+            f.journal.release(p)
+        }
+        f.journal.invalidateProfile(1)
+        val reopened = StyleTrialJournal(f.context)
+        for (p in plans) {
+            val deleted = reopened.read(1, p.id)!!
+            assertEquals(p.promptVersion, deleted.plan.promptVersion)
+            assertFalse(deleted.prepared); assertFalse(reopened.current(deleted.plan))
+            assertEquals(TrialStatus.UNCERTAIN, deleted.items.single().status)
+            assertEquals(1, deleted.items.single().endpointCalls)
+            assertEquals("deleted project", deleted.plan.specification)
+            assertTrue(deleted.plan.referenceHashes.all { it == "0".repeat(64) })
+            assertFalse(reopened.claim(p, f.images(p)))
+        }
+    }
     @Test fun declineAndStalePlanHaveZeroFilesAndZeroGatewayCalls() = runBlocking {
         var calls = 0; val c = StyleTrialCoordinator(f.journal, f.successful { calls++ }, f.repo)
         val p = f.plan(); val images = f.images(p)

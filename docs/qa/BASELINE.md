@@ -1,5 +1,16 @@
 # Verification baseline
 
+## V4 quality and cost optimization evidence
+
+Baseline9e0f3511, preserved preview commitc6a4a122. Focused density regression passes
+after128-versus384 RED; contract4 RED is independently reproduced. The first deletion
+fixture fails before deletion; its corrected form explicitly proves the previous
+zero-reference transformation is invalid and actual V3/V4 tombstones remain readable.
+Offline Python69/69 passes, including two pricing arithmetic/uncertainty tests.
+Actual original/montage/RAW pixels, V3 golden hash and new V4 multipart/consent/premium
+tests are required before final-head CI. Exact fresh Linux/Android/order/governance
+and independently verified APK evidence belong directly on PR10 after execution.
+
 ## Dense-screen Trial image reproduction
 
 Windows native decoder RED:128dp at3x decodes128px rather than at least384. Actual

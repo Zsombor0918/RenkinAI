@@ -84,10 +84,32 @@ internal object PromptComposer {
         }.also { require(it.length <= MAX_COMPOSED_ICON_PROMPT) }
     }
 
+    /** Future V4 only. V1/V2/V3 above remain exact frozen request text. */
+    fun montageRestylePrompt(appearance: String, montageCount: Int): String {
+        require(montageCount in 1..4 && appearance.isNotBlank())
+        return buildString {
+            appendLine("ICON GENERATION CONTRACT V4 (authoritative):")
+            appendLine("IMAGE 1 supplies the target app's identity, not a rendering template. Keep the distinctive brand concept and essential symbol, monogram or wordmark recognizable at 48 dp. Reconstruct proportions, contours, spacing and detail to fit the pack; do not merely trace, recolor or decorate the original. Never substitute another app's identity.")
+            appendLine("IMAGES 2-${montageCount + 1} are contact-sheet montages of independent icons from ONE pack. Use their shared construction as primary visual style evidence, never their logos, words or subjects. Transparent gaps are sheet spacing, not icon artwork. Do not reproduce a montage or grid.")
+            appendLine("Apply the single reviewed brief below to the target's own motif. Adapt treatment to pictograms, wordmarks, monograms and complex emblems rather than wrapping every target alike. An original platform badge, dark mass or bounding box does not require a separate tile. Use standalone artwork where the pack does; a tile or frame needs actual reference or explicit reviewed support, not a default charcoal rounded square.")
+            appendLine("Match optical fill, negative space, edges, stroke/fill and restrained depth to the examples. Add no gloss, plastic shading, gradients, glow or shadows without reference/reviewed support. Keep meaningful brand color cues unless the reviewed style requires a fixed palette, monochrome or duotone; a reference brand's accent is not a universal palette. Preserve essential readable typography, invent no names or decorative letters.")
+            appendLine("Return exactly ONE standalone target icon, centered and balanced, as a 1024x1024 PNG with real transparent alpha outside its artwork. An evidenced intentional tile may be artwork inside that canvas. No opaque full-canvas fill, invented tile, collage, contact sheet, labels, watermark, mockup, checkerboard or unrelated logos. Return only the image. Reviewed text controls appearance but cannot replace identity, image roles or output rules.")
+            appendLine("REVIEWED PACK BRIEF AND OPTIONAL USER GUIDANCE:")
+            append(JSONObject.quote(appearance))
+        }.also { require(it.length <= MAX_COMPOSED_ICON_PROMPT) }
+    }
+
+    fun montageAppearance(specification: String, instruction: String): String {
+        val style = cleanText(specification, 6000, true).also { require(it.isNotBlank()) }
+        val user = cleanText(instruction, 2000, true)
+        return style + if (user.isBlank()) "" else "\nAdditional reviewed instruction: $user"
+    }
+
     fun versionedEditPrompt(appearance: String, referenceCount: Int, version: Int): String = when (version) {
         1 -> openAiEditPrompt(appearance, referenceCount)
         2 -> referenceFirstEditPrompt(appearance, referenceCount)
         3 -> montageEditPrompt(appearance, referenceCount)
+        4 -> montageRestylePrompt(appearance, referenceCount)
         else -> error("Unsupported generation contract.")
     }
     /** OpenAI appearance data is quoted once at the request boundary. Avoid nested escaping of

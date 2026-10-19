@@ -351,8 +351,8 @@ class StyleDnaEmulatorTest {
         compose.waitUntil(15000) { fixture.trials.state(1).value.let { !it.busy && it.preparation != null } }
         prepareVisibleTrial()
         val plan = fixture.trials.state(1).value.plan!!
-        assertEquals(3, plan.promptVersion); assertEquals(saved.references.map { it.hash }, plan.referenceHashes)
-        assertEquals("gpt-image-2.5-sunburst", plan.context.model); assertEquals("high", plan.context.quality)
+        assertEquals(4, plan.promptVersion); assertEquals(saved.references.map { it.hash }, plan.referenceHashes)
+        assertEquals("gpt-image-2.5-sunburst", plan.context.model); assertEquals("medium", plan.context.quality)
         assertEquals(stylePrompt, plan.specification)
         assertEquals(runBlocking { currentTrialOriginal(app, target.key) }.hash, plan.inputs.single().originalHash)
         assertTrue(plan.effectivePrompt(plan.inputs.single()).contains("contact-sheet montages"))
@@ -381,7 +381,7 @@ class StyleDnaEmulatorTest {
         assertEquals("/v1/images/edits", imageWire.path)
         val imageBody = String(imageWire.body.readByteArray(), Charsets.ISO_8859_1)
         fun field(name: String) = imageBody.substringAfter("name=\"$name\"").substringAfter("\r\n\r\n").substringBefore("\r\n--")
-        assertEquals("gpt-image-2.5-sunburst", field("model")); assertEquals("high", field("quality"))
+        assertEquals("gpt-image-2.5-sunburst", field("model")); assertEquals("medium", field("quality"))
         assertEquals(confirmedPlan.effectivePrompt(confirmedPlan.inputs.single()), field("prompt"))
         val original = runBlocking { currentTrialOriginal(app, target.key) }
         var position = -1
@@ -406,7 +406,7 @@ class StyleDnaEmulatorTest {
         assertEquals(2, fixture.server!!.requestCount); assertEquals(1, fixture.gatewayCalls.get())
         assertEquals(1, fixture.trialJournal.records(1).size)
         evidence("montage", json("loopback_posts" to 2, "external_posts" to 0, "selected_icons" to montage.members.size,
-            "montage_pages" to montage.pages.size, "trial_prepared" to true, "prompt_version" to 3,
+            "montage_pages" to montage.pages.size, "trial_prepared" to true, "prompt_version" to 4,
             "saved_revision" to saved.revision!!.revision, "generation_calls" to 1, "automatic_recomposition" to true,
             "variant_reviewed" to true, "style_approved" to true))
     }

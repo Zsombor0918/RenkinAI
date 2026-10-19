@@ -222,7 +222,7 @@ class PackStyleAnalysisTest {
             c.load(1, ProjectSetupMode.EXTEND, "fixture.pack"); idle(c)
             c.prepare(1, listOf(target.key), false)
             val declined = checkNotNull(idle(c).plan)
-            assertEquals(3, declined.promptVersion); assertEquals(draft.images.map(::sha256), declined.referenceHashes)
+            assertEquals(4, declined.promptVersion); assertEquals(draft.images.map(::sha256), declined.referenceHashes)
             assertEquals(original.hash, declined.inputs.single().originalHash)
             assertEquals(1, server.requestCount); assertTrue(trialsJournal.records(1).isEmpty())
             c.cancelPreparation(1); assertNull(c.state(1).value.plan)
@@ -232,9 +232,14 @@ class PackStyleAnalysisTest {
             val output = projectTestPng(size = 1024)
             server.enqueue(MockResponse().setBody(json("data" to JSONArray().put(json("b64_json" to Base64.encodeToString(output, Base64.NO_WRAP)))).toString()))
             c.submit(1, plan.id); assertEquals(1, idle(c).variants.size)
+            val raw = checkNotNull(c.preview(1, c.state(1).value.variants.single().rawAssetHash))
+            val expectedPixels = android.graphics.BitmapFactory.decodeByteArray(output, 0, output.size)
+            val savedPixels = android.graphics.BitmapFactory.decodeByteArray(raw, 0, raw.size)
+            try { assertTrue("Stored native1024 result must retain provider pixels", expectedPixels.sameAs(savedPixels)) }
+            finally { expectedPixels.recycle(); savedPixels.recycle() }
             val wire = checkNotNull(server.takeRequest(5, TimeUnit.SECONDS)); assertEquals("/v1/images/edits", wire.path)
             val diagnostic = imageEditDiagnostic(wire)
-            File("build/montage-evidence/v3-image-edit-request.json").also {
+            File("build/montage-evidence/v4-image-edit-request.json").also {
                 checkNotNull(it.parentFile).mkdirs(); it.writeText(diagnostic.toString(2))
             }
             val payload = String(wire.body.readByteArray(), Charsets.ISO_8859_1)
@@ -249,13 +254,13 @@ class PackStyleAnalysisTest {
             val fields = diagnostic.getJSONObject("fields")
             assertEquals(effective, fields.getString("prompt"))
             assertEquals(plan.promptHashes.getValue(target.key), sha256(fields.getString("prompt").toByteArray(Charsets.UTF_8)))
-            assertEquals(1, Regex("ICON GENERATION CONTRACT V3").findAll(effective).count())
-            assertTrue(effective.contains("contact-sheet montages containing multiple independent icons"))
-            assertTrue(effective.contains("Do not render the montage, a grid, multiple icons, or copy the example logos"))
-            assertTrue(effective.contains("Redraw the target geometry"))
-            assertTrue(effective.contains("Dark silhouettes, image bounds and launcher preview backgrounds do not establish a tile"))
+            assertEquals(1, Regex("ICON GENERATION CONTRACT V4").findAll(effective).count())
+            assertTrue(effective.contains("contact-sheet montages of independent icons"))
+            assertTrue(effective.contains("Do not reproduce a montage or grid"))
+            assertTrue(effective.contains("Reconstruct proportions, contours"))
+            assertTrue(effective.contains("platform badge, dark mass or bounding box does not require a separate tile"))
             for (legacy in listOf(AiSettings.DEFAULT_STYLE, "STYLE SPECIFICATION:", "TARGET / EDIT / OUTPUT CONTRACT",
-                "ICON GENERATION CONTRACT V2", "Additional target drawing guidance:", "Reviewed Style DNA family"))
+                "ICON GENERATION CONTRACT V2", "ICON GENERATION CONTRACT V3", "Additional target drawing guidance:", "Reviewed Style DNA family"))
                 assertFalse(legacy, effective.contains(legacy))
             assertEquals(1, Regex(Regex.escape(prompt)).findAll(effective).count())
             for ((name, value) in listOf("n" to "1", "size" to "1024x1024", "background" to "transparent", "output_format" to "png"))
@@ -269,10 +274,10 @@ class PackStyleAnalysisTest {
             }
             assertFalse(diagnostic.toString().contains("offline-image-not-a-key"))
             assertEquals("gpt-image-2.5-sunburst", fields.getString("model"))
-            assertEquals("high", fields.getString("quality"))
+            assertEquals("medium", fields.getString("quality"))
             assertEquals(plan.context.model, fields.getString("model")); assertEquals(plan.context.quality, fields.getString("quality"))
             // Changing future defaults cannot reinterpret an already frozen V3 request.
-            val historical = plan.copy(context = plan.context.copy(model = "gpt-image-2.5-flare", quality = "medium"))
+            val historical = plan.copy(context = plan.context.copy(model = "gpt-image-2.5-flare", quality = "medium")).freezeMontagePrompt(3)
             val encoded = historical.encode()
             assertEquals(encoded, StyleTrialPlan.parse(encoded).encode())
             val oldBody = buildImageEditRequest("synthetic-only", AiSettings(model = historical.context.model,
@@ -282,11 +287,19 @@ class PackStyleAnalysisTest {
                 oldBody.parts.single { it.headers?.get("Content-Disposition") == "form-data; name=\"$name\"" }.body.writeTo(buffer)
             }.readUtf8()
             assertEquals("gpt-image-2.5-flare", oldField("model")); assertEquals("medium", oldField("quality"))
-            assertEquals(effective, oldField("prompt"))
+            assertEquals(historical.effectivePrompt(historical.inputs.single()), oldField("prompt"))
+            assertTrue(oldField("prompt").contains("ICON GENERATION CONTRACT V3"))
             val restored = controller(); restored.load(1, ProjectSetupMode.EXTEND, "fixture.pack"); idle(restored)
             assertNull(restored.state(1).value.plan)
             StyleTrialCoordinator(StyleTrialJournal(context), native, repo).submit(plan, pngs.associateBy(::sha256), true, { true })
             assertEquals(2, server.requestCount)
+            // Premium remains a separate explicitly prepared choice, never a gateway override.
+            restored.options(1, AiSettings.OPENAI, "gpt-image-2.5-sunburst", "high"); idle(restored)
+            restored.prepare(1, listOf(target.key), false)
+            val premium = checkNotNull(idle(restored).plan)
+            assertEquals("high", premium.context.quality); assertEquals(4, premium.promptVersion)
+            assertNotEquals(plan.fingerprint, premium.fingerprint)
+            restored.cancelPreparation(1); assertEquals(2, server.requestCount)
             // Existing explicit options remain available; only the montage default changes.
             restored.options(1, AiSettings.OPENAI, "gpt-image-1-mini", "low"); idle(restored)
             restored.prepare(1, listOf(target.key), false)

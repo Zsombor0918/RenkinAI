@@ -123,7 +123,7 @@ internal class OwnedStyleTrials(private val scope: CoroutineScope, private val r
         val coverage = reader?.let { IconCoverageAnalyzer().analyze(id, targets.filter { it.key in selection.componentKeys }, it) }
         // Future montage plans favor reference-editing precision. Never override a frozen
         // request at the gateway or change AI1/AI2/global and historical manual defaults.
-        val defaults = chosenOptions[id] ?: if (montage != null) Triple(AiSettings.OPENAI, "gpt-image-2.5-sunburst", "high")
+        val defaults = chosenOptions[id] ?: if (montage != null) Triple(AiSettings.OPENAI, "gpt-image-2.5-sunburst", "medium")
             else owner.settings().let { Triple(it.provider, it.model, it.quality) }
         val context = TrialContext(id, revision.revision, metadata.version, route.first.name, route.second, stamp,
             projectCatalogStamp(targets), sha256(metadata.selectionJson.toByteArray()),

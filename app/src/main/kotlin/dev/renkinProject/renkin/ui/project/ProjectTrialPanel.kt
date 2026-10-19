@@ -369,8 +369,8 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
                 TrialPreview(id, input.originalHash, backend, "trial-frozen-${input.requestId}", 72, false, true,
                     stringResource(R.string.trialOriginalApp))
             }
-            if (plan.referenceHashes.isNotEmpty()) Text(stringResource(if (plan.promptVersion == 3) R.string.packStyleTrialSheets else R.string.guidedTrialStyleOnlyReferences))
-            if (plan.promptVersion != 3) plan.referenceHashes.forEachIndexed { index, hash ->
+            if (plan.referenceHashes.isNotEmpty()) Text(stringResource(if (plan.promptVersion >= 3) R.string.packStyleTrialSheets else R.string.guidedTrialStyleOnlyReferences))
+            if (plan.promptVersion < 3) plan.referenceHashes.forEachIndexed { index, hash ->
                 Text(stringResource(R.string.projectStyleReferenceNumber, index + 1))
                 TrialPreview(id, hash, backend, "trial-frozen-reference-$index", 72, false, true,
                     stringResource(R.string.projectStyleReferencePreview))
@@ -385,7 +385,7 @@ internal fun ProjectTrialPanel(id: Long, name: String, mode: ProjectSetupMode, s
             }
             TrialExpandButton(consentDetails, { consentDetails = !consentDetails }, stringResource(R.string.guidedTrialDetails), "trial-consent-details")
             if (consentDetails) {
-                if (plan.promptVersion == 3) {
+                if (plan.promptVersion >= 3) {
                     plan.referenceHashes.forEachIndexed { index, hash ->
                         TrialPreview(id, hash, backend, "trial-frozen-reference-$index", 200, false, true,
                             stringResource(R.string.packStylePreview))
@@ -502,7 +502,13 @@ private fun TrialOptions(context: TrialContext, enabled: Boolean, onChange: (Str
     if (context.provider == AiSettings.OPENAI) AiSettings.MODELS.forEach { model -> TextButton(onClick = { onChange(context.provider, model, context.quality) },
         enabled = enabled && model != context.model, modifier = Modifier.heightIn(min = 48.dp).testTag("trial-model-$model")) { Text(model) } }
     if (context.provider == AiSettings.OPENAI) AiSettings.QUALITIES.forEach { quality -> TextButton(onClick = { onChange(context.provider, context.model, quality) },
-        enabled = enabled && quality != context.quality, modifier = Modifier.heightIn(min = 48.dp).testTag("trial-quality-$quality")) { Text(quality) } }
+        enabled = enabled && quality != context.quality, modifier = Modifier.heightIn(min = 48.dp).testTag("trial-quality-$quality")) {
+        Text(if (context.montageFingerprint.isNotEmpty() && context.model == "gpt-image-2.5-sunburst") when (quality) {
+            "medium" -> stringResource(R.string.trialBalancedQuality)
+            "high" -> stringResource(R.string.trialBestQuality)
+            else -> quality
+        } else quality)
+    } }
 }
 
 @Composable

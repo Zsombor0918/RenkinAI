@@ -1,5 +1,15 @@
 # Agent handoff — guided UX Stage 1
 
+## Closed quality and balanced-contract scope
+
+Preserve preview checkpointc6a4a122. Complete future V4/Sunburst-medium with high
+premium, exact original/sheet payload and old V3 golden/reader compatibility. The
+V3/V4 deletion sentinel preserves readable consumed tombstones without replay. Saved
+owner style text is not rewritten. Cost totals are explicit hypothetical input usage;
+no actual billing, native phone resources or real visual scores were measured.
+One final-head hosted verification and matching APK receipt belong in PR10. Stop
+after delivery; owner visual comparison/signing/integration decisions remain separate.
+
 ## Image quality and economic continuation
 
 Same branch/PR10, baseline9e0f3511. A native RED demonstrates dp/pixel confusion in

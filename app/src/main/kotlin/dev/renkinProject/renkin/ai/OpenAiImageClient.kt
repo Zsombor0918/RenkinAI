@@ -49,7 +49,7 @@ class OpenAiImageClient internal constructor(private val client: OkHttpClient, p
 
 internal fun buildImageEditRequest(key: String, settings: AiSettings, images: List<ByteArray>, promptOverride: String? = null, promptVersion: Int = 1): Request {
     settings.validate()
-    require(promptVersion in 1..3 && (promptVersion == 1 || promptOverride != null))
+    require(promptVersion in 1..4 && (promptVersion == 1 || promptOverride != null))
     require(promptOverride == null || promptOverride.isNotBlank() && promptOverride.length <= MAX_COMPOSED_ICON_PROMPT)
     require(images.size == settings.referenceNames.size + 1 && images.size in 1..6)
     require(images.all { it.isNotEmpty() && it.size <= 4 * 1024 * 1024 }) { "An input icon is too large." }

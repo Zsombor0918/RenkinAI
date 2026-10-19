@@ -1,5 +1,17 @@
 # Current implementation
 
+## Provisional cost-balanced montage Trial
+
+Owner reports Sunburst improvement and higher cost; screenshots reveal qualitative
+style issues, not RAW/source/billing proof. Future V4 emphasizes genuine geometric
+restyling and evidenced backgrounds with one editable brief; Sunburst/medium is the
+provisional default, high remains an explicit premium choice. V1/V2/V3 are unchanged.
+The V3 tombstone RED is corrected with a version-preserving all-zero sentinel.
+Native input/render/RAW/preview fixtures and the offline1/6/30/100-icon scenario
+calculator establish protocol/arithmetic, not aesthetics or actual owner spending.
+See [quality/cost study](../qa/GENERATION_QUALITY_COST.md); final exact-head gates/APK
+remain external on existing PR10, with historical governance separately BLOCKED.
+
 ## Trial preview density correction
 
 From9e0f3511, owner Samsung screenshots motivate image-path inspection. The actual

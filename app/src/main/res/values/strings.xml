@@ -1,4 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="trialBalancedQuality">Medium · Balanced</string>
+    <string name="trialBestQuality">High · Best quality</string>
     <string name="app_name" translatable="false">Renkin AI</string>
 
     <string name="iconColor">Icon color</string>

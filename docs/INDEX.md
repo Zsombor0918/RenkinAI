@@ -1,5 +1,9 @@
 # Documentation index
 
+Current owner-authorized [quality/cost study](qa/GENERATION_QUALITY_COST.md) and
+[future V4/Balanced decision](decisions/0018-balanced-montage-restyling.md) supersede
+the future-default portion of ADR0017, preserving all historical contracts.
+
 Current focused follow-up: [montage Trial model and safe request inspection](decisions/0017-montage-trial-model-default.md).
 Only future montage defaults change; historical V3 text/requests and AI1/AI2 remain.
 

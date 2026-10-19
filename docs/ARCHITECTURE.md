@@ -1,5 +1,14 @@
 # Architecture
 
+## Future montage V4 and balanced quality
+
+New montage plans freeze V4 effective text and existing context model/quality;
+default Sunburst/medium, explicit high still premium. V1/V2/V3 reconstruction remains
+unchanged. Native multipart keeps original-first actual sheets and one brief.
+Version-aware profile tombstones retain one all-zero sentinel and consumed rights
+without retaining images or granting replay. No new store/endpoint/schema. Pricing
+calculations are offline scenarios, never in-app billing promises. See [ADR0018](decisions/0018-balanced-montage-restyling.md).
+
 ## Density-correct Trial preview
 
 The review decoder samples against physical destination pixels, not dp counts.

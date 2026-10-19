@@ -66,7 +66,7 @@ class ClientIconGenerationGateway internal constructor(
                 require(request.styleRevision == null || request.styleRevision > 0)
                 require(request.referencePngs.size <= 5)
                 require(request.composedPrompt == null || request.composedPrompt.isNotBlank() && request.composedPrompt.length <= MAX_COMPOSED_ICON_PROMPT)
-                require(request.promptVersion in 1..3 && (request.promptVersion == 1 ||
+                require(request.promptVersion in 1..4 && (request.promptVersion == 1 ||
                     request.provider == AiSettings.OPENAI && request.composedPrompt != null))
                 if (request.provider == AiSettings.OPENAI) request.composedPrompt?.let {
                     PromptComposer.versionedEditPrompt(it, request.referencePngs.size, request.promptVersion)

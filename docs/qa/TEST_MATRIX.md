@@ -1,5 +1,14 @@
 # Regression and test matrix
 
+## Balanced V4 montage contract
+
+Extend existing native plan/journal/HTTP/Android journeys, retaining all934 baseline
+test identities. Three justified additions protect dense preview detail, future V4
+semantics and versioned montage deletion/no replay. Source fixtures cover bitmap
+native48 versus rendered1024, text/vector/adaptive/layered alpha; native result pixels
+are compared before storage/preview. Pricing adds two pure offline Python cases;
+no live comparison or aesthetic scoring. Final-head results live in the PR audit.
+
 ## Dense-screen preview detail
 
 One native pixel regression checks the actual review decoder at3x, with a fine

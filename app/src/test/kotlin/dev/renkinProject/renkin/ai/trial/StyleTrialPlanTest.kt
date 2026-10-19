@@ -8,6 +8,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 import dev.renkinProject.renkin.R
+import dev.renkinProject.renkin.ai.pngBytes
 import dev.renkinProject.renkin.ai.AiSettings
 import dev.renkinProject.renkin.ai.style.PromptComposer
 import dev.renkinProject.renkin.data.project.sha256
@@ -26,6 +27,20 @@ import org.robolectric.annotation.GraphicsMode
 @Config(application = Application::class, sdk = [33])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class StyleTrialPlanTest {
+    @Test fun futureMontageContractReconstructsIdentityInsteadOfTracingPlatformBadges() {
+        val appearance = "Reviewed style: matte symbol\nProject instruction: owner preference\nApp instruction: "
+        val old = PromptComposer.versionedEditPrompt(appearance, 2, 3)
+        assertEquals("6b7313c2b2db905e50e3f9c1fe8d3df396a2f88b9d365c78686cd0c106af4a7f", sha256(old.toByteArray()))
+        java.io.File("build/montage-evidence").apply { mkdirs() }.resolve("v3-prompt-golden.txt").writeText(old)
+        val next = PromptComposer.versionedEditPrompt("Reviewed style: matte symbol\nProject instruction: owner preference", 2, 4)
+        assertTrue(next.length < old.length)
+        for (meaning in listOf("identity, not a rendering template", "contact-sheet montages", "platform badge",
+            "standalone", "gloss", "48 dp", "ONE standalone", "transparent alpha", "owner preference"))
+            assertTrue(meaning, next.contains(meaning))
+        assertEquals(1, Regex("matte symbol").findAll(next).count())
+        assertFalse(next.contains("App instruction: "))
+        assertEquals(old, PromptComposer.versionedEditPrompt(appearance, 2, 3))
+    }
     @get:Rule val temporary = TemporaryFolder()
     @Test fun montageContractBindsContactSheetsWithoutReinterpretingHistoricalReferences() = runBlocking {
         StyleTrialFixture(temporary.root).use { f ->
@@ -135,6 +150,35 @@ class StyleTrialPlanTest {
         val vector = checkNotNull(application.getDrawable(R.drawable.ic_github))
         val adaptive = AdaptiveIconDrawable(ColorDrawable(Color.BLUE), ColorDrawable(Color.RED))
         for (drawable in listOf(vector, adaptive)) assertTrue(renderTrialOriginal(drawable).size <= 4 * 1024 * 1024)
+        val output = java.io.File("build/montage-evidence").apply { mkdirs() }
+        output.resolve("original-vector-1024.png").writeBytes(renderTrialOriginal(vector))
+        output.resolve("original-adaptive-1024.png").writeBytes(renderTrialOriginal(adaptive))
+        val native = android.graphics.Bitmap.createBitmap(48, 48, android.graphics.Bitmap.Config.ARGB_8888)
+        try {
+            val canvas = android.graphics.Canvas(native)
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { color = Color.RED }
+            canvas.drawCircle(24f, 24f, 22f, paint)
+            paint.color = Color.WHITE; paint.textSize = 17f; canvas.drawText("AB", 11f, 30f, paint)
+            val bitmap = android.graphics.drawable.BitmapDrawable(application.resources, native)
+            val layered = android.graphics.drawable.LayerDrawable(arrayOf(ColorDrawable(Color.TRANSPARENT), bitmap))
+            for ((name, drawable) in listOf("bitmap48" to bitmap, "layered48" to layered)) {
+                val png = renderTrialOriginal(drawable)
+                assertEquals(1024 to 1024, dev.renkinProject.renkin.data.project.inspectPng(png))
+                assertEquals(48, native.width); assertEquals(48, native.height)
+                output.resolve("original-$name-1024.png").writeBytes(png)
+                val decoded = android.graphics.BitmapFactory.decodeByteArray(png, 0, png.size)
+                try {
+                    assertEquals(0, Color.alpha(decoded.getPixel(0, 0)))
+                    val small = android.graphics.Bitmap.createScaledBitmap(decoded, 48, 48, true)
+                    try { output.resolve("original-$name-launcher48.png").writeBytes(small.pngBytes()) }
+                    finally { small.recycle() }
+                } finally { decoded.recycle() }
+            }
+            output.resolve("original-native-detail.json").writeText(JSONObject().put("bitmap_native_width", native.width)
+                .put("bitmap_native_height", native.height).put("bitmap_density", native.density)
+                .put("rendered_width", 1024).put("rendered_height", 1024)
+                .put("detail_is_not_created_by_upscaling", true).toString(2))
+        } finally { native.recycle() }
         assertTrue(runCatching { renderTrialOriginal(ColorDrawable(Color.TRANSPARENT)) }.isFailure)
         val broken = object : Drawable() {
             override fun draw(canvas: android.graphics.Canvas) { error("broken resource") }
